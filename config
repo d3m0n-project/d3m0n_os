@@ -1,0 +1,79 @@
+#!/bin/bash
+
+display() {
+	title=$1
+	text=$2
+
+	# colors
+	OUTLINE_COLOR="\e[93m"
+	BACKGROUND_COLOR="\e[93m"
+	WINDOW_BACKGROUND_COLOR="\e[93m"
+	TEXT_COLOR="\e[93m"
+	
+
+
+	TERMINAL_W=$(tput cols)
+	TERMINAL_H=$(tput lines)
+
+	LINES=5
+	WINDOW_H=$LINES+2
+	WINDOW_W=10
+
+	TITLE_LEN=${#title}
+	TOP_HOR_OUTLINE_W=($TERMINAL_W-2-4-$TITLE_LEN)/2
+	BOTTOM_HOR_OUTLINE_W=($TERMINAL_W-2)
+
+	# first line
+
+	echo -n "┌"
+	for (( i = 0; i < $TOP_HOR_OUTLINE_W; i++ )); do
+		echo -n "─"
+	done
+	echo -n "┤ ${title} ├"
+	for (( i = 0; i < $TOP_HOR_OUTLINE_W; i++ )); do
+		echo -n "─"
+	done
+	echo "┐"
+
+	# text lines
+	for
+
+
+	# last line
+
+	echo -n "└"
+	for (( i = 0; i < $BOTTOM_HOR_OUTLINE_W; i++ )); do
+		echo -n "─"
+	done
+	echo "┘"
+}
+
+
+
+display "my title" "uwu"
+
+
+
+
+
+
+
+
+ # ┌──────────────────────────────────────────────┤ Installing packages ├──────────────────────────────────────────────┐
+ # │ Retrieving file 21 of 260 (7min 53s remaining)                                                                    │
+ # │                                                                                                                   │
+ # │                                                                                                                   │
+ # │                                                                                                                   │
+ # │                                                         0%                                                        │
+ # │                                                                                                                   │
+ # └───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+
+
+
+
+
+
+
+
