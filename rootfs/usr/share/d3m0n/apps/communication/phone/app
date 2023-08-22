@@ -1,0 +1,7 @@
+name: phone
+package: com.4re5.d3m0n.phone
+icon: phone
+executable: /path/to/phone.exe
+perms: none
+start_path: /path/to
+category: communication

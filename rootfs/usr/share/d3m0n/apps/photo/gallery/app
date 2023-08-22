@@ -1,0 +1,7 @@
+name: gallery
+package: com.4re5.d3m0n.gallery
+icon: gallery
+executable: /path/to/gallery.exe
+perms: sudo
+start_path: /path/to
+category: photo
