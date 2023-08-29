@@ -44,33 +44,95 @@ You can delete the current file by clicking the **Remove** button in the file ex
 You can export the current file by clicking **Export to disk** in the menu. You can choose to export the file as plain Markdown, as HTML using a Handlebars template or as a PDF.
 
 
-# Use d3m0n api
+# d3m0n api
 
-Synchronization is one of the biggest features of StackEdit. It enables you to synchronize any file in your workspace with other files stored in your **Google Drive**, your **Dropbox** and your **GitHub** accounts. This allows you to keep writing on other devices, collaborate with people you share the file with, integrate easily into your workflow... The synchronization mechanism takes place every minute in the background, downloading, merging, and uploading file modifications.
+d3m0n operating system contains preinstalled softwares.
+- d3m0n apps
+  - photo
+    - camera
+    - gallery 
+  - utils
+    - calculator
+    - settings
+- system apps
+   - touchscreen (touch screen handle software)
 
-There are two types of synchronization and they can complement each other:
+## Creating a d3m0n application
 
-- The workspace synchronization will sync all your files, folders and settings automatically. This will allow you to fetch your workspace on any other device.
-	> To start syncing your workspace, just sign in with Google in the menu.
+First create a main file named `app` and type these lines
 
-- The file synchronization will keep one file of the workspace synced with one or multiple files in **Google Drive**, **Dropbox** or **GitHub**.
-	> Before starting to sync files, you must link an account in the **Synchronize** sub-menu.
+    name: myapp
+    package: com.myteam.myapp
+    icon: /path/to/icon.png
+    perms: none
+    start_path: /path/to
+    category: mycategory
 
-## Open a file
+### description
+`name` is your new app name
+`package` is your app 'id'
+`icon` is then path to your icon (png) file or a theme icon ([theme-icons](#theme_icons))
+`perms` can be equal to `sudo`(admin) or `none`(default)
+`start_path` specifiate the directory where your app will be running
+`category` is your app category
 
-You can open a file from **Google Drive**, **Dropbox** or **GitHub** by opening the **Synchronize** sub-menu and clicking **Open from**. Once opened in the workspace, any modification in the file will be automatically synced.
+Then create a main layout file in the directory `layouts` named `main.layout`.
 
-## Save a file
+    # d3m0n layout << important!
+	
+	Window:
+		name="My_Window"
+		title="My window"
+		width="200"
+		height="100"
+		bg_color="black"
+	
+	Text:
+		content="my text"
 
-You can save any file of the workspace to **Google Drive**, **Dropbox** or **GitHub** by opening the **Synchronize** sub-menu and clicking **Save on**. Even if a file in the workspace is already synced, you can save it to another location. StackEdit can sync one file with multiple locations and accounts.
+create now a main source file in the directory `src` named `main.src`.
 
-## Synchronize a file
+    # d3m0n source << important!
+	
+	# On app load
+	Window.OnCreate => 
+		# this is a comment
+		myVariable="hello world"
+		
+		# create an alert box with myVariable content
+		alert(myVariable);
+		
+		# write something in the host terminal in orange
+		logn("[o] loaded myApp", "orange");
+		
+		# execute bash command
+		system("echo test");
+		
+		# call a function called "myFunct" with args 'arg1' and 'arg2' in the dll
+		[/path/to/myDll.dll,myNamespace,myclass,myFunct(arg1, arg2)]
+	
 
-Once your file is linked to a synchronized location, StackEdit will periodically synchronize it by downloading/uploading any modification. A merge will be performed if necessary and conflicts will be resolved.
+	# on app quit
+	Window.OnDestroy => 
+		system("echo 'd3m0n path:         $d3m0n'");
+		system("echo 'app ressource path: $ressource'");
+		system("echo 'app source path:    $source'");
+		system("echo 'app layouts path:   $layouts'");
 
-If you just have modified your file and you want to force syncing, click the **Synchronize now** button in the navigation bar.
 
-> **Note:** The **Synchronize now** button is disabled if you have no file to synchronize.
+	Element.OnClick => exec="python $source/main.py" 
+	
+this file will be executed in the same time that your layout one
+
+# Apparence
+Your system design can be changed to be fancier.
+
+## theme_icons
+
+Your d3m0n os apparence can be modified by using a theme.
+These ones are located in 
+
+> /usr/share/d3m0n/themes
 
 ## Manage file synchronization
 
