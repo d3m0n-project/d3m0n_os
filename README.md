@@ -48,14 +48,26 @@ You can export the current file by clicking **Export to disk** in the menu. You 
 
 d3m0n operating system contains preinstalled softwares.
 - d3m0n apps
+  - communication
+    - contacts
+    - phone
+    - messages   
+  - system
+    - settings  
   - photo
     - camera
     - gallery 
-  - utils
+  - misc
+    - files 
     - calculator
-    - settings
+    - browser
+    - store
+- keyboard
+  - keyboard app
 - system apps
    - touchscreen (touch screen handle software)
+   - lockscreen
+
 
 ## Creating a d3m0n application
 
