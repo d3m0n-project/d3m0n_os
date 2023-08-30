@@ -2,11 +2,39 @@ using System;
 using System.Windows.Forms;
 using System.IO;
 using System.Drawing;
+using System.Linq;
 
 namespace d3m0n
 {
    public class utils
    {
+      private static Random random = new Random();
+
+      public static string RemoveLast(string text, string character)
+      {
+          if(text.Length < 1) return text;
+          return text.Remove(text.ToString().LastIndexOf(character), character.Length);
+      }
+
+      public static void logn(string message, ConsoleColor color)
+      {
+         Console.ForegroundColor = color;
+         Console.WriteLine(message);
+         Console.ResetColor();
+      }
+      public static void log(string message, ConsoleColor color)
+      {
+         Console.ForegroundColor = color;
+         Console.Write(message);
+         Console.ResetColor();
+      }
+
+      public static string RandomString(int length)
+      {
+          const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+          return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
+      }
       public static string getPath()
       {
          // release
@@ -25,7 +53,8 @@ namespace d3m0n
          frm.WindowState = FormWindowState.Maximized;
          frm.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
          frm.Visible = true;
-         frm.Size = new Size(480, (640));
+         frm.Size = new Size(455, (640));
+         frm.Location = new Point(0, 25);
          ctl.Controls.Add(frm);
       } 
       public static string getSetting(string name, string path)
@@ -45,6 +74,25 @@ namespace d3m0n
          }
          return to_return;
       } 
+
+      public static void DeleteDirectory(string target_dir)
+      {
+          string[] files = Directory.GetFiles(target_dir);
+          string[] dirs = Directory.GetDirectories(target_dir);
+
+          foreach (string file in files)
+          {
+              File.SetAttributes(file, FileAttributes.Normal);
+              File.Delete(file);
+          }
+
+          foreach (string dir in dirs)
+          {
+              DeleteDirectory(dir);
+          }
+
+          Directory.Delete(target_dir, false);
+      }
    }
 }
 

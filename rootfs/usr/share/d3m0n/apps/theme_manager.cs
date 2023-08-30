@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Media;
+using System.Diagnostics;
 
 namespace d3m0n
 {
@@ -17,14 +19,34 @@ namespace d3m0n
 			}
 
 			string theme_path = utils.getPath()+"/themes/"+utils.getSetting("theme", utils.getConfigPath())+"/icons";
-			Console.WriteLine("theme_path: "+theme_path);
-			Console.WriteLine("'"+theme_path+"/"+name+".png'");
+			// Console.WriteLine("theme_path: "+theme_path);
+			// Console.WriteLine("'"+theme_path+"/"+name+".png'");
 			if(File.Exists(theme_path+"/"+name+".png"))
 			{
-				Console.WriteLine("icon exists: "+theme_path+"/"+name+".png");
+				// Console.WriteLine("icon exists: "+theme_path+"/"+name+".png");
 				icon = new Bitmap(theme_path+"/"+name+".png");
 			}
 			return icon;
+			
+		}
+		public static void PlaySound(string name)
+		{
+			string theme_path = utils.getPath()+"/themes/"+utils.getSetting("theme", utils.getConfigPath())+"/sounds";
+			if(File.Exists(theme_path+"/"+name+".mp3"))
+			{
+				Process process = new Process();
+				ProcessStartInfo processStartInfo = new ProcessStartInfo();
+				processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+				processStartInfo.FileName = "paplay";
+				processStartInfo.Arguments = theme_path+"/"+name+".mp3";
+				processStartInfo.UseShellExecute = false;
+				process.StartInfo = processStartInfo;
+				process.Start();
+			}
+			else
+			{
+				MessageBox.Show("sound '"+name+"' is not found");
+			}
 			
 		}
 	}

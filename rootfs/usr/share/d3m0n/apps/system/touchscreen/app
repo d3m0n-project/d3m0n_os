@@ -1,0 +1,7 @@
+name: touchscreen
+package: com.4re5.d3m0n.touchscreen
+icon: default
+executable: $d3m0n/apps/system/touchscreen/touchscreen.d3m0n
+perms: sudo
+start_path: /path/to
+category: system

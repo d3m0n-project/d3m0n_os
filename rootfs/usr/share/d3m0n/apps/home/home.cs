@@ -21,7 +21,7 @@ namespace d3m0n
             Image wallpaper;
             try
             {
-            	wallpaper = Image.FromFile(utils.getSetting("wallpaper", utils.getConfigPath()));
+            	wallpaper = Image.FromFile(utils.getPath()+"/wallpapers/"+utils.getSetting("wallpaper", utils.getConfigPath())+".png");
             	this.BackgroundImage = wallpaper;
         	}
             catch(Exception)
@@ -53,90 +53,35 @@ namespace d3m0n
 
 
 
-			// name+"//!//"+icon+"//!//"executable+"//!//"+perms+"//!//"+start_path+"//!//"+category+"//!//"+package;
-			int column_nbr = 1;
-			int line_nbr   = 1;
-			int page_number= 1;
-			foreach(string raw in app_manager.getAllApps())
+			foreach (string file in Directory.EnumerateFiles(utils.getPath(), "*.d3m0n", SearchOption.AllDirectories))
 			{
-				Console.WriteLine(raw);
-				if(column_nbr >= 4)
+				string raw = Interpreter.loadApp(file);
+				Console.WriteLine("file: "+file);
+				Console.WriteLine("raw: "+raw);
+				if(raw.StartsWith("can't load app"))
 				{
-					column_nbr=1;
-					line_nbr++;
-					if(line_nbr >= 4)
-					{
-						line_nbr=1;
-						page_number++;
-					}
+					MessageBox.Show(raw);
+					continue;
 				}
+
 				string name = raw.Split("//!//")[0];
-			    string icon = raw.Split("//!//")[1];
-			    string executable = raw.Split("//!//")[2];
-			    string perms = raw.Split("//!//")[3];
-				string start_path = raw.Split("//!//")[4];
-				string category = raw.Split("//!//")[5];
-				string package = raw.Split("//!//")[6];
+	            string icon = raw.Split("//!//")[1];
+	            string temp_path = raw.Split("//!//")[2];
+	            string perms = raw.Split("//!//")[3];
+	            string start_path = raw.Split("//!//")[4];
+	            string category = raw.Split("//!//")[5];
+	            string package = raw.Split("//!//")[6];
 
+	            d3m0nApplication.name = name;
+	            d3m0nApplication.icon = icon;
+	            d3m0nApplication.temp_path = temp_path;
+	            d3m0nApplication.perms = perms;
+	            d3m0nApplication.start_path = start_path;
+	            d3m0nApplication.category = category;
+	            d3m0nApplication.package = package;
 
-
-
-				// 10px + 100px*4 + 10px   w
-				// 20px + 100px*4 + 20px   h
-				FlowLayoutPanel app = new FlowLayoutPanel();
-				app.Name = name;
-				app.BackColor = Color.Transparent;
-				app.Size = new Size(100, 100);
-				app.Location = new Point((10*2*column_nbr-10 + 100*(column_nbr-1)), 20*line_nbr + line_nbr*100);
-				app.FlowDirection = FlowDirection.TopDown;
-				app.WrapContents = false;
-				app.Click += (sender, EventArgs) => { App_Click(executable, sender, EventArgs); };
-				Controls.Add(app);
-
-				PictureBox app_icon = new PictureBox();
-				app_icon.Name = name+"_app_icon";
-				app_icon.Size = new Size(80, 80);
-				app_icon.Click += (sender, EventArgs) => { App_Click(executable, sender, EventArgs); };
-				if(File.Exists(icon))
-				{
-					Image image = Image.FromFile(icon);
-					app_icon.Image = image;
-				}
-				else
-				{
-				    app_icon.Image = theme_manager.get_icon(name);
-				}
-				app_icon.SizeMode = PictureBoxSizeMode.StretchImage;
-				app.Controls.Add(app_icon);
-
-				Label app_name = new Label();
-				app_name.Name = name+"_app_name";
-				app_name.Size = new Size(100, 20);
-				app_name.Text = name;
-				app_name.AutoSize = false;
-				app_name.Dock = DockStyle.None;
-				app_name.Font = new Font("Arial", 10);
-				app_name.ForeColor = Color.FromArgb(255, 255, 255);
-				app_name.Click += (sender, EventArgs) => { App_Click(executable, sender, EventArgs); };
-				app.Controls.Add(app_name);
-			
-				column_nbr++;
-				Console.WriteLine("column_nbr: "+column_nbr);
-				Console.WriteLine("line_nbr: "+line_nbr);
+	            d3m0nApplication.display(this);
 			}
-	    }
-	 
-	    private void App_Click(string path, object sender, EventArgs e)
-	    {
-	        MessageBox.Show(name+": App Clicked!");
-	        app_embed.Visible = true;
-	        System.Reflection.Assembly.LoadFile, System.Reflection.Assembly.LoadFrom(path);
-	        d3m0n_app app = new d3m0n_app();
-			utils.ShowFormInContainerControl(app_embed, app);
-
-	        // embed.embed_process("/root/d3m0n_os_debian/rootfs/usr/share/d3m0n/apps/photo/camera/camera.exe", app_embed);
-	    	// System.Threading.Thread.Sleep(2);
-	    	// embed.embed_stop();
 	    }
 	}
 }

@@ -1,33 +1,25 @@
-#!/usr/bash
-
-OUTPUT_FILE="camera.exe"
-
-rm -rf $OUTPUT_FILE
-rm -rf include.txt
-
-CURRENT_PATH=$(pwd)
-
-echo "Current path: ${CURRENT_PATH}"
-
-find . -type f -exec echo {} >> "${CURRENT_PATH}/include.txt" \;
-
-FILES_TO_INCLUDE=""
-
-while read file; do
-  	if [[ $file == *.cs ]]; then
-  		sudo chmod +x $file
-		FILES_TO_INCLUDE="${FILES_TO_INCLUDE} ${file}"
-	fi
-done <include.txt
+#!/bin/bash
 
 
-echo $FILES_TO_INCLUDE
+TEMP=$(pwd)
+CURRENT_DIR=$(basename $TEMP)
 
-sudo chmod +x *.cs
-echo -e "\e[32m[~] Building apps...\e[0m"
+echo -e "\e[32m		 █████╗ ██████╗ ██████╗     ██████╗ ██╗   ██╗██╗██╗     ██████╗ ███████╗██████╗ 
+		██╔══██╗██╔══██╗██╔══██╗    ██╔══██╗██║   ██║██║██║     ██╔══██╗██╔════╝██╔══██╗
+		███████║██████╔╝██████╔╝    ██████╔╝██║   ██║██║██║     ██║  ██║█████╗  ██████╔╝
+		██╔══██║██╔═══╝ ██╔═══╝     ██╔══██╗██║   ██║██║██║     ██║  ██║██╔══╝  ██╔══██╗
+		██║  ██║██║     ██║         ██████╔╝╚██████╔╝██║███████╗██████╔╝███████╗██║  ██║
+		╚═╝  ╚═╝╚═╝     ╚═╝         ╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═╝"
+echo -e "		                         \e[35md3m0n application builder\e[0m"
 
-mcs -out:${OUTPUT_FILE} -r:System.Windows.Forms.dll -r:System.Drawing.dll ${FILES_TO_INCLUDE}
+echo -e "\e[33m
+Current path: ${CURRENT_DIR}\e[0m"
 
-echo -e "\e[32m[o] Build successfully\e[0m"
 
-mono $OUTPUT_FILE
+cd source
+zip -r ${CURRENT_DIR}.d3m0n *
+
+cd ..
+
+cp -rf source/${CURRENT_DIR}.d3m0n ./
+rm -rf source/${CURRENT_DIR}.d3m0n
