@@ -10,5 +10,7 @@ You can also use [general attributes](https://github.com/d3m0n-project/d3m0n_os/
 
 ### Description
 `min`: minimum value of the ProgressBar
+
 `value`: current value of the ProgressBar
+
 `max`: maximum value of the ProgressBar
