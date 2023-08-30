@@ -96,14 +96,14 @@ Then create a main layout file in the directory `layouts` named `main.layout`.
     # d3m0n layout << important!
 	
 	Window:
-		name="My_Window"
-		title="My window"
-		width="200"
-		height="100"
-		bg_color="black"
+		name="My_Window";
+		title="My window";
+		width="200";
+		height="100";
+		bg_color="black";
 	
 	Text:
-		content="my text"
+		content="my text";
 
 create now a main source file in the directory `src` named `main.src`.
 
