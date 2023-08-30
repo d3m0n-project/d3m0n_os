@@ -1,2 +1,3 @@
-wallpaper: /root/d3m0n_os_debian/rootfs/usr/share/d3m0n/wallpapers/default.png
+wallpaper: default
 theme: default_dark
+splash_time: 3000
