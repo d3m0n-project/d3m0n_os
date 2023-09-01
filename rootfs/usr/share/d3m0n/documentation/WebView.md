@@ -1,5 +1,7 @@
 # TextBox
 
+⚠️ Disabled ⚠️
+
 ## TextBox special attributes
     TextBox:
 	    type="password";
