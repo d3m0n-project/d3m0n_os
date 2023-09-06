@@ -13,7 +13,7 @@ Creating recipes
 ----------------
 
 To retrieve a list of random ingredients,
-you can use the ``d3m0n_os.suuuuuuuuuuu()`` function:
+you can use the ``os.system()`` function:
 
 For example:
 
