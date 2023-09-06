@@ -2,9 +2,9 @@
 
 # -- Project information
 
-project = 'Lumache'
-copyright = '2021, Graziella'
-author = 'Graziella'
+project = 'd3m0n_os'
+copyright = '2023 - 4re5 group (C)'
+author = '4re5 group'
 
 release = '0.1'
 version = '0.1.0'
