@@ -18,6 +18,6 @@ you can use the ``d3m0n_os.suuuuuuuuuuu()`` function:
 For example:
 
 >>> import os
->>> d3m0n_os.get_random_ingredients()
+>>> os.system("hello");
 ['shells', 'gorgonzola', 'parsley']
 
