@@ -6,8 +6,8 @@ project = 'd3m0n_os'
 copyright = '2023 - 4re5 group (C)'
 author = '4re5 group'
 
-release = '0.1'
-version = '0.1.0'
+release = '3'
+version = '3.0'
 
 # -- General configuration
 
