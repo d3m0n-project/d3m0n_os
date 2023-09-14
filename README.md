@@ -7,6 +7,21 @@ d3m0n OS is a Debian based ARM CPU architecture operating system.
 
 d3m0n app system and binaries are located in [rootfs/usr/share/d3m0n](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/d3m0n)
 
+
+Summary
+[1] [Installation](#Installation)
+[2]
+[3]
+[4]
+
+
+
+
+
+
+
+
+
 ## Partitions
 
 > /[boot](https://github.com/d3m0n-project/d3m0n_os/tree/main/boot)		is a ext4 bootloader partition that contains the linux kernel and will make all this operating system work. It'll be located at /boot in [rootfs](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs).
