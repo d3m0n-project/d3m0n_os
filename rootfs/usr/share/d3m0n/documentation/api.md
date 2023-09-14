@@ -11,10 +11,15 @@ First create a main file named `app` and type these lines
 
 ### description
 `name` is your new app name
+
 `package` is your app 'id'
+
 `icon` is then path to your icon (png) file or a theme icon ([theme-icons](#theme-icons))
+
 `perms` can be equal to `sudo`(admin) or `none`(default)
+
 `start_path` specifiate the directory where your app will be running
+
 `category` is your app category
 
 Then create a main layout file in the directory `layouts` named `main.layout`.
