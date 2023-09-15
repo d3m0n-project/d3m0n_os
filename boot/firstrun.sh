@@ -5,8 +5,6 @@
 
 set +e
 
-echo "executed" > /boot/executed.txt
-
 CURRENT_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`
 if [ -f /usr/lib/raspberrypi-sys-mods/imager_custom ]; then
    /usr/lib/raspberrypi-sys-mods/imager_custom set_hostname demon
@@ -41,7 +39,7 @@ else
    fi
 fi
 if [ -f /usr/lib/raspberrypi-sys-mods/imager_custom ]; then
-   /usr/lib/raspberrypi-sys-mods/imager_custom set_wlan 'Bbox-CM-DABD42DB' 'af00f8f61a682b26ebe8640403ea4b61c22983978c1ce3d99b132baef0514686' 'FR'
+   /usr/lib/raspberrypi-sys-mods/imager_custom set_wlan 'ssid' 'psk' 'FR'
 else
 cat >/etc/wpa_supplicant/wpa_supplicant.conf <<'WPAEOF'
 country=FR
@@ -50,8 +48,8 @@ ap_scan=1
 
 update_config=1
 network={
-	ssid="Bbox-CM-DABD42DB"
-	psk=af00f8f61a682b26ebe8640403ea4b61c22983978c1ce3d99b132baef0514686
+	ssid="ssid"
+	psk=psk
 }
 
 WPAEOF
