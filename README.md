@@ -7,6 +7,9 @@ d3m0n OS is a Debian based ARM CPU architecture operating system.
 
 d3m0n app system and binaries are located in [rootfs/usr/share/d3m0n](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/d3m0n)
 
+![d3m0n_ssh](https://github.com/d3m0n-project/d3m0n_os/assets/71982379/c989aebe-c06f-4417-821c-ac0029023d80)
+
+
 
 > ## Summary
 >
@@ -96,9 +99,11 @@ Wallpapers are located in `/usr/share/d3m0n/wallpapers`. To change it, edit `wal
 
 ## config file
 	wallpaper: default
+	ssh: true
 	theme: default_dark
 	splash_time: 5000
 ### description
 `wallpaper` is your wallpaper name (without .png)
+`ssh` define if ssh client is enabled
 `theme` is your theme folder name that contains all icons and sounds
 `splash_time` is the time in ms splash screen will be displayed
