@@ -7,3 +7,6 @@
 `ControlName.OnLeave`
 
 `ControlName.OnValueChanged`
+
+# window events
+`Window.OnCreate`
