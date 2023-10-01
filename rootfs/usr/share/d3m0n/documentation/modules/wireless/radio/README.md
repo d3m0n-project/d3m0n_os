@@ -1,1 +1,1 @@
-# 2.4Ghz radio
+# <img width="50" height="50" src="radio.png"> module > wireless > radio
