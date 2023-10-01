@@ -35,7 +35,7 @@ namespace d3m0n
                 }
                 else
                 {
-                    control.Image = new Bitmap(args["image"]);
+                    control.Image = new Bitmap(script.getString(args["image"]));
                 }
 			}
 

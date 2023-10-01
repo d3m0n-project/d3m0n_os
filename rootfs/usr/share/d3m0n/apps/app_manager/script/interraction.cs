@@ -12,8 +12,6 @@ namespace d3m0n
 		{
 			try
 			{
-				// Console.WriteLine("("+command+") 0: "+value[0]);
-				// Console.WriteLine("("+command+") 1: "+value[1]);
 				switch(command)
 				{
 					case "alert":

@@ -1,0 +1,12 @@
+# d3m0n layout
+
+Window:
+	width="100%";
+	height="100%";
+	bg_color="lime";
+	name="TestWindow";
+
+Text:
+	name="my Text :p";
+	color="orange";
+	position="50, 50";

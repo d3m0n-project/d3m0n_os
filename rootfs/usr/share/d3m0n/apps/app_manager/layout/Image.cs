@@ -49,10 +49,9 @@ namespace d3m0n
                 }
                 else
                 {
-                    control.ImageLocation = args["src"];
+                    control.ImageLocation = script.getString(args["src"]);
                 }
             }
-
 			return control;
 		}
 	}

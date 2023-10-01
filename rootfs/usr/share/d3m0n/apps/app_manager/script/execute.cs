@@ -19,7 +19,7 @@ namespace d3m0n
 			}
 
 
-            Console.WriteLine("'"+line+"'");
+            // Console.WriteLine("'"+line+"'");
 
 
 
@@ -47,40 +47,6 @@ namespace d3m0n
             	string name = line.Split("=")[0].Replace(" ", "");
             	string value = line.Split("=")[1];
             	script.setVariable(name, value);
-            }
-            else if(line.StartsWith("[") && line.EndsWith("];"))
-            {
-            	string content             = getString(line.Split("[")[1].Split("]")[0]);
-	            // MessageBox.Show(content);
-	            string file_name           = getString(content.Split(",")[0]);
-	            // MessageBox.Show(file_name);
-            	string namespace_name      = content.Split(",")[1];
-            	// MessageBox.Show(namespace_name);
-	            string class_name          = content.Split(",")[2];
-	            string raw_function_name   = content.Split(",")[3];
-	            string function_name       = raw_function_name.Split("(")[0];
-		        string[] function_args     = raw_function_name.Split("(")[1].Replace(")", "").Split(", ");
-
-            	try
-            	{
-	            	// [/path/to/a.dll,myNamespace,myclass,myFunct(a, b)];
-	               	
-	            	
-	            	
-            		const BindingFlags MyBinding = (BindingFlags)(-20);
-            		Assembly asm = Assembly.LoadFile(file_name);
-
-		            object obj = asm.CreateInstance(namespace_name+"."+class_name, true, MyBinding, null, null, null,null);
-		            // string result = (string)obj.GetType().GetMethod(function_name, MyBinding).Invoke(null, new object[]{"Hello America"});
-		            // MessageBox.Show(result);
-
-            	}
-            	catch(Exception e)
-            	{
-            		utils.logn("[x] error while loading asm => '"+file_name+"' ("+namespace_name+"."+class_name+"."+function_name+")", ConsoleColor.Red);
-            		Console.WriteLine(e.ToString());
-            	}
-            	
             }
             else if(line.Contains("(") && line.EndsWith(");"))
             {

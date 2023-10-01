@@ -14,7 +14,6 @@ namespace d3m0n
 	{
 		public static void Window(Form into, Dictionary<string, string> args)
 		{
-			// MessageBox.Show("loaded window");
 			// infos
 			if(args.ContainsKey("start_pos")) { setStartPostition(into, args["start_pos"]); }
             
@@ -24,24 +23,35 @@ namespace d3m0n
 			
 
 			if(args.ContainsKey("title")) { into.Text = args["title"]; }
-			if(args.ContainsKey("topbar")) { Graphics.into.Controls.Find("topbar",true)[0].Visible = false; } 
+			try
+			{
+				if(args.ContainsKey("topbar")) { Graphics.into.Controls.Find("topbar",true)[0].Visible = false; } 
+			}
+			catch(Exception)
+			{}
 			
-			if(args.ContainsKey("bg_image")) { 
-				if(args["bg_image"].StartsWith("http"))
-                {
-					ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
-					var request = WebRequest.Create(args["bg_image"]);
-					using (var response = request.GetResponse())
-					using (var stream = response.GetResponseStream())
+			try
+			{
+				if(args.ContainsKey("bg_image")) { 
+					if(args["bg_image"].StartsWith("http"))
 					{
-						into.BackgroundImage = Bitmap.FromStream(stream);
+						ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
+						var request = WebRequest.Create(args["bg_image"]);
+						using (var response = request.GetResponse())
+						using (var stream = response.GetResponseStream())
+						{
+							into.BackgroundImage = Bitmap.FromStream(stream);
+						}
 					}
-                }
-                else
-                {
-                    into.BackgroundImage = new Bitmap(args["bg_image"]);
-                }
-			} 
+					else
+					{
+						into.BackgroundImage = new Bitmap(script.getString(args["bg_image"]));
+					}
+				}
+			}
+			catch(Exception)
+			{}
+			 
 			
 
 

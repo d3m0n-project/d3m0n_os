@@ -1,17 +1,9 @@
 # d3m0n source
 
 Window.OnCreate =>
-	use > $source/test.src;
-	myfunc();
 	logn("[o] loaded camera", "orange");
 
-# [$ressources/test.dll,myNamespace,myclass,myFunct(a, b)];
-	
-	
-	
-	
-
-Window.OnDestroy => system("echo '$d3m0n/main.py'")
-
-myButton.OnClick => alert("hello world! you've clicked myButton");
+shoot.OnClick => 
+	display($layouts/test.layout);
+	alert("hello world! you've clicked shoot");
 	

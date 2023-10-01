@@ -29,7 +29,7 @@ namespace d3m0n
 					else
 					{
 						// into.Size = new Size(Int32.Parse(args["width"]), into.Height);
-						into.Height = Int32.Parse(args["width"]);
+						into.Width = Int32.Parse(args["width"]);
 					}
 				}
 				if(args.ContainsKey("height")) { 
@@ -51,20 +51,46 @@ namespace d3m0n
 				// color
 				if(args.ContainsKey("bg_color")) {into.BackColor = getLayoutColor(args["bg_color"]);}
 				if(args.ContainsKey("color")) {into.ForeColor = getLayoutColor(args["color"]);}
-
+					
 				// position
 				if(args.ContainsKey("position")) { 
+						into.Location = getPosition(into.Width, into.Height, args["position"]); 
+				}
+				// margin
+				if(args.ContainsKey("margin_top")) { 
+						into.Top += Int32.Parse(args["margin_top"]);
+				}
+				if(args.ContainsKey("margin_left")) { 
+						into.Left += Int32.Parse(args["margin_left"]);
+				}
+				if(args.ContainsKey("margin_bottom")) { 
+						// MessageBox.Show("Top: "+into.Top.ToString()+" Left: "+into.Left.ToString());
+						into.Top -= Int32.Parse(args["margin_bottom"]);
+						// MessageBox.Show("Top: "+into.Top.ToString()+" Left: "+into.Left.ToString());
+				}
+				if(args.ContainsKey("margin_right")) { 
+						into.Left -= Int32.Parse(args["margin_right"]);
+				}
+
+				if(args.ContainsKey("parent")) {
 					try
 					{
-						if(Int32.Parse(args["position"].Split(",")[0].Replace(" ", "")) == 0)
-						{}
-						into.Location = getPosition(args["position"]); 
+						into.Parent = Graphics.into.Controls.Find(args["parent"],true)[0];
 					}
 					catch(Exception)
 					{
-						into.Dock = getDockPosition(args["position"]);
+						utils.logn("[x] "+into.Name+" can't have "+args["parent"]+" as parent", ConsoleColor.Red);
 					}
 					
+				}
+				else
+				{
+					try
+					{
+						into.Parent = Graphics.into;
+					}
+					catch(Exception)
+					{}
 				}
 				
 				
@@ -79,11 +105,14 @@ namespace d3m0n
 			
 			}
 			// Events
-			into.Click += (sender, EventArgs) => { Interpreter.loadEvent(into.Name+".OnClick", Graphics.src_file, Graphics.app_path); };
+			into.Click          += (sender, EventArgs) => { Interpreter.loadEvent(into.Name+".OnClick", Graphics.src_file, Graphics.app_path); };
+			into.Enter          += (sender, EventArgs) => { Interpreter.loadEvent(into.Name+".OnEnter", Graphics.src_file, Graphics.app_path); };
+			into.Leave          += (sender, EventArgs) => { Interpreter.loadEvent(into.Name+".OnLeave", Graphics.src_file, Graphics.app_path); };
 
 			utils.logn("[~] ("+into.Name+") width: "+into.Width.ToString()+" height: "+into.Height.ToString(), ConsoleColor.Yellow);
 			utils.logn("    BackColor: "+into.BackColor.ToString()+" ForeColor: "+into.ForeColor.ToString(), ConsoleColor.Yellow);
-			utils.logn("    Location(position): "+into.Location.ToString()+" height: "+into.Height.ToString(), ConsoleColor.Yellow);
+			utils.logn("    Location(position): "+into.Location.ToString()+" Dock: "+into.Dock.ToString(), ConsoleColor.Yellow);
+			utils.logn("    Top: "+into.Top.ToString()+" Left: "+into.Left.ToString(), ConsoleColor.Yellow);
 		}
 	}
 }

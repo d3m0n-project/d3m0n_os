@@ -3,18 +3,29 @@
 Window:
 	width="100%";
 	height="100%";
-	title="calculator";
+	title="camera";
 	bg_color="black";
 	topbar="false";
 
 Image:
-	mode="auto_size";
-	src="https://img.freepik.com/photos-premium/galaxie-coloree-arc-ciel-dans-ciel_926199-1978.jpg";
-	width="300";
+	name="shoot";
+	src="$ressources/shoot.png";
+	width="50";
+	height="50";
 	position="bottom";
-	height="200";
+	margin_bottom="10";
+	bg_color="25, 25, 25";
+	mode="stretch";
 
 Rect:
-	bg_color="orange";
+	name="camera_bg";
+	bg_color="black";
 	width="100%";
-	height="100%";
+	height="73%";
+
+Rect:
+	name="camera_shoot";
+	bg_color="25, 25, 25";
+	width="100%";
+	position="bottom";
+	height="27%";

@@ -8,46 +8,60 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static DockStyle getDockPosition(string pos)
+		public static Point getPosition(int control_width, int control_height, string pos)
 		{
+			int window_width  = Graphics.into.Width;
+			int window_height = Graphics.into.Height;
+
 			switch(pos)
 			{
 				case "top":
-					return DockStyle.Top;
+					return new Point(((window_width/2)-(control_width/2)), 0);
 					break;
+				case "top_left":
+					return new Point(0, 0);
+					break;
+				case "top_right":
+					return new Point((window_width-control_width), 0);
+					break;
+
 				case "bottom":
-					return DockStyle.Bottom;
+					return new Point(((window_width/2)-(control_width/2)), (window_height-control_height));
+					break;
+				case "bottom_left":
+					return new Point(0, (window_height-control_height));
+					break;
+				case "bottom_right":
+					return new Point((window_width-control_width), (window_height-control_height));
+					break;
+
+
+				case "center":
+					return new Point(((window_width/2)-(control_width/2)), ((window_height/2)-(control_height/2)));
 					break;
 				case "left":
-					return DockStyle.Left;
+					return new Point(0, ((window_height/2)-(control_height/2)));
 					break;
 				case "right":
-					return DockStyle.Right;
-					break;
-				case "fill":
-					return DockStyle.Fill;
+					return new Point(((window_width)-(control_width)), ((window_height/2)-(control_height/2)));
 					break;
 				default:
-					return DockStyle.None;
+					try
+					{
+						string[] position = pos.Split(",");
+						int x = Int32.Parse(position[0].Replace(" ", ""));
+						int y = Int32.Parse(position[1].Replace(" ", ""));
+
+						Console.WriteLine("x: "+x.ToString()+" y: "+y.ToString());
+
+						return new Point(x, y);
+					}
+					catch(Exception e)
+					{
+						// MessageBox.Show(e.ToString());
+						return new Point(0, 0);
+					}
 					break;
-			}
-		}
-		public static Point getPosition(string pos)
-		{
-			try
-			{
-				string[] position = pos.Split(",");
-				int x = Int32.Parse(position[0].Replace(" ", ""));
-				int y = Int32.Parse(position[1].Replace(" ", ""));
-
-				Console.WriteLine("x: "+x.ToString()+" y: "+y.ToString());
-
-				return new Point(x, y);
-			}
-			catch(Exception e)
-			{
-				// MessageBox.Show(e.ToString());
-				return new Point(0, 0);
 			}
 		}
 		public static void setStartPostition(Form form, string pos)
