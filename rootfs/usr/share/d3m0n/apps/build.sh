@@ -33,7 +33,7 @@ while read file; do
 		cd $CURRENT_DIR
 		bash $(basename $file)
 		cd $CURRENT_PATH
-		echo -e "\e[33m----------------------------------------------------------------\e[0m"
+		echo -e "\e[33m------------------------------------------------------------------------\e[0m"
 	fi
 done <include.txt
 
@@ -41,9 +41,9 @@ done <include.txt
 echo $FILES_TO_INCLUDE
 
 sudo chmod +x *.cs
-echo -e "\e[32m[~] Building apps...\e[0m"
+echo -e "\e[32m[~] Building core...\e[0m"
 
-mcs -out:${OUTPUT_FILE} -r:System.Windows.Forms.dll -r:System.Drawing.dll ${FILES_TO_INCLUDE}
+mcs -out:${OUTPUT_FILE} -r:System.Windows.Forms.dll -r:Mono.Posix.dll -r:Mono.WebBrowser.dll -r:System.Drawing.dll ${FILES_TO_INCLUDE}
 
 echo -e "\e[32m[o] Build successfully\e[0m"
 

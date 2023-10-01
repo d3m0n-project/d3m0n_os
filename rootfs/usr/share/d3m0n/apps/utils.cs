@@ -9,6 +9,14 @@ namespace d3m0n
    public class utils
    {
       private static Random random = new Random();
+      public static int getScreenWidth()
+      {
+         return Screen.PrimaryScreen.Bounds.Width;
+      }
+      public static int getScreenHeight()
+      {
+         return Screen.PrimaryScreen.Bounds.Height;
+      }
 
       public static string RemoveLast(string text, string character)
       {
@@ -38,7 +46,7 @@ namespace d3m0n
       public static string getPath()
       {
          // release
-         // return "/usr/share/d3m0n"
+         // return "/usr/share/d3m0n";
          return "/root/d3m0n_os_debian/rootfs/usr/share/d3m0n";
       }
       public static string getConfigPath()

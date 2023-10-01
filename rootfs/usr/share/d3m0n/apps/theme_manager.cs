@@ -26,28 +26,39 @@ namespace d3m0n
 				// Console.WriteLine("icon exists: "+theme_path+"/"+name+".png");
 				icon = new Bitmap(theme_path+"/"+name+".png");
 			}
+			else
+			{
+				MessageBox.Show("icon: "+name+".png don't exists");
+			}
 			return icon;
 			
 		}
 		public static void PlaySound(string name)
 		{
 			string theme_path = utils.getPath()+"/themes/"+utils.getSetting("theme", utils.getConfigPath())+"/sounds";
-			if(File.Exists(theme_path+"/"+name+".mp3"))
+
+			try
 			{
-				Process process = new Process();
-				ProcessStartInfo processStartInfo = new ProcessStartInfo();
-				processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-				processStartInfo.FileName = "paplay";
-				processStartInfo.Arguments = theme_path+"/"+name+".mp3";
-				processStartInfo.UseShellExecute = false;
-				process.StartInfo = processStartInfo;
-				process.Start();
+				if(File.Exists(theme_path+"/"+name+".mp3"))
+				{
+					Process process = new Process();
+					ProcessStartInfo processStartInfo = new ProcessStartInfo();
+					processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+					processStartInfo.FileName = "paplay";
+					processStartInfo.Arguments = theme_path+"/"+name+".mp3";
+					processStartInfo.UseShellExecute = false;
+					process.StartInfo = processStartInfo;
+					process.Start();
+				}
+				else
+				{
+					MessageBox.Show("sound '"+name+"' is not found");
+				}
 			}
-			else
+			catch(Exception)
 			{
-				MessageBox.Show("sound '"+name+"' is not found");
+				utils.logn("[x] Could not find command 'paplay' >> can't play sound file", ConsoleColor.Red);
 			}
-			
 		}
 	}
 }

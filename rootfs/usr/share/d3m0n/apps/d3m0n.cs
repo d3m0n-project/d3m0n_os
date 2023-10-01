@@ -39,7 +39,7 @@ namespace d3m0n
 	    public d3m0n()
 	    {
 
-	    	Application.EnableVisualStyles();
+	    	// Application.EnableVisualStyles();
 
 
 	    	// this.WindowState = FormWindowState.Maximized;
@@ -51,6 +51,7 @@ namespace d3m0n
             this.Font = new Font("Arial", 15);
             this.Text = "d3m0n app launcher";
             this.Size = new Size(480, 640);
+			// this.Size = new Size(utils.getScreenWidth(), utils.getScreenHeight());
             this.StartPosition = FormStartPosition.CenterScreen;
 			// this.SuspendLayout();
 			// this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -142,7 +143,8 @@ namespace d3m0n
 	    }
 	    private async void Update()
 	    {
-	    	while(true)
+			string isUpdateIsEnabled = utils.getSetting("update", utils.getConfigPath());
+	    	while(isUpdateIsEnabled == "true")
 	    	{
 	    		// topbar time
 	    		DateTime currentDateTime = DateTime.Now;
