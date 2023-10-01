@@ -1,0 +1,6 @@
+name: testapp
+package: com.4re5.d3m0n.test
+icon: default
+perms: none
+start_path: /path/to
+category: test
