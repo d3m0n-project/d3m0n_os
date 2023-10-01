@@ -1,6 +1,6 @@
 ## Creating a d3m0n application
 
-⚠️ A no code application builder is available [here](https://d3m0n-project.github.io/d3m0n_os/builder)
+> ⚠️ A no code application builder is available [here](https://d3m0n-project.github.io/d3m0n_os/builder)
 
 First create a main file named `app` and type these lines
 
@@ -89,6 +89,14 @@ In your d3m0n layout file, you can use multiple controls.
  - [Text](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Text.md)
  - [Image](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Image.md)
  - [Button](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Button.md)
+
+## Events
+You can access your application [Controls](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/api.md#controls) with events
+> more infos [here](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/d3m0n/documentation/events)
+
+## Embeded-in functions
+Use premade functions into your script (`.src`) file
+> see [here](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/d3m0n/documentation/functions)
 
 # Apparence
 Your system design can be changed to be fancier.
