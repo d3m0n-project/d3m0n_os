@@ -9,6 +9,11 @@ namespace d3m0n
 {
 	class theme_manager
 	{
+		public static bool checkIconExists(string name)
+		{
+			string theme_path = utils.getPath()+"/themes/"+utils.getSetting("theme", utils.getConfigPath())+"/icons";
+			return(File.Exists(theme_path+"/"+name+".png"));
+		}
 		public static Image get_icon(string name)
 		{
 			Image icon;
@@ -28,7 +33,8 @@ namespace d3m0n
 			}
 			else
 			{
-				MessageBox.Show("icon: "+name+".png don't exists");
+				utils.logn("icon: "+name+".png don't exists", ConsoleColor.Red);
+				// MessageBox.Show("icon: "+name+".png don't exists");
 			}
 			return icon;
 			

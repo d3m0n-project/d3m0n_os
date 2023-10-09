@@ -3,3 +3,8 @@
 Window.OnCreate =>
 	logn("[o] loaded settings", "orange");
 	
+shutdown_btn.OnClick =>
+	system.shutdown();
+
+kill_btn.OnClick =>
+	# a

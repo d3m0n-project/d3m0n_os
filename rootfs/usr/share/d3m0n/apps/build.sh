@@ -43,7 +43,7 @@ echo $FILES_TO_INCLUDE
 sudo chmod +x *.cs
 echo -e "\e[32m[~] Building core...\e[0m"
 
-mcs -out:${OUTPUT_FILE} -r:System.Windows.Forms.dll -r:Mono.Posix.dll -r:Mono.WebBrowser.dll -r:System.Drawing.dll ${FILES_TO_INCLUDE}
+mcs -out:${OUTPUT_FILE} -r:lib/Microsoft.Web.WebView2.Core.dll -r:lib/Microsoft.Web.WebView2.WinForms.dll -r:System.Windows.Forms.dll -r:Mono.Posix.dll -r:Mono.WebBrowser.dll -r:System.Drawing.dll ${FILES_TO_INCLUDE}
 
 echo -e "\e[32m[o] Build successfully\e[0m"
 

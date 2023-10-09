@@ -2,8 +2,14 @@
 
 Window.OnCreate =>
 	logn("[o] loaded camera", "orange");
+	system.exec("sudo raspistill -o test.jpg -w 480 -h 640 -q 100 -t 1 -n");
+
+Window.OnDestroy =>
+	system.exec("sudo pkill -f raspistill");
 
 shoot.OnClick => 
-	display($layouts/test.layout);
+	app.layout.shoot.src="circle-selected";
+	sleep(250);
+	app.layout.shoot.src="circle";
+	#app.layout.display($layouts/test.layout);
 	alert("hello world! you've clicked shoot");
-	

@@ -3,11 +3,21 @@
 Window:
 	width="100%";
 	height="100%";
-	title="gallery";
-	bg_color="white";
+	title="settings";
+	bg_color="black";
 	topbar="true";
 
-Text:
-	content="Soon...";
-	pisition="center";
-	color="red";
+Button:
+	name="shutdown_btn";
+	content="Shutdown";
+	position="0, 50";
+
+Button:
+	name="kill_btn";
+	content="kill";
+	position="0, 100";
+
+Rect:
+	bg_color="black";
+	width="100%";
+	height="100%";
