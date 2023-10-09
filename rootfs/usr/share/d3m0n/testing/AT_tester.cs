@@ -173,15 +173,15 @@ class Program
       listenToGsm(true);  //we must wait after each command
       Console.WriteLine();
       Console.WriteLine("-- Input --");
-      Console.WriteLine("AT+CMGS=\"+33687476125\"");
-      Serial1.WriteLine("AT+CMGS=\"+33687476125\""); //set phone number
+      Console.WriteLine("AT+CMGS=\"phonenumber\"");
+      Serial1.WriteLine("AT+CMGS=\"phonenumber\""); //set phone number
       Thread.Sleep(500);
       listenToGsm(true);
       Console.WriteLine();
       Console.WriteLine("-- Input --");
-      Console.WriteLine("Je t'aime papa ❤");
+      Console.WriteLine("message");
       Console.WriteLine("\n");
-      Serial1.Write("Je t'aime papa ❤"); //sms content
+      Serial1.Write("message"); //sms content
       Serial1.Write(26);  //substitute char to end message
       Thread.Sleep(500);
       listenToGsm(false);  //wait for the confirmation
