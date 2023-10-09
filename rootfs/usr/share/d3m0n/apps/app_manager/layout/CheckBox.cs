@@ -9,9 +9,10 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control CheckBox(Dictionary<string, string> args)
+		public static Control CheckBox(Dictionary<string, string> args, CheckBox control=null)
 		{
-			CheckBox control = new CheckBox();
+			if(control==null)
+				control = new CheckBox();
 
 			layout temp = new layout();
 			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));

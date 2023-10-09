@@ -6,31 +6,45 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Security;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
+
 
 
 namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control WebView(Dictionary<string, string> args)
+		public static Control WebView(Dictionary<string, string> args, WebView2 control=null)
 		{
-			WebBrowser control = new WebBrowser();
+
+			if(control==null)
+            {
+                control = new WebView2();
+            }
+				
+           
 
 			layout temp = new layout();
 			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));
             globalArgs.Wait();
 
+            if (control != null && control.CoreWebView2 != null)
+            {
+                control.CoreWebView2.Navigate("https://google.com");
+            }
+
 			// infos
-            try
-            {
-                // don't work, args contains url but webview don't show link
-                if(args.ContainsKey("url")) { control.Url = new Uri(args["url"]); control.Navigate(new Uri(args["url"])); }
-            }
-            catch(Exception e)
-            {
-                MessageBox.Show(e.ToString());
-                control.Navigate(new Uri("https://google.com"));
-            }
+            // try
+            // {
+            //     // don't work, args contains url but webview don't show link
+            //     if(args.ContainsKey("url")) { control.Url = new Uri(args["url"]); control.Navigate(new Uri(args["url"])); }
+            // }
+            // catch(Exception e)
+            // {
+            //     MessageBox.Show(e.ToString());
+            //     control.Navigate(new Uri("https://google.com"));
+            // }
 			
 
             

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Reflection;
 using System.Linq;
+using Microsoft.Web.WebView2.WinForms;
 
 namespace d3m0n
 {
@@ -25,7 +26,7 @@ namespace d3m0n
 		{
 			// Application.EnableVisualStyles();
 			// Dispose();
-			// closeLayout();
+
 			app_path=path;
 			into = new app_display();
 			already_init=true;
@@ -63,60 +64,70 @@ namespace d3m0n
 			app_display.getCustomView().Visible = true;
 		}
 
-		private static void display(Control control)
+		private static bool displayAlreadyDelayed = false;
+		public static void display(Control control)
 		{
+			// displays element
+			if(!displayAlreadyDelayed) {
+				System.Threading.Thread.Sleep(500);
+				displayAlreadyDelayed=true;
+			}
+			System.Threading.Thread.Sleep(250);
+			// MessageBox.Show(control.ToString());
 			into.Controls.Add(control);
 		}
-		public static void layout_to_form(string control, Dictionary<string, string> args)
+		public static Control layout_to_form(string control, Dictionary<string, string> args, Control ctrl=null)
 		{
 			while(!already_init)
 			{
 				utils.logn("[x] app not loaded", ConsoleColor.Red);
+				return null;
 			}
-			switch(control)
-			{
-				default:
-					Console.WriteLine("[x] graphics.cs => conrol '"+control+"' does not exists");
-					break;
-				case "RawHtml":
-					display(layout.RawHtml(args));
-					break;
-				case "TextBox":
-					display(layout.TextBox(args));
-					break;
-				case "ListView":
-					display(layout.Rect(args));
-					break;
-				case "ProgressBar":
-					display(layout.ProgressBar(args));
-					break;
-				case "CheckBox":
-					display(layout.CheckBox(args));
-					break;
-				case "RadioButton":
-					display(layout.RadioButton(args));
-					break;
-				case "WebView":
-					display(layout.WebView(args));
-					break;
-				case "Rect":
-					display(layout.Rect(args));
-					break;
-				case "Switch":
-					display(layout.Switch(args));
-					break;
-				case "Text":
-					display(layout.Text(args));
-					break;
-				case "Image":
-					display(layout.Image(args));
-					break;
-				case "Button":
-					display(layout.Button(args));
-					break;
-				case "Window":
-					layout.Window(into, args);
-					break;
+
+			if(control=="Window") {
+				layout.Window(into, args);
+				return null;
+			}
+			else if(control=="Text") {
+				return layout.Text(args, ctrl as Label);
+			}
+			else if(control=="RawHtml") {
+				return layout.RawHtml(args);
+			}
+			else if(control=="TextBox") {
+				return layout.TextBox(args, ctrl as TextBox);
+			}
+			else if(control=="ListView") {
+				return layout.ListView(args, ctrl as ListView);
+			}
+			else if(control=="ProgressBar") {
+				return layout.ProgressBar(args, ctrl as ProgressBar);
+			}
+			else if(control=="CheckBox") {
+				return layout.CheckBox(args, ctrl as CheckBox);
+			}
+			else if(control=="RadioButton") {
+				return layout.RadioButton(args, ctrl as RadioButton);
+			}
+			// error idk what
+			// else if(control=="WebView") {
+			// 	return layout.WebView(args, ctrl as WebView2);
+			// }
+			else if(control=="Rect") {
+				return layout.Rect(args, ctrl as Panel);
+			}
+			else if(control=="Switch") {
+				return layout.Switch(args, ctrl as CheckBox);
+			}
+			else if(control=="Image") {
+				return layout.Image(args, ctrl as PictureBox);
+			}
+			else if(control=="Button") {
+				return layout.Button(args, ctrl as Button);
+			}
+			else {
+				utils.logn("[x] graphics.cs => conrol '"+control+"' does not exists", ConsoleColor.Red);
+				return null;
 			}
 		}
 	    public static void Dispose()
@@ -130,6 +141,19 @@ namespace d3m0n
 	}
 	public class app_display : Form
 	{	 
+		public void setControlProperty(string controlName, string property, string value)
+		{
+			try
+			{
+				Control control = this.Controls.Find(controlName,true)[0];
+				control = properties.parseProperties(control, property, value);
+			}
+			catch(Exception)
+			{
+				utils.logn("[x] control '"+controlName+"' does not exists in current app", ConsoleColor.Red);
+			}
+		}
+
 		public Control getTopbar(Control ctrl)
 		{
 			return topbar;

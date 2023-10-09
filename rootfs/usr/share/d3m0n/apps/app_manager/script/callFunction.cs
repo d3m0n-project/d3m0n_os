@@ -70,14 +70,15 @@ namespace d3m0n
 
 			
 			// try every type of embeded in functions
+			basics(command, value);
 			interraction(command, value);
 			system(command, value);
 			pin(command, value);
-			window(command, value);
 			application(command, value);
+			modules_handler(command, value);
 
 
-			// call a user def
+			// call a d3m0n system definition
 			if(File.Exists(app_path+"/defs/"+command))
 			{
 				foreach(string line in File.ReadAllText(app_path+"/defs/"+command).Split(";"))

@@ -16,7 +16,12 @@ namespace d3m0n
 			init();
 			value=value.TrimEnd(';');
 			utils.logn(name+" => "+value, ConsoleColor.Magenta);
-            if(value.StartsWith("\"") && value.EndsWith("\""))
+
+			if(name.Contains("."))
+			{
+				variable_property(name, value.TrimStart('"').TrimEnd('"'));
+			}
+            else if(value.StartsWith("\"") && value.EndsWith("\""))
             {
             	File.WriteAllText(variable_dir+"/"+name, value);
             	Console.WriteLine("var ("+name+") is new equal to "+value);

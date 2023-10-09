@@ -11,9 +11,13 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control Image(Dictionary<string, string> args)
+		public static Control Image(Dictionary<string, string> args, PictureBox control=null)
 		{
-			PictureBox control = new PictureBox();
+			if(control==null)
+			{
+				control = new PictureBox();
+			}
+				
 
 			layout temp = new layout();
 			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));
@@ -37,7 +41,14 @@ namespace d3m0n
             
 
 			if(args.ContainsKey("src")) {
-                if(args["src"].StartsWith("http"))
+				// display theme icon
+				// MessageBox.Show("src");
+				if(theme_manager.checkIconExists(args["src"]))
+				{
+					control.Image = theme_manager.get_icon(args["src"]);
+				}
+				// display online stored image
+                else if(args["src"].StartsWith("http"))
                 {
 					ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 					var request = WebRequest.Create(args["src"]);
@@ -47,6 +58,8 @@ namespace d3m0n
 						control.Image = Bitmap.FromStream(stream);
 					}
                 }
+				// display image file
+				// can be $ressources/myImage.png for exemple
                 else
                 {
                     control.ImageLocation = script.getString(args["src"]);

@@ -9,9 +9,10 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control Switch(Dictionary<string, string> args)
+		public static Control Switch(Dictionary<string, string> args, CheckBox control=null)
 		{
-			CheckBox control = new CheckBox();
+			if(control==null)
+				control = new CheckBox();
             control.Appearance = Appearance.Button; 
 
 			layout temp = new layout();

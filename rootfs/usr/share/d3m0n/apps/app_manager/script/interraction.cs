@@ -17,10 +17,10 @@ namespace d3m0n
 					case "alert":
 						MessageBox.Show(getString(value[0]));
 						break;
-					case "logn":
+					case "console.logn":
 						utils.logn(getString(value[0]), layout.getConsoleColor(getString(value[1])));
 						break;
-					case "log":
+					case "console.log":
 						utils.log(getString(value[0]), layout.getConsoleColor(getString(value[1])));
 						break;
 				}

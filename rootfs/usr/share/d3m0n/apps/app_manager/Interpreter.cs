@@ -173,9 +173,7 @@ namespace d3m0n
 				        {
 				        	string arg="";
 				        	if(!argument.EndsWith('"'))
-				        	{
 				        		arg=argument+"\"";
-				        	}
 				        	
 				        	// MessageBox.Show("'"+arg+"'");
 				        	if(arg.Contains("=\"") && arg.EndsWith('"'))
@@ -189,7 +187,10 @@ namespace d3m0n
 				        }
 
 				        // display d3m0n layout raw text ==> form
-				        Graphics.layout_to_form(control, args);
+						if(Graphics.layout_to_form(control, args) != null)
+						{
+							Graphics.display(Graphics.layout_to_form(control, args));
+						}
 				   	}
 			        
 				}

@@ -9,9 +9,10 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control RadioButton(Dictionary<string, string> args)
+		public static Control RadioButton(Dictionary<string, string> args, RadioButton control=null)
 		{
-			RadioButton control = new RadioButton();
+			if(control==null)
+				control = new RadioButton();
 
 			layout temp = new layout();
 			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));

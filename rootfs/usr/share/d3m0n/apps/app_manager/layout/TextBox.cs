@@ -9,9 +9,12 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control TextBox(Dictionary<string, string> args)
+		public static Control TextBox(Dictionary<string, string> args, TextBox control=null)
 		{
-			TextBox control = new TextBox();
+			if(control==null) {
+				control = new TextBox();
+			}
+				
 
 			layout temp = new layout();
 			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));

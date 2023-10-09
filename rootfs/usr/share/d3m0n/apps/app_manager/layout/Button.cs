@@ -12,9 +12,11 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control Button(Dictionary<string, string> args)
+		private const Control default_control=null;
+		public static Control Button(Dictionary<string, string> args, Button control=null)
 		{
-			Button control = new Button();
+			if(control==null)
+				control = new Button();
 
 			layout temp = new layout();
 			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));
