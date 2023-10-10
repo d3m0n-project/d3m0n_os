@@ -4,6 +4,7 @@ These attributes can be applied to **every** controls.
 
     name="ControlName";
     visible="[true/false]";
+    enabled="[true/false]";
 
     parent="ControlName";
 
@@ -31,6 +32,8 @@ These attributes can be applied to **every** controls.
 `name` (string) is your control name/id
 
 `visible` (bool) can show / hide your control (can be only **true** or **false**)
+
+`enabled` (bool) define if events can be applied to this control
 
 `parent` (string) define element parent by name (parent needs to be named
 
