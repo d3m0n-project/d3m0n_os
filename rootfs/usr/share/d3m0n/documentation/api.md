@@ -34,6 +34,7 @@ Then create a main layout file in the directory `layouts` named `main.layout`.
 		width="200";
 		height="100";
 		bg_color="black";
+  		top_bar="true";
 	
 	Text:
 		content="my text";
@@ -62,10 +63,15 @@ create now a main source file in the directory `src` named `main.src`.
 
 	# on app quit
 	Window.OnDestroy => 
+ 		# display text into the host shell
+   		# from bash command
 		system("echo 'd3m0n path:         $d3m0n'");
-		system("echo 'app ressource path: $ressource'");
 		system("echo 'app source path:    $source'");
 		system("echo 'app layouts path:   $layouts'");
+  
+  		# from internal command
+  		console.logn("app ressource path: $ressource", "red");
+		
 
 
 	Element.OnClick => exec="python $source/main.py" 
