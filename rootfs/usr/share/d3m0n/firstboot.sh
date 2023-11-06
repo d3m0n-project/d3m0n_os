@@ -8,6 +8,7 @@ sudo apt-get install mono-complete -y
 sudo apt install xorg xserver-xorg xinit cmake git -y 
 sudo apt-get install --reinstall libgtk2.0-0 -y
 sudo apt-get install paplay -y
+sudo apt-get install make libsndfile1-dev -y
 
 
 # setting correct perms
@@ -30,6 +31,21 @@ cd build
 sudo cmake ../ -DILI9341=ON -DDISPLAY_ROTATE_180_DEGREES=ON -DGPIO_TFT_DATA_CONTROL=24 -DGPIO_TFT_RESET_PIN=25 -DSPI_BUS_CLOCK_DIVISOR=6 -DSTATISTICS=0
 sudo make -j
 sudo cp ./fbcp-ili9341 /usr/share/d3m0n/display/fbcp-ili9341
+
+
+# downloading bcm2835
+sudo mkdir /usr/share/d3m0n/temp/
+cd /usr/share/d3m0n/temp/
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.56.tar.gz
+tar zxvf bcm2835-1.56.tar.gz
+cd bcm2835-1.56
+./configure
+make
+sudo make check
+sudo make install
+
+
+
 
 cd ~
 
@@ -133,7 +149,11 @@ dtoverlay=disable-bt
 
 # enable serial communication
 enable_uart=1
-dtoverlay=pi3-miniuart-bt" > /boot/config.txt
+dtoverlay=pi3-miniuart-bt
+
+
+# enable IR driver
+dtoverlay=gpio-ir,gpio_pin=17" > /boot/config.txt
 
 # also delete this console=serial0, 115200  in /boot/cmdline.txt
 
@@ -174,6 +194,9 @@ ExecStart=
 ExecStart=-/sbin/agetty --autologin $USER --noclear %I \$TERM
 EOF
 
+
+# setting up drivers
+sudo dpkg -i /usr/share/d3m0n/lib/nrf24l01.deb
 
 sudo reboot now
 
