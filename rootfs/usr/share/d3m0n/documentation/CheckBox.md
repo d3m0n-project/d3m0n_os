@@ -2,7 +2,7 @@
 
 ## CheckBox special attributes
     CheckBox:
-    	    font_size="10";
+        font_size="10";
 	    checked="[true/false]";
 	    content="text";
 
