@@ -2,7 +2,7 @@
 
 ## Button special attributes
     Button:
-    	    font_size="10";
+        font_size="10";
 	    image="/path/to";
 	    content="text";
 
