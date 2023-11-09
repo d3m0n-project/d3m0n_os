@@ -2,8 +2,8 @@
 
 ## RoundButton special attributes
     RoundButton:
-    	    font_size="10";
-      	    radius="25";
+        font_size="10";
+        radius="25";
 	    image="/path/to";
 	    content="text";
 
