@@ -16,8 +16,8 @@ namespace d3m0n
             temp.Add("disabled", "true");
 
             // need to get d3m0n control name from C# control
-            
-            return Graphics.layout_to_form("Image", temp, control);
+            Graphics tempGraphics = new Graphics();
+            return tempGraphics.layout_to_form("Image", temp, control);
         }
     }
 }

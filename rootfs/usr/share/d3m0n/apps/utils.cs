@@ -65,6 +65,12 @@ namespace d3m0n
          frm.Location = new Point(0, 25);
          ctl.Controls.Add(frm);
       } 
+      public static void changeLine(string newText, string fileName, int line_to_edit)
+      {
+         string[] arrLine = File.ReadAllLines(fileName);
+         arrLine[line_to_edit - 1] = newText;
+         File.WriteAllLines(fileName, arrLine);
+      }
       public static string getSetting(string name, string path)
       {
          string to_return="not found";

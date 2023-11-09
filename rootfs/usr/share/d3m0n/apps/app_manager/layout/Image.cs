@@ -11,7 +11,7 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control Image(Dictionary<string, string> args, PictureBox control=null)
+		public static Control Image(Dictionary<string, string> args, Graphics graphics, PictureBox control=null)
 		{
 			if(control==null)
 			{
@@ -20,7 +20,7 @@ namespace d3m0n
 				
 
 			layout temp = new layout();
-			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));
+			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args, graphics));
             globalArgs.Wait();
 
 			// infos

@@ -9,13 +9,13 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control CheckBox(Dictionary<string, string> args, CheckBox control=null)
+		public static Control CheckBox(Dictionary<string, string> args, Graphics graphics, CheckBox control=null)
 		{
 			if(control==null)
 				control = new CheckBox();
 
 			layout temp = new layout();
-			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));
+			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args, graphics));
             globalArgs.Wait();
 
 			// infos
@@ -25,7 +25,7 @@ namespace d3m0n
                     control.Checked = true;
                 }
             }
-			if(args.ContainsKey("content")) {control.Text = args["content"];}
+			if(args.ContainsKey("font_size")) {control.Font = new Font( control.Font.FontFamily, Int32.Parse(args["font_size"]) ); }			if(args.ContainsKey("content")) {control.Text = args["content"];}
 
 			return control;
 		}

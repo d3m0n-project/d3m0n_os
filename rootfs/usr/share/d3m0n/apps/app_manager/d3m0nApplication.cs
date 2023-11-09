@@ -10,7 +10,6 @@ namespace d3m0n
 {
     public class d3m0nApplication
     {
-
         private static int column_nbr = 1;
         private static int line_nbr = 1;
         private static int page_number = 1;
@@ -29,9 +28,10 @@ namespace d3m0n
         {
             if(column_nbr > 4)
             {
-               column_nbr=1;
+                column_nbr=1;
                 line_nbr++;
-                if(line_nbr > 4)
+                
+                if(line_nbr > 5)
                 {
                     line_nbr=1;
                     page_number++;
@@ -43,6 +43,7 @@ namespace d3m0n
                 column_nbr++;
                 return;
             }
+
 
 
             // 10px + 100px*4 + 10px   width
@@ -87,8 +88,8 @@ namespace d3m0n
             // application icon
             PictureBox app_icon = new PictureBox();
             app_icon.Name = name+"_app_icon";
-            app_icon.Size = new Size(100, 100);
-            app_icon.Location = new Point(0, -10);
+            app_icon.Size = new Size(80, 80);
+            app_icon.Location = new Point(10, 10);
             if(File.Exists(icon))
             {
                 Image image = Image.FromFile(icon);
@@ -134,7 +135,7 @@ namespace d3m0n
         {            
             MessageBox.Show("a");
             // Show the folder customview
-            Graphics.displayCustomView(d3m0nViews.FolderView(""));
+            // Graphics.displayCustomView(d3m0nViews.FolderView(""));
         }
         private static Point MouseDownLocation;
         private static bool HasMouseMoved = false;
@@ -232,7 +233,7 @@ namespace d3m0n
                         else
                         {
                             slot_nbr_lin=5;
-                            caller.Parent.Top = 40+(2)*120;
+                            caller.Parent.Top = 40+(4)*120;
                         }
 
                         // getting slot number from column and line nbr
@@ -242,16 +243,32 @@ namespace d3m0n
                         bool isExecuted = false;
 
                         // getting final_slot current app (if exists)
+                        int slot=0;
+                        int current_slot=0;
+                        foreach(string line in File.ReadAllLines(utils.getPath()+"/apps/desktop.config"))
+                        {
+                            string package = line.TrimStart(' ').TrimEnd(' ');
+                            slot++;
+
+                            if(package==current_package)
+                            {
+                                current_slot=slot;
+                                Console.WriteLine("current_slot = "+current_slot.ToString());
+                            }
+                        }
+                        slot=0;
                         foreach(string line in File.ReadAllLines(utils.getPath()+"/apps/desktop.config"))
                         {
                             // getting package name and slot number
-                            string package = line.Split(": ")[0].TrimStart(' ').TrimEnd(' ');
-                            string slot = line.Split(": ")[1].TrimStart(' ').TrimEnd(' ');
+                            string package = line.TrimStart(' ').TrimEnd(' ');
+                            slot++;
 
-                            Console.WriteLine(current_package+"  =>  "+final_slot.ToString());
-
-                            if(Int32.Parse(slot) == final_slot)
+                            
+                            if(slot == final_slot)
                             {
+                                // Console.WriteLine(current_package+"  =>  "+final_slot.ToString());
+                                // Console.WriteLine(package+" => destination slot");
+
                                 // check if slot already occuped by a folder
                                 if(package.Split(": ")[0].TrimStart(' ').TrimEnd(' ').EndsWith("/"))
                                 {
@@ -274,14 +291,14 @@ namespace d3m0n
                                 // check if slot not occuped
                                 else if(package == "null")
                                 {
-                                    // will be executed after the foreach loop
+                                    // will be executed after the foreach
                                     break;
                                 }
                                 // already occuped by an app => create a folder
                                 else
                                 {
                                     // check if position not changed
-                                    if(utils.getSetting(package, utils.getPath()+"/apps/desktop.config") == final_slot.ToString())
+                                    if(current_slot == final_slot)
                                     {
                                         isExecuted=true;
                                         break;
@@ -291,18 +308,20 @@ namespace d3m0n
                                     break;
                                 }
 
-                                // for null and "" (no entry)
-                                if(!isExecuted)
-                                {
-                                    Console.WriteLine("slot "+final_slot.ToString()+" is not occupped");
-                                    string current_content = File.ReadAllText(utils.getPath()+"/apps/desktop.config");
-                                    File.WriteAllText(utils.getPath()+"/apps/destkop.config", current_content+"\r\n"+current_package+": "+final_slot.ToString());
-                                    MessageBox.Show("added '"+current_package+"' to "+final_slot.ToString());
 
-                                    isExecuted=true;
-                                }
                             }
                         }
+                        if(!isExecuted)
+                        {
+                            // null and empty slots
+                            Console.WriteLine(current_package+" at line "+final_slot.ToString());
+                            Console.WriteLine("null  at line "+current_slot.ToString());
+                            
+                            utils.changeLine(current_package, utils.getPath()+"/apps/desktop.config", final_slot);
+                            utils.changeLine("null", utils.getPath()+"/apps/desktop.config", current_slot);
+                            // Console.WriteLine("slot "+final_slot.ToString()+" is not occupped");
+                        }
+                        
 
                     }
                     else

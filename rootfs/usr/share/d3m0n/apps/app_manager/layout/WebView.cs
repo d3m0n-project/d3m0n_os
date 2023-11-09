@@ -15,7 +15,7 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control WebView(Dictionary<string, string> args, WebView2 control=null)
+		public static Control WebView(Dictionary<string, string> args, Graphics graphics, WebView2 control=null)
 		{
 
 			if(control==null)
@@ -26,7 +26,7 @@ namespace d3m0n
            
 
 			layout temp = new layout();
-			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));
+			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args, graphics));
             globalArgs.Wait();
 
             if (control != null && control.CoreWebView2 != null)

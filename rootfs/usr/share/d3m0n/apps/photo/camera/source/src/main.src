@@ -11,5 +11,10 @@ shoot.OnClick =>
 	app.layout.shoot.src="circle-selected";
 	sleep(250);
 	app.layout.shoot.src="circle";
-	#app.layout.display($layouts/test.layout);
+	app.layout.display($layouts/test.layout);
 	alert("hello world! you've clicked shoot");
+
+gallery.OnClick =>
+	app.run("com.4re5.d3m0n.gallery");
+	sleep(5000);
+	app.close("com.4re5.d3m0n.gallery");

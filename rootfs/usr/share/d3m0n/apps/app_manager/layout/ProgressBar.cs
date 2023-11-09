@@ -9,13 +9,13 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control ProgressBar(Dictionary<string, string> args, ProgressBar control=null)
+		public static Control ProgressBar(Dictionary<string, string> args, Graphics graphics, ProgressBar control=null)
 		{
 			if(control==null)
 				control = new ProgressBar();
 
 			layout temp = new layout();
-			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));
+			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args, graphics));
             globalArgs.Wait();
 
 			// infos

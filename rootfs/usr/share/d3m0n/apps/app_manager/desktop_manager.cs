@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Text.RegularExpressions;
 using System.Linq;
 
 namespace d3m0n
@@ -15,6 +16,7 @@ namespace d3m0n
             Dictionary<string, string> apps_dict = new Dictionary<string, string>();
             foreach(string raw in apps)
             {
+                // sets package=raw
                 apps_dict.Add(raw.Split("//!//")[6], raw);
             }
 
@@ -22,47 +24,89 @@ namespace d3m0n
             string d3m0n_desktop_conf = utils.getPath()+"/apps/desktop.config";
             if(!File.Exists(d3m0n_desktop_conf))
             {
+                string bottom_bar = @"
+com.4re5.d3m0n.phone
+com.4re5.d3m0n.messages
+com.4re5.d3m0n.camera
+com.4re5.d3m0n.gallery";
                 string file_content="";
                 int slotnbr=0;
                 foreach(string raw in apps)
                 {
-                    slotnbr++;
-                    if(slotnbr==1)
-                    {
-                        file_content=raw.Split("//!//")[6]+": "+slotnbr.ToString();
-                    }
+                    if(bottom_bar.Contains(raw.Split("//!//")[6]))
+                    {}
                     else
                     {
-                        file_content=file_content+"\r\n"+raw.Split("//!//")[6]+": "+slotnbr.ToString();
+                        slotnbr++;
+                        if(slotnbr==1)
+                        {
+                            file_content=raw.Split("//!//")[6];
+                        }
+                        else
+                        {
+                            file_content=file_content+"\r\n"+raw.Split("//!//")[6];
+                        }
                     }
                 }
-                File.WriteAllText(d3m0n_desktop_conf, file_content);
+                // add null slots
+                // max slots = 20
+                int null_slots = 20 - file_content.Split("\n").Length - bottom_bar.Split("\n").Length;
+                for(int i=0; i <= null_slots; i++)
+                {
+                    file_content+="\nnull";
+                }
+                File.WriteAllText(d3m0n_desktop_conf, file_content+bottom_bar);
             }
             Dictionary<string, int> id_by_package = new Dictionary<string, int>();
 
+            // check if new package apears in folders but not in desktop > then add it to desktop
+            foreach(string raw in apps)
+            {
+                string package=raw.Split("//!//")[6];
+                if(!File.ReadAllText(d3m0n_desktop_conf).Contains(package))
+                {
+                    // replace first null line by a package
+                    var regex = new Regex(Regex.Escape("null"));
+                    var newText = regex.Replace(File.ReadAllText(d3m0n_desktop_conf), package, 1);
+                                
+                    File.WriteAllText(d3m0n_desktop_conf, newText);
+
+                    MessageBox.Show("package '"+package+"' added to desktop");
+                } 
+            }
+            
+
+
+
 
             string[] lines = File.ReadAllLines(d3m0n_desktop_conf);
+            int slot_id=0;
             foreach(string line in lines)
             {
-                try
+                slot_id++;
+                // if dictionnary already have same package name
+                if(id_by_package.ContainsKey(line))
                 {
-                    string package_name = line.Split(": ")[0];
-                    string slot_id = line.Split(": ")[1];
-
-                    id_by_package[package_name] = Int32.Parse(slot_id);
+                    id_by_package[line+"_"+utils.RandomString(3)] = slot_id;
                 }
-                catch(Exception)
-                {}
+                else
+                {
+                    id_by_package[line] = slot_id;
+                }
             }
 
+            // order packages by id
             var id_by_package_final = from entry in id_by_package orderby entry.Value ascending select entry;
 
 
             foreach(var content in id_by_package_final)
             {
                 int id = content.Value;
-                string package = content.Key;
+                string package = content.Key.Split("_")[0].TrimStart(' ').TrimEnd(' ');
+
                 
+                
+                // Console.WriteLine("'"+package+"'");
                 if(package == "null")
                 {
                     d3m0nApplication.name = "empty";
@@ -100,8 +144,7 @@ namespace d3m0n
                     d3m0nApplication.folder = false;
                 }
                 
-               d3m0nApplication.display(into);
-                
+                d3m0nApplication.display(into);
             }
             
         }

@@ -12,20 +12,20 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static void Window(Form into, Dictionary<string, string> args)
+		public static void Window(Form into, Dictionary<string, string> args, Graphics graphics)
 		{
 			// infos
 			if(args.ContainsKey("start_pos")) { setStartPostition(into, args["start_pos"]); }
             
             layout temp = new layout();
-            Task globalArgs = Task.Run(() => temp.setGlobalArgs(into, args));
+            Task globalArgs = Task.Run(() => temp.setGlobalArgs(into, args, graphics));
             globalArgs.Wait();
 			
 
 			if(args.ContainsKey("title")) { into.Text = args["title"]; }
 			try
 			{
-				if(args.ContainsKey("topbar")) { Graphics.into.Controls.Find("topbar",true)[0].Visible = false; } 
+				if(args.ContainsKey("topbar")) { into.Controls.Find("topbar",true)[0].Visible = false; } 
 			}
 			catch(Exception)
 			{}

@@ -13,17 +13,17 @@ namespace d3m0n
 	public partial class layout
 	{
 		private const Control default_control=null;
-		public static Control Button(Dictionary<string, string> args, Button control=null)
+		public static Control Button(Dictionary<string, string> args, Graphics graphics, Button control=null)
 		{
 			if(control==null)
 				control = new Button();
 
 			layout temp = new layout();
-			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));
+			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args, graphics));
             globalArgs.Wait();
 
 			// infos
-			if(args.ContainsKey("content")) {control.Text = args["content"];}
+			if(args.ContainsKey("font_size")) {control.Font = new Font( control.Font.FontFamily, Int32.Parse(args["font_size"]) ); }			if(args.ContainsKey("content")) {control.Text = args["content"];}
 			if(args.ContainsKey("image")) {
 				if(args["image"].StartsWith("http"))
                 {

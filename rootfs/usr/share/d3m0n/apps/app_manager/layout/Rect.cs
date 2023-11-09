@@ -9,13 +9,13 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control Rect(Dictionary<string, string> args, Panel control=null)
+		public static Control Rect(Dictionary<string, string> args, Graphics graphics, Panel control=null)
 		{
 			if(control==null)
 				control = new Panel();
 
 			layout temp = new layout();
-			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));
+			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args, graphics));
             globalArgs.Wait();
 
 			// infos

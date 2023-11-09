@@ -9,7 +9,7 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Control Text(Dictionary<string, string> args, Label control=null)
+		public static Control Text(Dictionary<string, string> args, Graphics graphics, Label control=null)
 		{
 			if(control==null)
 			{
@@ -18,10 +18,11 @@ namespace d3m0n
 				
 
 			layout temp = new layout();
-			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args));
+			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args, graphics));
             globalArgs.Wait();
 
 			// infos
+			if(args.ContainsKey("font_size")) {control.Font = new Font( control.Font.FontFamily, Int32.Parse(args["font_size"]) ); }
 			if(args.ContainsKey("content")) {control.Text = args["content"];}
 
 			return control;

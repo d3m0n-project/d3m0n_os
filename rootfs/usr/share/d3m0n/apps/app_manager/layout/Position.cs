@@ -8,10 +8,10 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		public static Point getPosition(int control_width, int control_height, string pos)
+		public static Point getPosition(int control_width, int control_height, string pos, Graphics graphics)
 		{
-			int window_width  = Graphics.into.Width;
-			int window_height = Graphics.into.Height;
+			int window_width  = graphics.into.Width;
+			int window_height = graphics.into.Height;
 
 			switch(pos)
 			{

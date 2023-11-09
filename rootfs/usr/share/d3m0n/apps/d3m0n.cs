@@ -36,6 +36,12 @@ namespace d3m0n
 		PictureBox topbar_battery_image;
 		Label topbar_time;
 		PictureBox topbar_internet;
+		public static Control full_topbar;
+		public static Panel bottom_switch_bar;
+		PictureBox home_bottom_switch_bar;
+		PictureBox back_bottom_switch_bar;
+		PictureBox list_bottom_switch_bar;
+
 	    public d3m0n()
 	    {
 
@@ -73,6 +79,7 @@ namespace d3m0n
 			topbar.Location = new Point(0, 0);
 			// topbar.WrapContents = false;
 			topbar.BackColor = Color.FromArgb(255, 255, 255);
+			topbar.Click += (sender, EventArgs) => { expand_topbar(); };
 
 			// time
 			topbar_time = new Label();
@@ -117,6 +124,44 @@ namespace d3m0n
 	 		topbar.Controls.Add(topbar_time);
         	
 
+			// getting full topbar
+			full_topbar = complete_topbar.Get();
+			full_topbar.Width = this.Width;
+			full_topbar.Visible = false;
+			this.Controls.Add(full_topbar);
+			
+			// create switch bar
+			bottom_switch_bar = new Panel();
+			bottom_switch_bar.Width = this.Width;
+			bottom_switch_bar.Height = 30;
+			bottom_switch_bar.Location = new Point(0, this.Height-bottom_switch_bar.Height);
+
+
+			list_bottom_switch_bar = new PictureBox();
+			list_bottom_switch_bar.Location = new Point((this.Width/2)-(3*30)+15, 0);
+			list_bottom_switch_bar.Size = new Size(30, 30);
+			list_bottom_switch_bar.SizeMode = PictureBoxSizeMode.StretchImage;
+			list_bottom_switch_bar.Image = theme_manager.get_icon("list-white");
+
+			home_bottom_switch_bar = new PictureBox();
+			home_bottom_switch_bar.Size = new Size(30, 30);
+			home_bottom_switch_bar.SizeMode = PictureBoxSizeMode.StretchImage;
+			home_bottom_switch_bar.Location = new Point((this.Width/2)-(1*30)+15, 0);
+			home_bottom_switch_bar.Image = theme_manager.get_icon("home-white");
+
+			back_bottom_switch_bar = new PictureBox();
+			back_bottom_switch_bar.Location = new Point((this.Width/2)-(-1*30)+15, 0);
+			back_bottom_switch_bar.Size = new Size(30, 30);
+			back_bottom_switch_bar.SizeMode = PictureBoxSizeMode.StretchImage;
+			back_bottom_switch_bar.Image = theme_manager.get_icon("chevron-white", 90);
+
+			bottom_switch_bar.Controls.Add(list_bottom_switch_bar);
+			bottom_switch_bar.Controls.Add(home_bottom_switch_bar);
+			bottom_switch_bar.Controls.Add(back_bottom_switch_bar);
+
+
+
+
 
 			FlowLayoutPanel embeding = new FlowLayoutPanel();
 			embeding.Size = new Size(this.Width, this.Height);
@@ -133,6 +178,7 @@ namespace d3m0n
 
 	        // add top and bottom bars
 	        Controls.Add(splashimage);
+			Controls.Add(bottom_switch_bar);
 	        Controls.Add(topbar);
 	        Controls.Add(embeding);
 
@@ -141,16 +187,20 @@ namespace d3m0n
 	        Task.Run(() => Update());
 	        
 	    }
+		public static void expand_topbar()
+		{
+			full_topbar.Visible = true;
+		}
 	    private async void Update()
 	    {
-			string isUpdateIsEnabled = utils.getSetting("update", utils.getConfigPath());
-	    	while(isUpdateIsEnabled == "true")
+	    	while(true)
 	    	{
 	    		// topbar time
 	    		DateTime currentDateTime = DateTime.Now;
 				string date = currentDateTime.ToString("HH:mm");
 				topbar_time.Text = date;
 
+				complete_topbar.update(full_topbar, currentDateTime);
 
 	    		// topbar internet
 	    		if(network.isInternetConnected())
@@ -174,7 +224,6 @@ namespace d3m0n
 	   		update.checkForUpdates();
 
 	   		int splash_time = Int32.Parse(utils.getSetting("splash_time", utils.getConfigPath()));
-	   		// MessageBox.Show("time:"+splash_time.ToString());
 		    
 		    await Task.Delay(splash_time);
 

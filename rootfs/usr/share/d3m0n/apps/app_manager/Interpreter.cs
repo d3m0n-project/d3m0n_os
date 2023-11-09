@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 
 namespace d3m0n
 {
-	class Interpreter
+	partial class Interpreter
 	{
 		public static string currentRunningAppPath;
 
 		public static string[] hidden_apps = {};
 		public static string[] apps = {};
+		public static Dictionary<string, string> get_path_from_name = new Dictionary<string, string>();
 		public static string[] getApps()
 		{
 			return apps;
@@ -27,7 +28,6 @@ namespace d3m0n
 			string temp_app_path = utils.getPath()+"/temp/"+foldername;
 			string filename = path.Split("/")[path.Split("/").Length-1];
 			string mainfile = temp_app_path+"/app";
-			
 
 			if(!Directory.Exists(temp_app_path))
 			{
@@ -55,6 +55,9 @@ namespace d3m0n
 						
 						string hidden = utils.getSetting("hidden", mainfile).Replace("$d3m0n", d3m0n_path);
 						
+						// allow app to get temp path from app package name
+						get_path_from_name[package] = temp_app_path;
+
 						if(hidden == "true")
 						{
 							Array.Resize(ref hidden_apps, hidden_apps.Length + 1);
@@ -89,13 +92,25 @@ namespace d3m0n
 					Console.WriteLine("error: "+e.ToString());
 				}
 			}
+
 			return to_return;
 		}
 		public static void runApp(string temp_path)
 		{
-			clean(temp_path);
+			// allow system to launch app from it's package
+			if(!temp_path.StartsWith("/"))
+			{
+				if(get_path_from_name.ContainsKey(temp_path))
+				{
+					temp_path = get_path_from_name[temp_path];
+				}
+				else
+				{
+					utils.logn("[x] Can't run app '"+temp_path+"'", ConsoleColor.Red);
+				}
+			}
 
-			// MessageBox.Show(temp_path);
+			clean(temp_path);
 
 			string ressources_folder = temp_path+"/ressources";
 			string sources_folder = temp_path+"/src";
@@ -144,6 +159,11 @@ namespace d3m0n
 			string foldername = path.Replace(utils.getPath()+"/temp/", "").Split("/")[0];
 			string temp_path = utils.getPath()+"/temp/"+foldername;
 
+			// create new layout
+			Graphics newLayout = new Graphics();
+			// define package id
+			Graphics.current_package = utils.getSetting("package", temp_path+"/app");
+
 			// setting main source file
 			string tempname = Path.GetFileName(path).Split(".")[0];
 			if(File.Exists(temp_path+"/src/"+tempname+".src"))
@@ -152,8 +172,8 @@ namespace d3m0n
 			}
 			
 			// initiating application host window
-			Task init = Task.Run(() => Graphics.init(temp_path, utils.getSetting("name", temp_path+"/app")));
-			while(!Graphics.already_init)
+			Task init = Task.Run(() => newLayout.init(temp_path, utils.getSetting("name", temp_path+"/app"), utils.getSetting("package", temp_path+"/app")));
+			while(!newLayout.already_init)
 			{}
 
 			string[] filelines = File.ReadAllLines(path);
@@ -187,9 +207,9 @@ namespace d3m0n
 				        }
 
 				        // display d3m0n layout raw text ==> form
-						if(Graphics.layout_to_form(control, args) != null)
+						if(newLayout.layout_to_form(control, args) != null)
 						{
-							Graphics.display(Graphics.layout_to_form(control, args));
+							Graphics.display(utils.getSetting("package", temp_path+"/app"), newLayout.layout_to_form(control, args));
 						}
 				   	}
 			        
@@ -197,7 +217,7 @@ namespace d3m0n
 			}
 			else
 			{
-				Console.WriteLine("[x] layout must start with '# d3m0n layout'");
+				utils.logn("[x] layout must start with '# d3m0n layout'", ConsoleColor.Red);
 			}
 		}
 		public static void loadEvent(string name, string filename, string app_path)

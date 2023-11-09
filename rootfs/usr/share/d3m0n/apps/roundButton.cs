@@ -5,10 +5,11 @@ using System.Drawing.Drawing2D;
 
 namespace d3m0n
 {
-	class RoundedButton : Button
+	public class RoundedButton : Button
 	{
-	   GraphicsPath GetRoundPath(RectangleF Rect, int radius)
-	   {
+		public int radius = 25;
+	   	GraphicsPath GetRoundPath(RectangleF Rect)
+	   	{
 		  float r2 = radius / 2f;
 		  GraphicsPath GraphPath = new GraphicsPath();
 		  GraphPath.AddArc(Rect.X, Rect.Y, radius, radius, 180, 90);
@@ -27,7 +28,7 @@ namespace d3m0n
 	   {
 		  base.OnPaint(e);
 		  RectangleF Rect = new RectangleF(0, 0, this.Width, this.Height);
-		  using (GraphicsPath GraphPath = GetRoundPath(Rect, 25))
+		  using (GraphicsPath GraphPath = GetRoundPath(Rect))
 		  {
 			this.Region = new Region(GraphPath);
 			using (Pen pen = new Pen(Color.Black, 1.75f))

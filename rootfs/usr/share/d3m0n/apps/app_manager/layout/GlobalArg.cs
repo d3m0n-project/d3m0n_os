@@ -10,7 +10,7 @@ namespace d3m0n
 {
 	public partial class layout
 	{
-		private async void setGlobalArgs(Control into, Dictionary<string, string> args)
+		private async void setGlobalArgs(Control into, Dictionary<string, string> args, Graphics graphics)
 		{
 			// await Task.Delay(500);
 			
@@ -54,7 +54,7 @@ namespace d3m0n
 				
 			// position
 			if(args.ContainsKey("position")) { 
-				into.Location = getPosition(into.Width, into.Height, args["position"]); 
+				into.Location = getPosition(into.Width, into.Height, args["position"], graphics); 
 				// MessageBox.Show(into.Name+".position => "+args["position"]);
 			}
 			// margin
@@ -76,7 +76,7 @@ namespace d3m0n
 			if(args.ContainsKey("parent")) {
 				try
 				{
-					into.Parent = Graphics.into.Controls.Find(args["parent"],true)[0];
+					into.Parent = graphics.into.Controls.Find(args["parent"],true)[0];
 				}
 				catch(Exception)
 				{
@@ -88,7 +88,7 @@ namespace d3m0n
 			{
 				try
 				{
-					into.Parent = Graphics.into;
+					into.Parent = graphics.into;
 				}
 				catch(Exception)
 				{}
