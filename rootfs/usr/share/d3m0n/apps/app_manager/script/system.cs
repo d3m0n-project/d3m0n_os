@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace d3m0n
 {
-	public partial class script
+	public partial class d3m0n_src
 	{
 		public static void system(string command, string[] value)
 		{
@@ -16,8 +16,8 @@ namespace d3m0n
 				switch(command)
 				{
 					case "system.exec":
-						string filename = getString(value[0].Split(" ")[0]);
-						string commandname  = getString(value[0].Replace(value[0].Split(" ")[0], ""));
+						string filename = script.getString(value[0].Split(" ")[0]);
+						string commandname  = script.getString(value[0].Replace(value[0].Split(" ")[0], ""));
 						// MessageBox.Show(filename+" => "+commandname);
 						Process process = new Process();
 						ProcessStartInfo processStartInfo = new ProcessStartInfo();
@@ -27,10 +27,6 @@ namespace d3m0n
 						processStartInfo.UseShellExecute = false;
 						process.StartInfo = processStartInfo;
 						process.Start();
-						break;
-					case "system.shutdown":
-						break;
-					case "system.restart":
 						break;
 				}
 			}

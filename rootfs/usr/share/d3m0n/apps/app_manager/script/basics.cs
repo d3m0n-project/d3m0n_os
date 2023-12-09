@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace d3m0n
 {
-	public partial class script
+	public partial class d3m0n_src
 	{
 		public static void basics(string command, string[] value)
 		{

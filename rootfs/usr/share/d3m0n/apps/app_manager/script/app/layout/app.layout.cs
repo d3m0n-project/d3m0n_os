@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace d3m0n
 {
-	public partial class script
+	public partial class d3m0n_src
 	{
 		public static void application_layout(string command, string[] value)
 		{
@@ -16,10 +16,10 @@ namespace d3m0n
 				switch(command)
 				{
 					case "app.layout.display":
-						if(File.Exists(getString(value[0])))
+						if(File.Exists(script.getString(value[0])))
                         {
-                            Interpreter.loadLayout(getString(value[0]));
-                            utils.logn("[o] Loaded '"+getString(value[0])+"'", ConsoleColor.Green);
+                            Interpreter.loadLayout(script.getString(value[0]));
+                            utils.logn("[o] Loaded '"+script.getString(value[0])+"'", ConsoleColor.Green);
                         }
                         else
                         {

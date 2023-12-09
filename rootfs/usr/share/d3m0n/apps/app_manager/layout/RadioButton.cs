@@ -19,6 +19,7 @@ namespace d3m0n
             globalArgs.Wait();
 
 			// infos
+			if(args.ContainsKey("text_align")) { getTextAlignement(control, args["text_align"]); }
 			if(args.ContainsKey("font_size")) {control.Font = new Font( control.Font.FontFamily, Int32.Parse(args["font_size"]) ); }			if(args.ContainsKey("content")) {control.Text = args["content"];}
 			if(args.ContainsKey("content")) {control.Text = args["content"];}
 

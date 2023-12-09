@@ -1,38 +1,38 @@
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-using System.IO;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Net;
-using System.Net.Security;
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.WinForms;
+// using System;
+// using System.Drawing;
+// using System.Windows.Forms;
+// using System.IO;
+// using System.Collections.Generic;
+// using System.Threading.Tasks;
+// using System.Net;
+// using System.Net.Security;
+// using Microsoft.Web.WebView2.Core;
+// using Microsoft.Web.WebView2.WinForms;
 
 
 
-namespace d3m0n
-{
-	public partial class layout
-	{
-		public static Control WebView(Dictionary<string, string> args, Graphics graphics, WebView2 control=null)
-		{
+// namespace d3m0n
+// {
+// 	public partial class layout
+// 	{
+		// public static Control WebView(Dictionary<string, string> args, Graphics graphics, WebView2 control=null)
+		// {
 
-			if(control==null)
-            {
-                control = new WebView2();
-            }
+		// 	if(control==null)
+        //     {
+        //         control = new WebView2();
+        //     }
 				
            
 
-			layout temp = new layout();
-			Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args, graphics));
-            globalArgs.Wait();
+		// 	layout temp = new layout();
+		// 	Task globalArgs = Task.Run(() => temp.setGlobalArgs(control, args, graphics));
+        //     globalArgs.Wait();
 
-            if (control != null && control.CoreWebView2 != null)
-            {
-                control.CoreWebView2.Navigate("https://google.com");
-            }
+        //     if (control != null && control.CoreWebView2 != null)
+        //     {
+        //         control.CoreWebView2.Navigate("https://google.com");
+        //     }
 
 			// infos
             // try
@@ -49,16 +49,16 @@ namespace d3m0n
 
             
 
-			return control;
-		}
-        public static void WebView_execute(WebBrowser webview, string command)
-        {
-            switch(command)
-            {
-                case "goBack":
-                    webview.GoBack();
-                    break;
-            }
-        }
-	}
-}
+// 			return control;
+// 		}
+//         public static void WebView_execute(WebBrowser webview, string command)
+//         {
+//             switch(command)
+//             {
+//                 case "goBack":
+//                     webview.GoBack();
+//                     break;
+//             }
+//         }
+// 	}
+// }
