@@ -1,5 +1,12 @@
 
-# ![icon](https://avatars.githubusercontent.com/u/136185636?s=40&u=76e3b4569d8be273bb0358ae3c71fcdf7c7b2d6b&v=4) d3m0n os (C) 2023 4re5 group
+# ![icon](https://avatars.githubusercontent.com/u/136185636?s=40&u=76e3b4569d8be273bb0358ae3c71fcdf7c7b2d6b&v=4) d3m0n os (C) 2024 4re5 group
+
+<p align="center">
+    <a href="https://github.com/d3m0n-project/d3m0n_os/releases/latest"><img alt="Release" src="https://img.shields.io/github/release/d3m0n-project/d3m0n_os.svg?style=flat-square"></a>
+    <a href="https://github.com/d3m0n-project/d3m0n_os/blob/master/LICENSE.md"><img alt="Software License" src="https://img.shields.io/badge/license-GPL3-brightgreen.svg?style=flat-square"></a>
+    <a href="https://github.com/d3m0n-project/d3m0n_os/graphs/contributors"><img alt="Contributors" src="https://img.shields.io/github/contributors/d3m0n-project/d3m0n_os"/></a>
+    <a href="https://twitter.com/intent/follow?screen_name=4re5group"><img src="https://img.shields.io/twitter/follow/4re5group?style=social&logo=twitter" alt="follow on Twitter"></a>
+</p>
 
 d3m0n OS is a Debian based ARM CPU architecture operating system. 
 
@@ -20,6 +27,8 @@ d3m0n app system and binaries are located in [rootfs/usr/share/d3m0n](https://gi
 >   (3) [Application API](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/api.md)
 >
 >   (4) [Installation](https://github.com/d3m0n-project/d3m0n_os#Installation)
+>
+>   (5) [Links](https://github.com/d3m0n-project/d3m0n_os#Links)
 
 
 
@@ -99,3 +108,13 @@ Wallpapers are located in `/usr/share/d3m0n/wallpapers`. To change it, edit `wal
 `ssh` define if ssh client is enabled
 `theme` is your theme folder name that contains all icons and sounds
 `splash_time` is the time in ms splash screen will be displayed
+
+
+## Links
+
+&nbsp; | Official Links
+---------|-------
+Website | [d3m0n-project.github.io](https://d3m0n-project.github.io/d3m0n_os/)
+Forum | [forum.ducksploit.com](https://forum.ducksploit.com/d3m0n/)
+Discord | [pwnagotchi.slack.com](https://invite.pwnagotchi.ai/)
+Subreddit | [r/d3m0nproject](https://www.reddit.com/r/d3m0nproject/)
