@@ -1,0 +1,6 @@
+def file.write
+{
+	logn("let's goooo", "red");
+	lol="lol";
+	logn("lol is equal to: $lol", "green");
+}
