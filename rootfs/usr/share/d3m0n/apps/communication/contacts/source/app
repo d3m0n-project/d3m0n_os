@@ -1,6 +1,0 @@
-name: contacts
-package: com.4re5.d3m0n.contacts
-icon: contacts
-perms: none
-start_path: /path/to
-category: communication

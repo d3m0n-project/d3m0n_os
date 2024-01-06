@@ -1,6 +1,0 @@
-# d3m0n source
-
-Window.OnCreate => logn("[o] loaded test", "orange"); SystemDef();
-# [$ressources/test.dll,myNamespace,myclass,myFunct(a, b)];
-
-shoot.OnClick => alert("hello world! you've clicked shoot"); 
