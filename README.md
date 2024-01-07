@@ -55,12 +55,12 @@ Just download lastest (release)[https://github.com/d3m0n-project/d3m0n_os/releas
 
 ### Install d3m0n system on an already flashed **raspberry pi zero 2W**
 First step, install wget using `sudo apt-get install wget -y`
-```
-mkdir d3m0n-install
-cd d3m0n-install
-wget https://raw.githubusercontent.com/d3m0n-project/d3m0n_os/root/install.sh
-sudo chmod +x install.sh
-sudo ./install.sh```
+
+    mkdir d3m0n-install
+    cd d3m0n-install
+    wget https://raw.githubusercontent.com/d3m0n-project/d3m0n_os/root/install.sh
+    sudo chmod +x install.sh
+    sudo ./install.sh`
 Finaly wait until installation complete 
 
 
