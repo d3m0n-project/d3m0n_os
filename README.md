@@ -26,12 +26,9 @@ d3m0n app system and binaries are located in [rootfs/usr/share/d3m0n](https://gi
 >
 >   (3) [Application API](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/api.md)
 >
->   (4) [Installation](https://github.com/d3m0n-project/d3m0n_os#Installation)
+>   (4) [About](https://github.com/d3m0n-project/d3m0n_os#About)
 >
 >   (5) [Links](https://github.com/d3m0n-project/d3m0n_os#Links)
-
-
-
 
 
 
@@ -44,8 +41,30 @@ d3m0n app system and binaries are located in [rootfs/usr/share/d3m0n](https://gi
 > 
 > /[rootfs](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs)	is the root partition, it contains call linux commands that d3m0n os needs to work.
 
-## Installation
+## Installations
+### Flash pre-built image
+Just download lastest (release)[https://github.com/d3m0n-project/d3m0n_os/releases] and flash it using Balena Etcher
+<details>
+  <summary>How?</summary>
+  <p>- Install <b>BalenaEtcher</b> from <a href="https://etcher.balena.io/#download-etcher">here</a> and select your image file (.img) </p>
+  <img style="width: 400px;" src="https://github.com/d3m0n-project/d3m0n_os/assets/71982379/fec65775-27f7-4106-bdbc-fe4f6d366b1d">
+  <p>- Select your SD card drive</p>
+  <img style="width: 400px;" src="https://github.com/d3m0n-project/d3m0n_os/assets/71982379/239616df-6634-48e5-8bb4-a3b139993d13">
+  <p>- And click <b>FLASH</b></p>
+</details>
 
+### Install d3m0n system on an already flashed **raspberry pi zero 2W**
+First step, install wget using `sudo apt-get install wget -y`
+```
+mkdir d3m0n-install
+cd d3m0n-install
+wget https://raw.githubusercontent.com/d3m0n-project/d3m0n_os/root/install.sh
+sudo chmod +x install.sh
+sudo ./install.sh```
+Finaly wait until installation complete 
+
+
+### Build custom image
 To execute this code and build your d3m0n os image (.img), you must execute these commands **line by line** in your linux machine terminal.
 
     sudo apt-get install git
@@ -57,17 +76,9 @@ then use numbers to select option you wan't
 
 ## Configure your OS
 
-In order to build your image file (.img) you need first to install [d3m0n os](ps://github.com/d3m0n-project/d3m0n_os#installation) on your linux machine.
+In order to build your image file (.img) you need first to install [d3m0n os](ps://github.com/d3m0n-project/d3m0n_os#installations) on your linux machine.
 Then use the command `sudo ./d3m0n.sh` and type **2** and hit enter.
 This will display a configuration window in your terminal.
-
-## Flash a SD card with a image file
-
-Install **BalenaEtcher** from [here](https://etcher.balena.io/#download-etcher) and select your image file (.img) 
-![add_img](https://github.com/d3m0n-project/d3m0n_os/assets/71982379/fec65775-27f7-4106-bdbc-fe4f6d366b1d)
-Select your SD card drive
-![image](https://github.com/d3m0n-project/d3m0n_os/assets/71982379/239616df-6634-48e5-8bb4-a3b139993d13)
- And click **FLASH**
 
 
 # d3m0n api
@@ -116,5 +127,5 @@ Wallpapers are located in `/usr/share/d3m0n/wallpapers`. To change it, edit `wal
 ---------|-------
 Website | [d3m0n-project.github.io](https://d3m0n-project.github.io/d3m0n_os/)
 Forum | [forum.ducksploit.com](https://forum.ducksploit.com/d3m0n/)
-Discord | [pwnagotchi.slack.com](https://invite.pwnagotchi.ai/)
+Discord | [discord.com](https://discord.com/invite/TQTEvt2wsb)
 Subreddit | [r/d3m0nproject](https://www.reddit.com/r/d3m0nproject/)
