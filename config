@@ -1,8 +1,10 @@
 #!/bin/bash
 
 display() {
+	clear
 	title=$1
 	text=$2
+	percentage=£3
 
 	# colors
 	OUTLINE_COLOR="\e[93m"
@@ -23,6 +25,13 @@ display() {
 	TOP_HOR_OUTLINE_W=($TERMINAL_W-2-4-$TITLE_LEN)/2
 	BOTTOM_HOR_OUTLINE_W=($TERMINAL_W-2)
 
+
+	# creates text content
+	for (( i = 0; i < $TERMINAL_W-${#TEXT}; i++ )); do
+		TEXT_CONTENT=$TEXT_CONTENT+" "
+	done
+	
+
 	# first line
 
 	echo -n "┌"
@@ -35,12 +44,18 @@ display() {
 	done
 	echo "┐"
 
+
 	# text lines
-	for
+	for (( i = 0; i < $TERMINAL_H-2; i++ )); do
+		echo -n "│"
+		for (( j = 0; j < $TERMINAL_W-2; j++ )); do
+			echo -n " "
+		done
+		echo -n "│"
+	done
 
 
 	# last line
-
 	echo -n "└"
 	for (( i = 0; i < $BOTTOM_HOR_OUTLINE_W; i++ )); do
 		echo -n "─"
@@ -49,8 +64,12 @@ display() {
 }
 
 
+while true; do
+	clear
+	display "my title" "test"
+	read -r -s input
+done
 
-display "my title" "uwu"
 
 
 
