@@ -5,12 +5,29 @@ Usage
 
 Installation
 ------------
+.. _prebuilt:
 
-To use Lumache, first install it using pip:
+Pre-Build image file
+____________________
+
+To install d3m0n OS, first download lastest pre-built flashable `img file <https://github.com/d3m0n-project/d3m0n_os/releases>`_:
+
+Install `Balena Etcher <https://etcher.balena.io/>`_ and flash your microSD card, insert it into your d3m0n device and boot!
+
+
+.. _custom:
+
+Custom image file
+____________________
+
+Clone this repo using ``git clone https://github.com/d3m0n-project/d3m0n_os.git`` then move into
 
 .. code-block:: console
 
-   (.venv) $ pip install lumache
+   $ chmod +x *.sh
+   $ sudo ./d3m0n.sh
+
+Then choose build 
 
 Creating recipes
 ----------------
