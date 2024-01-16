@@ -86,23 +86,22 @@ This will display a configuration window in your terminal.
 d3m0n operating system contains preinstalled softwares.
 - d3m0n apps
   - communication
-    - contacts
-    - phone
-    - messages   
+    - <img width="15" src="./rootfs/usr/share/d3m0n/themes/default_dark/icons/contacts.png?raw=true"> contacts
+    - <img width="15" src="./rootfs/usr/share/d3m0n/themes/default_dark/icons/phone.png?raw=true"> phone
+    - <img width="15" src="./rootfs/usr/share/d3m0n/themes/default_dark/icons/messages.png?raw=true"> messages   
   - system
-    - settings  
+    - <img width="15" src="./rootfs/usr/share/d3m0n/themes/default_dark/icons/settings.png?raw=true"> settings  
   - photo
-    - camera
-    - gallery 
+    - <img width="15" src="./rootfs/usr/share/d3m0n/themes/default_dark/icons/camera.png?raw=true"> camera
+    - <img width="15" src="./rootfs/usr/share/d3m0n/themes/default_dark/icons/gallery.png?raw=true"> gallery 
   - misc
-    - files 
-    - calculator
-    - browser
-    - store
+    - <img width="15" src="./rootfs/usr/share/d3m0n/themes/default_dark/icons/folder.png?raw=true"> files
+    - <img width="15" src="./rootfs/usr/share/d3m0n/themes/default_dark/icons/calculator.png?raw=true"> calculator (soon)
+    - <img width="15" src="./rootfs/usr/share/d3m0n/themes/default_dark/icons/browser.png?raw=true"> browser (soon)
+    - <img width="15" src="./rootfs/usr/share/d3m0n/themes/default_dark/icons/store.png?raw=true"> store (soon)
 - keyboard
   - keyboard app
 - system apps
-   - touchscreen (touch screen handle software)
    - lockscreen
 
 ## wallpapers
