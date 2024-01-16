@@ -125,6 +125,6 @@ Wallpapers are located in `/usr/share/d3m0n/wallpapers`. To change it, edit `wal
 &nbsp; | Official Links
 ---------|-------
 Website | [d3m0n-project.github.io](https://d3m0n-project.github.io/d3m0n_os/)
-Forum | [forum.ducksploit.com](https://forum.ducksploit.com/d3m0n/)
+Forum | [forum.ducksploit.com](https://forum.ducksploit.com/thread.html?key=d3m0n:main)
 Discord | [discord.com](https://discord.com/invite/TQTEvt2wsb)
 Subreddit | [r/d3m0nproject](https://www.reddit.com/r/d3m0nproject/)
