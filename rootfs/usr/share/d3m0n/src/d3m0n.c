@@ -4,7 +4,13 @@
 
 int main(int argc, char *argv[])
 {
-    getSetting("name", "./text.txt");
+	printf("d3m0n OS\n");
+    printf(getSetting("name2", "./text.txt"));
+	
+	//writeSetting("name1", "value2", "text.txt");
+	
+	
+	
     // init display
 
     // load apps in memory
@@ -17,6 +23,8 @@ int main(int argc, char *argv[])
     // load apps in grid
 
     // hide splashscreen
+
+	printf("\n");
 
     return 0;
 }
