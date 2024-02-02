@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "SettingsFileHandler.h"
+#include "display.h"
 
 int main(int argc, char *argv[])
 {
@@ -12,6 +13,8 @@ int main(int argc, char *argv[])
 	
 	
     // init display
+	display display1;
+    display1.init();
 
     // load apps in memory
 
