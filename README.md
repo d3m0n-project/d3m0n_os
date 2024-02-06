@@ -11,7 +11,9 @@
 d3m0n OS is a Debian based ARM CPU architecture operating system. 
 
 > :warning: This code is made to run on a d3m0n device only :warning:
-> We had to remake the whole system from scratch in C instead of C# 
+
+> We had to remake the whole system from scratch in C instead of C#
+
 d3m0n app system and binaries are located in [rootfs/usr/share/d3m0n](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/d3m0n)
 
 ![d3m0n_ssh](https://github.com/d3m0n-project/d3m0n_os/assets/71982379/c989aebe-c06f-4417-821c-ac0029023d80)
