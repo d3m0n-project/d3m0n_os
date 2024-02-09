@@ -1,7 +1,7 @@
 # d3m0n C main software
 
 ## Startup steps
-for each .d3m0n file, unzip it into /usr/share/d3m0n/temp/RANDOM_TOKEN
+for each .d3m0n file in `/usr/share/d3m0n` and subfolder, unzip it into /usr/share/d3m0n/temp/RANDOM_TOKEN
 
 [example .d3m0n app](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/d3m0n/apps/test_app/source)
 
