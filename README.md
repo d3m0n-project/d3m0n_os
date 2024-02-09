@@ -130,3 +130,9 @@ Website | [d3m0n-project.github.io](https://d3m0n-project.github.io/d3m0n_os/)
 Forum | [forum.ducksploit.com](https://forum.ducksploit.com/thread.html?key=d3m0n:main)
 Discord | [discord.com](https://discord.com/invite/TQTEvt2wsb)
 Subreddit | [r/d3m0nproject](https://www.reddit.com/r/d3m0nproject/)
+
+## Made with ❤️ by 4RE5's devs
+<br>
+<a href="https://github.com/d3m0n-project/d3m0n_os/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=d3m0n-project/d3m0n_os" />
+</a>
