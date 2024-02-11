@@ -9,18 +9,18 @@
 #include <sys/time.h>
 
 #include "display.hpp"
-#include "ili9340.h"
+// #include "ili9340.h"
 using namespace std; 
 
 	
 void display::init() 
 {
 	cout << "display init\n";
-	lcdReset();
-	lcdSetup();
-	lcdInit(display::width, display::height, 0, 0);
+	// lcdReset();
+	// lcdSetup();
+	// lcdInit(display::width, display::height, 0, 0);
 	
-	lcdFillScreen(backColor);
+	// lcdFillScreen(backColor);
 }
 	// lcdWriteCommandByte(byte c);
     // lcdWriteDataByte(byte c);    
