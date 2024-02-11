@@ -1,5 +1,0 @@
-#include <>
-
-class layout {
-    
-}
