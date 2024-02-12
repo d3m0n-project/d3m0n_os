@@ -1,5 +1,12 @@
 #include "settingsFileHandler.h"
-
+#include <zip.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 class applicationHandler {
     struct Application
@@ -13,11 +20,42 @@ class applicationHandler {
         char* temp_path;
     };
 
+    void unzipFile(const char zipFilePath, const charoutputFolder) {
+        int err = 0;
+        zip_t zip = zip_open(zipFilePath, ZIP_RDONLY, &err);
+        zip_extract(zip, outputFolder, NULL, NULL);
+        zip_close(zip);
+    }
+    
+
     Application loadApp(char* appPath)
     {
         // loads app by unziping appPath file into /usr/share/d3m0n/temp/RANDOM_TOKEN
-        char* temp_path = "Generated app's temp path goes here";
 
+        DIRd;
+        struct dirent dir;
+        chardirectory = "/usr/share/d3m0n"; // Directory to search .d3m0n files in
+        char temp_path[256];
+        unsigned long randomToken = rand(); // Simple random token, consider a better random generation method
+    
+        snprintf(temp_path, sizeof(temp_path), "/usr/share/d3m0n/temp/%lu", randomToken);
+    
+        // Create the output directory
+        mkdir(temp_path, 0777); // Note: Check return value in real code for errors
+    
+        d = opendir(directory);
+        if (d) {
+            while ((dir = readdir(d)) != NULL) {
+                if (strstr(dir->d_name, ".d3m0n")) {
+                    char fullPath[1024];
+                    snprintf(fullPath, sizeof(fullPath), "%s/%s", directory, dir->d_name);
+                    unzipFile(fullPath, temp_path);
+                }
+            }
+            closedir(d);
+        }
+
+        
 
         Application newApp;
         newApp.name = getSetting("name", temp_path+"/app");
