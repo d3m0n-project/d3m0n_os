@@ -10,12 +10,12 @@
 
 #include "display.hpp"
 // #include "ili9340.h"
-using namespace std; 
+//using namespace std; 
 
 	
 void display::init() 
 {
-	cout << "display init\n";
+	std::cout << "display init\n";
 	// lcdReset();
 	// lcdSetup();
 	// lcdInit(display::width, display::height, 0, 0);
