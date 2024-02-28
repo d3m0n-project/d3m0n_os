@@ -45,7 +45,7 @@ d3m0n app system and binaries are located in [rootfs/usr/share/d3m0n](https://gi
 
 ## Installations
 ### Flash pre-built image
-Just download lastest (release)[https://github.com/d3m0n-project/d3m0n_os/releases] and flash it using Balena Etcher
+Just download lastest [release](https://github.com/d3m0n-project/d3m0n_os/releases) and flash it using Balena Etcher
 <details>
   <summary>How?</summary>
   <p>- Install <b>BalenaEtcher</b> from <a href="https://etcher.balena.io/#download-etcher">here</a> and select your image file (.img) </p>
