@@ -1,0 +1,16 @@
+# d3m0n layout
+
+Window:
+	width="100%";
+	height="100%";
+	title="testAPP";
+	bg_color="white";
+	topbar="true";
+
+Text:
+	content="Soon...";
+	pisition="center";
+	color="red";
+
+Image:
+	src="hello world!";

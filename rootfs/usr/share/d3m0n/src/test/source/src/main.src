@@ -1,0 +1,7 @@
+# d3m0n source
+
+Window.OnCreate =>
+	logn("[o] loaded testApp", "orange");
+	test("a");
+	b(a);
+	7(8);
