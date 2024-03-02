@@ -1,10 +1,10 @@
 @echo off
 
-set path=%path%;C:\Users\celcm\MinGW\lib\gcc\x86_64-w64-mingw32\13.2.0
+set path=%path%;C:\Users\User\MinGW\lib\gcc\x86_64-w64-mingw32\13.2.0
 
 set homepath=%cd%
 
-cd C:\Users\celcm\MinGW\bin\
+cd C:\Users\User\MinGW\bin\
 
 call gcc "%homepath%\*.c" -o d3m0n.exe
 
