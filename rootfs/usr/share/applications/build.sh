@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo "TO USE THIS SCRIPT, COPY IT TO APP's SOURCE PARENT DIRECTORY AND RUN IT USING ./build.sh"
 
 TEMP=$(pwd)
 CURRENT_DIR=$(basename $TEMP)
