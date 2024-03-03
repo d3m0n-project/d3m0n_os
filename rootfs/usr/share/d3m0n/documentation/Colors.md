@@ -2,6 +2,8 @@
 
 d3m0n layout only have **16** colors but you can add custom ones by using **rgb colors**
 
+> TestApp [here](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/applications/testing/color)
+
 - ![black](https://placehold.co/15x15/black/black.png) `black`
 - ![dark_red](https://placehold.co/15x15/darkred/darkred.png) `dark_red`
 - ![red](https://placehold.co/15x15/red/red.png) `red`
