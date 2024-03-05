@@ -6,3 +6,9 @@ Window:
 	title="Color Test";
 	bg_color="white";
 	topbar="true";
+
+Rect:
+	bg_color="red";
+	location="10, 10";
+	width="10";
+	height="100%";
