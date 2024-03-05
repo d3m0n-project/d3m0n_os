@@ -1,4 +1,6 @@
-# d3m0n C main software
+> ⚠️ This version isn't finished, so it should have a lot of bugs & vulnerabilities ⚠️
+> Currently re-making whole code in C/C++ for better performances
+# d3m0n main software
 
 ## Startup steps
 for each .d3m0n file in `/usr/share/d3m0n` and subfolder, unzip it into /usr/share/d3m0n/temp/RANDOM_TOKEN
