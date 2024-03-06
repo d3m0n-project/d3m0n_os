@@ -3,14 +3,12 @@
 Window:
 	width="100%";
 	height="100%";
-	title="testAPP";
+	title="Color Test";
 	bg_color="white";
 	topbar="true";
 
-Text:
-	content="Soon...";
-	pisition="center";
-	color="red";
-
-Image:
-	src="hello world!";
+Rect:
+	bg_color="red";
+	location="10, 10";
+	width="10";
+	height="100%";

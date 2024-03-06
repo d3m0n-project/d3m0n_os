@@ -1,5 +1,5 @@
 #include "../../settings.h"
-#include "../../utils.h"
+#include <utils.h>
 #include "source.cpp"
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,6 +33,11 @@ public:
         string fileContent = buffer.str();
        
         // parse into one-liners
+        replaceAll(fileContent, "; ", ";");
+        replaceAll(fileContent, ";  ", ";");
+        replaceAll(fileContent, ";   ", ";");
+        replaceAll(fileContent, ";  ", ";");
+        replaceAll(fileContent, "; ", ";");
         replaceAll(fileContent, ";\r\n", ";");
         replaceAll(fileContent, "=>\r\n", "=>");
         file.close();

@@ -1,5 +1,6 @@
 #include "../../settings.h"
-#include "../../utils.h"
+#include <utils.h>
+#include "script.cpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,6 +14,7 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include <list>
 
 namespace fs = filesystem;
 using namespace std;
@@ -37,9 +39,9 @@ void loadEvent(Application app, string eventName, string eventCode)
 void execute(Application app, string line)
 {
 	string app_path = app.temp_path;
-    printf(line.c_str());
+    // printf((line+"\n").c_str());
 
-	if(line[0] = '#')
+	if(line[0] == '#')
     {}
     else if(startsWith(line, "def "))
     {
@@ -56,23 +58,32 @@ void execute(Application app, string line)
     else if(startsWith(line, "use"))
     {
         printf("TODO: use > script\n");
+        string path="TODO";
     	// string path = line.Split(">")[1];
-    	// MessageBox.Show("using "+path);
+        log("using "+path, LogStatus::Info);
     	// script.importLib(getString(path).Replace(";", ""));
     }
-    else if(line.Contains("="))
+    else if(contains(line, "="))
     {
-    	string name = line.Split("=")[0].Replace(" ", "");
-    	string value = line.Split("=")[1];
-    	script.setVariable(name, value);
+    	string name = delete_space(Split(line, '='));
+    	string value = Split(line, '=', false);
+        log("Def new var '"+name+"' => '"+value+"'", LogStatus::Warning);
+    	// script.setVariable(name, value);
     }
-    else if(line.Contains("(") && line.EndsWith(");"))
+    else if(contains(line, "(") && endsWith(line, ")"))
     {
-    	string name = line.Split("(")[0];
-    	string[] value = line.Split("(")[1].Replace(");", "").Split(", ");
-    	// MessageBox.Show(name+": "+value[0].ToString());
-    	script.callFunction(name, value);
-    }
+    	string name = Split(line, '(');
+    	string value2 = Split(line, '(', false);
+        replaceAll(value2, ")", "");
+    	
+        std::list<string> value;
+        // get two first args
+        value.push_back(Split(value2, ','));
+        value.push_back(Split(value2, ',', false));
+
+    	script::callFunction(name, value);
+        // printf("Calling function %s with args %s\n", name.c_str(), value.front().c_str());
+    }   
     	
 }
 void callEvent(Application app, string eventName)

@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../../utils.h"
-#include "../../../display.hpp"
+#include <utils.h>
+#include <display.cpp>
 using namespace std;
 
 struct Window {

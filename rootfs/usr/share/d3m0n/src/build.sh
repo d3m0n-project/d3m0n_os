@@ -1,12 +1,15 @@
 #!/bin/sh
 
-
+# solved bcm2835.h error by addind static_cast<uint32_t*>( void* )
 
 clear
 
 cd ./test
 ./build.sh
 cd ..
+
+#setting lib var
+LD_LIBRARY_PATH=$(pwd)/lib
 
 make clean
 make

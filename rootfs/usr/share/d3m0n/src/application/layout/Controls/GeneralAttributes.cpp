@@ -1,5 +1,5 @@
 #include "../../../settings.h"
-#include "../../../utils.h"
+#include <utils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,7 +14,6 @@
 #include <fstream>
 #include <filesystem>
 #include "Type.h"
-#include "../../../display.hpp"
 
 using namespace std;
 
@@ -47,30 +46,35 @@ class GeneralAttributes {
 
             // height="10";
             // width="5%";
-            if(key == "name") {
-                ctrl->name =  value;
-            } else if(key == "visible") {
-                ctrl->Visible = value == "true" ? true : false;
-            }
-            else if(startsWith(key,"margin")) {
-                if(key == "margin_top") { printf("TODO margin\n"); }
-                else if(key == "margin_left") { printf("TODO margin\n"); }
-                else if(key == "margin_right") { printf("TODO margin\n"); }
-                else if(key == "margin_bottom") { printf("TODO margin\n"); }
-            } else if(key == "position") {
-                // if(value)
-                printf("TODO position\n");
-            } else if(key == "color") {
-                log("SET COLOR to '"+value+"'", LogStatus::Critical);
-                ctrl->ForeColor = GetColor(value);
-            } else if(key == "bg_color") {
-                unsigned long ulongValue = std::stoul(value);
-                if (ulongValue > std::numeric_limits<unsigned short>::max()) {
-                    throw std::out_of_range("Value exceeds range of unsigned short");
+            try {
+                if(key == "name") {
+                    ctrl->name =  value;
+                } else if(key == "visible") {
+                    ctrl->Visible = value == "true" ? true : false;
                 }
-                ctrl->BackColor = static_cast<unsigned short>(ulongValue);
-            } else if(key == "visible") {
+                else if(startsWith(key,"margin")) {
+                    if(key == "margin_top") { printf("TODO margin\n"); }
+                    else if(key == "margin_left") { printf("TODO margin\n"); }
+                    else if(key == "margin_right") { printf("TODO margin\n"); }
+                    else if(key == "margin_bottom") { printf("TODO margin\n"); }
+                } else if(key == "position") {
+                    // if(value)
+                    printf("TODO position\n");
+                } else if(key == "color") {
+                    log("SET COLOR to '"+value+"'", LogStatus::Critical);
+                    ctrl->ForeColor = GetColor(value);
+                } else if(key == "bg_color") {
+                    unsigned long ulongValue = std::stoul(value);
+                    if (ulongValue > std::numeric_limits<unsigned short>::max()) {
+                        throw std::out_of_range("Value exceeds range of unsigned short");
+                    }
+                    ctrl->BackColor = static_cast<unsigned short>(ulongValue);
+                } else if(key == "visible") {
 
+                }
+            }
+            catch(exception e) {
+                log("Error in layout '"+key+"': "+e.what(), LogStatus::Error);
             }
 
         }

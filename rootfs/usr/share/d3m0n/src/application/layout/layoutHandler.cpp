@@ -1,5 +1,5 @@
 #include "../../settings.h"
-#include "../../utils.h"
+#include <utils.h>
 #include "Controls.cpp"
 #include <stdio.h>
 #include <stdlib.h>

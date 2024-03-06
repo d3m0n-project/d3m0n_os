@@ -1,5 +1,5 @@
 #include "../../../settings.h"
-#include "../../../utils.h"
+#include <utils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,7 +14,7 @@
 #include <fstream>
 #include <filesystem>
 #include "Type.h"
-#include "../../../display.hpp"
+#include <display.cpp>
 
 using namespace std;
 

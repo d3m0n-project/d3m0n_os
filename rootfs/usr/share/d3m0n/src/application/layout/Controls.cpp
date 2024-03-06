@@ -1,5 +1,5 @@
 #include "../../settings.h"
-#include "../../utils.h"
+#include <utils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,6 +21,7 @@
 #include "./Controls/Image.cpp"
 #include "./Controls/TextBox.cpp"
 #include "./Controls/Button.cpp"
+#include "./Controls/Rect.cpp"
 
 namespace Controls {
     const int Window = 0;
@@ -98,9 +99,11 @@ Control loadControl(string controlName, string controlAttributes) {
 	// else if(controlName=="RadioButton") {
 	// 	return layout.RadioButton(controlAttributes, this, ctrl as RadioButton);
 	// }
-	// else if(controlName=="Rect") {
-	// 	return layout.Rect(controlAttributes, this, ctrl as Panel);
-	// }
+	else if(controlName=="Rect") {
+		layout::Rect temp = layout::Rect(controlAttributes.c_str());
+        controlElement = temp.Get();
+	    parseAttributes(&temp, controlAttributes, layout::Rect::parseAttributes);
+	}
 	// else if(controlName=="Switch") {
 	// 	return layout.Switch(controlAttributes, this, ctrl as CheckBox);
 	// }

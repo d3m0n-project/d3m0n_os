@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include "settings.h"
-#include "display.hpp"
+#include <display.cpp>
 #include "application/appManager.cpp"
 #include <string.h>
-#include "utils.h"
+#include <utils.h>
 
 int main(int argc, char *argv[])
 {
@@ -30,11 +30,12 @@ int main(int argc, char *argv[])
 
 	logn((string)"Splash Time: "+(string)getSetting("splash_time", GetConfig()), ConsoleColor::Reset);
 	
-	
+	int screen_width    = 240;
+    int screen_height   = 320;
 	
     // init display
 	display display1;
-    display1.init();
+    display1.init(screen_width, screen_height);
 
     // load apps in memory
     appManager manager;
