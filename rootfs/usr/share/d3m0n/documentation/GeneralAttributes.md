@@ -13,8 +13,8 @@ These attributes can be applied to **every** controls.
     margin_right="5";
     margin_bottom="25";
     
-    position="x, y";
-    position="[top/top_left/top_right/bottom/bottom_left/bottom_right/left/right/center]";
+    location="x, y";
+    location="[top/top_left/top_right/bottom/bottom_left/bottom_right/left/right/center]";
     
     color="white";
     color="255, 255, 255";
