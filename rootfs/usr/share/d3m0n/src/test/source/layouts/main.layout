@@ -1,0 +1,19 @@
+# d3m0n layout
+
+Window:
+	width="100%";
+	height="100%";
+	name="Color Test";
+	bg_color="white";
+	topbar="true";
+
+Rect:
+	name="color_red";
+	bg_color="red";
+	location="10, 10";
+	width="10";
+	height="100%";
+
+Rect:
+	name="color_black";
+	bg_color="black";
