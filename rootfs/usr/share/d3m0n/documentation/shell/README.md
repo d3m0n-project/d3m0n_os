@@ -4,14 +4,15 @@
 d3m0n shell is a debug & administration tool that help to manage your d3m0n phone.
 
 main commands:
-| command                       | permissions | description                      |
-|-------------------------------|-------------|----------------------------------|
-| help                          | none        | display this list                |
-| exit                          | none        | quit                             |
-| config [get/set] name (value) | admin       | config your phone                |
-| load <path>                   | none        | loads new app                    |
-| list                          | none        | list currently loaded apps       |
-| run <package>                 | none        | run app by package name          |
-| update                        | none        | update d3m0n OS                  |
-| fetch <package>               | none        | download package from repository |
-| clear                         | none        | clear console                    |
+| command                        | permissions | description                      |
+|--------------------------------|-------------|----------------------------------|
+| help                           | none        | display this list                |
+| exit                           | none        | quit                             |
+| config [get/set] name (value)  | admin       | config your phone                |
+| load <path>                    | none        | loads new app                    |
+| list                           | none        | list currently loaded apps       |
+| run <package>                  | none        | run app by package name          |
+| update [all/package_installer] | none        | update d3m0n OS components       |
+| fetch <package>                | none        | download package from repository |
+| clear                          | none        | clear console                    |
+| clean                          | none        | clean scripts                    |
