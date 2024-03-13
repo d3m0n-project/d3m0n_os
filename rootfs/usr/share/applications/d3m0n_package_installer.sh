@@ -3,6 +3,7 @@
 # d3m0n app remote installer
 # usage 'fetch <package name>' inside d3m0n shell
 
+FOUND=false
 PACKAGE=$1
 GET_PATH="/home/kali/d3m0n_os_debian/rootfs/usr/share/d3m0n"
 
@@ -23,13 +24,13 @@ process_file() {
         echo -e "$COLOR2 Url: $COLOR1$download_url"
         echo -e "$COLOR2 "
         echo -e "\n\nDownloaded $name successfully!"
+        FOUND=true
     fi
 }
 
 process_directory() {
     local path="$1"
     local entries=$(curl "https://api.github.com/repos/d3m0n-project/d3m0n_os/contents/$path" | jq -c '.[]')
-
     # Iterate over each entry
     while IFS= read -r entry; do
         local type=$(echo "$entry" | jq -r '.type')
@@ -45,3 +46,6 @@ process_directory() {
 
 # Start processing from the root directory
 process_directory "rootfs/usr/share/applications"
+if [[ $FOUND == false ]]; then
+    echo -e "\e[1;31mPackage $PACKAGE not found in repo"
+fi
