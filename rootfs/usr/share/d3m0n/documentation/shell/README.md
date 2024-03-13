@@ -14,3 +14,4 @@ main commands:
 | run <package>                 | none        | run app by package name          |
 | update                        | none        | update d3m0n OS                  |
 | fetch <package>               | none        | download package from repository |
+| clear                         | none        | clear console                    |
