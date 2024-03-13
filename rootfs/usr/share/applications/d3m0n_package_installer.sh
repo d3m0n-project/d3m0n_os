@@ -19,7 +19,6 @@ process_file() {
         mkdir -p "$GET_PATH/../applications"
         sudo chmod 777 "$GET_PATH/../applications"
         curl "$download_url" -o "$GET_PATH/../applications/$name"
-        clear
         echo -e "$COLOR2 Found $COLOR1$PACKAGE$COLOR2 inside d3m0n repository"
         echo -e "$COLOR2 Url: $COLOR1$download_url"
         echo -e "$COLOR2 "
