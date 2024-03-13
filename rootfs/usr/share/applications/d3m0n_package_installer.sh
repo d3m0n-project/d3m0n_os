@@ -3,6 +3,8 @@
 # d3m0n app remote installer
 # usage 'fetch <package name>' inside d3m0n shell
 
+cd ~
+
 FOUND=false
 PACKAGE=$1
 GET_PATH="/home/kali/d3m0n_os_debian/rootfs/usr/share/d3m0n"
