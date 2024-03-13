@@ -44,6 +44,7 @@ process_directory() {
 }
 
 # Start processing from the root directory
+echo $(pwd)
 process_directory "rootfs/usr/share/applications"
 if [[ $FOUND == false ]]; then
     echo -e "\e[1;31mPackage $PACKAGE not found in repo"
