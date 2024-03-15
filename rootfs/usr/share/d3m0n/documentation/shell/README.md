@@ -17,3 +17,4 @@ main commands:
 | clear                          | none        | clear console                    |
 | clean                          | none        | clean scripts & applications     |
 | version                        | none        | get current version              |
+| info                           | none        | get debug informations           |
