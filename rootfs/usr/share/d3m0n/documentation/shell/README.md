@@ -15,4 +15,5 @@ main commands:
 | update [all/package_installer] | none        | update d3m0n OS components       |
 | fetch <package>                | none        | download package from repository |
 | clear                          | none        | clear console                    |
-| clean                          | none        | clean scripts                    |
+| clean                          | none        | clean scripts & applications     |
+| version                        | none        | get current version              |
