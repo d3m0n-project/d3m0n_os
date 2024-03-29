@@ -3,7 +3,12 @@
 
 d3m0n shell is a debug & administration tool that help to manage your d3m0n phone.
 
-main commands:
+## Configuration
+d3m0n shell by defaults runs on port 3845, to connect to it use command `telnet <your IP> <port>`, to change it edit config file [located here](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/config)
+
+
+
+## main commands:
 | command                        | permissions | description                      |
 |--------------------------------|-------------|----------------------------------|
 | help                           | none        | display this list                |
@@ -17,4 +22,6 @@ main commands:
 | clear                          | none        | clear console                    |
 | clean                          | none        | clean scripts & applications     |
 | version                        | none        | get current version              |
+| display [clear/draw]           | none        | manual display debug commands    |
 | info                           | none        | get debug informations           |
+
