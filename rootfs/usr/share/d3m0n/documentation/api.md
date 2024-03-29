@@ -58,7 +58,7 @@ create now a main source file in the directory `src` named `main.src`.
 		system("echo test");
 		
 		# call a function called "myFunct" with args 'arg1' and 'arg2' in the dll
-		[/path/to/myDll.dll,myNamespace,myclass,myFunct(arg1, arg2)]
+		disabled since we're not using mono anymore --> [/path/to/myDll.dll,myNamespace,myclass,myFunct(arg1, arg2)]
 	
 
 	# on app quit
@@ -89,8 +89,8 @@ In your d3m0n layout file, you can use multiple controls.
  - [ProgressBar](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/ProgressBar.md)
  - [CheckBox](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/CheckBox.md)
  - [RadioButton](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/RadioButton.md)
- - [RawHtml (⚠️ don't work)](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/RawHtml.md)
- - [WebView (⚠️ don't work)](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/WebView.md)
+ - [RawHtml (⚠️ don't work yet)](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/RawHtml.md)
+ - [WebView (⚠️ don't work yet)](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/WebView.md)
  - [Rect](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Rect.md)
  - [Switch](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Switch.md)
  - [Text](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Text.md)
