@@ -1,6 +1,6 @@
-name: Color Test
-package: com.4re5.d3m0n.test.colors
-icon: default
+name: Settings
+package: com.4re5.d3m0n.system.settings
+icon: settings
 perms: none
 start_path: /path/to
-category: testing
+category: system
