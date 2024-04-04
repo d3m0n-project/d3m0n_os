@@ -1,4 +1,6 @@
 name: Camera
+package: com.4re5.d3m0n.photo.camera
 icon: camera
 perms: none
-start_path
+start_path: /path/to
+category: photo
