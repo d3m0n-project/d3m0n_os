@@ -1,0 +1,4 @@
+# d3m0n source file
+
+Window.OnCreate =>
+    logn("succesfully loaded camera",red);
