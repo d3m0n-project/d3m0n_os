@@ -1,4 +1,10 @@
-# d3m0n source file
+# d3m0n source
 
 Window.OnCreate =>
-    logn("succesfully loaded camera",red);
+	logn("succesfully loaded camera",red);
+
+shoot.OnClick =>
+	logn("take a photo", red);
+
+gallery.OnClick =>
+	logn("open gallery", red);
