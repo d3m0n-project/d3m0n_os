@@ -115,7 +115,7 @@ Wallpapers are located in `/usr/share/d3m0n/wallpapers`. To change it, edit `wal
 	ssh: true
 	theme: default_dark
 	splash_time: 5000
-        shell_port: 3845
+        shell_port: 3849
 ### description
 `wallpaper` is your wallpaper name (without .png)
 `ssh` define if ssh client is enabled
