@@ -13,8 +13,17 @@ Rect:
     bg_color="32, 32, 32";
 
 Image:
+    name="gallery";
+    src="gallery";
+    location="bottom-left";
+    width="9%";
+    height="9%";
+    margin_bottom="1%";
+    margin_left="1%";
+
+Image:
     name="shoot";
-    src="$ressources/circle1.png";
+    src="circle";
     location="bottom";
     width="9%";
     height="9%";
