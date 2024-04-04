@@ -1,0 +1,21 @@
+# d3m0n layout
+
+Window:
+    title="Camera";
+    bg_color="black";
+    width="100%";
+    height="100%";
+
+Rect:
+    location="bottom";
+    width="100%";
+    height="10%";
+    bg_color="32, 32, 32";
+
+Image:
+    name="shoot";
+    src="$ressources/circle1.png";
+    location="bottom";
+    width="9%";
+    height="9%";
+    margin_bottom="1%";
