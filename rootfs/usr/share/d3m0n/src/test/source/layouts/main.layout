@@ -1,0 +1,29 @@
+# d3m0n layout
+
+Window:
+	width="100%";
+	height="100%";
+	name="RADIO MODULE";
+	bg_color="white";
+	topbar="true";
+
+Rect:
+	bg_color="white";
+	width="100%";
+	height="100%";
+
+Image:
+	name="image1";
+	src="radio";
+	width="90";
+	height="90";
+	location="top";
+	margin_top="10";
+
+Text:
+	location="top";
+	margin_top="100";
+	name="text1";
+	font_size="16";
+	content="RADIO MODULE";
+	color="black";
