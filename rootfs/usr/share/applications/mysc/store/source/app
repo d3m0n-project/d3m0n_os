@@ -1,1 +1,6 @@
-name: Apps store
+name: Apps Store
+package: com.4re5.d3m0n.mysc.store
+icon: store
+perms: none 
+start_path: /path/to 
+category: mysc 
