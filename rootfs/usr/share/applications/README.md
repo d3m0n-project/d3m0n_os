@@ -11,6 +11,7 @@ To install package just do `fetch <packagename>` inside [d3m0n shell](https://gi
 - [ ] messages
 - [ ] settings
 - [ ] files
+- [ ] store
 
 
 ## Default apps list
@@ -29,6 +30,6 @@ To install package just do `fetch <packagename>` inside [d3m0n shell](https://gi
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/folder.png?raw=true"> [files](./mysc/files)
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/calculator.png?raw=true"> calculator (soon)
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/browser.png?raw=true"> browser (soon)
-    - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/store.png?raw=true"> store (soon)
+    - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/store.png?raw=true"> [store](./mysc/store)
 - keyboard
   - keyboard app
