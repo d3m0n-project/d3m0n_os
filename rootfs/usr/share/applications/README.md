@@ -37,7 +37,7 @@ To install package just do `fetch <packagename>` inside [d3m0n shell](https://gi
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/browser.png?raw=true"> browser (soon)
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/store.png?raw=true"> [store](./mysc/store)
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/modules.png?raw=true"> [modules manager](./mysc/modules)
-- modules
+  - modules
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/usb.png?raw=true"> [badUSB](./modules/badUSB)
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/infrared.png?raw=true"> [infrared](./modules/infrared)
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/wifi.png?raw=true"> [wifi](./modules/wifi)
