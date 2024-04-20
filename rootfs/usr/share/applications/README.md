@@ -12,6 +12,11 @@ To install package just do `fetch <packagename>` inside [d3m0n shell](https://gi
 - [ ] settings
 - [ ] files
 - [ ] store
+- [ ] module manager
+- [ ] module badUSB
+- [ ] module infrared
+- [ ] module radio
+- [ ] module wifi
 
 
 ## Default apps list
@@ -31,5 +36,8 @@ To install package just do `fetch <packagename>` inside [d3m0n shell](https://gi
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/calculator.png?raw=true"> calculator (soon)
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/browser.png?raw=true"> browser (soon)
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/store.png?raw=true"> [store](./mysc/store)
+    - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/modules.png?raw=true"> [modules manager](./mysc/modules)
+- modules
+    - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/badUSB.png?raw=true"> [badUSB](./module/badUSB)
 - keyboard
   - keyboard app
