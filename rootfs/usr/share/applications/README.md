@@ -40,5 +40,7 @@ To install package just do `fetch <packagename>` inside [d3m0n shell](https://gi
 - modules
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/usb.png?raw=true"> [badUSB](./modules/badUSB)
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/infrared.png?raw=true"> [infrared](./modules/infrared)
+    - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/wifi.png?raw=true"> [wifi](./modules/wifi)
+    - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/radio.png?raw=true"> [radio](./modules/radio)
 - keyboard
   - keyboard app
