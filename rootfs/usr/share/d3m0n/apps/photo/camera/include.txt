@@ -1,4 +1,0 @@
-./camera.cs
-./include.txt
-./build.sh
-./app

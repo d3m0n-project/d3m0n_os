@@ -1,6 +1,0 @@
-name: radio
-package: com.4re5.d3m0n.modules.wireless.radio
-icon: radio
-perms: sudo
-start_path: /path/to
-category: wireless

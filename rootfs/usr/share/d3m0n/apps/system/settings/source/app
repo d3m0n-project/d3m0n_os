@@ -1,6 +1,0 @@
-name: settings
-package: com.4re5.d3m0n.settings
-icon: settings
-perms: none
-start_path: /path/to
-category: system
