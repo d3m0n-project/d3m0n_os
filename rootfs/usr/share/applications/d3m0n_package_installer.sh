@@ -7,7 +7,9 @@ cd ~
 
 FOUND=false
 PACKAGE=$1
-GET_PATH="/home/kali/d3m0n_os_debian/rootfs/usr/share/d3m0n"
+# debug: 
+# GET_PATH="/home/kali/d3m0n_os_debian/rootfs/usr/share/d3m0n"
+GET_PATH="/usr/share/d3m0n"
 
 COLOR1="\e[1;35m"
 COLOR2="\e[0;35m"
