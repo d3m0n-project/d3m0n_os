@@ -1,6 +1,6 @@
 ## Creating a d3m0n application
 
-> ⚠️ A no code application builder is available [here](https://d3m0n-project.github.io/d3m0n_os/builder)
+> ⚠️ A no code application builder is available [here](https://d3m0n-project.github.io/d3m0n_c1/studio.html)
 
 First create a main file named `app` and type these lines
 
