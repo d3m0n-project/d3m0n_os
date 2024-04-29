@@ -31,8 +31,8 @@ Then create a main layout file in the directory `layouts` named `main.layout`.
 	Window:
 		name="My_Window";
 		title="My window";
-		width="200";
-		height="100";
+		width="100%";
+		height="100%";
 		bg_color="black";
   		top_bar="true";
 	
