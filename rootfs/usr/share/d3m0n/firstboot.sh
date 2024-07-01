@@ -4,11 +4,13 @@
 sudo apt-get update -y
 
 # installing libs
-sudo apt-get install mono-complete -y
-sudo apt install xorg xserver-xorg xinit cmake git -y 
-sudo apt-get install --reinstall libgtk2.0-0 -y
+# sudo apt-get install mono-complete -y
+# sudo apt install xorg xserver-xorg xinit cmake git -y 
+sudo apt install cmake git -y 
+# sudo apt-get install --reinstall libgtk2.0-0 -y
 sudo apt-get install paplay -y
-sudo apt-get install make libsndfile1-dev -y
+# sudo apt-get install make libsndfile1-dev -y
+sudo apt install libopencv-dev -y
 
 
 # setting correct perms
@@ -22,27 +24,27 @@ sudo chmod +rx /usr/share/d3m0n/ssh/*
 
 
 # creating display driver
-sudo mkdir /usr/share/d3m0n/display/source
-cd /usr/share/d3m0n/display/source
-sudo git clone https://github.com/juj/fbcp-ili9341.git
-cd fbcp-ili9341
-sudo mkdir build
-cd build
-sudo cmake ../ -DILI9341=ON -DDISPLAY_ROTATE_180_DEGREES=ON -DGPIO_TFT_DATA_CONTROL=24 -DGPIO_TFT_RESET_PIN=25 -DSPI_BUS_CLOCK_DIVISOR=6 -DSTATISTICS=0
-sudo make -j
-sudo cp ./fbcp-ili9341 /usr/share/d3m0n/display/fbcp-ili9341
+# sudo mkdir /usr/share/d3m0n/display/source
+# cd /usr/share/d3m0n/display/source
+# sudo git clone https://github.com/juj/fbcp-ili9341.git
+# cd fbcp-ili9341
+# sudo mkdir build
+# cd build
+# sudo cmake ../ -DILI9341=ON -DDISPLAY_ROTATE_180_DEGREES=ON -DGPIO_TFT_DATA_CONTROL=24 -DGPIO_TFT_RESET_PIN=25 -DSPI_BUS_CLOCK_DIVISOR=6 -DSTATISTICS=0
+# sudo make -j
+# sudo cp ./fbcp-ili9341 /usr/share/d3m0n/display/fbcp-ili9341
 
 
 # downloading bcm2835
-sudo mkdir /usr/share/d3m0n/temp/
-cd /usr/share/d3m0n/temp/
-wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.56.tar.gz
-tar zxvf bcm2835-1.56.tar.gz
-cd bcm2835-1.56
-./configure
-make
-sudo make check
-sudo make install
+# sudo mkdir /usr/share/d3m0n/temp/
+# cd /usr/share/d3m0n/temp/
+# wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.56.tar.gz
+# tar zxvf bcm2835-1.56.tar.gz
+# cd bcm2835-1.56
+# ./configure
+# make
+# sudo make check
+# sudo make install
 
 
 
@@ -72,12 +74,12 @@ sudo echo "# For more options and information see
 #framebuffer_height=720
 
 # uncomment if hdmi display is not detected and composite is being output
-hdmi_force_hotplug=1
+#hdmi_force_hotplug=1
 display_lcd_rotate=1
 display_hdmi_rotate=1
 # uncomment to force a specific HDMI mode (this will force VGA)
-#hdmi_group=1
-#hdmi_mode=1
+#hdmi_group=2
+#hdmi_mode=16
 
 # uncomment to force a HDMI mode rather than DVI. This can make audio work in
 # DMT (computer monitor) modes
@@ -95,7 +97,7 @@ display_hdmi_rotate=1
 
 # Uncomment some or all of these to enable the optional hardware interfaces
 dtparam=i2c_arm=on
-#dtparam=i2s=on
+dtparam=i2s=on
 dtparam=spi=on
 
 # Uncomment this to enable infrared communication.
@@ -134,13 +136,18 @@ dtoverlay=vc4-fkms-v3d
 arm_boost=1
 
 [all]
+dtoverlay=spi0-1cs,cs0_pin=CE0,cs0_spidev=disabled,speed=64000000
+#dtoverlay=waveshare35a,fps=30,speed=42000000
 #framebuffer_width=240
 #framebuffer_height=320
-hdmi_cvt=480 640 60 2 1
-hdmi_group=2
-hdmi_mode=87
-hdmi_drive=2
-gpu_mem=128
+#hdmi_pixel_encoding=2
+#hdmi_cvt=240 320 60 2 1
+#hdmi_group=2
+#hdmi_mode=16
+#hdmi_drive=2
+
+
+
 
 # power optimisation
 dtparam=act_led_trigger=none
@@ -151,9 +158,9 @@ dtoverlay=disable-bt
 enable_uart=1
 dtoverlay=pi3-miniuart-bt
 
-
-# enable IR driver
-dtoverlay=gpio-ir,gpio_pin=17" > /boot/config.txt
+# boost performances
+force_turbo=1
+gpu_mem=128" > /boot/config.txt
 
 # also delete this console=serial0, 115200  in /boot/cmdline.txt
 

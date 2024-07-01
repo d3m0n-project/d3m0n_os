@@ -1,0 +1,16 @@
+# TFT display
+
+VCC	--	3.3V	        <--|
+GND	--	GND		   |
+CS	--	Pin#24(SPI CS0)	   |
+RES	--	Pin#12             |
+D/C	--	Pin#11             |
+MOSI	--	Pin#19(SPI MOSI) <-|-----|
+SCK	--	Pin#23(SPI SCLK) <-|--|  |
+LED	--	3.3V	        <--|  |  |
+MISO	--	NONE	              |  |
+T_CLK	--	Pin#23(SPI SCLK) <----|  |
+T_CS	--	Pin#26(SPI CE1)	         |
+T_DIN	--	Pin#19(SPI MOSI) <-------|
+T_OUT	--	Pin#21(SPI MISO)
+T_IRQ	--	Pin#22

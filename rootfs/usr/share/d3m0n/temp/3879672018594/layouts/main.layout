@@ -1,0 +1,14 @@
+# d3m0n layout
+
+Window:
+	width="100%";
+	height="100%";
+	name="Hello World";
+	bg_color="white";
+	topbar="true";
+
+Text:
+  location="20, 20";
+  content="Hello World!";
+  color="white";
+  bg_color="black";

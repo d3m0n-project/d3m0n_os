@@ -1,0 +1,30 @@
+<body></body>
+
+<script>
+HashTable = [".", ",", ";", ".", "/", ":", "!", "§", "?", "=", "}", "+", "@", "à", ")", "]", "°", "$", "£", "¤", "ù", "%", "<", ">", "ç", "^", "¨", "^", "\\", "_", "è", "`", "-", "|", "(", "[", "{", "'", "\"", "#", "é", "~", "€", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+
+// key[0] = reverse
+// key[1] = multiplier
+
+function encrypt(key, input) {
+    output="";
+    reverse=key[0]?1:0;
+    multiplier=key[1];
+
+    keyOffset=2;
+    for(k=0-reverse*input.length; k<input.length; k=k-2*reverse) {
+        character=input[k];
+        if(keyOffset>key.length) keyOffset=2;
+        
+        newOffset=HashTable.indexOf(character)+keyOffset*multiplier;
+
+        if(newOffset>HashTable.length) newOffset=keyOffset;
+        output+=HashTable[newOffset]
+        console.log(output, newOffset, HashTable.indexOf(character), keyOffset);
+
+        // reverse
+        keyOffset++;
+    }
+    document.body.innerHTML += output+"\n";
+}
+</script>

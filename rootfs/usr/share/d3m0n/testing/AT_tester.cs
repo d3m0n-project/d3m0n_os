@@ -1,7 +1,7 @@
 // set pin
-// AT+CPIN=“2608“
+// AT+CPIN="0000"
 
-
+// +COPS: 
 // +COPS: <mode><format><operator>,
 // <mode>
 // 0 automatic
@@ -42,8 +42,20 @@ class Program
 
   public static void Main(string[] args) {
     Serial1 = new SerialPort(portName, baudRate);
+    Serial1.WriteTimeout = 2000;
+    Serial1.ReadTimeout = 2000;
+    
 
     Thread.Sleep(5000);
+    while(!Serial1.IsOpen) {
+      Console.WriteLine("Waiting for port to open");
+      Serial1.Open();
+      System.Threading.Thread.Sleep(250);
+    }
+
+    SerialWriteLine("AT+CPIN=\"2608\"");
+
+    Task.Run(() => {listenToGsm();});
 
     Console.WriteLine();
     Console.WriteLine("## GA6 GSM Module - AT Tester ##");
@@ -67,7 +79,7 @@ class Program
       inputstring = Console.ReadLine();  //read the contents of serial buffer as string
       Console.WriteLine();
       Console.Write("-- Input (");
-      Console.Write(inputstring.length());
+      Console.Write(inputstring.Length.ToString());
       Console.WriteLine(") --");
 
       lastCommand = inputstring;  //just a backup of the original string
@@ -88,7 +100,8 @@ class Program
         string Substring = inputstring.Substring(2);  //remove "#h" part
         byte[] hexstring = Encoding.ASCII.GetBytes(Substring); //convert string object to byte array
         var intNumber = BitConverter.ToInt32(hexstring, 16); // convert Byte[] to int
-        Serial1.Write(intNumber); //can only write values between 0-255
+        //            intNumber
+        SerialWrite(Substring); //can only write values between 0-255
       }
 
       //----------------------------------------------------------------//
@@ -97,22 +110,22 @@ class Program
       else if(inputstring.StartsWith("#D") || inputstring.StartsWith("#d")) { //allows you to send dec value
         Console.WriteLine(inputstring);
         string Substring = inputstring.Substring(2);  //remove "#h" part
-        var intNumber = Substring.toInt();
-        Serial1.Write(intNumber); //can only write values between 0-255
+        var intNumber = Int32.Parse(Substring);
+        SerialWrite(Substring); //can only write values between 0-255 intNumber
       }
 
       //----------------------------------------------------------------//
       //send the CR character
 
       else if(inputstring.StartsWith("<cr>") || inputstring.StartsWith("<CR>")) { //allows you to send dec value
-        Serial1.Write(0xD); //can only write values between 0-255
+        SerialWrite("\r"); //can only write values between 0-255 0xD
       }
 
       //----------------------------------------------------------------//
       //send the line feed or newline charcater
 
       else if(inputstring.StartsWith("<lf>") || inputstring.StartsWith("<LF>")) { //allows you to send dec value
-        Serial1.Write(0xA); //can only write values between 0-255
+        SerialWrite("\n"); //can only write values between 0-255 0xA
       }
 
       //----------------------------------------------------------------//
@@ -121,7 +134,7 @@ class Program
       else if(inputstring.StartsWith("$")) { //allows you to send text
         Console.WriteLine(inputstring); 
         string Substring = inputstring.Substring(1);  //remove the $ char
-        Serial1.Write(Substring);
+        SerialWrite(Substring);
         upperCaseStatus = false;
       }
 
@@ -132,10 +145,10 @@ class Program
         inputstring.ToUpper();
         Console.WriteLine("AT command: "+inputstring);
     
-        Serial1.Write(inputstring);
-        Serial1.Write(0xD); //carriage return : important --> \r
-        Serial1.Write(0xA); //newline                     --> \n
-        upperCaseStatus = true;
+        SerialWrite(inputstring);
+        SerialWrite("\r"); //carriage return : important --> \r 0xD
+        SerialWrite("\n"); //newline                     --> \n 0xA
+        upperCaseStatus = true; 
       }
 
       //----------------------------------------------------------------//
@@ -146,16 +159,16 @@ class Program
         inputstring.ToUpper();
         Console.WriteLine(inputstring);
     
-        Serial1.Write(inputstring);
-        Serial1.Write(0xD); //carriage return : important
-        // Serial1.Write(0xA); //newline
+        SerialWrite(inputstring);
+        SerialWrite("\r"); //carriage return : important 0xD
+        // SerialWrite(0xA); //newline
         upperCaseStatus = true;
       }
 
       //----------------------------------------------------------------//
     }
-
-    listenToGsm(upperCaseStatus);
+    ToUpper = upperCaseStatus;
+    //listenToGsm(upperCaseStatus);
   }
 
   //================================================================//
@@ -168,23 +181,26 @@ class Program
       Console.WriteLine();
       Console.WriteLine("-- Input --");
       Console.WriteLine("AT+CMGF=1");
-      Serial1.WriteLine("AT+CMGF=1"); //access text mode
+      SerialWriteLine("AT+CMGF=1"); //access text mode
       Thread.Sleep(500);
-      listenToGsm(true);  //we must wait after each command
+      ToUpper = true;
+      //listenToGsm(true);  //we must wait after each command
       Console.WriteLine();
       Console.WriteLine("-- Input --");
-      Console.WriteLine("AT+CMGS=\"phonenumber\"");
-      Serial1.WriteLine("AT+CMGS=\"phonenumber\""); //set phone number
+      Console.WriteLine("AT+CMGS=\"+33662259966\"");
+      SerialWriteLine("AT+CMGS=\"+33662259966\""); //set phone number
       Thread.Sleep(500);
-      listenToGsm(true);
+      ToUpper = true;
+      //listenToGsm(true);
       Console.WriteLine();
       Console.WriteLine("-- Input --");
-      Console.WriteLine("message");
+      Console.WriteLine("message sent");
       Console.WriteLine("\n");
-      Serial1.Write("message"); //sms content
-      Serial1.Write(26);  //substitute char to end message
+      SerialWrite("Bisous maman"); //sms content
+      SerialWrite("\u001a");  //substitute char to end message 0x26
       Thread.Sleep(500);
-      listenToGsm(false);  //wait for the confirmation
+      ToUpper = false;
+      //listenToGsm(false);  //wait for the confirmation
       Console.WriteLine("");
     }
   }
@@ -192,16 +208,53 @@ class Program
   //================================================================//
   //listen to GSM module port
 
-  public static void listenToGsm(bool ToUpper) {
-    if(Serial1.IsOpen()) {  //monitor the serial 1 interface
-      inputstring = Serial1.ReadLine();  //read the contents of serial buffer as string
-      Console.WriteLine();
-      Console.Write("-- Response (");
-      Console.Write(inputstring.length());
-      Console.WriteLine(") --");
-      if(ToUpper)
-        inputstring.ToUpper();
-      Console.Write(inputstring); 
+  public static void SerialWrite(string text)
+  {
+    try{
+      Serial1.Write(text);
     }
+    catch(Exception)
+    {
+      Console.Write("X");
+    }
+    
   }
+
+  public static void SerialWriteLine(string text)
+  {
+    try{
+      Serial1.WriteLine(text);
+    }
+    catch(Exception)
+    {
+      Console.Write("X");
+    }
+    
+  }
+
+  public static bool ToUpper = false;
+  public static async void listenToGsm() {
+      while (true) {
+        if(Serial1.IsOpen) {  //monitor the serial 1 interface
+          try {
+            inputstring = Serial1.ReadLine();  //read the contents of serial buffer as string
+            if(inputstring.Length>0 && inputstring.StartsWith("#H")) {
+              Console.WriteLine();
+              Console.Write("-- Response (");
+              Console.Write(inputstring.Length.ToString());
+              Console.WriteLine(") --");
+              if(ToUpper)
+                inputstring.ToUpper();
+              Console.Write(inputstring);
+            }
+             
+          }
+          catch(Exception) {
+            Console.WriteLine(@"/!\ bad wireing /!\");
+          }
+          
+        }
+      }
+    }
+    
 }

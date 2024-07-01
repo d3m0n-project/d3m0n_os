@@ -1,7 +1,7 @@
 from PIL import Image
 import os
 
-# simple python script to inverse white icons to black ones
+
 
 directory = './icons'
  

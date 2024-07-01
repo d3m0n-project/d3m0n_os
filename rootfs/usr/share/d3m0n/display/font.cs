@@ -18,7 +18,7 @@ namespace display
             }
             
 
-            Console.WriteLine("Max chars par line: "+max_chars_per_line.ToString());
+            // Console.WriteLine("Max chars par line: "+max_chars_per_line.ToString());
             // x  fontSize  horizontal_padding
             // <> <->       <----->
             //    ...
@@ -45,13 +45,13 @@ namespace display
                 if(uppercase.Contains(letter.ToString()))
                 {
                     needYCalibration=true;
-                    // bitmap_path = d3m0n.utils.getPath()+"/display/letters/"+letter.ToString()+"_upper.bmp";
-                    bitmap_path = "./letters/"+letter.ToString()+"_upper.bmp";
+                    bitmap_path = d3m0n.utils.getPath()+"/display/letters/"+letter.ToString()+"_upper.bmp";
+                    // bitmap_path = "./letters/"+letter.ToString()+"_upper.bmp";
                 }
                 else
                 {
-                    // bitmap_path = d3m0n.utils.getPath()+"/display/letters/"+letter.ToString()+".bmp";
-                    bitmap_path = "./letters/"+letter.ToString()+".bmp";
+                    bitmap_path = d3m0n.utils.getPath()+"/display/letters/"+letter.ToString()+".bmp";
+                    // bitmap_path = "./letters/"+letter.ToString()+".bmp";
                 }
                 
                 

@@ -1,0 +1,8 @@
+name: keyboard
+package: com.4re5.d3m0n.keyboard
+icon: keyboard
+executable: /path/to/keyboard.exe
+perms: sudo
+start_path: /path/to
+category: utils
+hidden: true

@@ -2,4 +2,3 @@ wallpaper: default
 theme: default_dark
 splash_time: 3000
 update: true
-shell_port: 3849

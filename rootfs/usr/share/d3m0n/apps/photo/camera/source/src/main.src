@@ -1,0 +1,20 @@
+# d3m0n source
+
+Window.OnCreate =>
+	logn("[o] loaded camera", "orange");
+	system.exec("sudo raspistill -o test.jpg -w 480 -h 640 -q 100 -t 1 -n");
+
+Window.OnDestroy =>
+	system.exec("sudo pkill -f raspistill");
+
+shoot.OnClick => 
+	app.layout.shoot.src="circle-selected";
+	sleep(250);
+	app.layout.shoot.src="circle";
+	app.layout.display($layouts/test.layout);
+	alert("hello world! you've clicked shoot");
+
+gallery.OnClick =>
+	app.run("com.4re5.d3m0n.gallery");
+	sleep(5000);
+	app.close("com.4re5.d3m0n.gallery");

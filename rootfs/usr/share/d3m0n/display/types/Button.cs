@@ -11,14 +11,10 @@ namespace display
     
     public class Button : Control
     {
-        // init events
-        // public delegate void ClickEventHandler(string message);
-        // public event ClickEventHandler OnClick;
-
         public string Text = "";
         public ushort BackColor = Colors.Black;
         public ushort ForeColor = Colors.White;
-        
+        public int Padding = 5;
 
 
         public int FontSize = 10;
@@ -43,10 +39,8 @@ namespace display
 
             //                        x   y    x1   x2 color
             //ili9340.lcdDrawFillRect((ushort)10, (ushort)10, (ushort)50, (ushort)70, this.BackColor);
-            // apply padding
-            int padding = 5;
             
-            ili9340.lcdDrawFillRect((ushort)(x2-padding), (ushort)(y1-padding), (ushort)(x1+padding), (ushort)(y2+padding), this.BackColor);
+            ili9340.lcdDrawFillRect((ushort)(x2-Padding), (ushort)(y1-Padding), (ushort)(x1+Padding), (ushort)(y2+Padding), this.BackColor);
             //                 text  size pad  x   y  center
             font.WriteString(this.Text, this.FontSize, this.FontPadding, (ushort)x1, (ushort)y1, this.ForeColor, this.Center, (ushort)this.Size.Width, (ushort)this.Size.Height);
 

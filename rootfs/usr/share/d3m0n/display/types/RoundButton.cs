@@ -10,19 +10,19 @@ using System.Windows.Forms;
 namespace display
 {
     
-    public class RoundButton
+    public class RoundButton : Control
     {
         
 
         public string Text = "";
-        public ushort BackColor = Colors.Black;
+        // grey bg (30, 30, 30)
+        public ushort BackColor = Colors.getRGB565(30, 30, 30);
         public ushort ForeColor = Colors.White;
-        public DataTypes.Point Location = new DataTypes.Point(0, 0);
-        public DataTypes.Size Size  = new DataTypes.Size(50, 25);
         public int FontSize = 10;
         public bool Center = false;
         public int FontPadding = 0;
-        public int Radius = 20;
+        public int Radius = 10;
+        public int Padding = 5;
 
         public void draw()
         {
@@ -30,9 +30,9 @@ namespace display
             int y1 = this.Location.Y;
 
             int x2 = x1-this.Size.Width;
-            int y2 = this.Location.Y-this.Size.Height;
+            int y2 = y1+this.Size.Height;
 
-            ili9340.lcdDrawRoundRect((ushort)x1, (ushort)y1, (ushort)x2, (ushort)y2, (ushort)this.Radius, (ushort)this.BackColor);
+            ili9340.lcdDrawRoundRect((ushort)(x2-Padding), (ushort)(y1-Padding), (ushort)(x1+Padding), (ushort)(y2+Padding), (ushort)this.Radius, (ushort)this.BackColor);
             //                 text  size pad  x   y  center
             font.WriteString(this.Text, this.FontSize, this.FontPadding, (ushort)x1, (ushort)y1, this.ForeColor, this.Center, (ushort)this.Size.Width, (ushort)this.Size.Height);
         }

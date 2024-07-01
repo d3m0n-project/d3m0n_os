@@ -1,3 +1,0 @@
-# d3m0n source
-
-Window.OnCreate => logn("[o] loaded phone", "orange"); 

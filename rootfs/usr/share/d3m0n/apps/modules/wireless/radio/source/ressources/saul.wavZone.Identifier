@@ -1,0 +1,4 @@
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=https://cloudconvert.com/
+HostUrl=https://eu-central.storage.cloudconvert.com/tasks/11aef1c1-127d-49b3-82f4-f26070af0f5b/saul-goodman-made-with-Voicemod-technology.wav?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cloudconvert-production%2F20231106%2Ffra%2Fs3%2Faws4_request&X-Amz-Date=20231106T180547Z&X-Amz-Expires=86400&X-Amz-Signature=7d1bf39160c63bc840777290d51e25f6503ba09b984dccaa75f5424d4bcb1e3d&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22saul-goodman-made-with-Voicemod-technology.wav%22&response-content-type=audio%2Fwav&x-id=GetObject

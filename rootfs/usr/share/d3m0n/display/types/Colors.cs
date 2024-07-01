@@ -14,6 +14,7 @@ namespace display
         public static ushort Yellow = 0xFFE0;
         public static ushort Cyan  = 0x07FF;
         public static ushort Magenta = 0xF81F;
+        public static ushort Transparent = 0x0;
 
         public static ushort getRGB565(int red, int green, int blue)
         {

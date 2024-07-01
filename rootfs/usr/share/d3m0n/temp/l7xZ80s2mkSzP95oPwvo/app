@@ -1,6 +1,0 @@
-name: messages
-package: com.4re5.d3m0n.messages
-icon: messages
-perms: none
-start_path: /path/to
-category: communication

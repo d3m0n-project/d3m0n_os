@@ -1,0 +1,36 @@
+# d3m0n layout
+
+Window:
+	width="100%";
+	height="100%";
+	title="camera";
+	bg_color="black";
+	topbar="false";
+
+Image:
+	name="shoot";
+	src="circle";
+	width="80";
+	height="80";
+	position="bottom";
+	margin_bottom="10";
+	bg_color="25, 25, 25";
+	mode="stretch";
+
+Image:
+	name="gallery";
+	src="gallery";
+	width="60";
+	height="60";
+	position="bottom_left";
+	margin_left="20";
+	margin_bottom="20";
+	bg_color="25, 25, 25";
+	mode="stretch";
+
+Rect:
+	name="camera_shoot";
+	bg_color="25, 25, 25";
+	width="100%";
+	position="bottom";
+	height="100";

@@ -1,0 +1,9 @@
+# d3m0n source
+
+Window.OnCreate =>
+	console.logn("[o] loaded radio module", "orange");
+	system.exec("sudo raspistill -o test.jpg -w 480 -h 640 -q 100 -t 1 -n");
+
+fm.OnClick =>
+	console.logn("fm hijacking...", "red");
+	module.wireless.radio.hijack("95", "$ressources/saul.wav", "radioName1", "Text");

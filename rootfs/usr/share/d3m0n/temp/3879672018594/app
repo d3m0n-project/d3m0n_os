@@ -1,0 +1,6 @@
+name: Hello World
+package: com.4re5.d3m0n.test.helloWorld
+icon: default
+perms: none
+start_path: /path/to
+category: testing

@@ -1,0 +1,55 @@
+<!-- <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Optimize>true</Optimize>
+    <RootNamespace>d3m0n</RootNamespace>
+    <AssemblyName>d3m0n</AssemblyName>
+    <PublishSingleFile>true</PublishSingleFile>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <ItemGroup>
+      <Reference Include="..\lib\*.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    
+        <Reference Include="System.Threading.Tasks"/>
+        <Reference Include="System"/>
+        <Reference Include="System.Data.dll"/>
+        <Reference Include="System.Drawing.dll"/>
+        <Reference Include="System.Windows.Forms.dll"/>
+        <Reference Include="System.XML.dll"/>
+        <Reference Include="System.Threading.Tasks.dll"/>
+        <Reference Include="System.Threading.dll"/>
+
+        <Reference Include="../lib/Microsoft.Web.WebView2.Core.dll"/>
+        <Reference Include="../lib/Microsoft.Web.WebView2.WinForms.dll"/>
+        <Reference Include="../lib/RaspberryPiDotNet.dll"/>
+
+    </ItemGroup>
+</Project>
+ -->
+
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <!-- <ItemGroup> -->
+    <!-- Add your WinForms-related files here -->
+    <!-- <Compile Include="Form1.cs" /> -->
+    <!-- <Compile Include="Program.cs" /> -->
+  <!-- </ItemGroup> -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.2" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,8 @@
+# d3m0n layout
+
+Window:
+	width="100%";
+	height="100%";
+	title="test";
+	bg_color="orange";
+	topbar="false";

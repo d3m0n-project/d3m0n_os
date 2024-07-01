@@ -10,7 +10,7 @@ namespace display
         public static int RES = bcm2835.RPI_V2_GPIO_P1_11;
         public static int T_IRQ = bcm2835.RPI_V2_GPIO_P1_22;
 
-        public static void touchInit(){
+        public static void touchInit(Window into){
             int     x=0;
             int     y=0;
             int     pen_irq;
@@ -42,7 +42,8 @@ namespace display
                         x2=240-x2;
                         y2=320-y2;
 
-                        Display.processClick(x2, y2);
+                        into.processClick(x2, y2);
+                        d3m0n.utils.logn("~ Clicked", ConsoleColor.Red);
 
                         // 876543210
                         //         1
@@ -50,7 +51,7 @@ namespace display
                         //         3
 
                         // max x=1750 y=1015
-                        // min
+                        // min x=0    y=0
                 }
             }
 
@@ -73,10 +74,17 @@ namespace display
         public static extern int bcm2835_gpio_lev(int pin);
 
         [DllImport("./lib.so", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void bcm2835_gpio_set_pud(int pin, int state);
+
+        
+
+        [DllImport("./lib.so", CallingConvention = CallingConvention.Cdecl)]
         public static extern void bcm2835_delay(int time);
 
         [DllImport("./lib.so", CallingConvention = CallingConvention.Cdecl)]
         public static extern void bcm2835_gpio_write(int pin, int pin2);
+
+        
 
 
         // import vars
@@ -85,6 +93,10 @@ namespace display
         public static int BCM2835_GPIO_FSEL_INPT=0;
         public static int BCM2835_GPIO_FSEL_OUTP=1;
         public static int BCM2835_SPI_CS1=1;
+        public static int BCM2835_GPIO_PUD_UP=2;
+        public static int BCM2835_GPIO_PUD_DOWN=1;
+        public static int BCM2835_GPIO_PUD_OFF=0;
+        
 
 
         // low and high

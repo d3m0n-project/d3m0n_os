@@ -24,8 +24,8 @@ namespace display
             {
                 if (utils.checkPosition(item.getRect(), new DataTypes.Point(x, y)))
                 {
-                    Console.Write($"CLICKED {item.Name}!!!!");
-                    ili9340.lcdDrawFillCircle((ushort)x, (ushort)y, (ushort)10, Colors.Yellow);
+                    Console.WriteLine($"CLICKED {item.Name}!!!!");
+                    item.Clicked(x, y);
                     break; // Exit the loop after handling the click
                 }
             }
@@ -64,11 +64,35 @@ namespace display
             btn1.BackColor = Colors.Red;
             btn1.Center = true;
             btn1.ForeColor = Colors.White;
-            // btn1.OnClick += Btn1_Click;
-            // btn1.InvokeCustomEvent("Custom event invoked!");
+            btn1.Click += Btn1_Click;
             btn1.Name="btn1_8";
             btn1.draw();
             window.Add(btn1);
+
+            Label label1 = new Label();
+            label1.Text = "Label";
+            label1.Location = new DataTypes.Point(0, 0);
+            label1.ForeColor = Colors.Red;
+            label1.Name="label1_6";
+            label1.draw();
+            window.Add(label1);
+
+            RoundButton rndBtn1 = new RoundButton();
+            rndBtn1.Text = "roundButton";
+            rndBtn1.Location = new DataTypes.Point(0, 100);
+            rndBtn1.ForeColor = Colors.Yellow;
+            rndBtn1.Name = "roundButton1";
+            rndBtn1.draw();
+            window.Add(rndBtn1);
+
+            ProgressBar progBar1 = new ProgressBar();
+            progBar1.Percentage = 250;
+            progBar1.Max = 500;
+            progBar1.Location = new DataTypes.Point(0, 200);
+            progBar1.Name = "progressBar1";
+            progBar1.draw();
+            window.Add(progBar1);
+
 
             Image img1 = new Image();
             img1.Img = System.Drawing.Image.FromFile("/home/d3m0n/test.png");
@@ -80,8 +104,14 @@ namespace display
 
             Console.WriteLine(Colors.getRGB565(255, 0, 0).ToString("X4"));
 
+            // d3m0n_modules.IR.Recieve();
+
             // enable touchscreen
-            touchscreen.touchInit();
+            touchscreen.touchInit(window);
+        }
+        public static void Btn1_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine("done event!");
         }
     }
 
