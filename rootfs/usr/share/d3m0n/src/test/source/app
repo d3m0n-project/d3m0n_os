@@ -1,6 +1,0 @@
-name: RADIO MODULE
-package: com.4re5.d3m0n.main.radio
-icon: radio
-perms: none
-start_path: /path/to
-category: main
