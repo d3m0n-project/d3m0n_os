@@ -1,0 +1,27 @@
+╔═╗  ║ ╚═╝ ╩ ╦ ╠═╣ ╬
+
+
+
+                              ║  ╔═╗  ╔═╦═╗  ╔═╗  ╔═╗
+                            ╔═╣   ═╣  ║ ║ ║  ║ ║  ║ ║
+                            ╚═╝  ╚═╝  ╩ ╩ ╩  ╚═╝  ╩ ╩
+                      ══════════╦═══════════════╦══════════
+               ╔════════════════╩═══════════════╩═════════════════╗
+╔══════════════╝                   Help command                   ╚═══════════════╗
+║ command                        ║ permissions ║ description                      ║
+╠════════════════════════════════╬═════════════╬══════════════════════════════════╣
+║ help                           ║ none        ║ display this list                ║
+║ exit                           ║ none        ║ quit                             ║
+║ config [get/set] name (value)  ║ admin       ║ config your phone                ║
+║ load <path>                    ║ none        ║ loads new app                    ║
+║ list                           ║ none        ║ list currently loaded apps       ║
+║ run <package>                  ║ none        ║ run app by package name          ║
+║ update [all/package_installer] ║ none        ║ update d3m0n OS components       ║
+║ fetch <package>                ║ none        ║ download package from repository ║
+║ clear                          ║ none        ║ clear console                    ║
+║ clean                          ║ none        ║ clean scripts & applications     ║
+║ version                        ║ none        ║ get current version              ║
+║ display [clear/draw]           ║ none        ║ manual display debug commands    ║
+║ info                           ║ none        ║ get debug informations           ║
+║ shutdown                       ║ none        ║ stop d3m0n shell                 ║
+╚════════════════════════════════╩═════════════╩══════════════════════════════════╝
