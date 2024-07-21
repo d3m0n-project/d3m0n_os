@@ -1,1 +1,2 @@
-com.4re5.d3m0n.test.colors: 
+com.4re5.d3m0n.test.colors: https://github.com/d3m0n-project/d3m0n_os/raw/main/rootfs/usr/share/applications/testing/color/com.4re5.d3m0n.test.colors.d3m0n
+com.4re5.d3m0n.test.helloWorld: https://github.com/d3m0n-project/d3m0n_os/raw/main/rootfs/usr/share/applications/testing/HelloWorld/com.4re5.d3m0n.test.helloWorld.d3m0n
