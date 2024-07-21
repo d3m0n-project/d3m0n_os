@@ -42,5 +42,8 @@ To install package just do `fetch <packagename>` inside [d3m0n shell](https://gi
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/infrared.png?raw=true"> [infrared](./modules/infrared)
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/wifi.png?raw=true"> [wifi](./modules/wifi)
     - <img width="15" src="/rootfs/usr/share/d3m0n/themes/default_dark/icons/radio.png?raw=true"> [radio](./modules/radio)
+  - testing (for debug purposes)
+    -  <img width="15" src=""> [Color test](./testing/color)
+    -  <img width="15" src=""> [HelloWorld](./testing/HelloWorld)
 - keyboard
   - keyboard app
