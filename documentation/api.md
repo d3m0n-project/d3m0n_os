@@ -84,29 +84,29 @@ Finnally export your app by calling the script `app_builder.sh`
 ## Controls
 In your d3m0n layout file, you can use multiple controls.
 
- - [TextBox](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/TextBox.md)
- - [ListView](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/ListView.md)
- - [ProgressBar](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/ProgressBar.md)
- - [CheckBox](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/CheckBox.md)
- - [RadioButton](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/RadioButton.md)
- - [RawHtml (⚠️ don't work)](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/RawHtml.md)
- - [WebView (⚠️ don't work)](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/WebView.md)
- - [Rect](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Rect.md)
- - [Switch](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Switch.md)
- - [Text](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Text.md)
- - [Image](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Image.md)
- - [RoundButton](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/RoundButton.md)
- - [Button](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Button.md)
- - [Hscroll](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Vscroll.md)
- - [Vscroll](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Hscroll.md)
+ - [TextBox](TextBox.md)
+ - [ListView](ListView.md)
+ - [ProgressBar](ProgressBar.md)
+ - [CheckBox](CheckBox.md)
+ - [RadioButton](RadioButton.md)
+ - [RawHtml (⚠️ don't work)](RawHtml.md)
+ - [WebView (⚠️ don't work)](WebView.md)
+ - [Rect](Rect.md)
+ - [Switch](Switch.md)
+ - [Text](Text.md)
+ - [Image](Image.md)
+ - [RoundButton](RoundButton.md)
+ - [Button](Button.md)
+ - [Hscroll](Vscroll.md)
+ - [Vscroll](Hscroll.md)
 
 ## Events
-You can access your application [Controls](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/api.md#controls) with events
-> more infos [here](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/d3m0n/documentation/events)
+You can access your application [Controls](/api.md#controls) with events
+> more infos [here](events)
 
 ## Embeded-in functions
 Use premade functions into your script (`.src`) file
-> see [here](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/d3m0n/documentation/functions)
+> see [here](functions)
 
 # Apparence
 Your system design can be changed to be fancier.
