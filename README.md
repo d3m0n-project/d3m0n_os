@@ -24,7 +24,7 @@ d3m0n app system and binaries are located in [rootfs/usr/share/d3m0n](https://gi
 >
 >   (2) [Configuration](https://github.com/d3m0n-project/d3m0n_os#Configure_your_OS)
 >
->   (3) [Application API](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/api.md)
+>   (3) [Application API](https://github.com/d3m0n-project/d3m0n_os/blob/main/documentation/api.md)
 >
 >   (4) [About](https://github.com/d3m0n-project/d3m0n_os#About)
 >
