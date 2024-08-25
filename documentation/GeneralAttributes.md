@@ -41,11 +41,11 @@ These attributes can be applied to **every** controls.
 
 `position` (int/string) is the place where your control will be (can be "**x, y**", "**top**", "**top_left**", "**top_right**", "**bottom**", "**bottom_left**", "**bottom_right**", "**left**", "**right**" or "**center**")
 
-![position_schema](https://github.com/d3m0n-project/d3m0n_os/assets/71982379/a77a3f24-e667-4fb0-9588-90196317451a)
+![position_schema](images/position_schema.png)
 
 
-`color` (rgb/string) is your control foreground color (can be [a color](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Colors.md) or a rgb color ex. "**255, 0, 80**")
+`color` (rgb/string) is your control foreground color (can be [a color](Colors.md) or a rgb color ex. "**255, 0, 80**")
 
-`bg_color` (rgb/string) is your control background color (can be [a color](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/documentation/Colors.md) or a rgb color ex. "**255, 0, 80**")
+`bg_color` (rgb/string) is your control background color (can be [a color](Colors.md) or a rgb color ex. "**255, 0, 80**")
 
 `width` (int) and `height` (int) can only be positive numbers or percentage of the window size
