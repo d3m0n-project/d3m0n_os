@@ -8,8 +8,8 @@ echo 1 | sudo tee /sys/class/leds/led0/brightness
 
 
 # setup display
-sudo xinit &
-export DISPLAY=:0
+#sudo xinit &
+#export DISPLAY=:0
 
 # xrandr --output default --mode 640x480
 
