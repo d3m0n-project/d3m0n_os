@@ -187,8 +187,8 @@ class Program
       //listenToGsm(true);  //we must wait after each command
       Console.WriteLine();
       Console.WriteLine("-- Input --");
-      Console.WriteLine("AT+CMGS=\"+33662259966\"");
-      SerialWriteLine("AT+CMGS=\"+33662259966\""); //set phone number
+      Console.WriteLine("AT+CMGS=\"phonehere\"");
+      SerialWriteLine("AT+CMGS=\"phonehere\""); //set phone number
       Thread.Sleep(500);
       ToUpper = true;
       //listenToGsm(true);
