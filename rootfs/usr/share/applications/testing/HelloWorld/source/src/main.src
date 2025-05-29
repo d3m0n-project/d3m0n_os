@@ -1,4 +1,4 @@
 # d3m0n source
 
 Window.OnCreate =>
-  logn(Hello World, orange);
+  logn("Hello World", "orange");
