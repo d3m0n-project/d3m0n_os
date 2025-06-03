@@ -1,5 +1,5 @@
 name: Color Test
-package: com.4re5.d3m0n.test.colors
+package: com.4re5.d3m0n.testing.color
 icon: default
 perms: none
 start_path: /path/to
