@@ -3,12 +3,139 @@
 Window:
 	width="100%";
 	height="100%";
-	title="Color Test";
+	name="Color Test";
 	bg_color="white";
 	topbar="true";
 
 Rect:
+	name="black";
+	bg_color="black";
+	location="0, 0";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="dark_red";
+	bg_color="dark_red";
+	location="0, 5%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="red";
 	bg_color="red";
-	location="10, 10";
-	width="10";
-	height="100%";
+	location="0, 10%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="dark_orange";
+	bg_color="dark_orange";
+	location="0, 15%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="orange";
+	bg_color="orange";
+	location="0, 20%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="dark_yellow";
+	bg_color="dark_yellow";
+	location="0, 25%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="yellow";
+	bg_color="yellow";
+	location="0, 30%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="dark_green";
+	bg_color="dark_green";
+	location="0, 35%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="green";
+	bg_color="green";
+	location="0, 40%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="dark_blue";
+	bg_color="dark_blue";
+	location="0, 45%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="blue";
+	bg_color="blue";
+	location="0, 50%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="dark_cyan";
+	bg_color="dark_cyan";
+	location="0, 55%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="cyan";
+	bg_color="cyan";
+	location="0, 60%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="dark_magenta";
+	bg_color="dark_magenta";
+	location="0, 65%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="magenta";
+	bg_color="magenta";
+	location="0, 70%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="dark_grey";
+	bg_color="dark_grey";
+	location="0, 75%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="grey";
+	bg_color="grey";
+	location="0, 80%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="white";
+	bg_color="white";
+	location="0, 85%";
+	width="100%";
+	height="5%";
+
+Rect:
+	name="reset";
+	bg_color="reset";
+	location="0, 90%";
+	width="100%";
+	height="5%";
