@@ -13,8 +13,8 @@ These attributes can be applied to **every** controls.
     margin_right="5";
     margin_bottom="25";
     
-    position="x, y";
-    position="[top/top_left/top_right/bottom/bottom_left/bottom_right/left/right/center]";
+    location="x, y";
+    location="[top/top_left/top_right/bottom/bottom_left/bottom_right/left/right/center]";
     
     color="white";
     color="255, 255, 255";
@@ -39,7 +39,7 @@ These attributes can be applied to **every** controls.
 
 `margin_top`, `margin_right`, `margin_left`, `margin_bottom` (int) set margins of your control
 
-`position` (int/string) is the place where your control will be (can be "**x, y**", "**top**", "**top_left**", "**top_right**", "**bottom**", "**bottom_left**", "**bottom_right**", "**left**", "**right**" or "**center**")
+`location` (int/string) is the place where your control will be (can be "**x, y**", "**top**", "**top_left**", "**top_right**", "**bottom**", "**bottom_left**", "**bottom_right**", "**left**", "**right**" or "**center**")
 
 ![position_schema](images/position_schema.png)
 
