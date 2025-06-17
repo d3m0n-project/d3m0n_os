@@ -6,8 +6,8 @@
     <a href="https://github.com/d3m0n-project/d3m0n_os/blob/master/LICENSE.md"><img alt="Software License" src="https://img.shields.io/badge/license-GPL3-brightgreen.svg?style=flat-square"></a>
     <a href="https://github.com/d3m0n-project/d3m0n_os/graphs/contributors"><img alt="Contributors" src="https://img.shields.io/github/contributors/d3m0n-project/d3m0n_os"/></a>
     <a href="https://twitter.com/intent/follow?screen_name=4re5group"><img src="https://img.shields.io/twitter/follow/4re5group?style=social&logo=twitter" alt="follow on Twitter"></a>
+    <img src="https://hackatime-badge.hackclub.com/U092FKXDBSL/d3m0n_os_debian">
 </p>
-
 d3m0n OS is a Debian based ARM CPU architecture operating system. 
 > :warning: This code is made to run on a d3m0n device only or only on linux distibutions for debug purposes :warning:
 
