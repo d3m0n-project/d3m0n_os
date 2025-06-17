@@ -118,9 +118,9 @@ Wallpapers are located in `/usr/share/d3m0n/wallpapers`. To change it, edit `wal
 
 &nbsp; | Official Links
 ---------|-------
-Website | [d3m0n-project.github.io](https://d3m0n-project.github.io/d3m0n_os/)
+Website | [d3m0n-project.github.io](https://d3m0n-project.github.io/)
 Forum | [forum.ducksploit.com](https://forum.ducksploit.com/)
-Discord | [discord.com](https://discord.com/invite/TQTEvt2wsb)
+Discord | [discord.com](https://discord.com/invite/Rfb5ajz7cM)
 Subreddit | [r/d3m0nproject](https://www.reddit.com/r/d3m0nproject/)
 
 ## Made with ❤️ by 4RE5's devs
