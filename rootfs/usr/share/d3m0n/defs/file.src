@@ -1,6 +1,6 @@
 def file.write
 {
-	logn("let's goooo", "red");
-	lol="lol";
-	logn("lol is equal to: $lol", "green");
+	logn("test", "red");
+	var1="var1";
+	logn("var1 is equal to: $var1", "green");
 }

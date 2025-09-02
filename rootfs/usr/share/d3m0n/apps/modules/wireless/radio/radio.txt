@@ -1,6 +1,0 @@
-nrf24l01 module
-
-https://www.framboise314.fr/faire-dialoguer-un-raspberry-et-un-arduino-via-nrf24l01/
-
-https://github.com/TMRh20/RF24
-
