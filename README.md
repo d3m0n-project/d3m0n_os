@@ -7,10 +7,10 @@
     <a href="https://github.com/d3m0n-project/d3m0n_os/graphs/contributors"><img alt="Contributors" src="https://img.shields.io/github/contributors/d3m0n-project/d3m0n_os"/></a>
     <a href="https://twitter.com/intent/follow?screen_name=4re5group"><img src="https://img.shields.io/twitter/follow/4re5group?style=social&logo=twitter" alt="follow on Twitter"></a>
 </p>
-d3m0n OS is a Debian based ARM CPU architecture operating system. 
-> :warning: This code is made to run on a d3m0n device only or only on linux distibutions for debug purposes :warning:
+d3m0n OS is the official kernel for the d3m0n devices.
+> :warning: This code is made to run on a d3m0n device only or only on linux distibutions in `DEBUG` mode :warning:
 
-> We had to remake the whole system from scratch in C instead of C#
+> We had to remake the whole system from scratch in C instead of C++
 d3m0n app system and binaries are located in [rootfs/usr/share/d3m0n](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/d3m0n)
 
 ![d3m0n_ssh](https://github.com/d3m0n-project/d3m0n_os/assets/71982379/c989aebe-c06f-4417-821c-ac0029023d80)
@@ -50,26 +50,13 @@ Just download lastest [release](https://github.com/d3m0n-project/d3m0n_os/releas
   <p>- And click <b>FLASH</b></p>
 </details>
 
-### Install d3m0n system on an already flashed **raspberry pi zero 2W**
-First step, install wget using `sudo apt-get install wget -y`
-
-    mkdir d3m0n-install
-    cd d3m0n-install
-    wget https://raw.githubusercontent.com/d3m0n-project/d3m0n_os/root/install.sh
-    sudo chmod +x install.sh
-    sudo ./install.sh`
-Finaly wait until installation complete 
-
-
-### Build custom image
+### Build kernel image
 To execute this code and build your d3m0n os image (.img), you must execute these commands **line by line** in your linux machine terminal.
-
-    sudo apt-get install git
-    git clone https://github.com/d3m0n-project/d3m0n_os.git
-    cd d3m0n_os
-    sudo chmod +x *.sh && sudo chmod +x config
-    sudo ./d3m0n.sh
-then use numbers to select option you wan't
+```bash
+git clone https://github.com/d3m0n-project/d3m0n_os.git
+cd d3m0n_os
+make -j 4
+```
 
 ## Configure your OS
 
@@ -127,3 +114,4 @@ Subreddit | [r/d3m0nproject](https://www.reddit.com/r/d3m0nproject/)
 <a href="https://github.com/d3m0n-project/d3m0n_os/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=d3m0n-project/d3m0n_os" />
 </a>
+
