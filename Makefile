@@ -16,7 +16,7 @@ O_FILES			+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/%.o,$(S_FILES))
 VERSION			= 2.0.1
 VERSION_NAME	= outset
 NAME			= d3m0n_os_$(VERSION_NAME)_$(VERSION).img
-C_FLAGS			=	-Wall -Wextra -Werror -nostdlib -ffreestanding -Iincludes \
+C_FLAGS			=	-Wall -Wextra -Werror -nostdlib -ffreestanding -O2 -Iincludes \
 					-D DEBUG=$(DEBUG) \
 					-D KERNEL_VERSION=\"$(VERSION)\" \
 					-D KERNEL_VERSION_NAME=\"$(VERSION_NAME)\"
@@ -40,38 +40,37 @@ banner:
 	@echo "    $(C5)╚═════╝ ╚═════╝ $(C5)╚═╝     ╚═╝ $(C5)╚═════╝ $(C5)╚═╝  ╚═══╝$(R)"
 	@echo "                  $(C1)made by 4re5 group$(R)              "
 	@echo "           $(C2)the first hacking cellular phone$(R)       \n\n"
-	
-$(NAME): $(O_FILES)
-	$(CC) $(C_FLAGS) $^ $(LD_FLAGS) -o $(OBJ_DIR)/kernel.elf
-	$(OBJ_COPY) -O binary $(OBJ_DIR)/kernel.elf $@
-	@echo "$(C2)Compilation done! => $(NAME)$(R)"
 
 # .elf and .img
 $(NAME): $(O_FILES)
 	@mkdir -p $(OBJ_DIR)
-	$(CC) $(C_FLAGS) $^ $(LD_FLAGS) -o $(OBJ_DIR)/kernel.elf
-	$(OBJ_COPY) -O binary $(OBJ_DIR)/kernel.elf $@
+	@echo "Linking C objects: $^"
+	@$(CC) $(C_FLAGS) $^ $(LD_FLAGS) -o $(OBJ_DIR)/kernel.elf
+	@$(OBJ_COPY) -O binary $(OBJ_DIR)/kernel.elf $@
 	@echo "$(C2)Compilation done! => $(NAME)$(R)"
 
 # C files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(C_FLAGS) -c $< -o $@
+	@echo "Compiling C object: $<"
+	@$(CC) $(C_FLAGS) -c $< -o $@
 
 # S files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s
 	@mkdir -p $(dir $@)
-	$(CC) $(C_FLAGS) -c $< -o $@
+	@echo "Compiling C object: $<"
+	@$(CC) $(C_FLAGS) -c $< -o $@
 
 run: all
 ifeq ($(DEBUG),1)
-	$(QEMU) \
+	@$(QEMU) \
 		-machine virt \
 		-cpu cortex-a53 \
 		-smp 4 \
+		-serial stdio \
 		-m 512M \
-		-nographic \
-		-kernel obj/kernel.elf
+		-kernel obj/kernel.elf \
+		-device VGA,vgamem_mb=16
 endif
 
 clean:

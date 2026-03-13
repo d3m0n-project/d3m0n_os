@@ -1,7 +1,6 @@
 #include "d3m0n.h"
 #include "log.h"
-#include "time.h"
-#include "uart.h"
+#include "display.h"
 
 void    show_kernel_status()
 {
@@ -11,12 +10,17 @@ void    show_kernel_status()
 
 void kernel_main()
 {
-    log("Loading kernel...\n", LOG_INFO, NULL);
+    log("Loading kernel...\n", LOG_INFO);
     show_kernel_status();
 
-    //log("Timestamp: %llu\n", LOG_INFO, time_now(), NULL);
+    //put_pixel(10, 10, 0x00FF0000);
+    #define fb_loc 0x40002000
+    uint32_t* fb_address = (uint32_t*)fb_loc;
+    for (int i = 0; i < 800*600; i++) {
+        fb_address[i] = 0xFFFF0000;
+    }
 
-    log("Finished kernel!\n", LOG_WARNING, NULL);
+    log("Finished kernel!\n", LOG_WARNING);
 
     while(1);
 }

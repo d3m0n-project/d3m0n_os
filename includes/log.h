@@ -1,6 +1,8 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include "types.h"
+
 typedef enum
 {
 	LOG_SUCCESS,
@@ -30,8 +32,8 @@ typedef enum
 	WHITE
 }	e_colors;
 
-extern const char *COLORS[20];
+extern const char *COLORS[16];
 
-void	log(const char *fmt, e_logtype type, const char *arg);
+void log(const char *fmt, e_logtype type, ...);
 
 #endif

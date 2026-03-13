@@ -3,6 +3,7 @@
 
 #include "types.h"
 
-uint64_t time_now();
+uint64_t	time_now();
+void		sleep(int seconds);
 
 #endif

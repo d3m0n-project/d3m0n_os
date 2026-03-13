@@ -19,3 +19,10 @@ uint64_t time_now()
 {
     return read_cntpct() / read_cntfrq();
 }
+
+void    sleep(int seconds)
+{
+    unsigned long long start = time_now();
+    while (time_now() - start < (unsigned long long)seconds)
+        continue;
+}

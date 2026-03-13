@@ -1,26 +1,42 @@
+.section .bss
+.align 16
+
+NUM_CPUS = 4
+STACK_SIZE = 16384
+
+stack_table:
+    .rept NUM_CPUS
+    .skip STACK_SIZE
+    .endr
+
+stack_table_end:
+
 .section .text
 .global _start
 
 _start:
     mrs x0, mpidr_el1
-    and x0, x0, #3
-    cbz x0, primary_cpu
+    and x0, x0, #0xff          // lower 8 bits = core ID
+    mov x1, x0                 // save CPU ID
+
+    ldr x2, =stack_table
+    add x2, x2, x1, lsl #14   // 16 KB per stack
+    add sp, x2, #STACK_SIZE
+
+    cbz x1, primary_cpu
 
 secondary_cpu:
+    bl secondary_entry
+hang_secondary:
     wfe
-    b secondary_cpu
+    b hang_secondary
 
 primary_cpu:
-    ldr x0, =stack_top
-    mov sp, x0
     bl kernel_main
-
-hang:
+hang_primary:
     wfe
-    b hang
+    b hang_primary
 
-.section .bss
-.align 12
-stack:
-    .skip 4096
-stack_top:
+secondary_entry:
+    // CPU-specific init here
+    ret
