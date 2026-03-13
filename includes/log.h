@@ -32,6 +32,6 @@ typedef enum
 
 extern const char *COLORS[20];
 
-void	log(const char *str, e_logtype type);
+void	log(const char *fmt, e_logtype type, const char *arg);
 
 #endif
