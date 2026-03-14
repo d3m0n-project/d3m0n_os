@@ -8,9 +8,9 @@ LD_FLAGS		= -T linker.ld
 SRC_DIR			= src
 OBJ_DIR			= obj
 
-C_FILES			:= $(shell find $(SRC_DIR) -name "*.c")
-S_FILES			:= $(shell find $(SRC_DIR) -name "*.s" -o -name "*.S")
-O_FILES			:= $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_FILES))
+C_FILES			= $(shell find $(SRC_DIR) -name "*.c")
+S_FILES			= $(shell find $(SRC_DIR) -name "*.s" -o -name "*.S")
+O_FILES			= $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_FILES))
 O_FILES			+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/%.o,$(S_FILES))
 
 VERSION			= 2.0.1
@@ -64,13 +64,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s
 run: all
 ifeq ($(DEBUG),1)
 	@$(QEMU) \
-		-machine virt \
+		-machine raspi3ap \
 		-cpu cortex-a53 \
-		-smp 4 \
 		-serial stdio \
 		-m 512M \
-		-kernel obj/kernel.elf \
-		-device VGA,vgamem_mb=16
+		-kernel obj/kernel.elf
 endif
 
 clean:

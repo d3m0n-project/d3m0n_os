@@ -15,7 +15,7 @@ void    log(const char *fmt, e_logtype type, ...)
     {
         case LOG_ERROR:   color = COLORS[RED]; message = " FAIL "; break;
         case LOG_WARNING: color = COLORS[YELLOW]; message = " WARN "; break;
-        case LOG_SUCCESS: color = COLORS[GREEN]; message = "  OK  "; break;
+        case LOG_SUCCESS: color = COLORS[GREEN]; message = " GOOD "; break;
         case LOG_INFO:    color = COLORS[CYAN]; message = " INFO "; break;
         default: break;
     }

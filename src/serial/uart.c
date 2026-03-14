@@ -2,7 +2,7 @@
 #include "types.h"
 #include "math.h"
 
-#define UART0 ((volatile unsigned int*)0x09000000)
+#define UART0 ((volatile unsigned int*)0x3F201000)
 
 void uart_putc(char c)
 {
