@@ -2,7 +2,7 @@
 #include "log.h"
 #include "dtb.h"
 #include "display.h"
-#include "mailbox.h"
+#include "filesystem.h"
 
 void    show_kernel_status()
 {
@@ -20,14 +20,38 @@ void kernel_main(void *dtb)
     dtb_init(dtb);
     
     // init framebuffer
-    if(!framebuffer_init(640, 480, 32))
+    display_init();
+
+    // init fat32 filesystem
+    if (sd_init() < 0)
+        log("SD block interface init failed\n", LOG_ERROR);
+    else
     {
-        log("Framebuffer allocated!\n", LOG_SUCCESS);
-        for(uint32_t y=0; y<fb_req.height; y++)
-            for(uint32_t x=0; x<fb_req.width; x++)
-                put_pixel(x, y, 0x000000FF);
-    } else {
-        log("Framebuffer allocation failed!\n", LOG_ERROR);
+        log("SD block interface initialized!\n", LOG_SUCCESS);
+        if (fat32_mount() < 0)
+            log("FAT32 mount failed\n", LOG_ERROR);
+        else
+        {
+            log("FAT32 mounted!\n", LOG_SUCCESS);
+            int fd = open("test.txt", O_CREATE | O_WRITE);
+            if (fd < 0)
+                log("file not found: test.txt\n", LOG_ERROR);
+            else
+            {
+                write(fd, "Hello World!", 12);
+                close(fd);
+            }
+            fd = open("test.txt", O_READ);
+            if (fd < 0)
+                log("file not found: test.txt\n", LOG_ERROR);
+            else
+            {
+                char    buffer[20] = {0};
+                int len = read(fd, buffer, 12);
+                log("file: '%s', %i\n", LOG_ERROR, buffer, len);
+                close(fd);
+            }
+        }
     }
 
 

@@ -12,6 +12,7 @@ C_FILES			= $(shell find $(SRC_DIR) -name "*.c")
 S_FILES			= $(shell find $(SRC_DIR) -name "*.s" -o -name "*.S")
 O_FILES			= $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_FILES))
 O_FILES			+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/%.o,$(S_FILES))
+DISK			?= disk.img
 
 VERSION			= 2.0.1
 VERSION_NAME	= outset
@@ -27,6 +28,8 @@ C2=\033[0;38;5;105;49m
 C3=\033[0;38;5;141;49m
 C4=\033[0;38;5;177;49m
 C5=\033[0;38;5;213;49m
+COLOR_ERROR=\033[31m
+COLOR_SUCCESS=\033[32m
 R=\033[0m
 
 all: banner $(NAME)
@@ -47,36 +50,42 @@ $(NAME): $(O_FILES)
 	@echo "Linking C objects: $^"
 	@$(CC) $(C_FLAGS) $^ $(LD_FLAGS) -o $(OBJ_DIR)/kernel.elf
 	@$(OBJ_COPY) -O binary $(OBJ_DIR)/kernel.elf $@
-	@echo "$(C2)Compilation done! => $(NAME)$(R)"
+	@echo "$(COLOR_SUCCESS)Compilation done! => $(NAME)$(R)"
 
 # C files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	@echo "Compiling C object: $<"
+	@echo "Compiling C object: $(C2)$<$(R)"
 	@$(CC) $(C_FLAGS) -c $< -o $@
 
 # S files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s
 	@mkdir -p $(dir $@)
-	@echo "Compiling C object: $<"
+	@echo "Compiling C object: $(C2)$<$(R)"
 	@$(CC) $(C_FLAGS) -c $< -o $@
 
+disk:
+	@dd if=/dev/zero of=$(DISK) bs=1M count=256
+	@mkfs.vfat -F 32 -I -n D3M0NFS $(DISK)
+	@echo "$(COLOR_SUCCESS)Disk formatted as FAT32: $(DISK)$(R)"
+
+
 run: all
-ifeq ($(DEBUG),1)
+	@test -f "$(DISK)" || (echo "$(COLOR_ERROR)Disk image not found: $(DISK)$(R)" && exit 1)
 	@$(QEMU) \
 		-machine raspi3ap \
 		-cpu cortex-a53 \
 		-serial stdio \
 		-m 512M \
+		-sd $(DISK) \
 		-kernel obj/kernel.elf
-endif
 
 clean:
 	rm -rf $(OBJ_DIR)
 
 fclean: clean
-	rm -rf $(NAME)
+	rm -rf $(NAME) $(DISK)
 
 re: fclean all
 
-.PHONY: all banner run clean fclean re
+.PHONY: all banner disk run clean fclean re

@@ -1,19 +1,28 @@
 #include "display.h"
 #include "mailbox.h"
+#include "log.h"
 
 static volatile uint32_t	g_framebuffer_mbox[35] __attribute__((aligned(16)));
 
-void put_pixel(int x, int y, uint32_t color)
+void	put_pixel(int x, int y, uint32_t color)
 {
-	uint32_t	max_width;
-	uint32_t	max_height;
-
-	max_width = fb_req.width ? fb_req.width : SCREEN_WIDTH;
-	max_height = fb_req.height ? fb_req.height : SCREEN_HEIGHT;
-	if (x < 0 || (uint32_t)x >= max_width || y < 0 || (uint32_t)y >= max_height)
+	if (x < 0 || (uint32_t)x >= SCREEN_WIDTH || y < 0 || (uint32_t)y >= SCREEN_HEIGHT)
 		return;
 	volatile uint32_t *fb = (volatile uint32_t *)fb_req.fb_addr;
     fb[y * (fb_req.pitch / 4) + x] = color;
+}
+
+void	draw_hline(int x, int y, int w, uint32_t color)
+{
+	//memset()
+	for (int i=0; i<w; i++)
+		put_pixel(x + i, y, color);
+}
+
+void	draw_rect(int x, int y, int w, int h, uint32_t color)
+{
+	for(int j=0; j<h; j++)
+		draw_hline(x, y + j, w, color);
 }
 
 int framebuffer_init(uint32_t width, uint32_t height, uint32_t bpp)
@@ -70,4 +79,22 @@ int framebuffer_init(uint32_t width, uint32_t height, uint32_t bpp)
     fb_req.fb_addr = (uintptr_t)(g_framebuffer_mbox[28] & 0x3FFFFFFF);
     fb_req.fb_size = g_framebuffer_mbox[29];
     return (0);
+}
+
+int	display_init()
+{
+	#if DEBUG == 1
+	if(!framebuffer_init(640, 480, 32))
+	{
+		log("Framebuffer allocated!\n", LOG_SUCCESS);
+		draw_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0x00FFFFFF);
+		return 0;
+	} else {
+		log("Framebuffer allocation failed!\n", LOG_ERROR);
+		return 1;
+	}
+	#else
+	log("REAL mode display not yet supported!\n", LOG_ERROR);
+	return 1;
+	#endif
 }
