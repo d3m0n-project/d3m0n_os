@@ -48,31 +48,35 @@ typedef struct s_fat32_info
 static FAT32_Info	fat32;
 static uint8_t		g_cluster_buf[FAT32_MAX_CLUSTER_BYTES];
 
-static uint16_t mem_read16(const uint8_t *p)
+static uint16_t mem_read16(const uint8_t *vp)
 {
-    return p[0] | (p[1] << 8);
+	const volatile uint8_t *p = vp;
+	return (uint16_t)(p[0] | ((uint16_t)p[1] << 8));
 }
 
-static void mem_write16(uint8_t *p, uint16_t v)
+static void mem_write16(uint8_t *vp, uint16_t v)
 {
+	volatile uint8_t *p = vp;
 	p[0] = (uint8_t)(v & 0xFF);
 	p[1] = (uint8_t)((v >> 8) & 0xFF);
 }
 
-static void mem_write32(uint8_t *p, uint32_t v)
+static void mem_write32(uint8_t *vp, uint32_t v)
 {
+	volatile uint8_t *p = vp;
 	p[0] = (uint8_t)(v & 0xFF);
 	p[1] = (uint8_t)((v >> 8) & 0xFF);
 	p[2] = (uint8_t)((v >> 16) & 0xFF);
 	p[3] = (uint8_t)((v >> 24) & 0xFF);
 }
 
-static uint32_t mem_read32(const uint8_t *p)
+static uint32_t mem_read32(const uint8_t *vp)
 {
-    return p[0] |
-           (p[1] << 8) |
-           (p[2] << 16) |
-           (p[3] << 24);
+	const volatile uint8_t *p = vp;
+	return (uint32_t)p[0] |
+		   ((uint32_t)p[1] << 8) |
+		   ((uint32_t)p[2] << 16) |
+		   ((uint32_t)p[3] << 24);
 }
 
 static int	is_pow2_u32(uint32_t value)
@@ -559,11 +563,11 @@ static int fat32_search_dir(uint32_t start_cluster, const char *name, FAT32_File
 							return 0;
 						}
 					}
-					out->size        = mem_read32(entry + DIR_FILESIZE_OFF);
-					out->pos         = 0;
+					out->size		= mem_read32(entry + DIR_FILESIZE_OFF);
+					out->pos		 = 0;
 					out->dir_cluster = cluster;
 					out->dir_index   = i;
-					out->is_dir      = (attr & FAT32_ATTR_DIRECTORY) ? 1U : 0U;
+					out->is_dir	  = (attr & FAT32_ATTR_DIRECTORY) ? 1U : 0U;
 					return 1;
 				}
 			}
@@ -988,21 +992,19 @@ void	fat32_list_dir(const char *path, void (*print)(const char *name, uint32_t s
 
 int	fat32_mount(void)
 {
-    uint8_t mbr[SECTOR_SIZE];
-    uint32_t part_lba;
+	uint8_t mbr[SECTOR_SIZE];
+	uint32_t part_lba;
 
-    if (block_read(0, mbr) != 0)
-        return -1;
-
-    if (mbr[510] == 0x55 && mbr[511] == 0xAA)
-    {
-        part_lba = mem_read32(&mbr[446 + 8]);
-
-        if (part_lba != 0)
-        {
-            if (parse_bpb(part_lba) == 0)
-                return 0;
-        }
-    }
-    return parse_bpb(0);
+	if (block_read(0, mbr) != 0)
+		return -1;
+	if (mbr[510] == 0x55 && mbr[511] == 0xAA)
+	{
+		part_lba = mem_read32(mbr + 446 + 8);
+		if (part_lba != 0)
+		{
+			if (parse_bpb(part_lba) == 0)
+				return 0;
+		}
+	}
+	return parse_bpb(0);
 }

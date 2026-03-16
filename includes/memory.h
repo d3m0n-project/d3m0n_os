@@ -6,6 +6,6 @@
 void	*malloc(uint32_t size);
 int		free(void *ptr);
 int		heap_init(void);
-
+void	*memcpy(void *dst, void *src, uint32_t size);
 
 #endif

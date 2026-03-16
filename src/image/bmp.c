@@ -7,6 +7,7 @@ int bmp_load_image(BmpTexture *out, const char *path)
 {
 	uint64_t start_time = time_us() / 1000;
 	int fd = open(path, O_READ);
+	log("loading BMP...\n", LOG_INFO);
 	if (fd == -1)
 		return 1;
 
@@ -17,11 +18,13 @@ int bmp_load_image(BmpTexture *out, const char *path)
 		return 1;
 	}
 
-	out->width  = *(int*)&header[18];
-	out->height = *(int*)&header[22];
+	memcpy(&out->width, header + 18, sizeof(int));
+	memcpy(&out->height, header + 22, sizeof(int));
 	out->bytes_per_pixel = header[28] / 8;
 
-	uint32_t starting_offset = *(uint32_t*)&header[10];
+	
+	uint32_t starting_offset = 0;
+	memcpy(&starting_offset, header + 10, sizeof(uint32_t));
 
 	uint32_t row_size = out->width * out->bytes_per_pixel;
 	uint32_t row_padding = (4 - (row_size % 4)) % 4;

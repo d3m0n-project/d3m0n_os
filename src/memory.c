@@ -22,6 +22,13 @@ int	heap_init(void)
 	return 0;
 }
 
+void	*memcpy(void *dst, void *src, uint32_t size)
+{
+	for (uint32_t i=0; i<size; i++)
+		((unsigned char *)dst)[i] = ((unsigned char *)src)[i];
+	return dst;
+}
+
 void	*malloc(uint32_t size)
 {
 	size = (size + 7) & ~7; // align to 8 bytes

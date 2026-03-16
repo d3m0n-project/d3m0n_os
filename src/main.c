@@ -9,8 +9,8 @@
 
 void	show_kernel_status()
 {
-	log("		 KERNEL_VERSION:		  %s\n", LOG_NONE, KERNEL_VERSION);	
-	log("		 KERNEL_VERSION_NAME:	 %s\n", LOG_NONE, KERNEL_VERSION_NAME);
+	log("    KERNEL_VERSION:        %s\n", LOG_NONE, KERNEL_VERSION);	
+	log("    KERNEL_VERSION_NAME:   %s\n", LOG_NONE, KERNEL_VERSION_NAME);
 }
 
 void	hang(const char *message)

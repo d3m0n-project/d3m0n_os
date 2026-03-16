@@ -41,7 +41,7 @@ void    uart_putnbr_llu(unsigned long long nb)
 
 void    uart_putnbr_llu_hex(unsigned long long nb)
 {
-    char    set[16] = "0123456789ABCDEF";
+    char    set[17] = "0123456789ABCDEF";
     if (nb == 0)
         uart_putc('0');
     else if (nb > 0)
