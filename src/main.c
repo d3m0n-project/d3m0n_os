@@ -51,13 +51,25 @@ void kernel_main(void *dtb)
 	BmpTexture  texture;
 	if (bmp_load_image(&texture, "wallpapers/default.bmp"))
 		log("Could not load BMP texture\n", LOG_ERROR);
-	else
-		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &texture);
+	//else
+	//	draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &texture);
 
 
 	if (!create_window(&main_window, "d3m0n home", SCREEN_WIDTH, SCREEN_HEIGHT))
 		log("Main window created successfully!\n", LOG_SUCCESS);
 	else	hang("Could not launch main window\n");
+	main_window.bg_color = DISPLAY_COLORS[WHITE];
+
+	t_control control;
+	init_control(&control, "text1", CONTROL_RECT);
+	control.width = 100;
+	control.height = 100;
+	control.location.x = 10;
+	control.location.y = 20;
+	control.bg_color = DISPLAY_COLORS[CYAN];
+	
+	add_control(&main_window, &control);
+	draw_window(&main_window);
 	
 	log("Finished kernel!\n", LOG_WARNING);
 	while(1) asm volatile("wfi");

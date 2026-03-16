@@ -19,6 +19,24 @@ typedef enum
 	ANCHOR_BOTTOM=32
 }	e_control_anchor;
 
+typedef enum
+{
+	CONTROL_BUTTON,
+	CONTROL_CHECKBOX,
+	CONTROL_HSCROLL,
+	CONTROL_IMAGE,
+	CONTROL_LISTVIEW,
+	CONTROL_PROGRESSBAR,
+	CONTROL_RADIOBUTTON,
+	CONTROL_RECT,
+	CONTROL_ROUNDBUTTON,
+	CONTROL_SWITCH,
+	CONTROL_TEXTBOX,
+	CONTROL_TEXT,
+	CONTROL_VSCROLL,
+	CONTROL_WEBVIEW
+}	e_control_type;
+
 typedef struct s_control
 {
 	// public attributes
@@ -41,6 +59,7 @@ typedef struct s_control
 	e_control_anchor	p_anchor;
 	e_control_anchor	p_location_override;
 	struct s_control	*p_next;
+	e_control_type		p_type;
 }	t_control;
 
 
@@ -55,6 +74,8 @@ typedef	struct s_window
 }	t_window;
 
 int		create_window(t_window *out, const char *title, int w, int h);
+void	init_control(t_control *control, const char *name, e_control_type type);
 void	add_control(t_window *to, t_control *control);
+void	draw_window(t_window *window);
 
 #endif

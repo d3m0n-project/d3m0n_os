@@ -29,6 +29,13 @@ void	*memcpy(void *dst, void *src, uint32_t size)
 	return dst;
 }
 
+void	*memset(void *dst, int c, uint32_t size)
+{
+	for (uint32_t i=0; i<size; i++)
+		((unsigned char *)dst)[i] = (unsigned char)c;
+	return dst;
+}
+
 void	*malloc(uint32_t size)
 {
 	size = (size + 7) & ~7; // align to 8 bytes
