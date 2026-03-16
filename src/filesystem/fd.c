@@ -51,12 +51,14 @@ int		open(const char *path, int flags)
 		if (file.first_cluster == 0)
 			return (-1);
 	}
+	if (file.is_dir)
+		return (-1);
 	g_fds[fd].file = file;
 	g_fds[fd].mode = (file_open_mode)(flags & (O_READ | O_WRITE | O_CREATE));
 	return (fd);
 }
 
-int		read(int fd, char *buffer, uint32_t count)
+uint32_t	read(int fd, char *buffer, uint32_t count)
 {
 	if (fd >= FS_MAX_FDS || fd < 0 || g_fds[fd].mode == FILE_NOT_CREATED)
 		return (-1);
@@ -87,4 +89,47 @@ int		close(int fd)
 	g_fds[fd].mode = FILE_NOT_CREATED;
 	fat32_close(&(g_fds[fd].file));
 	return (0);
+}
+
+uint32_t	lseek(int fd, int32_t offset, e_seek_directive whence)
+{
+	if (fd < 0 || fd >= FS_MAX_FDS || g_fds[fd].mode == FILE_NOT_CREATED)
+		return -1;
+
+	int32_t new_pos;
+
+	switch (whence)
+	{
+		case SEEK_SET:
+			new_pos = offset;
+			break;
+		case SEEK_CUR:
+			new_pos = g_fds[fd].file.pos + offset;
+			break;
+		case SEEK_END:
+			new_pos = g_fds[fd].file.size + offset;
+			break;
+		default:
+			return -1;
+	}
+
+	if (new_pos < 0)
+		return -1;
+
+	if (new_pos > (int32_t)g_fds[fd].file.size)
+		new_pos = g_fds[fd].file.size;
+
+	g_fds[fd].file.pos = new_pos;
+
+	return new_pos;
+}
+
+static void print_file(const char *name, uint32_t size)
+{
+    log("    %s (%llu bytes)\n", LOG_NONE, name, size);
+}
+void	list_dir(const char *path)
+{
+	log("File listing in %s\n", LOG_NONE, path ? path : "/");
+	fat32_list_dir(path, print_file);
 }

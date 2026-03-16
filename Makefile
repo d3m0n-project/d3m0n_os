@@ -14,7 +14,7 @@ O_FILES			= $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_FILES))
 O_FILES			+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/%.o,$(S_FILES))
 DISK			?= disk.img
 
-VERSION			= 2.0.1
+VERSION			= 2.0.2
 VERSION_NAME	= outset
 NAME			= d3m0n_os_$(VERSION_NAME)_$(VERSION).img
 C_FLAGS			=	-Wall -Wextra -Werror -nostdlib -ffreestanding -O2 -Iincludes \
@@ -67,6 +67,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s
 disk:
 	@dd if=/dev/zero of=$(DISK) bs=1M count=256
 	@mkfs.vfat -F 32 -I -n D3M0NFS $(DISK)
+	@mcopy -i $(DISK) -s rootfs/* ::
 	@echo "$(COLOR_SUCCESS)Disk formatted as FAT32: $(DISK)$(R)"
 
 

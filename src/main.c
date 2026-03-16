@@ -3,59 +3,62 @@
 #include "dtb.h"
 #include "display.h"
 #include "filesystem.h"
+#include "memory.h"
+#include "bmp.h"
+#include "controls.h"
 
-void    show_kernel_status()
+void	show_kernel_status()
 {
-    log("         KERNEL_VERSION:          %s\n", LOG_NONE, KERNEL_VERSION);    
-    log("         KERNEL_VERSION_NAME:     %s\n", LOG_NONE, KERNEL_VERSION_NAME);
+	log("		 KERNEL_VERSION:		  %s\n", LOG_NONE, KERNEL_VERSION);	
+	log("		 KERNEL_VERSION_NAME:	 %s\n", LOG_NONE, KERNEL_VERSION_NAME);
+}
+
+void	hang(const char *message)
+{
+	log(message, LOG_ERROR);
+	while (1)
+		asm volatile("wfi");
 }
 
 void kernel_main(void *dtb)
 {
-    log("Loading kernel...\n", LOG_INFO);
+	t_window	main_window;
 
-    show_kernel_status();
+	log("Loading kernel...\n", LOG_INFO);
 
-    // load DTB
-    dtb_init(dtb);
-    
-    // init framebuffer
-    display_init();
+	show_kernel_status();
 
-    // init fat32 filesystem
-    if (sd_init() < 0)
-        log("SD block interface init failed\n", LOG_ERROR);
-    else
-    {
-        log("SD block interface initialized!\n", LOG_SUCCESS);
-        if (fat32_mount() < 0)
-            log("FAT32 mount failed\n", LOG_ERROR);
-        else
-        {
-            log("FAT32 mounted!\n", LOG_SUCCESS);
-            int fd = open("test.txt", O_CREATE | O_WRITE);
-            if (fd < 0)
-                log("file not found: test.txt\n", LOG_ERROR);
-            else
-            {
-                write(fd, "Hello World!", 12);
-                close(fd);
-            }
-            fd = open("test.txt", O_READ);
-            if (fd < 0)
-                log("file not found: test.txt\n", LOG_ERROR);
-            else
-            {
-                char    buffer[20] = {0};
-                int len = read(fd, buffer, 12);
-                log("file: '%s', %i\n", LOG_ERROR, buffer, len);
-                close(fd);
-            }
-        }
-    }
+	// load DTB
+	dtb_init(dtb);
+	
+	// init framebuffer
+	display_init();
+
+	// init heap memory
+	if (heap_init() != 0)   hang("Heap memory init failed\n");
+	else					log("Heap memory initialized!\n", LOG_SUCCESS);
+
+	// init fat32 filesystem
+	if (sd_init() < 0)		hang("SD block interface init failed\n");
+	else					log("SD block interface initialized!\n", LOG_SUCCESS);
+
+	if (fat32_mount() < 0)	log("FAT32 mount failed\n", LOG_ERROR);
+	else					log("FAT32 mounted!\n", LOG_SUCCESS);
+
+	list_dir("/");
+
+	// load spash
+	BmpTexture  texture;
+	if (bmp_load_image(&texture, "wallpapers/default.bmp"))
+		log("Could not load BMP texture\n", LOG_ERROR);
+	else
+		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &texture);
 
 
-    log("Finished kernel!\n", LOG_WARNING);
-
-    while(1);
+	if (!create_window(&main_window, "d3m0n home", SCREEN_WIDTH, SCREEN_HEIGHT))
+		log("Main window created successfully!\n", LOG_SUCCESS);
+	else	hang("Could not launch main window\n");
+	
+	log("Finished kernel!\n", LOG_WARNING);
+	while(1) asm volatile("wfi");
 }

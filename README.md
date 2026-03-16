@@ -7,37 +7,32 @@
     <a href="https://github.com/d3m0n-project/d3m0n_os/graphs/contributors"><img alt="Contributors" src="https://img.shields.io/github/contributors/d3m0n-project/d3m0n_os"/></a>
     <a href="https://twitter.com/intent/follow?screen_name=4re5group"><img src="https://img.shields.io/twitter/follow/4re5group?style=social&logo=twitter" alt="follow on Twitter"></a>
 </p>
-d3m0n OS is the official kernel for the d3m0n devices.
-> :warning: This code is made to run on a d3m0n device only or only on linux distibutions in `DEBUG` mode :warning:
+d3m0n OS is the official firmware for the d3m0n devices.
 
-> We had to remake the whole system from scratch in C instead of C++
-d3m0n app system and binaries are located in [rootfs/usr/share/d3m0n](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/d3m0n)
+> [!NOTE]
+> We had to remake the whole system from scratch in C instead of C++, the project is still in beta testing
 
-![d3m0n_ssh](https://github.com/d3m0n-project/d3m0n_os/assets/71982379/c989aebe-c06f-4417-821c-ac0029023d80)
+<!--![d3m0n_ssh](https://github.com/d3m0n-project/d3m0n_os/assets/71982379/c989aebe-c06f-4417-821c-ac0029023d80)-->
 
 
 
 > ## Summary
->
->   (1) [Installation](https://github.com/d3m0n-project/d3m0n_os#Installation)
->
->   (2) [Configuration](https://github.com/d3m0n-project/d3m0n_os#Configure_your_OS)
->
->   (3) [Application API](https://github.com/d3m0n-project/d3m0n_os/blob/main/documentation/api.md)
->
->   (4) [About](https://github.com/d3m0n-project/d3m0n_os#About)
->
->   (5) [Links](https://github.com/d3m0n-project/d3m0n_os#Links)
+>   1. [Project Overview](#overview)
+>   2. [Installation](#Installation)<br>
+>   3. [Configuration](Configure_your_OS)<br>
+>   4. [Application API](documentation/api.md)<br>
+>   5. [About](#about)<br> 
+>   6. [Links](#links)<br>
 
 
 
+## Overview
+This project aims to contribute and maintain the official `d3m0n c1` firmware. More info about the main project [here](https://github.com/d3m0n-project/d3m0n_c1).
+
+> [!Note]
 
 
-## Partitions
 
-> /[boot](https://github.com/d3m0n-project/d3m0n_os/tree/main/boot)		is a ext4 bootloader partition that contains the linux kernel and will make all this operating system work. It'll be located at /boot in [rootfs](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs).
-> 
-> /[rootfs](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs)	is the root partition, it contains call linux commands that d3m0n os needs to work.
 ## Installations
 ### Flash pre-built image
 Just download lastest [release](https://github.com/d3m0n-project/d3m0n_os/releases) and flash it using Balena Etcher

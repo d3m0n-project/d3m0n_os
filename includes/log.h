@@ -12,27 +12,7 @@ typedef enum
 	LOG_NONE
 }	e_logtype;
 
-typedef enum
-{
-	BLACK,
-	DARK_RED,
-	RED,
-	ORANGE,
-	YELLOW,
-	GREEN,
-	LIME,
-	DARK_BLUE,
-	BLUE,
-	DARK_CYAN,
-	CYAN,
-	DARK_MAGENTA,
-	MAGENTA,
-	DARK_GREY,
-	GREY,
-	WHITE
-}	e_colors;
-
-extern const char *COLORS[16];
+extern const char *UART_COLORS[16];
 
 void log(const char *fmt, e_logtype type, ...);
 

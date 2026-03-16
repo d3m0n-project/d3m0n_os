@@ -1,6 +1,0 @@
-def file.write
-{
-	logn("test", "red");
-	var1="var1";
-	logn("var1 is equal to: $var1", "green");
-}

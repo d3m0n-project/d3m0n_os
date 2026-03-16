@@ -1,0 +1,11 @@
+#ifndef MEMORY_H
+#define MEMORY_H
+
+#include "types.h"
+
+void	*malloc(uint32_t size);
+int		free(void *ptr);
+int		heap_init(void);
+
+
+#endif

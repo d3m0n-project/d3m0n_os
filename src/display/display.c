@@ -4,6 +4,8 @@
 
 static volatile uint32_t	g_framebuffer_mbox[35] __attribute__((aligned(16)));
 
+uint32_t	DISPLAY_COLORS[16] = { 0x00000000, 0x000000bf, 0x000000ff, 0x00007fff, 0x0000ffff, 0x0000bf00, 0x0000ff00, 0x00bf5f00, 0x00ff0000, 0x00bfbf00, 0x00ffff00, 0x00bf00bf, 0x00ff00ff, 0x00191919, 0x007f7f7f, 0x00ffffff};
+
 void	put_pixel(int x, int y, uint32_t color)
 {
 	if (x < 0 || (uint32_t)x >= SCREEN_WIDTH || y < 0 || (uint32_t)y >= SCREEN_HEIGHT)
@@ -14,7 +16,6 @@ void	put_pixel(int x, int y, uint32_t color)
 
 void	draw_hline(int x, int y, int w, uint32_t color)
 {
-	//memset()
 	for (int i=0; i<w; i++)
 		put_pixel(x + i, y, color);
 }
@@ -23,6 +24,31 @@ void	draw_rect(int x, int y, int w, int h, uint32_t color)
 {
 	for(int j=0; j<h; j++)
 		draw_hline(x, y + j, w, color);
+}
+
+void draw_bmp(int x, int y, int w, int h, BmpTexture *texture)
+{
+    if (!texture || !texture->pixels)
+        return;
+
+    float scale_x = (float)texture->width / (float)w;
+    float scale_y = (float)texture->height / (float)h;
+
+    for (int j = 0; j < h; j++)
+    {
+        for (int i = 0; i < w; i++)
+        {
+            int src_x = (int)(i * scale_x);
+            int src_y = (int)(j * scale_y);
+
+            if (src_x >= texture->width)
+				src_x = texture->width - 1;
+            if (src_y >= texture->height)
+				src_y = texture->height - 1;
+
+            put_pixel(x + i, y + j, texture->pixels[src_y * texture->width + src_x]);
+        }
+    }
 }
 
 int framebuffer_init(uint32_t width, uint32_t height, uint32_t bpp)
@@ -87,7 +113,7 @@ int	display_init()
 	if(!framebuffer_init(640, 480, 32))
 	{
 		log("Framebuffer allocated!\n", LOG_SUCCESS);
-		draw_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0x00FFFFFF);
+		draw_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0x00000000);
 		return 0;
 	} else {
 		log("Framebuffer allocation failed!\n", LOG_ERROR);
