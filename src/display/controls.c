@@ -70,7 +70,10 @@ void	draw_window(t_window *window)
 		current = current->p_next;
 	}
 	if (window->top_bar)
+	{
 		draw_rect(0, 0, window->width, 20, DISPLAY_COLORS[WHITE]);
+		draw_text(2, 2, 8, 16, "12:40", DISPLAY_COLORS[MAGENTA], 0);
+	}
 }
 
 void	init_control(t_control *control, const char *name, e_control_type type)

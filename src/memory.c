@@ -3,7 +3,7 @@
 
 #define HEAP_BLOCK_SIZE	32
 #define HEAP_START		0x01000000
-#define HEAP_SIZE		(16 * 1024 * 1024)
+#define HEAP_SIZE		(64 * 1024 * 1024) // 64Mb
 
 typedef struct block
 {

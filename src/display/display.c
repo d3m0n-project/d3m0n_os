@@ -3,6 +3,7 @@
 #include "log.h"
 
 static volatile uint32_t	g_framebuffer_mbox[35] __attribute__((aligned(16)));
+static t_font				main_font;
 
 uint32_t	DISPLAY_COLORS[16] = { 0x00000000, 0x000000bf, 0x000000ff, 0x00007fff, 0x0000ffff, 0x0000bf00, 0x0000ff00, 0x00bf5f00, 0x00ff0000, 0x00bfbf00, 0x00ffff00, 0x00bf00bf, 0x00ff00ff, 0x00191919, 0x007f7f7f, 0x00ffffff};
 
@@ -107,8 +108,83 @@ int framebuffer_init(uint32_t width, uint32_t height, uint32_t bpp)
     return (0);
 }
 
+void	draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font)
+{
+    uint32_t	i;
+    int		bytes_per_line;
+    int		src_w;
+    int		src_h;
+    int		dst_w;
+    int		dst_h;
+    int		cursor_x;
+    int		cursor_y;
+    int		dx;
+    int		dy;
+    int		src_x;
+    int		src_y;
+    int		row_offset;
+    uint16_t	data;
+    char		c;
+
+    if (!text)
+        return;
+    if (!font)
+        font = &main_font;
+    if (!font || !font->data || font->dot_count <= 0)
+        return;
+
+    bytes_per_line = (int)(font->dot_count / 16);
+    if (bytes_per_line <= 0)
+        return;
+
+    src_w = 8 * bytes_per_line;
+    src_h = font->dot_count;
+    dst_w = (w > 0) ? w : src_w;
+    dst_h = (h > 0) ? h : src_h;
+    if (dst_w <= 0 || dst_h <= 0)
+        return;
+
+    cursor_x = x;
+    cursor_y = y;
+    i = 0;
+    while (text[i])
+    {
+        c = text[i];
+        if (c == '\n')
+        {
+            cursor_x = x;
+            cursor_y += dst_h;
+            i++;
+            continue;
+        }
+
+        for (dy = 0; dy < dst_h; dy++)
+        {
+            src_y = (dy * src_h) / dst_h;
+            row_offset = 17 + ((int)(uint8_t)c * src_h + src_y) * bytes_per_line;
+            data = font->data[row_offset];
+            if (bytes_per_line == 2)
+            {
+                data <<= 8;
+                data |= font->data[row_offset + 1];
+            }
+
+            for (dx = 0; dx < dst_w; dx++)
+            {
+                src_x = (dx * src_w) / dst_w;
+                if (data & (1U << ((8 * bytes_per_line - 1) - src_x)))
+                    put_pixel(cursor_x + dx, cursor_y + dy, color);
+            }
+        }
+        cursor_x += dst_w;
+        i++;
+    }
+}
+
 int	display_init()
 {
+	if (load_font("fonts/ILGH32XF.FNT", &main_font, 32))
+		return 1;
 	#if DEBUG == 1
 	if(!framebuffer_init(640, 480, 32))
 	{
