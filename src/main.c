@@ -75,7 +75,6 @@ void kernel_main(void *dtb)
 	//add_control(&main_window, &control);
 	draw_window(&main_window);
 
-	
 	log("Finished kernel!\n", LOG_WARNING);
 	while(1) asm volatile("wfi");
 }
