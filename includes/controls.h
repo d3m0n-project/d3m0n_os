@@ -21,6 +21,7 @@ typedef enum
 
 typedef enum
 {
+	CONTROL_NONE,
 	CONTROL_BUTTON,
 	CONTROL_CHECKBOX,
 	CONTROL_HSCROLL,
@@ -34,7 +35,9 @@ typedef enum
 	CONTROL_TEXTBOX,
 	CONTROL_TEXT,
 	CONTROL_VSCROLL,
-	CONTROL_WEBVIEW
+	CONTROL_WEBVIEW,
+	
+	CONTROL_WINDOW
 }	e_control_type;
 
 typedef struct s_control
