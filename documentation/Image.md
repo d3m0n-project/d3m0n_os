@@ -3,7 +3,7 @@
 ## Image special attributes
     Image:
 	    src="/path/to";
-      mode="[stretch/zoom/auto_size/center]";
+        mode="[stretch/zoom/auto_size/center]";
 
 You can also use [general attributes](GeneralAttributes.md) on this control
 

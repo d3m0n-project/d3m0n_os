@@ -10,3 +10,5 @@ Window:
 Text:
 	content="SOON...";
 	color="black";
+	color="red";
+	location="20, 30";

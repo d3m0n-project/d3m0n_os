@@ -51,6 +51,9 @@ void	draw_control(t_control *control)
 	case CONTROL_RECT:
 		draw_rect(control->location.x, control->location.y, control->width, control->height, control->bg_color);
 		break;
+	case CONTROL_TEXT:
+		draw_text(control->location.x, control->location.y, control->width, control->height, control->content, control->color, 0);
+		break;
 	
 	default:
 		log("Unknown control type: id=%i\n", LOG_WARNING, control->p_type);

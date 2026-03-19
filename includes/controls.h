@@ -2,6 +2,7 @@
 #define CONTROLS_H
 
 #include "types.h"
+#include "display.h"
 
 typedef struct s_point
 {
@@ -42,7 +43,7 @@ typedef enum
 
 typedef struct s_control
 {
-	// public attributes
+	// public general attributes
 	int					margin_top;
 	int					margin_left;
 	int					margin_right;
@@ -56,6 +57,38 @@ typedef struct s_control
 	uint32_t			color;
 	uint32_t			bg_color;
 	struct s_control	*children;
+
+	// Text, TextBox, Button, CheckBox, RadioButton,
+	// RoundButton, Switch, TextBox
+	char				content[255];
+	int					font_size;
+	int					text_align; // TODO: text align
+
+	// Button, Image
+	BmpTexture			image;
+
+	// Image
+	int					mode; // TODO: image mode
+
+	// RoundButton
+	int					radius;
+
+	// Switch, CheckBox
+	int					checked;
+
+	// Hscroll, Vscroll
+	int					bar;
+
+	// Rect
+	int					scroll; // TODO: remove?
+
+	// ProgressBar
+	int					min;
+	int					max;
+	int					value;
+
+	// TextBox
+	int					type; // TODO: textbox type
 	
 
 	// private attributes
