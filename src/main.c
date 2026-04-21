@@ -63,6 +63,7 @@ void kernel_main(void *dtb)
 	main_window.bg_color = DISPLAY_COLORS[GREY];
 
     parse_layout("test.lut", &main_window);
+	parse_source("test.src", &main_window);
 
 	//t_control control;
 	//init_control(&control, "text1", CONTROL_RECT);
