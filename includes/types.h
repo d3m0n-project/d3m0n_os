@@ -12,6 +12,9 @@ typedef signed int			int32_t;
 typedef signed long long	int64_t;
 typedef unsigned long long	uintptr_t;
 
+typedef unsigned long		size_t;
+
+
 #define NULL ((void *)0)
 
 typedef __builtin_va_list	va_list;

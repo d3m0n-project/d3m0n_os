@@ -4,6 +4,8 @@
 #include "types.h"
 #include "display.h"
 
+#define MAX_WINDOW_EVENTS 255
+
 typedef struct s_point
 {
 	int	x;
@@ -40,6 +42,13 @@ typedef enum
 	
 	CONTROL_WINDOW
 }	e_control_type;
+
+typedef struct s_event
+{
+	t_point		trigger_zone_;
+	void		*callback;
+}	t_event;
+
 
 typedef struct s_control
 {
@@ -101,12 +110,13 @@ typedef struct s_control
 
 typedef	struct s_window
 {
-	char		title[25];
-	int			width;
-	int			height;
-	uint32_t	bg_color;
-	uint8_t		top_bar;
-	t_control	*controls;
+	char				title[25];
+	int					width;
+	int					height;
+	uint32_t			bg_color;
+	uint8_t				top_bar;
+	t_control			*controls;
+	struct s_event		events[MAX_WINDOW_EVENTS];
 }	t_window;
 
 int		create_window(t_window *out, const char *title, int w, int h);

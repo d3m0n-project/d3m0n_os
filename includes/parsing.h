@@ -9,4 +9,6 @@
 
 int	parse_layout(const char *path, t_window *win);
 
+int	parse_source(const char *path, t_window *win);
+
 #endif
