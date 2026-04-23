@@ -2,6 +2,7 @@
 #include "get_next_line.h"
 #include "display.h"
 #include "bmp.h"
+#include "libft.h"
 
 #define LAYOUT_VALUE_MAX	128
 #define LAYOUT_KEY_MAX		64
@@ -10,7 +11,7 @@
 
 typedef struct s_type_entry
 {
-	const char		*name;
+	char		*name;
 	e_control_type	type;
 } t_type_entry;
 
@@ -34,67 +35,23 @@ typedef enum e_textbox_type
 	TEXTBOX_TYPE_PASSWORD = 1
 } t_textbox_type;
 
-static int	lp_strlen(const char *s)
+static int	lp_parse_percent(char *str, int max_val)
 {
-	int i;
+	int len;
+	int percent;
 
-	if (!s)
+	if (!str || !str[0])
 		return 0;
-	i = 0;
-	while (s[i])
-		i++;
-	return i;
+	len = ft_strlen(str);
+	if (len > 0 && str[len - 1] == '%')
+	{
+		percent = ft_atoi(str);
+		return (max_val * percent) / 100;
+	}
+	return ft_atoi(str);
 }
 
-static int	lp_strcmp(const char *s1, const char *s2)
-{
-	while (*s1 && *s2 && *s1 == *s2)
-	{
-		s1++;
-		s2++;
-	}
-	return ((int)((unsigned char)*s1 - (unsigned char)*s2));
-}
-
-//static int	lp_strncmp(const char *s1, const char *s2, uint32_t n)
-//{
-//	uint32_t i;
-
-//	if (n == 0)
-//		return 0;
-//	i = 0;
-//	while (i < n - 1 && s1[i] && s2[i] && s1[i] == s2[i])
-//		i++;
-//	return ((int)((unsigned char)s1[i] - (unsigned char)s2[i]));
-//}
-
-static int	lp_atoi(const char *str)
-{
-	int sign;
-	int result;
-
-	if (!str)
-		return 0;
-	while (*str == ' ' || (*str >= 9 && *str <= 13))
-		str++;
-	sign = 1;
-	if (*str == '-')
-	{
-		sign = -1;
-		str++;
-	}
-	else if (*str == '+')
-		str++;
-	result = 0;
-	while (*str >= '0' && *str <= '9')
-	{
-		result = result * 10 + (*str - '0');
-		str++;
-	}
-	return (result * sign);
-}
-
-static uint32_t	lp_parse_color(const char *str)
+static uint32_t	lp_parse_color(char *str)
 {
 	int r;
 	int g;
@@ -108,7 +65,7 @@ static uint32_t	lp_parse_color(const char *str)
 		i++;
 	if (str[i] >= '0' && str[i] <= '9')
 	{
-		r = lp_atoi(str + i);
+		r = ft_atoi(str + i);
 		while (str[i] && str[i] != ',')
 			i++;
 		if (str[i] == ',')
@@ -116,7 +73,7 @@ static uint32_t	lp_parse_color(const char *str)
 			i++;
 			while (str[i] == ' ' || (str[i] >= 9 && str[i] <= 13))
 				i++;
-			g = lp_atoi(str + i);
+			g = ft_atoi(str + i);
 			while (str[i] && str[i] != ',')
 				i++;
 			if (str[i] == ',')
@@ -124,7 +81,7 @@ static uint32_t	lp_parse_color(const char *str)
 				i++;
 				while (str[i] == ' ' || (str[i] >= 9 && str[i] <= 13))
 					i++;
-				b = lp_atoi(str + i);
+				b = ft_atoi(str + i);
 				if (r < 0) r = 0;
 				if (r > 255) r = 255;
 				if (g < 0) g = 0;
@@ -136,65 +93,65 @@ static uint32_t	lp_parse_color(const char *str)
 		}
 		return (uint32_t)r;
 	}
-	if (!lp_strcmp(str, "white"))
+	if (!ft_strcmp(str, "white"))
 		return DISPLAY_COLORS[WHITE];
-	if (!lp_strcmp(str, "black"))
+	if (!ft_strcmp(str, "black"))
 		return DISPLAY_COLORS[BLACK];
-	if (!lp_strcmp(str, "dark_red"))
+	if (!ft_strcmp(str, "dark_red"))
 		return DISPLAY_COLORS[DARK_RED];
-	if (!lp_strcmp(str, "red"))
+	if (!ft_strcmp(str, "red"))
 		return DISPLAY_COLORS[RED];
-	if (!lp_strcmp(str, "orange"))
+	if (!ft_strcmp(str, "orange"))
 		return DISPLAY_COLORS[ORANGE];
-	if (!lp_strcmp(str, "dark_blue"))
+	if (!ft_strcmp(str, "dark_blue"))
 		return DISPLAY_COLORS[DARK_BLUE];
-	if (!lp_strcmp(str, "green"))
+	if (!ft_strcmp(str, "green"))
 		return DISPLAY_COLORS[GREEN];
-	if (!lp_strcmp(str, "lime"))
+	if (!ft_strcmp(str, "lime"))
 		return DISPLAY_COLORS[LIME];
-	if (!lp_strcmp(str, "blue"))
+	if (!ft_strcmp(str, "blue"))
 		return DISPLAY_COLORS[BLUE];
-	if (!lp_strcmp(str, "dark_cyan"))
+	if (!ft_strcmp(str, "dark_cyan"))
 		return DISPLAY_COLORS[DARK_CYAN];
-	if (!lp_strcmp(str, "yellow"))
+	if (!ft_strcmp(str, "yellow"))
 		return DISPLAY_COLORS[YELLOW];
-	if (!lp_strcmp(str, "cyan"))
+	if (!ft_strcmp(str, "cyan"))
 		return DISPLAY_COLORS[CYAN];
-	if (!lp_strcmp(str, "dark_magenta"))
+	if (!ft_strcmp(str, "dark_magenta"))
 		return DISPLAY_COLORS[DARK_MAGENTA];
-	if (!lp_strcmp(str, "magenta"))
+	if (!ft_strcmp(str, "magenta"))
 		return DISPLAY_COLORS[MAGENTA];
-	if (!lp_strcmp(str, "dark_grey"))
+	if (!ft_strcmp(str, "dark_grey"))
 		return DISPLAY_COLORS[DARK_GREY];
-	if (!lp_strcmp(str, "grey"))
+	if (!ft_strcmp(str, "grey"))
 		return DISPLAY_COLORS[GREY];
-	return (uint32_t)lp_atoi(str);
+	return (uint32_t)ft_atoi(str);
 }
 
-static int	lp_parse_align(const char *value)
+static int	lp_parse_align(char *value)
 {
-	if (!lp_strcmp(value, "top"))
+	if (!ft_strcmp(value, "top"))
 		return ANCHOR_TOP | ANCHOR_CENTER_X;
-	if (!lp_strcmp(value, "top_left"))
+	if (!ft_strcmp(value, "top_left"))
 		return ANCHOR_TOP | ANCHOR_LEFT;
-	if (!lp_strcmp(value, "top_right"))
+	if (!ft_strcmp(value, "top_right"))
 		return ANCHOR_TOP | ANCHOR_RIGHT;
-	if (!lp_strcmp(value, "bottom"))
+	if (!ft_strcmp(value, "bottom"))
 		return ANCHOR_BOTTOM | ANCHOR_CENTER_X;
-	if (!lp_strcmp(value, "bottom_left"))
+	if (!ft_strcmp(value, "bottom_left"))
 		return ANCHOR_BOTTOM | ANCHOR_LEFT;
-	if (!lp_strcmp(value, "bottom_right"))
+	if (!ft_strcmp(value, "bottom_right"))
 		return ANCHOR_BOTTOM | ANCHOR_RIGHT;
-	if (!lp_strcmp(value, "left"))
+	if (!ft_strcmp(value, "left"))
 		return ANCHOR_LEFT | ANCHOR_CENTER_Y;
-	if (!lp_strcmp(value, "right"))
+	if (!ft_strcmp(value, "right"))
 		return ANCHOR_RIGHT | ANCHOR_CENTER_Y;
-	if (!lp_strcmp(value, "center"))
+	if (!ft_strcmp(value, "center"))
 		return ANCHOR_CENTER_X | ANCHOR_CENTER_Y;
 	return 0;
 }
 
-static int	lp_parse_location_xy(const char *value, t_point *out)
+static int	lp_parse_location_xy(const char *value, t_point *out, int max_x, int max_y)
 {
 	int i;
 	int j;
@@ -223,64 +180,48 @@ static int	lp_parse_location_xy(const char *value, t_point *out)
 	ybuf[j] = '\0';
 	if (!xbuf[0] || !ybuf[0])
 		return 0;
-	out->x = lp_atoi(xbuf);
-	out->y = lp_atoi(ybuf);
+	out->x = lp_parse_percent(xbuf, max_x);
+	out->y = lp_parse_percent(ybuf, max_y);
 	return 1;
 }
 
-static int	lp_parse_image_mode(const char *value)
+static int	lp_parse_image_mode(char *value)
 {
-	if (!lp_strcmp(value, "stretch"))
+	if (!ft_strcmp(value, "stretch"))
 		return IMAGE_MODE_STRETCH;
-	if (!lp_strcmp(value, "zoom"))
+	if (!ft_strcmp(value, "zoom"))
 		return IMAGE_MODE_ZOOM;
-	if (!lp_strcmp(value, "auto_size"))
+	if (!ft_strcmp(value, "auto_size"))
 		return IMAGE_MODE_AUTO_SIZE;
-	if (!lp_strcmp(value, "center"))
+	if (!ft_strcmp(value, "center"))
 		return IMAGE_MODE_CENTER;
 	return IMAGE_MODE_STRETCH;
 }
 
-static int	lp_parse_textbox_type(const char *value)
+static int	lp_parse_textbox_type(char *value)
 {
-	if (!lp_strcmp(value, "password"))
+	if (!ft_strcmp(value, "password"))
 		return TEXTBOX_TYPE_PASSWORD;
 	return TEXTBOX_TYPE_NORMAL;
 }
 
-static int	lp_parse_bool(const char *str)
+static int	lp_parse_bool(char *str)
 {
 	if (!str || !str[0])
 		return 0;
-	if (!lp_strcmp(str, "true") || !lp_strcmp(str, "1") || !lp_strcmp(str, "yes"))
+	if (!ft_strcmp(str, "true") || !ft_strcmp(str, "1") || !ft_strcmp(str, "yes"))
 		return 1;
 	return 0;
 }
 
-static int	lp_parse_percent(const char *str, int max_val)
-{
-	int len;
-	int percent;
-
-	if (!str || !str[0])
-		return 0;
-	len = lp_strlen(str);
-	if (len > 0 && str[len - 1] == '%')
-	{
-		percent = lp_atoi(str);
-		return (max_val * percent) / 100;
-	}
-	return lp_atoi(str);
-}
-
-static int	lp_skip_ws(const char *line, int i)
+static int	lp_skip_ws(char *line, int i)
 {
 	while (line[i] == ' ' || (line[i] >= 9 && line[i] <= 13))
 		i++;
 	return i;
 }
 
-static int	lp_is_blank_or_comment(const char *line)
+static int	lp_is_blank_or_comment(char *line)
 {
 	int i;
 
@@ -290,7 +231,7 @@ static int	lp_is_blank_or_comment(const char *line)
 	return 0;
 }
 
-static int	lp_copy_field(const char *src, char *dst, int max_len)
+static int	lp_copy_field(char *src, char *dst, int max_len)
 {
 	int i;
 
@@ -306,7 +247,7 @@ static int	lp_copy_field(const char *src, char *dst, int max_len)
 	return i;
 }
 
-static int	lp_parse_key_value(const char *line, char *key, int key_max, char *value, int value_max)
+static int	lp_parse_key_value(char *line, char *key, int key_max, char *value, int value_max)
 {
 	int i;
 	int k;
@@ -350,7 +291,7 @@ static int	lp_parse_key_value(const char *line, char *key, int key_max, char *va
 	return (k > 0 && v >= 0);
 }
 
-static int	lp_get_control_type(const char *name, e_control_type *type)
+static int	lp_get_control_type(char *name, e_control_type *type)
 {
 	static const t_type_entry table[] = {
 		{"Window", CONTROL_WINDOW},
@@ -375,7 +316,7 @@ static int	lp_get_control_type(const char *name, e_control_type *type)
 		return 0;
 	for (i = 0; i < sizeof(table) / sizeof(table[0]); i++)
 	{
-		if (!lp_strcmp(name, table[i].name))
+		if (!ft_strcmp(name, table[i].name))
 		{
 			*type = table[i].type;
 			return 1;
@@ -384,29 +325,29 @@ static int	lp_get_control_type(const char *name, e_control_type *type)
 	return 0;
 }
 
-static int	lp_apply_window_attr(t_window *win, const char *key, const char *value)
+static int	lp_apply_window_attr(t_window *win, char *key, char *value)
 {
-	if (!lp_strcmp(key, "width"))
+	if (!ft_strcmp(key, "width"))
 	{
 		win->width = lp_parse_percent(value, SCREEN_WIDTH);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "height"))
+	else if (!ft_strcmp(key, "height"))
 	{
 		win->height = lp_parse_percent(value, SCREEN_HEIGHT);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "title"))
+	else if (!ft_strcmp(key, "title"))
 	{
 		lp_copy_field(value, win->title, sizeof(win->title));
 		return 1;
 	}
-	else if (!lp_strcmp(key, "bg_color"))
+	else if (!ft_strcmp(key, "bg_color"))
 	{
 		win->bg_color = lp_parse_color(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "topbar"))
+	else if (!ft_strcmp(key, "topbar"))
 	{
 		win->top_bar = (uint8_t)lp_parse_bool(value);
 		return 1;
@@ -414,83 +355,85 @@ static int	lp_apply_window_attr(t_window *win, const char *key, const char *valu
 	return 0;
 }
 
-static int	lp_apply_control_attr(t_control *control, const t_window *win, const char *key, const char *value)
+static int	lp_apply_control_attr(t_control *control, const t_window *win, char *key, char *value)
 {
-	if (!lp_strcmp(key, "name"))
+	if (!ft_strcmp(key, "name"))
 	{
 		lp_copy_field(value, control->name, sizeof(control->name));
 		return 1;
 	}
-	else if (!lp_strcmp(key, "content") || !lp_strcmp(key, "text"))
+	else if (!ft_strcmp(key, "content") || !ft_strcmp(key, "text"))
 	{
 		lp_copy_field(value, control->content, sizeof(control->content));
 		return 1;
 	}
-	else if (!lp_strcmp(key, "width"))
+	else if (!ft_strcmp(key, "width"))
 	{
 		control->width = lp_parse_percent(value, win ? win->width : SCREEN_WIDTH);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "height"))
+	else if (!ft_strcmp(key, "height"))
 	{
 		control->height = lp_parse_percent(value, win ? win->height : SCREEN_HEIGHT);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "x"))
+	else if (!ft_strcmp(key, "x"))
 	{
 		control->location.x = lp_parse_percent(value, win ? win->width : SCREEN_WIDTH);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "y"))
+	else if (!ft_strcmp(key, "y"))
 	{
 		control->location.y = lp_parse_percent(value, win ? win->height : SCREEN_HEIGHT);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "visible"))
+	else if (!ft_strcmp(key, "visible"))
 	{
 		control->visible = (uint8_t)lp_parse_bool(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "enabled"))
+	else if (!ft_strcmp(key, "enabled"))
 	{
 		control->enabled = (uint8_t)lp_parse_bool(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "color"))
+	else if (!ft_strcmp(key, "color"))
 	{
 		control->color = lp_parse_color(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "bg_color"))
+	else if (!ft_strcmp(key, "bg_color"))
 	{
 		control->bg_color = lp_parse_color(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "margin_top"))
+	else if (!ft_strcmp(key, "margin_top"))
 	{
-		control->margin_top = lp_atoi(value);
+		control->margin_top = ft_atoi(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "margin_left"))
+	else if (!ft_strcmp(key, "margin_left"))
 	{
-		control->margin_left = lp_atoi(value);
+		control->margin_left = ft_atoi(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "margin_right"))
+	else if (!ft_strcmp(key, "margin_right"))
 	{
-		control->margin_right = lp_atoi(value);
+		control->margin_right = ft_atoi(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "margin_bottom"))
+	else if (!ft_strcmp(key, "margin_bottom"))
 	{
-		control->margin_bottom = lp_atoi(value);
+		control->margin_bottom = ft_atoi(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "location"))
+	else if (!ft_strcmp(key, "location"))
 	{
 		int align;
 
-		if (lp_parse_location_xy(value, &control->location))
+		if (lp_parse_location_xy(value, &control->location,
+				win ? win->width : SCREEN_WIDTH,
+				win ? win->height : SCREEN_HEIGHT))
 			return 1;
 		align = lp_parse_align(value);
 		if (align == 0)
@@ -498,62 +441,62 @@ static int	lp_apply_control_attr(t_control *control, const t_window *win, const 
 		control->p_location_override = (e_control_anchor)align;
 		return 1;
 	}
-	else if (!lp_strcmp(key, "text_align"))
+	else if (!ft_strcmp(key, "text_align"))
 	{
 		control->text_align = lp_parse_align(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "font_size"))
+	else if (!ft_strcmp(key, "font_size"))
 	{
-		control->font_size = lp_atoi(value);
+		control->font_size = ft_atoi(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "checked"))
+	else if (!ft_strcmp(key, "checked"))
 	{
 		control->checked = lp_parse_bool(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "bar"))
+	else if (!ft_strcmp(key, "bar"))
 	{
 		control->bar = lp_parse_bool(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "scroll"))
+	else if (!ft_strcmp(key, "scroll"))
 	{
 		control->scroll = lp_parse_bool(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "min"))
+	else if (!ft_strcmp(key, "min"))
 	{
-		control->min = lp_atoi(value);
+		control->min = ft_atoi(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "max"))
+	else if (!ft_strcmp(key, "max"))
 	{
-		control->max = lp_atoi(value);
+		control->max = ft_atoi(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "value"))
+	else if (!ft_strcmp(key, "value"))
 	{
-		control->value = lp_atoi(value);
+		control->value = ft_atoi(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "radius"))
+	else if (!ft_strcmp(key, "radius"))
 	{
-		control->radius = lp_atoi(value);
+		control->radius = ft_atoi(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "mode"))
+	else if (!ft_strcmp(key, "mode"))
 	{
 		control->mode = lp_parse_image_mode(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "type"))
+	else if (!ft_strcmp(key, "type"))
 	{
 		control->type = lp_parse_textbox_type(value);
 		return 1;
 	}
-	else if (!lp_strcmp(key, "src") || !lp_strcmp(key, "image"))
+	else if (!ft_strcmp(key, "src") || !ft_strcmp(key, "image"))
 	{
 		bmp_load_image(&control->image, value);
 		return 1;
@@ -561,13 +504,13 @@ static int	lp_apply_control_attr(t_control *control, const t_window *win, const 
 	return 0;
 }
 
-static t_control	*lp_find_control_by_name(t_control *list, const char *name)
+static t_control	*lp_find_control_by_name(t_control *list, char *name)
 {
 	t_control *found;
 
 	while (list)
 	{
-		if (!lp_strcmp(list->name, name))
+		if (!ft_strcmp(list->name, name))
 			return list;
 		if (list->children)
 		{
@@ -661,7 +604,7 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 					return -1;
 				}
 			}
-			else if (parent_name && !lp_strcmp(key, "parent"))
+			else if (parent_name && !ft_strcmp(key, "parent"))
 				lp_copy_field(value, parent_name, LAYOUT_PARENT_MAX);
 			else if (control)
 			{

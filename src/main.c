@@ -7,18 +7,19 @@
 #include "bmp.h"
 #include "controls.h"
 #include "parsing.h"
+#include "time.h"
+#include "peripheral.h"
 
 void	show_kernel_status()
 {
-	log("    KERNEL_VERSION:        %s\n", LOG_NONE, KERNEL_VERSION);	
-	log("    KERNEL_VERSION_NAME:   %s\n", LOG_NONE, KERNEL_VERSION_NAME);
+	log("	KERNEL_VERSION:		%s\n", LOG_NONE, KERNEL_VERSION);	
+	log("	KERNEL_VERSION_NAME:   %s\n", LOG_NONE, KERNEL_VERSION_NAME);
 }
 
-void	hang(const char *message)
+void	panic(const char *message)
 {
 	log(message, LOG_ERROR);
-	while (1)
-		asm volatile("wfi");
+	while (1) asm volatile("wfi");
 }
 
 void kernel_main(void *dtb)
@@ -33,19 +34,25 @@ void kernel_main(void *dtb)
 	dtb_init(dtb);
 
 	// init heap memory
-	if (heap_init() != 0)   hang("Heap memory init failed\n");
-	else                    log("Heap memory initialized!\n", LOG_SUCCESS);
+	if (heap_init() != 0)   panic("Heap memory init failed\n");
+	else					log("Heap memory initialized!\n", LOG_SUCCESS);
 
 	// init fat32 filesystem
-	if (sd_init() < 0)		hang("SD block interface init failed\n");
+	if (sd_init() < 0)		panic("SD block interface init failed\n");
 	else					log("SD block interface initialized!\n", LOG_SUCCESS);
 
 	if (fat32_mount() < 0)	log("FAT32 mount failed\n", LOG_ERROR);
 	else					log("FAT32 mounted!\n", LOG_SUCCESS);
 
-    // init framebuffer
-	if (display_init())     hang("Could not initialize display\n");
-    else                    log("Display initialized!\n", LOG_SUCCESS);
+	// init framebuffer
+	if (display_init())		panic("Could not initialize display\n");
+	else					log("Display initialized!\n", LOG_SUCCESS);
+
+	// init virtual mouse
+	//if (virtio_is_input(VIRTIO_BASE) && virtio_mouse_init(VIRTIO_BASE))
+	//	log("Virtual mouse device initialized!\n", LOG_SUCCESS);
+	//else
+	//	panic("Could not initialize virtual mouse device\n");
 
 	list_dir("/");
 
@@ -59,11 +66,14 @@ void kernel_main(void *dtb)
 
 	if (!create_window(&main_window, "d3m0n home", SCREEN_WIDTH, SCREEN_HEIGHT))
 		log("Main window created successfully!\n", LOG_SUCCESS);
-	else	hang("Could not launch main window\n");
+	else	panic("Could not launch main window\n");
 	main_window.bg_color = DISPLAY_COLORS[GREY];
 
-    parse_layout("test.lut", &main_window);
-	parse_source("test.src", &main_window);
+	parse_layout("test.layout", &main_window);
+	if (!parse_source("test.src", &main_window))
+		log("Parsed src file\n", LOG_SUCCESS);
+	else
+		log("Could not parse src file\n", LOG_ERROR);
 
 	//t_control control;
 	//init_control(&control, "text1", CONTROL_RECT);
@@ -76,6 +86,13 @@ void kernel_main(void *dtb)
 	//add_control(&main_window, &control);
 	draw_window(&main_window);
 
+	while (1)
+	{
+		display_track_ps2_mouse(0, 0);
+		usleep(200000);
+	}
+
 	log("Finished kernel!\n", LOG_WARNING);
-	while(1) asm volatile("wfi");
+	while (1)
+		asm volatile ("wfi");
 }

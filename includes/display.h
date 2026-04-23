@@ -23,6 +23,10 @@ void	draw_rect(int x, int y, int w, int h, uint32_t color);
 void	draw_bmp(int x, int y, int w, int h, BmpTexture *texture);
 int		framebuffer_init(uint32_t width, uint32_t height, uint32_t bpp);
 
+void	display_log_click(int x, int y);
+void	display_click_demo(void);
+void	display_track_ps2_mouse(int8_t dx, int8_t dy);
+
 
 void	draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);
 int		load_font(const char *path, t_font	*out, int dot_count);

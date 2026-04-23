@@ -13,4 +13,6 @@
 	#define DEBUG 0
 #endif
 
+void	panic(const char *message);
+
 #endif
