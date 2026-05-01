@@ -14,7 +14,7 @@ typedef unsigned long long	uintptr_t;
 
 typedef unsigned long		size_t;
 
-#define SIZE_MAX	(size_t)-1
+#define SIZE_MAX			(size_t)-1
 
 
 #define NULL ((void *)0)

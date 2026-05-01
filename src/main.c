@@ -10,6 +10,7 @@
 #include "time.h"
 #include "peripheral.h"
 
+
 void	show_kernel_status()
 {
 	log("	KERNEL_VERSION:		%s\n", LOG_NONE, KERNEL_VERSION);	
@@ -48,12 +49,6 @@ void kernel_main(void *dtb)
 	if (display_init())		panic("Could not initialize display\n");
 	else					log("Display initialized!\n", LOG_SUCCESS);
 
-	// init virtual mouse
-	//if (virtio_is_input(VIRTIO_BASE) && virtio_mouse_init(VIRTIO_BASE))
-	//	log("Virtual mouse device initialized!\n", LOG_SUCCESS);
-	//else
-	//	panic("Could not initialize virtual mouse device\n");
-
 	list_dir("/");
 
 	// load spash
@@ -88,7 +83,6 @@ void kernel_main(void *dtb)
 
 	while (1)
 	{
-		display_track_ps2_mouse(0, 0);
 		usleep(200000);
 	}
 

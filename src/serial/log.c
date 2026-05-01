@@ -40,6 +40,10 @@ void    log(const char *fmt, e_logtype type, ...)
                 uart_putnbr_i(va_arg(args, int));
             else if (fmt[i] == 'l' && fmt[i++ + 1] == 'l' && fmt[i++ + 1] == 'u')
                 uart_putnbr_llu(va_arg(args, unsigned long long));
+            else if (fmt[i] == 'u' || fmt[i] == 'p')
+                uart_putnbr_u(va_arg(args, unsigned int));
+            else if (fmt[i] == 'x' || fmt[i] == 'X')
+                uart_putnbr_llu_hex(va_arg(args, unsigned int));
             else
                 uart_putc(fmt[i]);
         }

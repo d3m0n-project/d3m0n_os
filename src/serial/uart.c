@@ -27,6 +27,17 @@ void    uart_putnbr_i(int nb)
     uart_putnbr_llu((unsigned long long)ABS(nb));
 }
 
+void    uart_putnbr_u(unsigned int nb)
+{
+    if (nb == 0)
+    {
+        uart_putc('0');
+        return;
+    }
+    uart_putnbr_llu((unsigned long long)nb);
+}
+
+
 void    uart_putnbr_llu(unsigned long long nb)
 {
     if (nb == 0)
