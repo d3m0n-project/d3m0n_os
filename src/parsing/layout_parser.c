@@ -51,7 +51,7 @@ static int	lp_parse_percent(char *str, int max_val)
 	return ft_atoi(str);
 }
 
-static uint32_t	lp_parse_color(char *str)
+uint32_t	lp_parse_color(char *str)
 {
 	int r;
 	int g;
@@ -209,7 +209,7 @@ static int	lp_parse_bool(char *str)
 {
 	if (!str || !str[0])
 		return 0;
-	if (!ft_strcmp(str, "true") || !ft_strcmp(str, "1") || !ft_strcmp(str, "yes"))
+	if (!ft_strcmp(str, "true") || !ft_strcmp(str, "1") || !ft_strcmp(str, "TRUE"))
 		return 1;
 	return 0;
 }
@@ -498,7 +498,10 @@ static int	lp_apply_control_attr(t_control *control, const t_window *win, char *
 	}
 	else if (!ft_strcmp(key, "src") || !ft_strcmp(key, "image"))
 	{
-		bmp_load_image(&control->image, value);
+		size_t	len = ft_strlen(value) + 1;
+		if (len >= 254)
+			return 0;
+		ft_strlcpy(control->image, value, len);
 		return 1;
 	}
 	return 0;

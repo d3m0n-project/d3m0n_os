@@ -3,6 +3,7 @@ LD				= aarch64-linux-gnu-ld
 OBJ_COPY		= aarch64-linux-gnu-objcopy
 QEMU			= qemu-system-aarch64
 DEBUG			= 0
+DEBUG_OUTLINE	= 0
 LD_FLAGS		= -T linker.ld
 
 SRC_DIR			= src
@@ -12,15 +13,19 @@ C_FILES			= $(shell find $(SRC_DIR) -name "*.c")
 S_FILES			= $(shell find $(SRC_DIR) -name "*.s" -o -name "*.S")
 O_FILES			= $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_FILES))
 O_FILES			+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/%.o,$(S_FILES))
+D_FILES			= $(O_FILES:.o=.d)
 DISK			?= disk.img
 
 VERSION			= 2.0.3
 VERSION_NAME	= outset
 NAME			= d3m0n_os_$(VERSION_NAME)_$(VERSION).img
 C_FLAGS			=	-Wall -Wextra -Werror -nostdlib -ffreestanding -O2 -Iincludes -mstrict-align \
+					-MMD -MD \
 					-D DEBUG=$(DEBUG) \
+					-D DEBUG_OUTLINE=$(DEBUG_OUTLINE) \
 					-D KERNEL_VERSION=\"$(VERSION)\" \
 					-D KERNEL_VERSION_NAME=\"$(VERSION_NAME)\"
+
 
 
 C1=\033[0;38;5;69;49m
@@ -44,7 +49,6 @@ banner:
 	@echo "                  $(C1)made by 4re5 group$(R)              "
 	@echo "           $(C2)the first hacking cellular phone$(R)       \n\n"
 
-# .elf and .img
 $(NAME): $(O_FILES)
 	@mkdir -p $(OBJ_DIR)
 	@echo "Linking C objects: $^"
@@ -79,8 +83,7 @@ run: all
 		-serial stdio \
 		-m 512M \
 		-sd $(DISK) \
-		-kernel obj/kernel.elf \
-		-device usb-mouse
+		-kernel obj/kernel.elf
 
 clean:
 	rm -rf $(OBJ_DIR)
@@ -89,5 +92,7 @@ fclean: clean
 	rm -rf $(NAME) $(DISK)
 
 re: fclean all
+
+-include $(D_FILES)
 
 .PHONY: all banner disk run clean fclean re

@@ -13,4 +13,6 @@ You can also use [general attributes](GeneralAttributes.md) on this control
 
 `font_size` (float): sets Text font size
 
+If `font_size` is not set and `width` and/or `height` are set, the text size is auto-computed to fit the provided bounds.
+
 `content` (string): text of the Text control

@@ -43,10 +43,27 @@ typedef enum
 	CONTROL_WINDOW
 }	e_control_type;
 
+typedef struct s_script_chain
+{
+	void					(*func)(void **);
+	void					**args;
+	struct s_script_chain	*next;
+}	t_script_chain;
+
+typedef enum
+{
+	EVENT_UNDEFINED=0,
+	EVENT_ON_CREATE=1,
+	EVENT_ON_CLICK=2
+}	e_event_type;
+
+
 typedef struct s_event
 {
-	t_point		trigger_zone_;
-	void		*callback;
+	e_event_type	type;
+	t_point			trigger_corners[2];
+	//int				affected_control_id; // may be useless
+	t_script_chain	*script;
 }	t_event;
 
 
@@ -74,7 +91,7 @@ typedef struct s_control
 	int					text_align; // TODO: text align
 
 	// Button, Image
-	BmpTexture			image;
+	char				image[255];
 
 	// Image
 	int					mode; // TODO: image mode
@@ -119,9 +136,16 @@ typedef	struct s_window
 	struct s_event		events[MAX_WINDOW_EVENTS];
 }	t_window;
 
-int		create_window(t_window *out, const char *title, int w, int h);
-void	init_control(t_control *control, const char *name, e_control_type type);
-void	add_control(t_window *to, t_control *control);
-void	draw_window(t_window *window);
+int				create_window(t_window *out, const char *title, int w, int h);
+void			init_control(t_control *control, const char *name, e_control_type type);
+void			add_control(t_window *to, t_control *control);
+void			draw_window(t_window *window);
+
+
+/* linked scripting */
+int				linked_script_add_line(char *line, t_script_chain *script);
+void			exec_script(t_script_chain *script);
+t_script_chain	*init_script(t_script_chain *script);
+
 
 #endif

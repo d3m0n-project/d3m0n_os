@@ -13,14 +13,15 @@
 
 void	show_kernel_status()
 {
-	log("	KERNEL_VERSION:		%s\n", LOG_NONE, KERNEL_VERSION);	
-	log("	KERNEL_VERSION_NAME:   %s\n", LOG_NONE, KERNEL_VERSION_NAME);
+	log("KERNEL_VERSION:         %s\n", LOG_INFO| LOG_INDENT, KERNEL_VERSION);	
+	log("KERNEL_VERSION_NAME:    %s\n", LOG_INFO | LOG_INDENT, KERNEL_VERSION_NAME);
 }
 
 void	panic(const char *message)
 {
 	log(message, LOG_ERROR);
-	while (1) asm volatile("wfi");
+	while (1)
+		asm volatile("wfi");
 }
 
 void kernel_main(void *dtb)
@@ -49,7 +50,7 @@ void kernel_main(void *dtb)
 	if (display_init())		panic("Could not initialize display\n");
 	else					log("Display initialized!\n", LOG_SUCCESS);
 
-	list_dir("/");
+	//list_dir("/");
 
 	// load spash
 	BmpTexture  texture;
@@ -58,28 +59,31 @@ void kernel_main(void *dtb)
 	else
 		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &texture);
 
+	//sleep(3);
 
 	if (!create_window(&main_window, "d3m0n home", SCREEN_WIDTH, SCREEN_HEIGHT))
 		log("Main window created successfully!\n", LOG_SUCCESS);
 	else	panic("Could not launch main window\n");
 	main_window.bg_color = DISPLAY_COLORS[GREY];
 
-	parse_layout("test.layout", &main_window);
+	if (!parse_layout("test.layout", &main_window))
+		log("Parsed layout successfully!\n", LOG_SUCCESS);
+	else
+		panic("Invalid layout, could not continue\n");
+
 	if (!parse_source("test.src", &main_window))
-		log("Parsed src file\n", LOG_SUCCESS);
+		log("Parsed source file successfully!\n", LOG_SUCCESS);
 	else
 		log("Could not parse src file\n", LOG_ERROR);
 
-	//t_control control;
-	//init_control(&control, "text1", CONTROL_RECT);
-	//control.width = 100;
-	//control.height = 100;
-	//control.location.x = 10;
-	//control.location.y = 20;
-	//control.bg_color = DISPLAY_COLORS[CYAN];
-	
-	//add_control(&main_window, &control);
 	draw_window(&main_window);
+
+	for (int i=0; i<10; i++)
+	{
+		if (main_window.events[i].type == EVENT_ON_CREATE) {
+			exec_script(main_window.events[i].script);
+		}
+	}
 
 	while (1)
 	{

@@ -11,6 +11,13 @@ void    log(const char *fmt, e_logtype type, ...)
     va_start(args, type);
     const char *color = UART_COLORS[WHITE];
     const char *message = "      ";
+    int indent = 0;
+    
+    if ((type & 16) == 16)
+    {
+        indent = 1;
+        type &= ~16;
+    }
 
     switch (type)
     {
@@ -22,11 +29,15 @@ void    log(const char *fmt, e_logtype type, ...)
     }
     if (type != LOG_NONE)
     {
-        uart_putc('[');
+        if (indent == 1) // INDENT TYPE
+            uart_print("      =>");
+        else
+            uart_putc('[');
         uart_print(color);
         uart_print(message);
         uart_print(UART_COLORS[WHITE]);
-        uart_print("] ");
+        if (indent == 0)
+            uart_print("] ");
     }
     for (int i = 0; fmt[i]; i++)
     {
@@ -50,6 +61,7 @@ void    log(const char *fmt, e_logtype type, ...)
         else
             uart_putc(fmt[i]);
     }
+    uart_print("\033[0m"); // reset color
     va_end(args);
 #endif
 }

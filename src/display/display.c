@@ -5,82 +5,9 @@
 static volatile uint32_t	g_framebuffer_mbox[35] __attribute__((aligned(16)));
 static t_font				main_font;
 
-static int	display_clamp_i32(int value, int min, int max)
-{
-    if (value < min)
-        return (min);
-    if (value > max)
-        return (max);
-    return (value);
-}
-
-static void	display_u32_to_str(unsigned int value, char *out)
-{
-    char	buffer[12];
-    int		index;
-    int		pos;
-
-    if (!out)
-        return;
-    if (value == 0)
-    {
-        out[0] = '0';
-        out[1] = '\0';
-        return;
-    }
-    index = 0;
-    while (value > 0 && index < (int)sizeof(buffer))
-    {
-        buffer[index++] = (char)('0' + (value % 10));
-        value /= 10;
-    }
-    pos = 0;
-    while (index > 0)
-        out[pos++] = buffer[--index];
-    out[pos] = '\0';
-}
-
 uint32_t	DISPLAY_COLORS[16] = { 0x00000000, 0x000000bf, 0x000000ff, 0x00007fff, 0x0000ffff, 0x0000bf00, 0x0000ff00, 0x00bf5f00, 0x00ff0000, 0x00bfbf00, 0x00ffff00, 0x00bf00bf, 0x00ff00ff, 0x00191919, 0x007f7f7f, 0x00ffffff};
 
-void	display_log_click(int x, int y)
-{
-    char x_buf[12];
-    char y_buf[12];
-
-    log("Screen click at x=%i y=%i\n", LOG_INFO, x, y);
-    draw_rect(0, 0, SCREEN_WIDTH, 20, DISPLAY_COLORS[BLACK]);
-    display_u32_to_str((unsigned int)x, x_buf);
-    display_u32_to_str((unsigned int)y, y_buf);
-    draw_text(2, 2, 16, 16, "x", DISPLAY_COLORS[WHITE], 0);
-    draw_text(10, 2, 48, 16, x_buf, DISPLAY_COLORS[WHITE], 0);
-    draw_text(62, 2, 16, 16, "y", DISPLAY_COLORS[WHITE], 0);
-    draw_text(70, 2, 48, 16, y_buf, DISPLAY_COLORS[WHITE], 0);
-}
-
-void	display_click_demo(void)
-{
-    log("Click demo is available, but no kernel touch backend is wired yet.\n", LOG_WARNING);
-}
-
-void	display_track_ps2_mouse(int8_t dx, int8_t dy)
-{
-    static int	mouse_x;
-    static int	mouse_y;
-    static int	initialized;
-
-    if (!initialized)
-    {
-        mouse_x = SCREEN_WIDTH / 2;
-        mouse_y = SCREEN_HEIGHT / 2;
-        initialized = 1;
-    }
-    mouse_x += (int)dx;
-    mouse_y -= (int)dy;
-    mouse_x = display_clamp_i32(mouse_x, 0, SCREEN_WIDTH - 1);
-    mouse_y = display_clamp_i32(mouse_y, 0, SCREEN_HEIGHT - 1);
-    log("PS/2 mouse pos x=%i y=%i\n", LOG_INFO, mouse_x, mouse_y);
-}
-
+#if DEBUG == 1
 void	put_pixel(int x, int y, uint32_t color)
 {
 	if (x < 0 || (uint32_t)x >= SCREEN_WIDTH || y < 0 || (uint32_t)y >= SCREEN_HEIGHT)
@@ -89,16 +16,43 @@ void	put_pixel(int x, int y, uint32_t color)
     fb[y * (fb_req.pitch / 4) + x] = color;
 }
 
+
+void    draw_qemu_outline()
+{
+    volatile uint32_t *fb = (volatile uint32_t *)fb_req.fb_addr;
+    // vertical
+    for (int y=0; y<SCREEN_HEIGHT + 1; y++)
+		fb[y * (fb_req.pitch / 4) + SCREEN_WIDTH] = OUTLINE_COLOR;
+    // horizontal
+    for (int x=0; x<SCREEN_WIDTH + 1; x++)
+		fb[SCREEN_HEIGHT * (fb_req.pitch / 4) + x] = OUTLINE_COLOR;
+}
+#endif
+
 void	draw_hline(int x, int y, int w, uint32_t color)
 {
 	for (int i=0; i<w; i++)
 		put_pixel(x + i, y, color);
 }
 
+void	draw_vline(int x, int y, int h, uint32_t color)
+{
+	for (int i=0; i<h; i++)
+		put_pixel(x, y + i, color);
+}
+
 void	draw_rect(int x, int y, int w, int h, uint32_t color)
 {
 	for(int j=0; j<h; j++)
 		draw_hline(x, y + j, w, color);
+}
+
+void	draw_rect_outline(int x, int y, int w, int h, uint32_t color)
+{
+    draw_hline(x, y, w, color);
+    draw_hline(x, y + h, w, color);
+    draw_vline(x, y, h, color);
+	draw_vline(x + w, y, h, color);
 }
 
 void draw_bmp(int x, int y, int w, int h, BmpTexture *texture)
@@ -121,6 +75,9 @@ void draw_bmp(int x, int y, int w, int h, BmpTexture *texture)
             if (src_y >= texture->height)
 				src_y = texture->height - 1;
 
+            if (texture->bytes_per_pixel == 4 // handle transparency
+                && (texture->pixels[src_y * texture->width + src_x] & 0xFF000000) == 0)
+                continue;
             put_pixel(x + i, y + j, texture->pixels[src_y * texture->width + src_x]);
         }
     }
@@ -263,6 +220,8 @@ int	display_init()
 	if(!framebuffer_init(640, 480, 32))
 	{
 		log("Framebuffer allocated!\n", LOG_SUCCESS);
+        // draw screen outline
+        draw_qemu_outline();
 		draw_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0x00000000);
 		return 0;
 	} else {

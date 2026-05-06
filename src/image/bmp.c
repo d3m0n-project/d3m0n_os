@@ -39,6 +39,8 @@ int bmp_load_image(BmpTexture *out, const char *path)
 		return 1;
 	}
 
+	log("BMP header loading: %llums\n", LOG_INDENT | LOG_INFO, (time_us() / 1000) - start_time);
+
 	lseek(fd, starting_offset, SEEK_SET);
 
 	if (read(fd, file_pixels, data_size) != data_size)
@@ -55,6 +57,9 @@ int bmp_load_image(BmpTexture *out, const char *path)
 		close(fd);
 		return 1;
 	}
+
+	log("BMP bpp: %i\n", LOG_INFO | LOG_INDENT, out->bytes_per_pixel);
+	log("BMP size: %ix%i\n", LOG_INFO | LOG_INDENT, out->width, out->height);
 
 	for (int y = 0; y < out->height; y++)
 	{
@@ -83,7 +88,7 @@ int bmp_load_image(BmpTexture *out, const char *path)
 		}
 	}
 
-	log("total BMP loading time: %llums\n", LOG_INFO, (time_us() / 1000) - start_time);
+	log("total BMP loading time: %llums\n", LOG_INFO | LOG_INDENT, (time_us() / 1000) - start_time);
 
 	free(file_pixels);
 	close(fd);

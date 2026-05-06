@@ -5,11 +5,12 @@
 
 typedef enum
 {
-	LOG_SUCCESS,
-	LOG_ERROR,
-	LOG_WARNING,
-	LOG_INFO,
-	LOG_NONE
+	LOG_NONE=0,
+	LOG_SUCCESS=1,
+	LOG_ERROR=2,
+	LOG_WARNING=4,
+	LOG_INFO=8,
+	LOG_INDENT=16
 }	e_logtype;
 
 extern const char *UART_COLORS[16];
