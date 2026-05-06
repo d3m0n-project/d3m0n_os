@@ -59,31 +59,26 @@ void kernel_main(void *dtb)
 	else
 		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &texture);
 
-	//sleep(3);
+	sleep(3); // sleep 3s
 
+	// TODO: parse app manifest file
 	if (!create_window(&main_window, "d3m0n home", SCREEN_WIDTH, SCREEN_HEIGHT))
 		log("Main window created successfully!\n", LOG_SUCCESS);
 	else	panic("Could not launch main window\n");
 	main_window.bg_color = DISPLAY_COLORS[GREY];
 
-	if (!parse_layout("test.layout", &main_window))
+	if (!parse_layout("/apps/main/layouts/main.layout", &main_window, 0, 0))
 		log("Parsed layout successfully!\n", LOG_SUCCESS);
 	else
 		panic("Invalid layout, could not continue\n");
 
-	if (!parse_source("test.src", &main_window))
+	if (!parse_source("/apps/main/src/main.src", &main_window))
 		log("Parsed source file successfully!\n", LOG_SUCCESS);
 	else
 		log("Could not parse src file\n", LOG_ERROR);
 
 	draw_window(&main_window);
-
-	for (int i=0; i<10; i++)
-	{
-		if (main_window.events[i].type == EVENT_ON_CREATE) {
-			exec_script(main_window.events[i].script);
-		}
-	}
+	exec_event(0, EVENT_ON_CREATE, &main_window); // Window.OnCreate
 
 	while (1)
 	{
@@ -91,6 +86,5 @@ void kernel_main(void *dtb)
 	}
 
 	log("Finished kernel!\n", LOG_WARNING);
-	while (1)
-		asm volatile ("wfi");
+	while (1) asm volatile ("wfi");
 }

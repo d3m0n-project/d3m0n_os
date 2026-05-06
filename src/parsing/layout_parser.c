@@ -569,7 +569,7 @@ static void	lp_remove_top_level(t_window *win, t_control *target)
 	}
 }
 
-static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_control *control, char *parent_name, int section_line)
+static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_control *control, char *parent_name, int section_line, int offset_x, int offset_y)
 {
 	char	*line;
 	char	key[LAYOUT_KEY_MAX];
@@ -634,25 +634,30 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 		}
 		free(line);
 	}
+	if (control)
+	{
+		control->location.x += offset_x;
+		control->location.y += offset_y;
+	}
 	return lines;
 }
 
-int	parse_layout(const char *path, t_window *win)
+int	parse_layout(const char *path, t_window *win, int offset_x, int offset_y)
 {
-	int			fd;
-	int			line_idx;
-	char		*line;
-	int			i;
-	int			j;
-	char		section[32];
-	e_control_type type;
-	t_control	*control;
-	t_control	*tail;
-	char		parent_name[LAYOUT_PARENT_MAX];
-	t_pending_parent pending[LAYOUT_PENDING_MAX];
-	int		pending_count;
-	int		p;
-	t_control	*parent;
+	int					fd;
+	int					line_idx;
+	char				*line;
+	int					i;
+	int					j;
+	char				section[32];
+	e_control_type		type;
+	t_control			*control;
+	t_control			*tail;
+	char				parent_name[LAYOUT_PARENT_MAX];
+	t_pending_parent	pending[LAYOUT_PENDING_MAX];
+	int					pending_count;
+	int					p;
+	t_control			*parent;
 
 	if (!win)
 		return 1;
@@ -699,7 +704,7 @@ int	parse_layout(const char *path, t_window *win)
 		}
 		if (type == CONTROL_WINDOW)
 		{
-			i = lp_parse_block(fd, CONTROL_WINDOW, win, 0, 0, line_idx);
+			i = lp_parse_block(fd, CONTROL_WINDOW, win, 0, 0, line_idx, offset_x, offset_y);
 			if (i < 0)
 			{
 				free(line);
@@ -719,7 +724,7 @@ int	parse_layout(const char *path, t_window *win)
 				return 1;
 			}
 			init_control(control, "control", type);
-			i = lp_parse_block(fd, type, win, control, parent_name, line_idx);
+			i = lp_parse_block(fd, type, win, control, parent_name, line_idx, offset_x, offset_y);
 			if (i < 0)
 			{
 				free(control);

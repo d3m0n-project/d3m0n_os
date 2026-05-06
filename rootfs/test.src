@@ -1,8 +1,0 @@
-# d3m0n source
-
-Window.OnCreate =>
-	log("Test Window Created", "orange");
-	alert("This is a test");
-
-TestName.OnClick =>
-	log("Hello World2", "orange");

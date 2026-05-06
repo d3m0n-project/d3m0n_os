@@ -32,7 +32,10 @@ void    log(const char *fmt, e_logtype type, ...)
         if (indent == 1) // INDENT TYPE
             uart_print("      =>");
         else
+        {
+            uart_print(UART_COLORS[WHITE]);
             uart_putc('[');
+        }
         uart_print(color);
         uart_print(message);
         uart_print(UART_COLORS[WHITE]);

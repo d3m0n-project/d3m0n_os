@@ -1,0 +1,6 @@
+name: Main Launcher
+package: com.4re5.d3m0n.launcher
+icon: default.bmp
+perms: none
+start_path: /
+category: system

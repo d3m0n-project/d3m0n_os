@@ -69,7 +69,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s
 	@$(CC) $(C_FLAGS) -c $< -o $@
 
 disk:
-	@dd if=/dev/zero of=$(DISK) bs=1M count=256
+	@dd if=/dev/zero of=$(DISK) bs=1M count=128
 	@mkfs.vfat -F 32 -I -n D3M0NFS $(DISK)
 	@mcopy -i $(DISK) -s rootfs/* ::
 	@echo "$(COLOR_SUCCESS)Disk formatted as FAT32: $(DISK)$(R)"

@@ -1,0 +1,62 @@
+# d3m0n layout
+
+Window:
+	width="100%";
+	height="100%";
+	title="Contacts";
+	bg_color="black";
+	topbar="true";
+
+
+Image:
+	name="background";
+	src="/wallpapers/default.bmp";
+	location="0, 0";
+	width="100%";
+	height="100%";
+
+
+Image:
+	name="WifiIcon";
+	src="/themes/default_dark/icons/wifi.bmp";
+	location="10, 30";
+	width="65px";
+	height="65px";
+
+Text:
+	content="Wifi";
+	color="white";
+	location="10, 95";
+	width="65px";
+	height="20px";
+	text_align="center";
+
+Image:
+	name="BluetoothIcon";
+	src="/themes/default_dark/icons/bluetooth.bmp";
+	location="85, 30";
+	width="65px";
+	height="65px";
+
+Text:
+	content="BLE";
+	color="white";
+	location="85, 95";
+	width="65px";
+	height="20px";
+	text_align="center";
+
+Image:
+	name="SettingsIcon";
+	src="/themes/default_dark/icons/settings.bmp";
+	location="160, 30";
+	width="65px";
+	height="65px";
+
+Text:
+	content="SETTINGS";
+	color="white";
+	location="160, 95";
+	width="65px";
+	height="20px";
+	text_align="center";

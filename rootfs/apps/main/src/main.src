@@ -1,0 +1,5 @@
+# d3m0n source
+
+Window.OnCreate =>
+  log("Hello World", "orange");
+  template.load("/apps/main/layouts/appview.template", 10, 30, "default", "Hello World!");

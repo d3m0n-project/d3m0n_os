@@ -2,7 +2,7 @@
 #include "mailbox.h"
 #include "log.h"
 
-static volatile uint32_t	g_framebuffer_mbox[35] __attribute__((aligned(16)));
+static volatile uint32_t	g_framebuffer_mbox[35]  __attribute__((aligned(16)));
 static t_font				main_font;
 
 uint32_t	DISPLAY_COLORS[16] = { 0x00000000, 0x000000bf, 0x000000ff, 0x00007fff, 0x0000ffff, 0x0000bf00, 0x0000ff00, 0x00bf5f00, 0x00ff0000, 0x00bfbf00, 0x00ffff00, 0x00bf00bf, 0x00ff00ff, 0x00191919, 0x007f7f7f, 0x00ffffff};

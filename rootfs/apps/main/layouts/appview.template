@@ -1,0 +1,15 @@
+# d3m0n layout template
+
+Image:
+	src="/themes/default_dark/icons/$0.bmp";
+	location="0, 0";
+	width="65px";
+	height="65px";
+
+Text:
+	content="$1";
+	color="white";
+	location="0, 65";
+	width="65px";
+	height="20px";
+	text_align="center";

@@ -142,6 +142,21 @@ int	create_window(t_window *out, const char *title, int w, int h)
 	return 0;
 }
 
+int		exec_event(int control_id, e_event_type type, t_window *window)
+{
+	int	i=0;
+	while (i < MAX_WINDOW_EVENTS)
+	{
+		if (window->events[i].type == type && control_id == window->events[i].affected_control_id)
+		{
+			exec_script(window->events[i].script);
+			return 0;
+		}
+		i++;
+	}
+	return 1;
+}
+
 void	add_control(t_window *to, t_control *control)
 {
 	t_control	*current = to->controls;

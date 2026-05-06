@@ -126,6 +126,8 @@ int	parse_source(const char *path, t_window *win)
 				free(line);
 				return 1;
 			}
+			// control_id, 0=Window, 1,2,3... = other
+			win->events[event_id].affected_control_id = current_control_id;
 		} else if (current_control_id != -1 && i > 0) {
 			if (linked_script_add_line(line + i, win->events[event_id].script))
 			{

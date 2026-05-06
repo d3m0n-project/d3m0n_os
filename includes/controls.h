@@ -62,7 +62,7 @@ typedef struct s_event
 {
 	e_event_type	type;
 	t_point			trigger_corners[2];
-	//int				affected_control_id; // may be useless
+	int				affected_control_id;
 	t_script_chain	*script;
 }	t_event;
 
@@ -140,6 +140,7 @@ int				create_window(t_window *out, const char *title, int w, int h);
 void			init_control(t_control *control, const char *name, e_control_type type);
 void			add_control(t_window *to, t_control *control);
 void			draw_window(t_window *window);
+int				exec_event(int control_id, e_event_type type, t_window *window);
 
 
 /* linked scripting */
