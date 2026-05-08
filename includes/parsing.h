@@ -8,7 +8,8 @@
 #include "filesystem.h"
 
 uint32_t	lp_parse_color(char *str);
-int			parse_layout(const char *path, t_window *win, int offset_x, int offset_y);
+int			parse_layout(const char *path, t_window *win, char **replacements, int offset_x, int offset_y);
+t_window	*get_current_window();
 
 int			parse_source(const char *path, t_window *win);
 

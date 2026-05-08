@@ -2,4 +2,15 @@
 
 Window.OnCreate =>
   log("Hello World", "orange");
-  template.load("/apps/main/layouts/appview.template", 10, 30, "default", "Hello World!");
+  row = 0;
+  col = 0;
+  for (name, icon) in apps.list()
+  {
+    template.load("/apps/main/layouts/appview.template", (10 * row) + 75 * (row + 1), 30, icon, name);
+    row++;
+    if (row > 3)
+    {
+      row = 3;
+      col++;
+    }
+  }

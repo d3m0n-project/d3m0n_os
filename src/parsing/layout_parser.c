@@ -9,6 +9,8 @@
 #define LAYOUT_PARENT_MAX	25
 #define LAYOUT_PENDING_MAX	64
 
+t_window	*CURRENT_WINDOW = 0;
+
 typedef struct s_type_entry
 {
 	char		*name;
@@ -245,6 +247,77 @@ static int	lp_copy_field(char *src, char *dst, int max_len)
 	}
 	dst[i] = '\0';
 	return i;
+}
+
+static char	*lp_apply_replacements(const char *line, char **replacements)
+{
+	char	*result;
+	int		result_len;
+	int		i;
+	int		j;
+	int		k;
+	char	index_buf[12];
+	char	*replacement;
+
+	if (!line || !replacements)
+		return 0;
+	result_len = 0;
+	i = 0;
+	while (line[i])
+	{
+		if (line[i] == '$' && line[i + 1] >= '0' && line[i + 1] <= '9')
+		{
+			j = 0;
+			while (line[i + 1 + j] >= '0' && line[i + 1 + j] <= '9' && j < (int)sizeof(index_buf) - 1)
+			{
+				index_buf[j] = line[i + 1 + j];
+				j++;
+			}
+			index_buf[j] = '\0';
+			k = ft_atoi(index_buf);
+			replacement = replacements[k];
+			if (replacement)
+				result_len += ft_strlen(replacement);
+			i += 1 + j;
+		}
+		else
+		{
+			result_len++;
+			i++;
+		}
+	}
+	result = (char *)ft_calloc((size_t)result_len + 1, sizeof(char));
+	if (!result)
+		return 0;
+	i = 0;
+	j = 0;
+	while (line[i])
+	{
+		if (line[i] == '$' && line[i + 1] >= '0' && line[i + 1] <= '9')
+		{
+			int idx = 0;
+			int digits = 0;
+			while (line[i + 1 + digits] >= '0' && line[i + 1 + digits] <= '9' && digits < (int)sizeof(index_buf) - 1)
+			{
+				index_buf[digits] = line[i + 1 + digits];
+				digits++;
+			}
+			index_buf[digits] = '\0';
+			idx = ft_atoi(index_buf);
+			replacement = replacements[idx];
+			if (replacement)
+			{
+				int r = 0;
+				while (replacement[r])
+					result[j++] = replacement[r++];
+			}
+			i += 1 + digits;
+		}
+		else
+			result[j++] = line[i++];
+	}
+	result[j] = '\0';
+	return result;
 }
 
 static int	lp_parse_key_value(char *line, char *key, int key_max, char *value, int value_max)
@@ -569,9 +642,10 @@ static void	lp_remove_top_level(t_window *win, t_control *target)
 	}
 }
 
-static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_control *control, char *parent_name, int section_line, int offset_x, int offset_y)
+static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_control *control, char *parent_name, int section_line, int offset_x, int offset_y, char **replacements)
 {
 	char	*line;
+	char	*parsed_line;
 	char	key[LAYOUT_KEY_MAX];
 	char	value[LAYOUT_VALUE_MAX];
 	int		lines;
@@ -595,7 +669,10 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 			free(line);
 			continue;
 		}
-		if (lp_parse_key_value(line, key, sizeof(key), value, sizeof(value)))
+		parsed_line = lp_apply_replacements(line, replacements);
+		if (!parsed_line)
+			parsed_line = line;
+		if (lp_parse_key_value(parsed_line, key, sizeof(key), value, sizeof(value)))
 		{
 			if (section_type == CONTROL_WINDOW)
 			{
@@ -603,6 +680,8 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 				if (!apply_ret)
 				{
 					log("Unknown window config at line %i: %s\n", LOG_ERROR, section_line + lines, key);
+					if (parsed_line != line)
+						free(parsed_line);
 					free(line);
 					return -1;
 				}
@@ -615,12 +694,16 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 				if (apply_ret == 0)
 				{
 					log("Unknown control config at line %i: %s\n", LOG_ERROR, section_line + lines, key);
+					if (parsed_line != line)
+						free(parsed_line);
 					free(line);
 					return -1;
 				}
 				if (apply_ret < 0)
 				{
 					log("Invalid control config value at line %i: %s=\"%s\"\n", LOG_ERROR, section_line + lines, key, value);
+					if (parsed_line != line)
+						free(parsed_line);
 					free(line);
 					return -1;
 				}
@@ -628,10 +711,14 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 		}
 		else
 		{
-			log("Invalid config syntax at line %i: %s\n", LOG_ERROR, section_line + lines, line);
+			log("Invalid config syntax at line %i: %s\n", LOG_ERROR, section_line + lines, parsed_line);
 			free(line);
+			if (parsed_line != line)
+				free(parsed_line);
 			return -1;
 		}
+		if (parsed_line != line)
+			free(parsed_line);
 		free(line);
 	}
 	if (control)
@@ -642,7 +729,12 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 	return lines;
 }
 
-int	parse_layout(const char *path, t_window *win, int offset_x, int offset_y)
+t_window	*get_current_window()
+{
+	return CURRENT_WINDOW;
+}
+
+int	parse_layout(const char *path, t_window *win, char **replacements, int offset_x, int offset_y)
 {
 	int					fd;
 	int					line_idx;
@@ -661,6 +753,7 @@ int	parse_layout(const char *path, t_window *win, int offset_x, int offset_y)
 
 	if (!win)
 		return 1;
+	CURRENT_WINDOW = win;
 	fd = open(path, O_READ);
 	if (fd < 0)
 	{
@@ -704,7 +797,7 @@ int	parse_layout(const char *path, t_window *win, int offset_x, int offset_y)
 		}
 		if (type == CONTROL_WINDOW)
 		{
-			i = lp_parse_block(fd, CONTROL_WINDOW, win, 0, 0, line_idx, offset_x, offset_y);
+			i = lp_parse_block(fd, CONTROL_WINDOW, win, 0, 0, line_idx, offset_x, offset_y, replacements);
 			if (i < 0)
 			{
 				free(line);
@@ -724,7 +817,7 @@ int	parse_layout(const char *path, t_window *win, int offset_x, int offset_y)
 				return 1;
 			}
 			init_control(control, "control", type);
-			i = lp_parse_block(fd, type, win, control, parent_name, line_idx, offset_x, offset_y);
+			i = lp_parse_block(fd, type, win, control, parent_name, line_idx, offset_x, offset_y, replacements);
 			if (i < 0)
 			{
 				free(control);

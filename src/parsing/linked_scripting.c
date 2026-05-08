@@ -91,7 +91,7 @@ int		linked_script_add_line(char *line, t_script_chain *script)
 		i++;
 	if (!line[i])
 	{
-		log("Could not find opening bracker for function call: '%s'\n", LOG_ERROR | LOG_INDENT, line);
+		log("Could not find opening bracket for function call: '%s'\n", LOG_ERROR | LOG_INDENT, line);
 		return 1;
 	}
 
@@ -100,7 +100,7 @@ int		linked_script_add_line(char *line, t_script_chain *script)
 		j++;
 	if (!line[j])
 	{
-		log("Could not find closing bracker for function call: '%s'\n", LOG_ERROR | LOG_INDENT, line);
+		log("Could not find closing bracket for function call: '%s'\n", LOG_ERROR | LOG_INDENT, line);
 		return 1;
 	}
 	// split the function name and the function args

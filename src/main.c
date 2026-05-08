@@ -67,7 +67,7 @@ void kernel_main(void *dtb)
 	else	panic("Could not launch main window\n");
 	main_window.bg_color = DISPLAY_COLORS[GREY];
 
-	if (!parse_layout("/apps/main/layouts/main.layout", &main_window, 0, 0))
+	if (!parse_layout("/apps/main/layouts/main.layout", &main_window, 0, 0, 0))
 		log("Parsed layout successfully!\n", LOG_SUCCESS);
 	else
 		panic("Invalid layout, could not continue\n");
