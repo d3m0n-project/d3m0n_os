@@ -31,8 +31,6 @@ void kernel_main(void *dtb)
 {
 	t_window	main_window;
 
-	uart_init();
-
 	gpio_pinMode(21, GPIO_OUT);
 
 	while (1)
@@ -41,7 +39,7 @@ void kernel_main(void *dtb)
 		for (volatile int i=0;i<500000;i++);
 		gpio_digitalWrite(21, 0);
 		for (volatile int i=0;i<500000;i++);
-		uart_print("Hello World!\r\n");
+		uart_putc('A');
 	}
 
 	log("Loading kernel...\n", LOG_INFO);

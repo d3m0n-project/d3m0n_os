@@ -1,6 +1,6 @@
 arm_64bit=0
 kernel=kernel.img
 enable_uart=1
-uart_early_init=1
+uart_2ndstage=1
 dtoverlay=disable-bt
 device_tree=bcm2708-rpi-zero.dtb
