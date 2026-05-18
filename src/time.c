@@ -1,42 +1,39 @@
 #include "time.h"
 #include "types.h"
 
-static inline uint64_t read_cntpct()
+#define TIMER_BASE 0x20003000
+#define TIMER_CLO  (*(volatile uint32_t*)(TIMER_BASE + 0x04))
+
+static inline uint32_t read_timer()
 {
-	uint64_t v;
-	asm volatile("mrs %0, cntpct_el0" : "=r"(v));
-	return v;
+    return TIMER_CLO;
 }
 
-static inline uint64_t read_cntfrq()
+// milliseconds (since boot)
+uint64_t time_now()
 {
-	uint64_t v;
-	asm volatile("mrs %0, cntfrq_el0" : "=r"(v));
-	return v;
+    return (uint64_t)read_timer();
 }
 
-uint64_t    time_now()
+// microseconds (since boot)
+uint64_t time_us()
 {
-	return read_cntpct() / read_cntfrq();
+    return (uint64_t)read_timer();
 }
 
-uint64_t    time_us()
+void sleep(uint64_t seconds)
 {
-	uint64_t cnt = read_cntpct();
-	uint64_t freq = read_cntfrq();
-	return (cnt * 1000000) / freq;
-}
+    uint64_t start = time_us();
+    uint64_t target = seconds * 1000000ULL;
 
-void	sleep(uint64_t seconds)
-{
-	unsigned long long start = time_now();
-	while (time_now() - start < seconds)
-		asm volatile("wfe");
+    while ((time_us() - start) < target)
+        asm volatile("wfe");
 }
 
 void usleep(uint64_t microseconds)
 {
-	uint64_t start = time_us();
-	while ((time_us() - start) < microseconds)
-		asm volatile("wfe");
+    uint64_t start = time_us();
+
+    while ((time_us() - start) < microseconds)
+        asm volatile("wfe");
 }

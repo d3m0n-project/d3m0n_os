@@ -41,5 +41,4 @@ void	template_load(void **args)
 	t_window	*current_win = get_current_window();
 	if (parse_layout(path, current_win, strings, x, y))
 		log("Could not load template at x:%i, y:%i\n", LOG_ERROR | LOG_INDENT, x, y);
-	draw_window(current_win);
 }

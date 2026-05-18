@@ -6,7 +6,6 @@ const char *UART_COLORS[16] = {"\e[0;38;5;0;49m", "\e[0;31m", "\e[1;31m", "\e[38
 
 void    log(const char *fmt, e_logtype type, ...)
 {
-#if DEBUG == 1
     va_list args;
     va_start(args, type);
     const char *color = UART_COLORS[WHITE];
@@ -66,5 +65,4 @@ void    log(const char *fmt, e_logtype type, ...)
     }
     uart_print("\033[0m"); // reset color
     va_end(args);
-#endif
 }

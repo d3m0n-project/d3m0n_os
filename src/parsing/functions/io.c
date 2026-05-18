@@ -21,3 +21,9 @@ void	fn_alert(void **args)
 	uint32_t	color_code = 0x000000FF;
 	draw_text(SCREEN_WIDTH / 2, 0, -1, -1, (const char *)message, color_code, 0);
 }
+
+void	fn_apps_list(void **args)
+{
+	(void)args;
+	log("apps.list() is only supported as a loop source in for (name, icon) in apps.list()\n", LOG_INFO | LOG_INDENT);
+}

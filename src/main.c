@@ -9,6 +9,9 @@
 #include "parsing.h"
 #include "time.h"
 #include "peripheral.h"
+#include "gpio.h"
+
+#include "uart.h"
 
 
 void	show_kernel_status()
@@ -28,9 +31,24 @@ void kernel_main(void *dtb)
 {
 	t_window	main_window;
 
+	uart_init();
+
+	gpio_pinMode(21, GPIO_OUT);
+
+	while (1)
+	{
+		gpio_digitalWrite(21, 1);
+		for (volatile int i=0;i<500000;i++);
+		gpio_digitalWrite(21, 0);
+		for (volatile int i=0;i<500000;i++);
+		uart_print("Hello World!\r\n");
+	}
+
 	log("Loading kernel...\n", LOG_INFO);
 
 	show_kernel_status();
+
+	while (1) asm volatile("wfi");
 
 	// load DTB
 	dtb_init(dtb);
@@ -75,9 +93,8 @@ void kernel_main(void *dtb)
 	if (!parse_source("/apps/main/src/main.src", &main_window))
 		log("Parsed source file successfully!\n", LOG_SUCCESS);
 	else
-		log("Could not parse src file\n", LOG_ERROR);
+		panic("Could not parse src file\n");
 
-	draw_window(&main_window);
 	exec_event(0, EVENT_ON_CREATE, &main_window); // Window.OnCreate
 
 	while (1)

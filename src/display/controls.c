@@ -265,9 +265,8 @@ void	draw_control(t_control *control)
 			draw_text(draw_x, draw_y, char_w, char_h, control->content, control->color, 0);
 		}
 		break;
-
-/* duplicate IMAGE case removed (handled above) */
 	case CONTROL_IMAGE:
+		;
 		BmpTexture	texture;
 		if (bmp_load_image(&texture, control->image))
 		{

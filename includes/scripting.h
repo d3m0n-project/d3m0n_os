@@ -27,10 +27,10 @@ void	fn_alert(void **args);
 /* template */
 void	template_load(void **args);
 
+/* apps */
+void	fn_apps_list(void **args);
 
-
-
-#define FUNCS_SIZE 3
+#define FUNCS_SIZE 4
 extern	t_fn_def	funcs[FUNCS_SIZE];
 
 #endif
