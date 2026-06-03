@@ -7,8 +7,6 @@ QEMU			= qemu-system-arm
 DEBUG			= 0
 DEBUG_OUTLINE	= 0
 
-LD_FLAGS		= -T linker.ld -lgcc
-
 SRC_DIR			= src
 OBJ_DIR			= obj
 BUILD_DIR		= build
@@ -38,7 +36,8 @@ ELF				= $(OBJ_DIR)/kernel.elf
 
 IMG_SIZE		= 128
 
-C_FLAGS			= -Wall -Wextra -Werror -nostdlib -ffreestanding -O2 \
+LD_FLAGS		= -T linker.ld -lgcc -Wl,-e,_start
+C_FLAGS			= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 \
 				  -Iincludes -mcpu=arm1176jzf-s \
 				  -MMD -MD \
 				  -D DEBUG=$(DEBUG) \
@@ -75,8 +74,8 @@ $(NAME): $(O_FILES)
 	@mkdir -p $(OBJ_DIR)
 
 	@echo "$(COLOR_INFO)[LD] Linking kernel...$(R)"
-	$(CC) -ffreestanding -nostdlib -nostartfiles -T linker.ld -Wl,-e,_start -o $(OBJ_DIR)/kernel.elf $^ -lgcc
-#	@$(CC) $(C_FLAGS) $^ $(LD_FLAGS) -o $(OBJ_DIR)/kernel.elf
+#	$(CC) -ffreestanding -nostdlib -nostartfiles -T linker.ld -Wl,-e,_start -o $(OBJ_DIR)/kernel.elf $^ -lgcc
+	$(CC) $(C_FLAGS) $^ $(LD_FLAGS) -o $(OBJ_DIR)/kernel.elf
 
 	@echo "$(COLOR_INFO)[OBJCOPY] Creating kernel.img...$(R)"
 	@$(OBJCOPY) -O binary $(OBJ_DIR)/kernel.elf $(BUILD_DIR)/kernel.img
@@ -101,8 +100,13 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s
 disk:
 	@echo "$(COLOR_INFO)[IMG] Creating disk image...$(R)"
 	@dd if=/dev/zero of=$(DISK) bs=1M count=$(IMG_SIZE)
+	@sudo parted $(DISK) mklabel msdos
+	@sudo parted $(DISK) mkpart primary fat32 1MiB 100%
 	@mkfs.vfat -F 32 -n D3M0NFS $(DISK)
+	@mcopy -i $(DISK) -s rootfs/* ::
 	@echo "$(COLOR_SUCCESS)[OK] Disk ready: $(DISK)$(R)"
+
+
 
 
 export: all
@@ -115,7 +119,8 @@ export: all
 	@dd if=/dev/zero of=$(EXPORT_IMG_NAME) bs=1M count=$(IMG_SIZE)
 
 	@parted $(EXPORT_IMG_NAME) --script mklabel msdos
-	@parted $(EXPORT_IMG_NAME) --script mkpart primary fat32 1MiB 100%
+	@parted $(EXPORT_IMG_NAME) --script mkpart primary fat32 1MiB 65MiB
+	@parted $(EXPORT_IMG_NAME) --script mkpart primary fat32 65MiB 100%
 	@parted $(EXPORT_IMG_NAME) --script set 1 boot on
 
 	@sync
@@ -124,12 +129,17 @@ export: all
 	sudo partprobe $$LOOP || true; \
 	sleep 1; \
 	sudo mkfs.vfat -F 32 $${LOOP}p1; \
-	mkdir -p $(MOUNT_DIR); \
-	sudo mount $${LOOP}p1 $(MOUNT_DIR); \
-	sudo cp $(BUILD_DIR)/kernel.img $(MOUNT_DIR)/kernel.img; \
-	sudo cp $(FIRMWARE_DIR)/* $(MOUNT_DIR)/ 2>/dev/null || true; \
+	sudo mkfs.vfat -F 32 $${LOOP}p2; \
+	mkdir -p $(MOUNT_DIR)/boot; \
+	mkdir -p $(MOUNT_DIR)/root; \
+	sudo mount $${LOOP}p1 $(MOUNT_DIR)/boot; \
+	sudo mount $${LOOP}p2 $(MOUNT_DIR)/root; \
+	sudo cp $(BUILD_DIR)/kernel.img $(MOUNT_DIR)/boot/kernel.img; \
+	sudo cp -r $(FIRMWARE_DIR)/* $(MOUNT_DIR)/boot/ 2>/dev/null || true; \
+	sudo cp -r rootfs/* $(MOUNT_DIR)/root/; \
 	sync; \
-	sudo umount $(MOUNT_DIR); \
+	sudo umount $(MOUNT_DIR)/boot; \
+	sudo umount $(MOUNT_DIR)/root; \
 	sudo losetup -d $$LOOP
 
 	@echo "$(COLOR_SUCCESS)[OK] Bootable SD image created: $(EXPORT_IMG_NAME)$(R)"
@@ -137,12 +147,13 @@ export: all
 
 run: all
 	@echo "$(COLOR_WARN)[QEMU] Starting emulator...$(R)"
-#	@test -f "$(DISK)" || (echo "$(COLOR_ERROR)Disk image not found: $(DISK)$(R)" && exit 1)
+	@test -f "$(DISK)" || (echo "$(COLOR_ERROR)Disk image not found: $(DISK)$(R)" && exit 1)
 	@$(QEMU) \
 		-machine raspi1ap \
 		-cpu arm1176 \
 		-serial mon:stdio \
 		-m 512M \
+		-sd $(DISK) \
 		-kernel $(OBJ_DIR)/kernel.elf
 
 

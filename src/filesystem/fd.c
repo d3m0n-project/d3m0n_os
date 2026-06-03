@@ -16,7 +16,9 @@ static int	is_valid_open_flags(int flags)
 {
 	int access_mode;
 
-	if (flags & ~(O_READ | O_WRITE | O_CREATE))
+	if (flags & ~(O_READ | O_WRITE | O_CREATE | O_APPEND))
+		return (0);
+	if ((flags & O_APPEND) && !(flags & O_WRITE))
 		return (0);
 	access_mode = flags & (O_READ | O_WRITE);
 	if (access_mode == 0)
@@ -54,7 +56,9 @@ int		open(const char *path, int flags)
 	if (file.is_dir)
 		return (-1);
 	g_fds[fd].file = file;
-	g_fds[fd].mode = (file_open_mode)(flags & (O_READ | O_WRITE | O_CREATE));
+	g_fds[fd].mode = (file_open_mode)(flags & (O_READ | O_WRITE | O_CREATE | O_APPEND));
+	if (g_fds[fd].mode & O_APPEND)
+		g_fds[fd].file.pos = g_fds[fd].file.size;
 	return (fd);
 }
 
@@ -76,6 +80,8 @@ int		write(int fd, const char *buffer, uint32_t count)
 
 	if (!(g_fds[fd].mode & O_WRITE)) // not in write mode
 		return (-1);
+	if (g_fds[fd].mode & O_APPEND)
+		g_fds[fd].file.pos = g_fds[fd].file.size;
 	
 	return (fat32_write(&(g_fds[fd].file), (const uint8_t *)buffer, count));
 }
@@ -126,7 +132,7 @@ uint32_t	lseek(int fd, int32_t offset, e_seek_directive whence)
 
 static void print_file(const char *name, uint32_t size)
 {
-    log("    %s (%llu bytes)\n", LOG_NONE, name, size);
+	log("    %s (%u bytes)\n", LOG_NONE, name, size);
 }
 void	list_dir(const char *path)
 {

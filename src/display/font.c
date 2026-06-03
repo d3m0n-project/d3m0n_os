@@ -39,7 +39,7 @@ int	load_font(const char *path, t_font	*out, int dot_count)
 		free(out->data);
 		out->data = new_ptr;
 	}
-	log("Read %llu bytes from %s!\n", LOG_SUCCESS, total_read, path);
+	log("Read %u bytes from %s!\n", LOG_SUCCESS, total_read, path);
 	close(fd);
 	return 0;
 }

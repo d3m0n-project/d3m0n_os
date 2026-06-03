@@ -206,6 +206,7 @@ static int fat32_write_cluster(uint32_t cluster, const uint8_t *buffer)
 {
 	uint32_t lba;
 	uint32_t i;
+	uint8_t sector_buf[SECTOR_SIZE];
 
 	if (!buffer || !fat32_ready() || cluster < 2)
 		return -1;
@@ -216,7 +217,8 @@ static int fat32_write_cluster(uint32_t cluster, const uint8_t *buffer)
 
 	for (i = 0; i < fat32.sectors_per_cluster; i++)
 	{
-		if (block_write(lba + i, buffer + i * SECTOR_SIZE) != 0)
+		mem_copy(sector_buf, buffer + i * SECTOR_SIZE, SECTOR_SIZE);
+		if (block_write(lba + i, sector_buf) != 0)
 			return -1;
 	}
 	return 0;
@@ -245,8 +247,12 @@ static int fat32_set_fat_entry(uint32_t cluster, uint32_t value)
 		if (block_read(lba, g_cluster_buf) != 0)
 			return -1;
 		mem_write32(g_cluster_buf + byte_off, v);
-		if (block_write(lba, g_cluster_buf) != 0)
-			return -1;
+		{
+			uint8_t sector_tmp[SECTOR_SIZE];
+			mem_copy(sector_tmp, g_cluster_buf, SECTOR_SIZE);
+			if (block_write(lba, sector_tmp) != 0)
+				return -1;
+		}
 	}
 	return 0;
 }
@@ -277,6 +283,35 @@ static int fat32_find_free_cluster(uint32_t *cluster_out)
 		}
 	}
 	return -1;
+}
+
+static int fat32_allocate_cluster_after(uint32_t prev_cluster, uint32_t *new_cluster_out)
+{
+	uint32_t new_cluster;
+	uint32_t zero_buf_len;
+
+	if (!new_cluster_out || !fat32_ready() || prev_cluster < 2)
+		return -1;
+
+	if (fat32_find_free_cluster(&new_cluster) != 0)
+		return -1;
+	if (new_cluster < 2 || new_cluster >= fat32_max_clusters())
+		return -1;
+
+	zero_buf_len = cluster_bytes();
+	mem_zero(g_cluster_buf, zero_buf_len);
+	if (fat32_write_cluster(new_cluster, g_cluster_buf) != 0)
+		return -1;
+	if (fat32_set_fat_entry(new_cluster, FAT32_EOC) != 0)
+		return -1;
+	if (fat32_set_fat_entry(prev_cluster, new_cluster) != 0)
+	{
+		fat32_set_fat_entry(new_cluster, 0);
+		return -1;
+	}
+
+	*new_cluster_out = new_cluster;
+	return 0;
 }
 
 int	fat32_read_cluster(uint32_t cluster, uint8_t *buffer)
@@ -795,6 +830,7 @@ int	fat32_write(FAT32_File *file, const uint8_t *buffer, uint32_t len)
 	uint32_t	remaining;
 	uint32_t	write_total;
 	uint32_t	cluster;
+	uint32_t	prev_cluster;
 	uint32_t	offset;
 	uint32_t	cbytes;
 	uint32_t	copy_len;
@@ -821,10 +857,14 @@ int	fat32_write(FAT32_File *file, const uint8_t *buffer, uint32_t len)
 	{
 		if (max_clusters == 0 || hops++ >= max_clusters)
 			return -1;
+		prev_cluster = cluster;
 		if (fat32_get_next_cluster(cluster, &cluster) != 0)
 			return -1;
 		if (cluster == 0)
-			return 0;
+		{
+			if (fat32_allocate_cluster_after(prev_cluster, &cluster) != 0)
+				return -1;
+		}
 		offset -= cbytes;
 	}
 
@@ -845,10 +885,14 @@ int	fat32_write(FAT32_File *file, const uint8_t *buffer, uint32_t len)
 		lba = fat32_cluster_to_lba(cluster);
 		if (lba == 0)
 			return -1;
-		for (i = 0; i < fat32.sectors_per_cluster; i++)
 		{
-			if (block_write(lba + i, g_cluster_buf + i * SECTOR_SIZE) != 0)
-				return -1;
+			uint8_t sector_buf_local[SECTOR_SIZE];
+			for (i = 0; i < fat32.sectors_per_cluster; i++)
+			{
+				mem_copy(sector_buf_local, g_cluster_buf + i * SECTOR_SIZE, SECTOR_SIZE);
+				if (block_write(lba + i, sector_buf_local) != 0)
+					return -1;
+			}
 		}
 
 		write_total += copy_len;
@@ -857,8 +901,14 @@ int	fat32_write(FAT32_File *file, const uint8_t *buffer, uint32_t len)
 
 		if (remaining > 0)
 		{
+			prev_cluster = cluster;
 			if (fat32_get_next_cluster(cluster, &cluster) != 0)
 				return -1;
+			if (cluster == 0)
+			{
+				if (fat32_allocate_cluster_after(prev_cluster, &cluster) != 0)
+					return -1;
+			}
 		}
 	}
 	file->pos += write_total;
@@ -990,16 +1040,35 @@ void	fat32_list_dir(const char *path, void (*print)(const char *name, uint32_t s
 	}
 }
 
-int	fat32_mount(void)
+int	fat32_mount(int partition_id)
 {
-	uint8_t mbr[SECTOR_SIZE];
-	uint32_t part_lba;
+	uint8_t		mbr[SECTOR_SIZE];
+	uint32_t	part_lba;
+	uint8_t		type;
+
+	if (partition_id < 0 || partition_id >= 4)
+		return -1;
 
 	if (block_read(0, mbr) != 0)
+	{
+		log("Could not read MBR block 0\n", LOG_ERROR);
 		return -1;
+	}
 	if (mbr[510] == 0x55 && mbr[511] == 0xAA)
 	{
-		part_lba = mem_read32(mbr + 446 + 8);
+		part_lba = mem_read32(mbr + 446 + (16 * partition_id) + 8); // read lba of partition
+		type = mbr[446 + (16 * partition_id) + 4];
+		
+		#if DEBUG == 0
+		if (type != 0x0B && type != 0x0C)
+		{
+			log("Invalid partition type: %x, need to be FAT32\n", LOG_ERROR | LOG_INDENT, type);
+			return -1;
+		}
+		#else
+		(void)type;
+		#endif
+		
 		if (part_lba != 0)
 		{
 			if (parse_bpb(part_lba) == 0)
@@ -1007,4 +1076,9 @@ int	fat32_mount(void)
 		}
 	}
 	return parse_bpb(0);
+}
+
+int filesystem_ready(void)
+{
+	return fat32_ready();
 }

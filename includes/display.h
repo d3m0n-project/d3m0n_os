@@ -28,7 +28,6 @@ void	put_pixel(int x, int y, uint32_t color);
 void	draw_rect(int x, int y, int w, int h, uint32_t color);
 void	draw_rect_outline(int x, int y, int w, int h, uint32_t color);
 void	draw_bmp(int x, int y, int w, int h, BmpTexture *texture);
-int		framebuffer_init(uint32_t width, uint32_t height, uint32_t bpp);
 
 void	draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);
 int		load_font(const char *path, t_font	*out, int dot_count);

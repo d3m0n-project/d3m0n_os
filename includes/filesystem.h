@@ -11,7 +11,8 @@ typedef enum
 	FILE_NOT_CREATED=0,
 	O_READ=1,
 	O_WRITE=2,
-	O_CREATE=4
+	O_CREATE=4,
+	O_APPEND=8
 }	file_open_mode;
 
 typedef enum
@@ -24,9 +25,12 @@ typedef enum
 int			block_write(uint32_t lba, const uint8_t* buffer);
 int			block_read(uint32_t lba, uint8_t* buffer);
 
-int			fat32_mount(void);
+int		fat32_mount(int partition_id);
 
-int			sd_init(void);
+int		filesystem_ready(void);
+
+
+int		sd_init(void);
 
 int			open(const char *path, int flags);
 uint32_t	read(int fd, char *buffer, uint32_t count);

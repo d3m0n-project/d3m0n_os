@@ -23,6 +23,8 @@ void	show_kernel_status()
 void	panic(const char *message)
 {
 	log(message, LOG_ERROR);
+	/* ensure any buffered log data is flushed to disk for post-mortem */
+	uart_flush_log_buffer();
 	while (1)
 		asm volatile("wfi");
 }
@@ -31,22 +33,9 @@ void kernel_main(void *dtb)
 {
 	t_window	main_window;
 
-	gpio_pinMode(21, GPIO_OUT);
-
-	while (1)
-	{
-		gpio_digitalWrite(21, 1);
-		for (volatile int i=0;i<500000;i++);
-		gpio_digitalWrite(21, 0);
-		for (volatile int i=0;i<500000;i++);
-		uart_putc('A');
-	}
-
 	log("Loading kernel...\n", LOG_INFO);
 
 	show_kernel_status();
-
-	while (1) asm volatile("wfi");
 
 	// load DTB
 	dtb_init(dtb);
@@ -55,18 +44,24 @@ void kernel_main(void *dtb)
 	if (heap_init() != 0)   panic("Heap memory init failed\n");
 	else					log("Heap memory initialized!\n", LOG_SUCCESS);
 
+	
+
 	// init fat32 filesystem
 	if (sd_init() < 0)		panic("SD block interface init failed\n");
 	else					log("SD block interface initialized!\n", LOG_SUCCESS);
 
-	if (fat32_mount() < 0)	log("FAT32 mount failed\n", LOG_ERROR);
+
+
+	// load partition number 2 as rootfs
+	if (fat32_mount(1) < 0)	log("FAT32 mount failed\n", LOG_ERROR);
 	else					log("FAT32 mounted!\n", LOG_SUCCESS);
+
+	list_dir("/");
 
 	// init framebuffer
 	if (display_init())		panic("Could not initialize display\n");
 	else					log("Display initialized!\n", LOG_SUCCESS);
 
-	//list_dir("/");
 
 	// load spash
 	BmpTexture  texture;
@@ -74,6 +69,8 @@ void kernel_main(void *dtb)
 		log("Could not load BMP texture\n", LOG_ERROR);
 	else
 		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &texture);
+
+	panic("STOPPED THE EXECUTION HERE\n");
 
 	sleep(3); // sleep 3s
 

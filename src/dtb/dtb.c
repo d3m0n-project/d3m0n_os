@@ -53,7 +53,7 @@ void *dtb_find_prop(const char *node, const char *prop, uint32_t *len)
         {
             char *name = (char *)p;
 			uart_print(name);
-			uart_putc('\n');
+			uart_print("\n");
             if (str_eq(name, node))
                 node_match = 1;
             else

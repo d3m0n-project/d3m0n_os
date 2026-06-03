@@ -1,7 +1,6 @@
 #include "gpio.h"
 #include "types.h"
-
-#define GPIO_BASE 0x20200000
+#include "peripheral.h"
 
 #define GPFSEL0 ((volatile uint32_t*)(GPIO_BASE + 0x00))
 #define GPFSEL1 ((volatile uint32_t*)(GPIO_BASE + 0x04))
@@ -19,38 +18,52 @@
 
 void	gpio_pinMode(int pin, int mode)
 {
-    volatile uint32_t *reg = (volatile uint32_t *)(GPIO_BASE + (pin / 10) * 4);
-    int shift = (pin % 10) * 3;
+	volatile uint32_t *reg = (volatile uint32_t *)(GPIO_BASE + (pin / 10) * 4);
+	int shift = (pin % 10) * 3;
 
-    uint32_t val = *reg;
-    val &= ~(7 << shift);        // clear function bits
-    val |= (mode << shift);      // set mode
-    *reg = val;
+	uint32_t val = *reg;
+	val &= ~(7 << shift);   // clear function bits
+	val |= (mode << shift); // set mode
+	*reg = val;
 }
 
 
 void	gpio_digitalWrite(int pin, int value)
 {
-    if (value)
-    {
-        if (pin < 32)
-            *GPSET0 = (1 << pin);
-        else
-            *GPSET1 = (1 << (pin - 32));
-    }
-    else
-    {
-        if (pin < 32)
-            *GPCLR0 = (1 << pin);
-        else
-            *GPCLR1 = (1 << (pin - 32));
-    }
+	if (value)
+	{
+		if (pin < 32)
+			*GPSET0 = (1 << pin);
+		else
+			*GPSET1 = (1 << (pin - 32));
+	}
+	else
+	{
+		if (pin < 32)
+			*GPCLR0 = (1 << pin);
+		else
+			*GPCLR1 = (1 << (pin - 32));
+	}
 }
 
 int		gpio_digitalRead(int pin)
 {
-    if (pin < 32)
-        return ((*GPLEV0) >> pin) & 1;
-    else
-        return ((*GPLEV1) >> (pin - 32)) & 1;
+	if (pin < 32)
+		return ((*GPLEV0) >> pin) & 1;
+	else
+		return ((*GPLEV1) >> (pin - 32)) & 1;
+}
+
+void	gpio_set_alt(int pin, int alt)
+{
+	volatile uint32_t* fsel = (volatile uint32_t*)(GPIO_BASE + (pin / 10) * 4);
+
+	uint32_t shift = (pin % 10) * 3;
+
+	uint32_t value = *fsel;
+
+	value &= ~(7 << shift);
+	value |= (alt << shift);
+
+	*fsel = value;
 }

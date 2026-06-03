@@ -33,7 +33,7 @@ void    log(const char *fmt, e_logtype type, ...)
         else
         {
             uart_print(UART_COLORS[WHITE]);
-            uart_putc('[');
+            uart_print("[");
         }
         uart_print(color);
         uart_print(message);
@@ -58,10 +58,18 @@ void    log(const char *fmt, e_logtype type, ...)
             else if (fmt[i] == 'x' || fmt[i] == 'X')
                 uart_putnbr_llu_hex(va_arg(args, unsigned int));
             else
-                uart_putc(fmt[i]);
+            {
+                char    buf[2] = {0};
+                buf[0] = fmt[i];
+                uart_print(buf);
+            }
         }
         else
-            uart_putc(fmt[i]);
+        {
+            char    buf[2] = {0};
+            buf[0] = fmt[i];
+            uart_print(buf);
+        }
     }
     uart_print("\033[0m"); // reset color
     va_end(args);

@@ -3,6 +3,6 @@
 
 #include "types.h"
 
-#define PERIPHERAL_BASE	0x3F000000
+#define PERIPHERAL_BASE	0x20000000
 
 #endif
