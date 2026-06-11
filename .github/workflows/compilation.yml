@@ -14,6 +14,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: dependencies install
-      run: apt install gcc-arm-none-eabi -y
+      run: sudo apt install gcc-arm-none-eabi -y
     - name: make
       run: make
