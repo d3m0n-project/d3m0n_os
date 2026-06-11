@@ -4,8 +4,16 @@ OBJCOPY			= arm-none-eabi-objcopy
 
 QEMU			= qemu-system-arm
 
+# default config
 DEBUG			= 0
 DEBUG_OUTLINE	= 0
+USE_ADMIN		= 1
+LOGFILE_ENABLED = 1
+
+ifeq ($(AS_ADMIN), 1)
+	SUDO_EXECUTABLE = sudo
+endif
+
 
 SRC_DIR			= src
 OBJ_DIR			= obj
@@ -58,7 +66,25 @@ COLOR_WARN=\033[33m
 R=\033[0m
 
 
-all: banner $(NAME)
+all: banner show-config $(NAME)
+
+
+define onoff
+$(if $(filter 1,$(1)),$(COLOR_SUCCESS)ENABLED$(R),$(COLOR_ERROR)DISABLED$(R))
+endef
+
+VARS := DEBUG DEBUG_OUTLINE AS_ADMIN LOGFILE_ENABLED
+MSG_OUTLINE_COLOR=$(C1)
+MSG_COLOR=$(C3)
+show-config:
+	@echo "    $(MSG_OUTLINE_COLOR)╔═════════════════╣ CONFIG ╠══════╦══════════╗$(R)"
+	@$(foreach v,$(VARS), \
+		printf "    $(MSG_OUTLINE_COLOR)║$(R) $(MSG_COLOR)%-31s$(R) $(MSG_OUTLINE_COLOR)║$(R) %-17b $(MSG_OUTLINE_COLOR)║$(R)\n" \
+			"$(v)" \
+			"$(call onoff,$($(v)))"; \
+	)
+	@echo "    $(MSG_OUTLINE_COLOR)╚═════════════════════════════════╩══════════╝$(R)"
+	@echo ""
 
 banner:
 	@echo "    $(C1)██████╗ ██████╗ $(C1)███╗   ███╗ $(C1)██████╗ $(C2)███╗   ██╗$(R)"
@@ -67,6 +93,7 @@ banner:
 	@echo "    $(C2)██║  ██║ ╚═══██╗$(C3)██║╚██╔╝██║$(C3)████╔╝██║$(C4)██║╚██╗██║$(R)"
 	@echo "    $(C3)██████╔╝██████╔╝$(C4)██║ ╚═╝ ██║$(C4)╚██████╔╝$(C5)██║ ╚████║$(R)"
 	@echo "    $(C5)╚═════╝ ╚═════╝ $(C5)╚═╝     ╚═╝ $(C5)╚═════╝ $(C5)╚═╝  ╚═══╝$(R)"
+	@echo ""
 
 
 $(NAME): $(O_FILES)
@@ -100,8 +127,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s
 disk:
 	@echo "$(COLOR_INFO)[IMG] Creating disk image...$(R)"
 	@dd if=/dev/zero of=$(DISK) bs=1M count=$(IMG_SIZE)
-	@sudo parted $(DISK) mklabel msdos
-	@sudo parted $(DISK) mkpart primary fat32 1MiB 100%
+	@$(SUDO_EXECUTABLE) parted $(DISK) mklabel msdos
+	@$(SUDO_EXECUTABLE) parted $(DISK) mkpart primary fat32 1MiB 100%
 	@mkfs.vfat -F 32 -n D3M0NFS $(DISK)
 	@mcopy -i $(DISK) -s rootfs/* ::
 	@echo "$(COLOR_SUCCESS)[OK] Disk ready: $(DISK)$(R)"
@@ -125,22 +152,22 @@ export: all
 
 	@sync
 
-	@LOOP=$$(sudo losetup --find --show --partscan $(EXPORT_IMG_NAME)); \
-	sudo partprobe $$LOOP || true; \
+	@LOOP=$$($(SUDO_EXECUTABLE) losetup --find --show --partscan $(EXPORT_IMG_NAME)); \
+	$(SUDO_EXECUTABLE) partprobe $$LOOP || true; \
 	sleep 1; \
-	sudo mkfs.vfat -F 32 $${LOOP}p1; \
-	sudo mkfs.vfat -F 32 $${LOOP}p2; \
+	$(SUDO_EXECUTABLE) mkfs.vfat -F 32 $${LOOP}p1; \
+	$(SUDO_EXECUTABLE) mkfs.vfat -F 32 $${LOOP}p2; \
 	mkdir -p $(MOUNT_DIR)/boot; \
 	mkdir -p $(MOUNT_DIR)/root; \
-	sudo mount $${LOOP}p1 $(MOUNT_DIR)/boot; \
-	sudo mount $${LOOP}p2 $(MOUNT_DIR)/root; \
-	sudo cp $(BUILD_DIR)/kernel.img $(MOUNT_DIR)/boot/kernel.img; \
-	sudo cp -r $(FIRMWARE_DIR)/* $(MOUNT_DIR)/boot/ 2>/dev/null || true; \
-	sudo cp -r rootfs/* $(MOUNT_DIR)/root/; \
+	$(SUDO_EXECUTABLE) mount $${LOOP}p1 $(MOUNT_DIR)/boot; \
+	$(SUDO_EXECUTABLE) mount $${LOOP}p2 $(MOUNT_DIR)/root; \
+	$(SUDO_EXECUTABLE) cp $(BUILD_DIR)/kernel.img $(MOUNT_DIR)/boot/kernel.img; \
+	$(SUDO_EXECUTABLE) cp -r $(FIRMWARE_DIR)/* $(MOUNT_DIR)/boot/ 2>/dev/null || true; \
+	$(SUDO_EXECUTABLE) cp -r rootfs/* $(MOUNT_DIR)/root/; \
 	sync; \
-	sudo umount $(MOUNT_DIR)/boot; \
-	sudo umount $(MOUNT_DIR)/root; \
-	sudo losetup -d $$LOOP
+	$(SUDO_EXECUTABLE) umount $(MOUNT_DIR)/boot; \
+	$(SUDO_EXECUTABLE) umount $(MOUNT_DIR)/root; \
+	$(SUDO_EXECUTABLE) losetup -d $$LOOP
 
 	@echo "$(COLOR_SUCCESS)[OK] Bootable SD image created: $(EXPORT_IMG_NAME)$(R)"
 
@@ -169,4 +196,4 @@ re: fclean all
 
 -include $(D_FILES)
 
-.PHONY: all banner disk run clean fclean re export
+.PHONY: all banner disk run clean fclean re export show-config

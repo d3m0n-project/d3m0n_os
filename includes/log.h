@@ -2,6 +2,8 @@
 #define LOG_H
 
 #include "types.h"
+#include "uart.h"
+#include "color.h"
 
 typedef enum
 {
@@ -15,6 +17,7 @@ typedef enum
 
 extern const char *UART_COLORS[16];
 
-void log(const char *fmt, e_logtype type, ...);
+void	log(const char *fmt, e_logtype type, ...);
+void	log_cleanup(void);
 
 #endif

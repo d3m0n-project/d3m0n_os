@@ -62,6 +62,25 @@ int		open(const char *path, int flags)
 	return (fd);
 }
 
+int		file_exists(const char *path)
+{
+	FAT32_File	file;
+
+	if (!path)
+		return (0);
+	file = fat32_open(path);
+	return (file.first_cluster != 0 && !file.is_dir);
+}
+
+int		file_delete(const char *path)
+{
+	if (!path)
+		return 1;
+	if (!file_exists(path) || fat32_delete(path))
+		return 1;
+	return 0;
+}
+
 uint32_t	read(int fd, char *buffer, uint32_t count)
 {
 	if (fd >= FS_MAX_FDS || fd < 0 || g_fds[fd].mode == FILE_NOT_CREATED)
@@ -130,7 +149,7 @@ uint32_t	lseek(int fd, int32_t offset, e_seek_directive whence)
 	return new_pos;
 }
 
-static void print_file(const char *name, uint32_t size)
+static void	print_file(const char *name, uint32_t size)
 {
 	log("    %s (%u bytes)\n", LOG_NONE, name, size);
 }

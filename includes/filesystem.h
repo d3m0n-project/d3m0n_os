@@ -33,6 +33,8 @@ int		filesystem_ready(void);
 int		sd_init(void);
 
 int			open(const char *path, int flags);
+int			file_exists(const char *path);
+int			file_delete(const char *path);
 uint32_t	read(int fd, char *buffer, uint32_t count);
 int			write(int fd, const char *buffer, uint32_t count);
 int			close(int fd);

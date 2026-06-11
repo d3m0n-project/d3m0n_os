@@ -5,23 +5,34 @@
 #include "time.h"
 #include "filesystem.h"
 
-#define UART0_BASE 0x20201000
+#define UART0_BASE  0x20201000
 
-#define UART0_DR (*(volatile unsigned int*)(UART0_BASE + 0x00))
-#define UART0_FR (*(volatile unsigned int*)(UART0_BASE + 0x18))
+#define UART0_DR    (*(volatile unsigned int*)(UART0_BASE + 0x00))
+#define UART0_FR    (*(volatile unsigned int*)(UART0_BASE + 0x18))
 
 static int  log_fd = -1;
 static int  log_open_guard = 0;
 static int  log_write_guard = 0;
 
-/* tmp buffer for batching log writes to the filesystem */
 #define LOG_TMP_BUF_SIZE 4096
 static char log_tmp_buf[LOG_TMP_BUF_SIZE];
 static size_t log_tmp_pos = 0;
 
+#define LOG_FILE_PATH "/log.txt"
+
 #ifndef LOGFILE_ENABLED
  #define LOGFILE_ENABLED 1
 #endif
+
+void    log_cleanup(void)
+{
+    #if LOGFILE_ENABLED == 1
+    if (file_delete(LOG_FILE_PATH))
+        uart_print("could not remove log\n");
+    #else
+    return;
+    #endif
+}
 
 void    uart_putc(char c)
 {
@@ -29,7 +40,7 @@ void    uart_putc(char c)
         uart_putc('\r');
 
     while (UART0_FR & (1 << 5)) // TX full
-        ;
+        continue;
 
     UART0_DR = c;
 }
@@ -41,12 +52,10 @@ void uart_print(const char* str)
     if (log_fd == -1 && !log_open_guard && filesystem_ready())
     {
         log_open_guard = 1;
-        log_fd = open("log.txt", O_WRITE | O_CREATE | O_APPEND);
+        log_fd = open(LOG_FILE_PATH, O_WRITE | O_CREATE | O_APPEND);
         log_open_guard = 0;
         if (log_fd < 0)
-        {
             log_fd = -2;
-        }
     }
     #endif
     while(str[i])
@@ -55,14 +64,11 @@ void uart_print(const char* str)
         i++;
     }
     #if LOGFILE_ENABLED == 1
-    /* Buffer log output to avoid writing many small chunks to disk.
-       Flush when buffer is full. */
     for (size_t j = 0; j < i; j++)
     {
         log_tmp_buf[log_tmp_pos++] = str[j];
         if (log_tmp_pos >= LOG_TMP_BUF_SIZE)
         {
-            /* attempt flush; ignore failure */
             if (!log_write_guard && !log_open_guard)
             {
                 log_write_guard = 1;
@@ -103,7 +109,6 @@ void uart_print(const char* str)
 
 void uart_flush_log_buffer(void)
 {
-    /* attempt to write any buffered log data to the logfile */
     if (log_tmp_pos == 0)
         return;
     if (log_write_guard || log_open_guard)
@@ -113,7 +118,7 @@ void uart_flush_log_buffer(void)
     if (log_fd < 0 && filesystem_ready())
     {
         log_open_guard = 1;
-        log_fd = open("log.txt", O_WRITE | O_CREATE | O_APPEND);
+        log_fd = open(LOG_FILE_PATH, O_WRITE | O_CREATE | O_APPEND);
         log_open_guard = 0;
         if (log_fd < 0)
         {

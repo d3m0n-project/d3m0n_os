@@ -79,17 +79,15 @@ static int	control_text_auto_font_size(const t_control *control)
 	int	from_width;
 	int	from_height;
 	int	size;
+	int	lines;
 
 	if (!control)
 		return (8);
 	if (control->font_size > 0)
 		return (control->font_size);
 	len = 0;
-	if (control && control->content)
-	{
-		int lines = 0;
-		control_text_metrics(control->content, &len, &lines);
-	}
+	lines = 0;
+	control_text_metrics(control->content, &len, &lines);
 	from_width = 0;
 	from_height = 0;
 	if (control->width > 0 && len > 0)
@@ -221,7 +219,7 @@ void	draw_control(t_control *control)
 			if (control->bg_color)
 				draw_rect(inner_x, inner_y, inner_w, inner_h, control->bg_color);
 			// image (optional)
-			if (control->image && control->image[0])
+			if (control->image[0])
 			{
 				BmpTexture texture;
 				if (bmp_load_image(&texture, control->image) == 0 && texture.pixels)

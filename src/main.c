@@ -44,17 +44,19 @@ void kernel_main(void *dtb)
 	if (heap_init() != 0)   panic("Heap memory init failed\n");
 	else					log("Heap memory initialized!\n", LOG_SUCCESS);
 
-	
 
 	// init fat32 filesystem
 	if (sd_init() < 0)		panic("SD block interface init failed\n");
 	else					log("SD block interface initialized!\n", LOG_SUCCESS);
 
 
-
 	// load partition number 2 as rootfs
 	if (fat32_mount(1) < 0)	log("FAT32 mount failed\n", LOG_ERROR);
-	else					log("FAT32 mounted!\n", LOG_SUCCESS);
+	else
+	{
+		log_cleanup(); // cleanup the log file to remove old boots logs
+		log("FAT32 mounted!\n", LOG_SUCCESS);
+	}
 
 	list_dir("/");
 
@@ -72,7 +74,7 @@ void kernel_main(void *dtb)
 
 	panic("STOPPED THE EXECUTION HERE\n");
 
-	sleep(3); // sleep 3s
+	sleep(3);
 
 	// TODO: parse app manifest file
 	if (!create_window(&main_window, "d3m0n home", SCREEN_WIDTH, SCREEN_HEIGHT))

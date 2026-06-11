@@ -635,6 +635,80 @@ static int	fat32_update_dir_entry(FAT32_File *file)
 	return fat32_write_cluster(file->dir_cluster, g_cluster_buf);
 }
 
+static int	fat32_free_cluster_chain(uint32_t first_cluster)
+{
+	uint32_t	cluster;
+	uint32_t	next;
+	uint32_t	hops;
+	uint32_t	max_clusters;
+
+	if (!fat32_ready() || first_cluster < 2)
+		return (-1);
+	cluster = first_cluster;
+	hops = 0;
+	max_clusters = fat32_max_clusters();
+	while (cluster)
+	{
+		if (max_clusters == 0 || hops++ >= max_clusters)
+			return (-1);
+		if (fat32_get_next_cluster(cluster, &next) != 0)
+			return (-1);
+		if (fat32_set_fat_entry(cluster, 0) != 0)
+			return (-1);
+		cluster = next;
+	}
+	return (0);
+}
+
+static int	fat32_delete_dir_entry(FAT32_File *file)
+{
+	uint32_t	entries;
+	uint32_t	i;
+	uint8_t		*entry;
+
+	if (!file || file->dir_cluster < 2 || !fat32_ready())
+		return (-1);
+	if (fat32_read_cluster(file->dir_cluster, g_cluster_buf) != 0)
+		return (-1);
+	entries = cluster_bytes() / FAT32_DIR_ENTRY_SIZE;
+	if (file->dir_index >= entries)
+		return (-1);
+	entry = &g_cluster_buf[file->dir_index * FAT32_DIR_ENTRY_SIZE];
+	if (entry[DIR_NAME_OFF] == 0x00 || entry[DIR_NAME_OFF] == 0xE5)
+		return (-1);
+	entry[DIR_NAME_OFF] = 0xE5;
+	i = file->dir_index;
+	while (i > 0)
+	{
+		uint8_t seq;
+
+		i--;
+		entry = &g_cluster_buf[i * FAT32_DIR_ENTRY_SIZE];
+		if (entry[DIR_NAME_OFF] == 0x00 || entry[DIR_NAME_OFF] == 0xE5
+			|| entry[DIR_ATTR_OFF] != FAT32_ATTR_LFN)
+			break;
+		seq = entry[0];
+		entry[DIR_NAME_OFF] = 0xE5;
+		if (seq & FAT32_LFN_SEQ_LAST)
+			break;
+	}
+	return fat32_write_cluster(file->dir_cluster, g_cluster_buf);
+}
+
+int	fat32_delete(const char *path)
+{
+	FAT32_File	file;
+
+	file = fat32_open(path);
+	if (file.first_cluster == 0 || file.is_dir)
+		return (-1);
+	if (fat32_free_cluster_chain(file.first_cluster) != 0)
+		return (-1);
+	if (fat32_delete_dir_entry(&file) != 0)
+		return (-1);
+	return (0);
+}
+
 int	fat32_read_root_file(const char *filename, uint8_t *buffer)
 {
 	FAT32_File	file;
