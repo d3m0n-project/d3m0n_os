@@ -166,7 +166,6 @@ static int	parse_bpb(uint32_t lba)
 
 	if (boot_sector[FAT32_BOOT_SIG_OFF] != 0x55 || boot_sector[FAT32_BOOT_SIG_OFF + 1] != 0xAA)
 		return -1;
-	
 	bytes_per_sec = mem_read16(&boot_sector[BPB_BYTSPERSEC_OFF]);
 	sec_per_clus = boot_sector[BPB_SECPERCLUS_OFF];
 	rsvd_sec_cnt = mem_read16(&boot_sector[BPB_RSVDSECCNT_OFF]);
