@@ -11,13 +11,13 @@
 static void	lcd_cmd(uint8_t c)
 {
 	gpio_digitalWrite(PIN_DC, 0);
-	spi_write(c);
+	spi_transfer(c);
 }
 
 static void	lcd_data(uint8_t d)
 {
 	gpio_digitalWrite(PIN_DC, 1);
-	spi_write(d);
+	spi_transfer(d);
 }
 
 static void	lcd_reset()

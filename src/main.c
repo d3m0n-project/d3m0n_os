@@ -54,21 +54,19 @@ void kernel_main(void *dtb)
 	else
 	{
 		log_cleanup(); // cleanup the log file to remove old boots logs
+		uart_enable_file_logging();
 		log("FAT32 mounted!\n", LOG_SUCCESS);
 	}
 
 	list_dir("/");
 
-	spi_init(1000000);
-	char	*text = "Hello World!";
-	int		i = 0;
+	spi_init(10000);
+	char	*text = "Hello World!\n";
 	while (1)
 	{
-		spi_write(text[i % 13]);
-		i++;
-		if (i > 10000)
-			i = 0;
-		usleep(100000);
+		spi_write_buffer(text, 13);
+		uart_print(text);
+		sleep(1);
 	}
 
 	// init framebuffer

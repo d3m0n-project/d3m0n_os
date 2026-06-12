@@ -42,7 +42,7 @@ NAME			= $(BUILD_DIR)/$(IMG_ROOT_NAME)
 EXPORT_IMG_NAME = $(EXPORT_DIR)/$(IMG_ROOT_NAME)
 ELF				= $(OBJ_DIR)/kernel.elf
 
-IMG_SIZE		= 16
+IMG_SIZE		= 128
 
 LD_FLAGS		= -T linker.ld -lgcc -Wl,-e,_start
 C_FLAGS			= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 \
