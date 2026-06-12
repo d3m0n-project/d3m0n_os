@@ -95,7 +95,7 @@ static inline void mmio_barrier(void)
 static void short_delay(void)
 {
 	for (volatile int i = 0; i < 10000; i++)
-		;
+		continue;
 }
 
 static uint32_t read_le32(const uint8_t *p)
@@ -397,7 +397,7 @@ int sd_init()
 		return -1;
 
 	for (volatile int i = 0; i < 500000; i++)
-		;
+		continue;
 
 	if (!is_sdhc)
 	{

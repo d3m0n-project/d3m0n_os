@@ -59,8 +59,6 @@ void kernel_main(void *dtb)
 
 	list_dir("/");
 
-	log("aaa", LOG_ERROR);
-
 	spi_init(1000000);
 	char	*text = "Hello World!";
 	int		i = 0;
