@@ -5,18 +5,10 @@
 #include "time.h"
 #include "filesystem.h"
 
-#define UART0_BASE  0x20201000
+#define UART0_BASE          0x20201000
 
-#define UART0_DR    (*(volatile unsigned int*)(UART0_BASE + 0x00))
-#define UART0_FR    (*(volatile unsigned int*)(UART0_BASE + 0x18))
-
-static int  log_fd = -1;
-static int  log_open_guard = 0;
-static int  log_write_guard = 0;
-
-#define LOG_TMP_BUF_SIZE 65536
-static char log_tmp_buf[LOG_TMP_BUF_SIZE];
-static size_t log_tmp_pos = 0;
+#define UART0_DR            (*(volatile unsigned int*)(UART0_BASE + 0x00))
+#define UART0_FR            (*(volatile unsigned int*)(UART0_BASE + 0x18))
 
 #define LOG_FILE_PATH "/log.txt"
 
@@ -25,6 +17,15 @@ static size_t log_tmp_pos = 0;
 #endif
 
 #if LOGFILE_ENABLED == 1
+
+static int                  log_fd = -1;
+static int                  log_open_guard = 0;
+static int                  log_write_guard = 0;
+
+#define LOG_TMP_BUF_SIZE    65536
+static char                 log_tmp_buf[LOG_TMP_BUF_SIZE];
+static size_t               log_tmp_pos = 0;
+
 static void log_buffer_append(const char *str, size_t len)
 {
     size_t  i;

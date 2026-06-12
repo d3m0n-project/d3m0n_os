@@ -51,7 +51,8 @@ C_FLAGS			= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 \
 				  -D DEBUG=$(DEBUG) \
 				  -D DEBUG_OUTLINE=$(DEBUG_OUTLINE) \
 				  -D KERNEL_VERSION=\"$(VERSION)\" \
-				  -D KERNEL_VERSION_NAME=\"$(VERSION_NAME)\"
+				  -D KERNEL_VERSION_NAME=\"$(VERSION_NAME)\" \
+				  -D LOGFILE_ENABLED=$(LOGFILE_ENABLED)
 
 C1=\033[0;38;5;69;49m
 C2=\033[0;38;5;105;49m
