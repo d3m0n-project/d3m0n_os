@@ -65,7 +65,7 @@ int	lcd_init()
 	gpio_pinMode(PIN_RST, GPIO_OUT);
 	gpio_pinMode(PIN_BL, GPIO_OUT);
 
-	spi_init();
+	spi_init(0); // TODO: change speed
 
 	lcd_reset();
 

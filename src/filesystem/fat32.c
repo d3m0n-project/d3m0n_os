@@ -35,6 +35,9 @@
 
 static const uint8_t g_lfn_char_off[13] = {1,3,5,7,9,14,16,18,20,22,24,28,30};
 
+static uint8_t	__attribute__((aligned(4)))	boot_sector[SECTOR_SIZE];
+
+
 typedef struct s_fat32_info
 {
 	uint32_t	fat_start;
@@ -43,10 +46,11 @@ typedef struct s_fat32_info
 	uint32_t	fat_size;
 	uint8_t		num_fats;
 	uint8_t		sectors_per_cluster;
+	uint8_t		mounted;
 }	FAT32_Info;
 
 static FAT32_Info	fat32;
-static uint8_t		g_cluster_buf[FAT32_MAX_CLUSTER_BYTES];
+static uint8_t		__attribute__((aligned(4))) g_cluster_buf[FAT32_MAX_CLUSTER_BYTES];
 
 static uint16_t mem_read16(const uint8_t *vp)
 {
@@ -91,6 +95,8 @@ static uint32_t	cluster_bytes(void)
 
 static int	fat32_ready(void)
 {
+	if (!fat32.mounted)
+		return 0;
 	if (fat32.sectors_per_cluster == 0)
 		return 0;
 	if (fat32.sectors_per_cluster > FAT32_MAX_CLUSTER_SECTORS)
@@ -137,29 +143,30 @@ static void mem_zero(uint8_t *dst, uint32_t n)
 		dst[i] = 0;
 }
 
-static int parse_bpb(uint32_t lba)
+static int	parse_bpb(uint32_t lba)
 {
-	uint8_t		boot_sector[SECTOR_SIZE];
-	uint32_t	rsvd_sec_cnt;
-	uint32_t	num_fats;
-	uint32_t	root_ent_cnt;
-	uint32_t	fat_sz16;
-	uint32_t	fat_sz32;
-	uint32_t	root_clus;
-	uint32_t	bytes_per_sec;
-	uint32_t	sec_per_clus;
-	uint32_t	tot_sec16;
-	uint32_t	tot_sec32;
-	uint32_t	total_sectors;
-	uint32_t	data_sectors;
-	uint32_t	cluster_count;
+	uint32_t			rsvd_sec_cnt;
+	uint32_t			num_fats;
+	uint32_t			root_ent_cnt;
+	uint32_t			fat_sz16;
+	uint32_t			fat_sz32;
+	uint32_t			root_clus;
+	uint32_t			bytes_per_sec;
+	uint32_t			sec_per_clus;
+	uint32_t			tot_sec16;
+	uint32_t			tot_sec32;
+	uint32_t			total_sectors;
+	uint32_t			data_sectors;
+	uint32_t			cluster_count;
+
+	fat32.mounted = 0;
 
 	if (block_read(lba, boot_sector) != 0)
 		return -1;
-	if (boot_sector[FAT32_BOOT_SIG_OFF] != 0x55
-		|| boot_sector[FAT32_BOOT_SIG_OFF + 1] != 0xAA)
-		return -1;
 
+	if (boot_sector[FAT32_BOOT_SIG_OFF] != 0x55 || boot_sector[FAT32_BOOT_SIG_OFF + 1] != 0xAA)
+		return -1;
+	
 	bytes_per_sec = mem_read16(&boot_sector[BPB_BYTSPERSEC_OFF]);
 	sec_per_clus = boot_sector[BPB_SECPERCLUS_OFF];
 	rsvd_sec_cnt = mem_read16(&boot_sector[BPB_RSVDSECCNT_OFF]);
@@ -198,6 +205,7 @@ static int parse_bpb(uint32_t lba)
 	fat32.fat_start = lba + rsvd_sec_cnt;
 	fat32.root_cluster = root_clus;
 	fat32.data_start = fat32.fat_start + (num_fats * fat_sz32);
+	fat32.mounted = 1;
 
 	return 0;
 }
@@ -1142,7 +1150,6 @@ int	fat32_mount(int partition_id)
 		#else
 		(void)type;
 		#endif
-		
 		if (part_lba != 0)
 		{
 			if (parse_bpb(part_lba) == 0)

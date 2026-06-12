@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-void	spi_init();
+void	spi_init(uint32_t baudrate);
 void	spi_write(uint8_t data);
 
 #endif

@@ -9,9 +9,8 @@
 #include "parsing.h"
 #include "time.h"
 #include "peripheral.h"
-#include "gpio.h"
 
-#include "uart.h"
+#include "spi.h"
 
 
 void	show_kernel_status()
@@ -59,6 +58,20 @@ void kernel_main(void *dtb)
 	}
 
 	list_dir("/");
+
+	log("aaa", LOG_ERROR);
+
+	spi_init(1000000);
+	char	*text = "Hello World!";
+	int		i = 0;
+	while (1)
+	{
+		spi_write(text[i % 13]);
+		i++;
+		if (i > 10000)
+			i = 0;
+		usleep(100000);
+	}
 
 	// init framebuffer
 	if (display_init())		panic("Could not initialize display\n");

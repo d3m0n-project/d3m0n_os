@@ -48,6 +48,8 @@
 #define TM_BLKCNT_EN	(1 << 1)
 #define TM_DAT_DIR_READ	(1 << 4)
 
+#define EMMC_TIMEOUT	1000000U
+
 typedef struct
 {
 	volatile uint32_t	ARG2;
@@ -81,7 +83,7 @@ static volatile emmc_regs_t	*emmc = (volatile emmc_regs_t*)EMMC_BASE;
 static uint32_t	rca;
 static uint32_t	is_sdhc;
 
-static inline	void mmio_barrier()
+static inline void mmio_barrier(void)
 {
 	asm volatile(
 		"mcr p15, 0, %0, c7, c10, 5"
@@ -90,10 +92,26 @@ static inline	void mmio_barrier()
 		: "memory");
 }
 
-static void	short_delay()
+static void short_delay(void)
 {
 	for (volatile int i = 0; i < 10000; i++)
 		;
+}
+
+static uint32_t read_le32(const uint8_t *p)
+{
+	return ((uint32_t)p[0])
+		| ((uint32_t)p[1] << 8)
+		| ((uint32_t)p[2] << 16)
+		| ((uint32_t)p[3] << 24);
+}
+
+static void write_le32(uint8_t *p, uint32_t value)
+{
+	p[0] = (uint8_t)(value & 0xFFU);
+	p[1] = (uint8_t)((value >> 8) & 0xFFU);
+	p[2] = (uint8_t)((value >> 16) & 0xFFU);
+	p[3] = (uint8_t)((value >> 24) & 0xFFU);
 }
 
 static int	wait_interrupt(uint32_t mask, uint32_t timeout)
@@ -118,43 +136,79 @@ static int	wait_interrupt(uint32_t mask, uint32_t timeout)
 	return -1;
 }
 
-static void sd_reset_cmd()
+static int wait_status_clear(uint32_t mask, uint32_t timeout)
+{
+	while (timeout > 0)
+	{
+		if ((emmc->STATUS & mask) == 0)
+			return 0;
+		timeout--;
+	}
+	return -1;
+}
+
+static int wait_status_set(uint32_t mask, uint32_t timeout)
+{
+	while (timeout > 0)
+	{
+		if (emmc->STATUS & mask)
+			return 0;
+		timeout--;
+	}
+	return -1;
+}
+
+static int wait_control1_clear(uint32_t mask, uint32_t timeout)
+{
+	while (timeout > 0)
+	{
+		if ((emmc->CONTROL1 & mask) == 0)
+			return 0;
+		timeout--;
+	}
+	return -1;
+}
+
+static int wait_control1_set(uint32_t mask, uint32_t timeout)
+{
+	while (timeout > 0)
+	{
+		if (emmc->CONTROL1 & mask)
+			return 0;
+		timeout--;
+	}
+	return -1;
+}
+
+static int sd_reset_cmd(void)
 {
 	emmc->CONTROL1 |= C1_SRST_CMD;
 
-	while (emmc->CONTROL1 & C1_SRST_CMD)
-		;
+	if (wait_control1_clear(C1_SRST_CMD, EMMC_TIMEOUT) < 0)
+		return -1;
+	return 0;
 }
 
-static void sd_reset_data()
+static int sd_reset_data(void)
 {
 	emmc->CONTROL1 |= C1_SRST_DATA;
 
-	while (emmc->CONTROL1 & C1_SRST_DATA)
-		;
+	if (wait_control1_clear(C1_SRST_DATA, EMMC_TIMEOUT) < 0)
+		return -1;
+	return 0;
 }
 
-static int wait_cmd_inhibit()
+static int wait_cmd_inhibit(void)
 {
-	uint32_t timeout = 1000000;
-
-	while ((emmc->STATUS & SR_CMD_INHIBIT) && timeout--)
-		;
-
-	return timeout ? 0 : -1;
+	return wait_status_clear(SR_CMD_INHIBIT, EMMC_TIMEOUT);
 }
 
-static int wait_dat_inhibit()
+static int wait_dat_inhibit(void)
 {
-	uint32_t timeout = 1000000;
-
-	while ((emmc->STATUS & SR_DAT_INHIBIT) && timeout--)
-		;
-
-	return timeout ? 0 : -1;
+	return wait_status_clear(SR_DAT_INHIBIT, EMMC_TIMEOUT);
 }
 
-static void sd_set_clock(uint32_t divider)
+static int sd_set_clock(uint32_t divider)
 {
 	uint32_t c1;
 	uint32_t freq_select;
@@ -177,15 +231,18 @@ static void sd_set_clock(uint32_t divider)
 	c1 |= C1_CLK_INTLEN;
 
 	emmc->CONTROL1 = c1;
+	mmio_barrier();
 
 	short_delay();
 
-	while (!(emmc->CONTROL1 & C1_CLK_STABLE))
-		;
+	if (wait_control1_set(C1_CLK_STABLE, EMMC_TIMEOUT) < 0)
+		return -1;
 
 	emmc->CONTROL1 |= C1_CLK_EN;
+	mmio_barrier();
 
 	short_delay();
+	return 0;
 }
 
 static int send_cmd(uint32_t cmd, uint32_t arg, response_type_t resp)
@@ -249,7 +306,7 @@ static int send_cmd(uint32_t cmd, uint32_t arg, response_type_t resp)
 
 	emmc->CMDTM = cmdtm;
 
-	if (wait_interrupt(INT_CMD_DONE, 1000000) < 0)
+	if (wait_interrupt(INT_CMD_DONE, EMMC_TIMEOUT) < 0)
 	{
 		sd_reset_cmd();
 		return -1;
@@ -263,10 +320,13 @@ int sd_init()
 	uint32_t timeout;
 	uint32_t app_rca = 0;
 
+	rca = 0;
+	is_sdhc = 0;
+
 	emmc->CONTROL1 |= C1_SRST_HC;
 
-	while (emmc->CONTROL1 & C1_SRST_HC)
-		;
+	if (wait_control1_clear(C1_SRST_HC, EMMC_TIMEOUT) < 0)
+		return -1;
 
 	short_delay();
 
@@ -274,7 +334,8 @@ int sd_init()
 
 	emmc->CONTROL1 |= (0xE << 16);
 
-	sd_set_clock(148);
+	if (sd_set_clock(148) < 0)
+		return -1;
 
 	emmc->IRPT_EN = 0xFFFFFFFF;
 	emmc->IRPT_MASK = 0xFFFFFFFF;
@@ -294,13 +355,19 @@ int sd_init()
 
 	timeout = 1000;
 
-	while (timeout--)
+	while (timeout > 0)
 	{
 		if (send_cmd(CMD55, app_rca, RESP_48) < 0)
+		{
+			timeout--;
 			continue;
+		}
 
 		if (send_cmd(ACMD41, 0x40300000, RESP_48) < 0)
+		{
+			timeout--;
 			continue;
+		}
 
 		if (emmc->RESP0 & (1 << 31))
 		{
@@ -312,6 +379,7 @@ int sd_init()
 
 		for (volatile int i = 0; i < 100000; i++)
 			;
+		timeout--;
 	}
 
 	if (timeout == 0)
@@ -325,7 +393,7 @@ int sd_init()
 
 	rca = emmc->RESP0 >> 16;
 
-	if (send_cmd(CMD7, rca << 16, RESP_48) < 0)
+	if (send_cmd(CMD7, rca << 16, RESP_48_BUSY) < 0)
 		return -1;
 
 	for (volatile int i = 0; i < 500000; i++)
@@ -337,14 +405,16 @@ int sd_init()
 			return -1;
 	}
 
-	sd_set_clock(4);
+	if (sd_set_clock(4) < 0)
+		return -1;
 
 	return 0;
 }
 
-int block_read(uint32_t lba, uint8_t* buffer)
+int	block_read(uint32_t lba, uint8_t* buffer)
 {
 	uint32_t addr;
+	uint32_t word;
 
 	if (!buffer)
 		return -1;
@@ -364,7 +434,7 @@ int block_read(uint32_t lba, uint8_t* buffer)
 
 	if (wait_interrupt(
 		INT_READ_RDY,
-		1000000) < 0)
+		EMMC_TIMEOUT) < 0)
 	{
 		sd_reset_data();
 		return -1;
@@ -374,23 +444,21 @@ int block_read(uint32_t lba, uint8_t* buffer)
 
 	for (int i = 0; i < 128; i++)
 	{
-		uint32_t timeout = 1000000;
-
-		while (!(emmc->STATUS & SR_READ_AVAIL) && timeout--)
-			;
-
-		if (!timeout)
+		if (wait_status_set(SR_READ_AVAIL, EMMC_TIMEOUT) < 0)
 		{
 			sd_reset_data();
 			return -1;
 		}
 
-		((uint32_t*)buffer)[i] = emmc->DATA;
+		word = emmc->DATA;
+		write_le32(buffer + (uint32_t)i * 4U, word);
 	}
+
+	mmio_barrier();
 
 	if (wait_interrupt(
 		INT_DATA_DONE,
-		1000000) < 0)
+		EMMC_TIMEOUT) < 0)
 	{
 		sd_reset_data();
 		return -1;
@@ -399,9 +467,10 @@ int block_read(uint32_t lba, uint8_t* buffer)
 	return 0;
 }
 
-int block_write(uint32_t lba, const uint8_t* buffer)
+int	block_write(uint32_t lba, const uint8_t* buffer)
 {
 	uint32_t addr;
+	uint32_t word;
 
 	if (!buffer)
 		return -1;
@@ -421,7 +490,7 @@ int block_write(uint32_t lba, const uint8_t* buffer)
 
 	if (wait_interrupt(
 		INT_WRITE_RDY,
-		1000000) < 0)
+		EMMC_TIMEOUT) < 0)
 	{
 		sd_reset_data();
 		return -1;
@@ -431,24 +500,21 @@ int block_write(uint32_t lba, const uint8_t* buffer)
 
 	for (int i = 0; i < 128; i++)
 	{
-		uint32_t timeout = 1000000;
-
-		while (!(emmc->STATUS & SR_WRITE_AVAIL) && timeout--)
-			;
-
-		if (!timeout)
+		if (wait_status_set(SR_WRITE_AVAIL, EMMC_TIMEOUT) < 0)
 		{
 			sd_reset_data();
 			return -1;
 		}
 
-		emmc->DATA =
-			((uint32_t*)buffer)[i];
+		word = read_le32(buffer + (uint32_t)i * 4U);
+		emmc->DATA = word;
 	}
+
+	mmio_barrier();
 
 	if (wait_interrupt(
 		INT_DATA_DONE,
-		1000000) < 0)
+		EMMC_TIMEOUT) < 0)
 	{
 		sd_reset_data();
 		return -1;

@@ -96,7 +96,7 @@ int	parse_source(const char *path, t_window *win)
 
 			if (event_name[k] == '\0')
 			{
-				log("Invalid event definition at l.%i: '%s'\n", line_nb, event_name);
+				log("Invalid event definition at l.%i: '%s'\n", LOG_ERROR | LOG_INDENT, line_nb, event_name);
 				free(line);
 				return 1;
 			}
