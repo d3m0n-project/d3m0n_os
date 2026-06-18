@@ -14,7 +14,8 @@
 #  define BUFFER_SIZE 0
 # endif
 
-char	*get_next_line(int fd);
+char		*get_next_line(int fd);
+void		clear_fd_buffer(int fd);
 
 char		*ft_strcat_realloc(char *s1, char *s2, uint32_t n);
 void		clear_buffer(char buffer[BUFFER_SIZE + 1]);

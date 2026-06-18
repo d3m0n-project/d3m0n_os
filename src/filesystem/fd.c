@@ -1,7 +1,6 @@
 #include "filesystem.h"
 #include "fat32.h"
-
-#define FS_MAX_FDS		16
+#include "get_next_line.h"
 
 typedef struct fs_fd
 {
@@ -113,7 +112,8 @@ int		close(int fd)
 
 	g_fds[fd].mode = FILE_NOT_CREATED;
 	fat32_close(&(g_fds[fd].file));
-	return (0);
+	clear_fd_buffer(fd); // used for GNL buffer clearing
+	return 0;
 }
 
 uint32_t	lseek(int fd, int32_t offset, e_seek_directive whence)

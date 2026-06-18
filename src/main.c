@@ -60,14 +60,14 @@ void kernel_main(void *dtb)
 
 	list_dir("/");
 
-	spi_init(10000);
-	char	*text = "Hello World!\n";
-	while (1)
-	{
-		spi_write_buffer(text, 13);
-		uart_print(text);
-		sleep(1);
-	}
+	//spi_init(10000);
+	//char	*text = "Hello World!\n";
+	//while (1)
+	//{
+	//	spi_write_buffer(text, 13);
+	//	uart_print(text);
+	//	sleep(1);
+	//}
 
 	// init framebuffer
 	if (display_init())		panic("Could not initialize display\n");
@@ -76,27 +76,27 @@ void kernel_main(void *dtb)
 
 	// load spash
 	BmpTexture  texture;
-	if (bmp_load_image(&texture, "wallpapers/default.bmp"))
+	if (bmp_load_image(&texture, "wallpapers/default.bmp")) // TODO: change me
 		log("Could not load BMP texture\n", LOG_ERROR);
-	else
-		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &texture);
+	//else
+	//	draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &texture);
 
-	panic("STOPPED THE EXECUTION HERE\n");
+
+	//panic("STOPPED THE EXECUTION HERE\n");
 
 	sleep(3);
-
-	// TODO: parse app manifest file
-	if (!create_window(&main_window, "d3m0n home", SCREEN_WIDTH, SCREEN_HEIGHT))
+	
+	if (!parse_manifest("/apps/system/desktop/source/app", &main_window))
 		log("Main window created successfully!\n", LOG_SUCCESS);
-	else	panic("Could not launch main window\n");
-	main_window.bg_color = DISPLAY_COLORS[GREY];
+	else	panic("Could not create main window\n");
+	main_window.bg_color = DISPLAY_COLORS[GREY]; // TODO: parse color of window when parsing
 
-	if (!parse_layout("/apps/main/layouts/main.layout", &main_window, 0, 0, 0))
+	if (!parse_layout("/apps/system/desktop/source/layouts/main.layout", &main_window, 0, 0, 0))
 		log("Parsed layout successfully!\n", LOG_SUCCESS);
 	else
 		panic("Invalid layout, could not continue\n");
 
-	if (!parse_source("/apps/main/src/main.src", &main_window))
+	if (!parse_source("/apps/system/desktop/source/src/main.src", &main_window))
 		log("Parsed source file successfully!\n", LOG_SUCCESS);
 	else
 		panic("Could not parse src file\n");
@@ -104,9 +104,7 @@ void kernel_main(void *dtb)
 	exec_event(0, EVENT_ON_CREATE, &main_window); // Window.OnCreate
 
 	while (1)
-	{
 		usleep(200000);
-	}
 
 	log("Finished kernel!\n", LOG_WARNING);
 	while (1) asm volatile ("wfi");

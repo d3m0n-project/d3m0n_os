@@ -73,6 +73,7 @@ int	parse_source(const char *path, t_window *win)
 		{
 			log("Invalid line at l:%i, '%s'\n", LOG_ERROR | LOG_INDENT, line_nb, line);
 			free(line);
+			close(fd);
 			return 1;
 		}
 		else if (i == 0)
@@ -98,6 +99,7 @@ int	parse_source(const char *path, t_window *win)
 			{
 				log("Invalid event definition at l.%i: '%s'\n", LOG_ERROR | LOG_INDENT, line_nb, event_name);
 				free(line);
+				close(fd);
 				return 1;
 			}
 			while (k >= 0 && (event_name[k - 1] == ' ' || event_name[k - 1] == '\t'))
@@ -108,6 +110,7 @@ int	parse_source(const char *path, t_window *win)
 			if (!win->events[event_id].script)
 			{
 				free(line);
+				close(fd);
 				return 1;
 			}
 			win->events[event_id].type = get_event_type(event_name);
@@ -115,6 +118,7 @@ int	parse_source(const char *path, t_window *win)
 			{
 				log("Unknown event type: '%s'\n", LOG_ERROR | LOG_INDENT, event_name);
 				free(line);
+				close(fd);
 				return 1;
 			}
 
@@ -124,6 +128,7 @@ int	parse_source(const char *path, t_window *win)
 			{
 				log("Could not find control with name: '%s'\n", LOG_ERROR | LOG_INDENT, control_name);
 				free(line);
+				close(fd);
 				return 1;
 			}
 			// control_id, 0=Window, 1,2,3... = other
@@ -133,15 +138,18 @@ int	parse_source(const char *path, t_window *win)
 			{
 				log("Failed to add line to script\n", LOG_ERROR | LOG_INDENT);
 				free(line);
+				close(fd);
 				return 1;
 			}
 		} else {
 			log("Invalid line at l.%i: '%s'\n", LOG_ERROR | LOG_INDENT, line_nb, line + i);
 			free(line);
+			close(fd);
 			return 1;
 		}
 
 		free(line);
 	}
+	close(fd);
 	return 0;
 }

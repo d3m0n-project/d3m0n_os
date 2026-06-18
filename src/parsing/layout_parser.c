@@ -866,9 +866,7 @@ int	parse_layout(const char *path, t_window *win, char **replacements, int offse
 			lp_append_child(parent, pending[p].child);
 		}
 		else
-		{
 			log("Unknown parent control: %s\n", LOG_WARNING, pending[p].parent_name);
-		}
 	}
 	close(fd);
 	return 0;

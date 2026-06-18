@@ -1,4 +1,7 @@
 #include "get_next_line.h"
+#include "filesystem.h"
+
+static char		buffer[FS_MAX_FDS][BUFFER_SIZE + 1];
 
 static char	*move_buffer(char buffer[BUFFER_SIZE + 1], char **output, uint32_t i)
 {
@@ -22,15 +25,21 @@ static uint32_t	count_new_line(char buffer[BUFFER_SIZE + 1], uint32_t *new_line)
 	return (i);
 }
 
+void	clear_fd_buffer(int fd)
+{
+	if (fd < 0 || fd > FS_MAX_FDS || BUFFER_SIZE < 0)
+		return;
+	clear_buffer(buffer[fd]);
+}
+
 char	*get_next_line(int fd)
 {
-	static char		buffer[16][BUFFER_SIZE + 1];
 	char			*output;
 	uint32_t		i;
 	uint32_t		new_line_found;
 
 	output = 0;
-	if (fd < 0 || fd > 16 || BUFFER_SIZE < 0)
+	if (fd < 0 || fd > FS_MAX_FDS || BUFFER_SIZE < 0)
 		return (0);
 	i = count_new_line(buffer[fd], &new_line_found);
 	if (new_line_found && buffer[fd][i + 1] != '\0')

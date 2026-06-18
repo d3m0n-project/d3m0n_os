@@ -4,7 +4,8 @@
 #include "types.h"
 #include "log.h"
 
-#define SECTOR_SIZE	512
+#define FS_MAX_FDS		16
+#define SECTOR_SIZE		512
 
 typedef enum
 {

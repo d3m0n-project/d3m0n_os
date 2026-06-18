@@ -125,13 +125,21 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s
 	@$(CC) $(C_FLAGS) -c $< -o $@
 
 
-disk:
+applications:
+	@rm -rf rootfs/apps/ > /dev/null
+	@mkdir -p rootfs/apps/
+	@cp -r applications/* rootfs/apps/
+	@echo "$(COLOR_SUCCESS)[OK] Copied applications list to disk!$(R)"
+
+
+disk: applications
 	@echo "$(COLOR_INFO)[IMG] Creating disk image...$(R)"
 	@dd if=/dev/zero of=$(DISK) bs=1M count=$(IMG_SIZE)
 	@$(SUDO_EXECUTABLE) parted $(DISK) mklabel msdos
 	@$(SUDO_EXECUTABLE) parted $(DISK) mkpart primary fat32 1MiB 100%
 	@mkfs.vfat -F 32 -n D3M0NFS $(DISK)
 	@mcopy -i $(DISK) -s rootfs/* ::
+	@rm -rf rootfs/apps/ > /dev/null
 	@echo "$(COLOR_SUCCESS)[OK] Disk ready: $(DISK)$(R)"
 
 
@@ -197,4 +205,4 @@ re: fclean all
 
 -include $(D_FILES)
 
-.PHONY: all banner disk run clean fclean re export show-config
+.PHONY: all banner disk run clean fclean re export show-config applications

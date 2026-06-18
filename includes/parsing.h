@@ -13,4 +13,8 @@ t_window	*get_current_window();
 
 int			parse_source(const char *path, t_window *win);
 
+int			parse_manifest(const char *path, t_window *win);
+
+char		*get_setting(const char *path, const char *key);
+
 #endif

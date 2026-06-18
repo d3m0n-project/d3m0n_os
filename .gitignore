@@ -3,5 +3,6 @@ obj/
 .vscode/
 build/
 export/
+rootfs/apps/
 firmware/kernel8.img
 firmware/kernel.img

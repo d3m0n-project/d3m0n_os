@@ -110,7 +110,7 @@ static int	control_text_auto_font_size(const t_control *control)
 int	create_window(t_window *out, const char *title, int w, int h)
 {
 	int	i = 0;
-	log("Creating a %ix%i Window...\n", LOG_INFO, w, h);
+	log("Creating a %ix%i Window title: '%s'...\n", LOG_INFO, w, h, title);
 	if (!title)
 	{
 		log("Window title cant be null\n", LOG_ERROR | LOG_INDENT);
