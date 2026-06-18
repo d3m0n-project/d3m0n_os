@@ -9,6 +9,7 @@
 #include "parsing.h"
 #include "time.h"
 #include "peripheral.h"
+#include "settings.h"
 
 #include "spi.h"
 
@@ -31,6 +32,7 @@ void	panic(const char *message)
 void kernel_main(void *dtb)
 {
 	t_window	main_window;
+	t_conf		config;
 
 	log("Loading kernel...\n", LOG_INFO);
 
@@ -40,23 +42,26 @@ void kernel_main(void *dtb)
 	dtb_init(dtb);
 
 	// init heap memory
-	if (heap_init() != 0)   panic("Heap memory init failed\n");
-	else					log("Heap memory initialized!\n", LOG_SUCCESS);
+	if (heap_init() != 0)      panic("Heap memory init failed\n");
+	else					   log("Heap memory initialized!\n", LOG_SUCCESS);
 
 
 	// init fat32 filesystem
-	if (sd_init() < 0)		panic("SD block interface init failed\n");
-	else					log("SD block interface initialized!\n", LOG_SUCCESS);
+	if (sd_init() < 0)		   panic("SD block interface init failed\n");
+	else					   log("SD block interface initialized!\n", LOG_SUCCESS);
 
 
 	// load partition number 2 as rootfs
-	if (fat32_mount(1) < 0)	log("FAT32 mount failed\n", LOG_ERROR);
+	if (fat32_mount(1) < 0)	   panic("FAT32 mount failed\n");
 	else
 	{
 		log_cleanup(); // cleanup the log file to remove old boots logs
 		uart_enable_file_logging();
 		log("FAT32 mounted!\n", LOG_SUCCESS);
 	}
+
+	if (parse_config(&config)) panic("Config parsing failed, please check config file\n");
+	else					   log("Config parsed successfully!\n", LOG_SUCCESS);
 
 	list_dir("/");
 
@@ -70,8 +75,8 @@ void kernel_main(void *dtb)
 	//}
 
 	// init framebuffer
-	if (display_init())		panic("Could not initialize display\n");
-	else					log("Display initialized!\n", LOG_SUCCESS);
+	if (display_init())		   panic("Could not initialize display\n");
+	else					   log("Display initialized!\n", LOG_SUCCESS);
 
 
 	// load spash

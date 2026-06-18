@@ -28,11 +28,11 @@ typedef enum e_script_var_type
 
 typedef struct s_script_var
 {
-	char			name[SCRIPT_VAR_NAME_MAX + 1];
+	char				name[SCRIPT_VAR_NAME_MAX + 1];
 	t_script_var_type	type;
-	int				ival;
+	int					ival;
 	char				*sval;
-	int				used;
+	int					used;
 } t_script_var;
 
 typedef struct s_call_node
