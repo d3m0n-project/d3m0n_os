@@ -1,8 +1,8 @@
 #include "time.h"
 #include "types.h"
 
-#define TIMER_BASE 0x20003000
-#define TIMER_CLO  (*(volatile uint32_t*)(TIMER_BASE + 0x04))
+#define TIMER_BASE      0x20003000
+#define TIMER_CLO       (*(volatile uint32_t*)(TIMER_BASE + 0x04))
 
 static inline uint32_t read_timer()
 {

@@ -2,6 +2,25 @@
 #include "memory.h"
 #include "get_next_line.h"
 #include "libft.h"
+#include "settings.h"
+
+typedef struct s_conf_elem
+{
+	const char	*name;
+	void		*config_ptr;
+}	t_conf_elem;
+
+const static t_conf_elem	*CONFIG_SCHEMA = {{}, 0};
+
+
+int		parse_config(t_conf *config)
+{
+	if (!config)
+		return 1;
+	
+	
+	config->wallpaper
+}
 
 char	*get_setting(const char *path, const char *key)
 {
@@ -12,6 +31,11 @@ char	*get_setting(const char *path, const char *key)
 		return 0;
 	while ((line = get_next_line(fd)))
 	{
+		if (line[0] == '#') // skip comments
+		{
+			free(line);
+			continue;
+		}
 		int i = 0;
 		while (line[i] && line[i] != ':')
 			i++;
@@ -65,6 +89,11 @@ char	*get_setting(const char *path, const char *key)
 				close(fd);
 				return output;
 			}
+		} else { // invalid lines
+			log("SETTINGS: Invalid line at l.%i: '%s'\n", LOG_ERROR, i, line);
+			free(line);
+			close(fd);
+			return 0;
 		}
 		free(line);
 	}

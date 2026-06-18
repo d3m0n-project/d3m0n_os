@@ -3,6 +3,7 @@
 #include "log.h"
 #include "memory.h"
 #include "libft.h"
+#include "time.h"
 
 static void	compute_text_position(int anchor, int box_x, int box_y, int box_w, int box_h,
 				int text_w, int text_h, int *out_x, int *out_y)
@@ -298,7 +299,19 @@ void	draw_window(t_window *window)
 	if (window->top_bar)
 	{
 		draw_rect(0, 0, window->width, 20, DISPLAY_COLORS[WHITE]);
-		draw_text(2, 2, 8, 16, "12:40", DISPLAY_COLORS[MAGENTA], 0); // TODO: change topbar
+
+		size_t	time = (time_us() % (1000 * 60 * 24 * 1000)) / (1000*1000*60); // minute of the day
+		int		hours = time / 60; // TODO: 12h clock
+		int		minutes = time % 60;
+
+		char	clock[6] = "00:00";
+		clock[0] = '0' + (hours / 10);
+		clock[1] = '0' + hours % 10;
+
+		clock[3] = '0' + (minutes / 10);
+		clock[4] = '0' + minutes % 10;
+
+		draw_text(2, 2, 8, 16, clock, DISPLAY_COLORS[MAGENTA], 0); // TODO: change topbar
 	}
 }
 
