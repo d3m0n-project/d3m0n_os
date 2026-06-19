@@ -288,6 +288,7 @@ void	draw_control(t_control *control)
 void	draw_window(t_window *window)
 {
 	t_control	*current = window->controls;
+	t_conf		*conf = get_config();
 
 	draw_rect(0, 0, window->width, window->height, window->bg_color);
 	while (current)
@@ -301,10 +302,21 @@ void	draw_window(t_window *window)
 		draw_rect(0, 0, window->width, 20, DISPLAY_COLORS[WHITE]);
 
 		size_t	time = (time_us() % (1000 * 60 * 24 * 1000)) / (1000*1000*60); // minute of the day
-		int		hours = time / 60; // TODO: 12h clock
+		int		hours = time / 60;
 		int		minutes = time % 60;
 
-		char	clock[6] = "00:00";
+		hours = 13;
+		minutes = 59;
+
+		char	clock[8] = "00:00 AM";
+		if (conf->time_mode == 1) // 24h clock
+			clock[5] = '\0';
+		else if (hours >= 12)
+		{
+			clock[6] = 'P';
+			if (hours > 12)
+				hours %= 12;
+		}
 		clock[0] = '0' + (hours / 10);
 		clock[1] = '0' + hours % 10;
 

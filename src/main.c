@@ -13,6 +13,13 @@
 
 #include "spi.h"
 
+t_conf		config;
+
+t_conf	*get_config()
+{
+	return	&config;
+}
+
 
 void	show_kernel_status()
 {
@@ -32,7 +39,6 @@ void	panic(const char *message)
 void kernel_main(void *dtb)
 {
 	t_window	main_window;
-	t_conf		config;
 
 	log("Loading kernel...\n", LOG_INFO);
 
@@ -89,7 +95,7 @@ void kernel_main(void *dtb)
 
 	//panic("STOPPED THE EXECUTION HERE\n");
 
-	sleep(3);
+	usleep(config.splash_time * 1000);
 	
 	if (!parse_manifest("/apps/system/desktop/source/app", &main_window))
 		log("Main window created successfully!\n", LOG_SUCCESS);

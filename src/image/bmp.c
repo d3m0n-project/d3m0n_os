@@ -5,9 +5,11 @@
 
 int bmp_load_image(BmpTexture *out, const char *path)
 {
+	#if SHOW_IMAGE_STATUS == 1
 	uint64_t start_time = time_us() / 1000;
-	int fd = open(path, O_READ);
 	log("loading BMP...\n", LOG_INFO);
+	#endif
+	int fd = open(path, O_READ);
 	if (fd == -1)
 		return 1;
 
@@ -38,8 +40,9 @@ int bmp_load_image(BmpTexture *out, const char *path)
 		close(fd);
 		return 1;
 	}
-
+	#if SHOW_IMAGE_STATUS == 1
 	log("BMP header loading: %llums\n", LOG_INDENT | LOG_INFO, (time_us() / 1000) - start_time);
+	#endif
 
 	lseek(fd, starting_offset, SEEK_SET);
 
@@ -58,8 +61,10 @@ int bmp_load_image(BmpTexture *out, const char *path)
 		return 1;
 	}
 
+	#if SHOW_IMAGE_STATUS == 1
 	log("BMP bpp: %i\n", LOG_INFO | LOG_INDENT, out->bytes_per_pixel);
 	log("BMP size: %ix%i\n", LOG_INFO | LOG_INDENT, out->width, out->height);
+	#endif
 
 	for (int y = 0; y < out->height; y++)
 	{
@@ -71,24 +76,18 @@ int bmp_load_image(BmpTexture *out, const char *path)
 			if (out->bytes_per_pixel == 3)
 			{
 				unsigned char *p = (unsigned char *)row + x * 3;
-				out->pixels[row_start + x] =
-					(p[0] << 16) |
-					(p[1] << 8)  |
-					(p[2]);
+				out->pixels[row_start + x] = (p[0] << 16) | (p[1] << 8) | (p[2]);
 			}
 			else
 			{
 				unsigned char *p = (unsigned char *)row + x * 4;
-				out->pixels[row_start + x] =
-					(p[0] << 16) |
-					(p[1] << 8)  |
-					(p[2]) |
-					(p[3] << 24);
+				out->pixels[row_start + x] = (p[0] << 16) |	(p[1] << 8) | (p[2]) | (p[3] << 24);
 			}
 		}
 	}
-
+	#if SHOW_IMAGE_STATUS == 1
 	log("total BMP loading time: %llums\n", LOG_INFO | LOG_INDENT, (time_us() / 1000) - start_time);
+	#endif
 
 	free(file_pixels);
 	close(fd);

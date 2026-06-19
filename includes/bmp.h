@@ -1,6 +1,10 @@
 #ifndef BMP_H
 #define BMP_H
 
+#ifndef SHOW_IMAGE_STATUS
+#define SHOW_IMAGE_STATUS 0
+#endif
+
 typedef struct BmpTexture
 {
 	int				width;

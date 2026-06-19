@@ -5,10 +5,11 @@ OBJCOPY			= arm-none-eabi-objcopy
 QEMU			= qemu-system-arm
 
 # default config
-DEBUG			= 0
-DEBUG_OUTLINE	= 0
-USE_ADMIN		= 1
-LOGFILE_ENABLED = 1
+DEBUG				= 0
+DEBUG_OUTLINE		= 0
+USE_ADMIN			= 1
+LOGFILE_ENABLED		= 1
+SHOW_IMAGE_STATUS	= 0
 
 ifeq ($(USE_ADMIN), 1)
 	SUDO_EXECUTABLE = sudo
@@ -33,7 +34,7 @@ D_FILES			= $(O_FILES:.o=.d)
 
 DISK			?= disk.img
 
-VERSION			= 2.0.5
+VERSION			= 2.0.6
 VERSION_NAME	= outset
 
 IMG_ROOT_NAME	= d3m0n_os_$(VERSION_NAME)_$(VERSION).img
@@ -52,7 +53,8 @@ C_FLAGS			= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 \
 				  -D DEBUG_OUTLINE=$(DEBUG_OUTLINE) \
 				  -D KERNEL_VERSION=\"$(VERSION)\" \
 				  -D KERNEL_VERSION_NAME=\"$(VERSION_NAME)\" \
-				  -D LOGFILE_ENABLED=$(LOGFILE_ENABLED)
+				  -D LOGFILE_ENABLED=$(LOGFILE_ENABLED) \
+				  -D SHOW_IMAGE_STATUS=$(SHOW_IMAGE_STATUS)
 
 C1=\033[0;38;5;69;49m
 C2=\033[0;38;5;105;49m
@@ -67,14 +69,14 @@ COLOR_WARN=\033[33m
 R=\033[0m
 
 
-all: banner show-config $(NAME)
+all: banner show-config config $(NAME)
 
 
 define onoff
 $(if $(filter 1,$(1)),$(COLOR_SUCCESS)ENABLED$(R),$(COLOR_ERROR)DISABLED$(R))
 endef
 
-VARS := DEBUG DEBUG_OUTLINE USE_ADMIN LOGFILE_ENABLED
+VARS			:= DEBUG DEBUG_OUTLINE USE_ADMIN LOGFILE_ENABLED SHOW_IMAGE_STATUS
 MSG_OUTLINE_COLOR=$(C1)
 MSG_COLOR=$(C3)
 show-config:
@@ -97,13 +99,29 @@ banner:
 	@echo ""
 
 
+CONFIG_FILE = $(OBJ_DIR)/.config
+CONFIG_HASH = $(shell printf '%s\n' $(foreach v,$(VARS),$(v)=$($(v))) | sha1sum | awk '{print $$1}')
+
+$(CONFIG_FILE):
+	@true
+
+config:
+	@printf '%s\n' $(foreach v,$(VARS),$(v)=$($(v))) | sha1sum | awk '{print $$1}' > $(CONFIG_FILE).tmp
+	@if ! cmp -s $(CONFIG_FILE).tmp $(CONFIG_FILE) 2>/dev/null; then \
+		mv $(CONFIG_FILE).tmp $(CONFIG_FILE); \
+		echo "Config changed, recompiling..."; \
+	else \
+		rm -f $(CONFIG_FILE).tmp; \
+	fi
+
+$(O_FILES): $(CONFIG_FILE)
+
 $(NAME): $(O_FILES)
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(OBJ_DIR)
 
 	@echo "$(COLOR_INFO)[LD] Linking kernel...$(R)"
-#	$(CC) -ffreestanding -nostdlib -nostartfiles -T linker.ld -Wl,-e,_start -o $(OBJ_DIR)/kernel.elf $^ -lgcc
-	$(CC) $(C_FLAGS) $^ $(LD_FLAGS) -o $(OBJ_DIR)/kernel.elf
+	$(CC) $(C_FLAGS) $(O_FILES) $(LD_FLAGS) -o $(OBJ_DIR)/kernel.elf
 
 	@echo "$(COLOR_INFO)[OBJCOPY] Creating kernel.img...$(R)"
 	@$(OBJCOPY) -O binary $(OBJ_DIR)/kernel.elf $(BUILD_DIR)/kernel.img
@@ -205,4 +223,4 @@ re: fclean all
 
 -include $(D_FILES)
 
-.PHONY: all banner disk run clean fclean re export show-config applications
+.PHONY: all banner disk run clean fclean re export show-config applications config

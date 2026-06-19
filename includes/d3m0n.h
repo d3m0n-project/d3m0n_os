@@ -1,6 +1,8 @@
 #ifndef D3M0N_H
 #define D3M0N_H
 
+#include "settings.h"
+
 // kernel related data
 #ifndef KERNEL_VERSION
 	#define KERNEL_VERSION (const char *)"2.0.0"
@@ -14,5 +16,6 @@
 #endif
 
 void	panic(const char *message);
+t_conf	*get_config();
 
 #endif

@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "display.h"
+#include "d3m0n.h"
 
 #define MAX_WINDOW_EVENTS 255
 

@@ -3,8 +3,8 @@
 # style
 wallpaper: default
 theme: default_dark
-splash_time: 3000
+splash_time: 500
 
 # clock settings
 # time mode 0=12h 1=24h
-time_mode: 0
+time_mode: 1
