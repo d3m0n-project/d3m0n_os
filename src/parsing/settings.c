@@ -32,6 +32,7 @@ int		parse_config(t_conf *config)
 		{"theme", &config->theme, TYPE_STRING, {0}, "default_dark"},
 		{"splash_time", &config->splash_time, TYPE_INT, {.min=0, .max=5000}, &(int){3000}},
 		{"time_mode", &config->time_mode, TYPE_INT, {.min=0, .max=1}, &(int){0}},
+		{"launcher", &config->launcher, TYPE_STRING, {0}, "com.4re5.d3m0n.system.launcher"},
 		{0}
 	};
 	if (!config)
@@ -43,13 +44,13 @@ int		parse_config(t_conf *config)
 	{
 		// parse defaults
 		int not_found = 0;
-		char	*value = get_setting("/config", current->name, &not_found);
+		char *value = get_setting("/config", current->name, &not_found);
 		if (!value && !not_found) // error
 			return 1;
 		else if (not_found) // not found, use default
 		{
 			if (current->type == TYPE_STRING)
-				ft_strlcpy((char *)current->config_ptr, current->default_value, ft_strlen(current->default_value));
+				ft_strlcpy((char *)current->config_ptr, current->default_value, ft_strlen(current->default_value) + 1);
 			else if (current->type == TYPE_INT)
 				*(int *)current->config_ptr = *(int *)current->default_value;
 			i++;
@@ -64,7 +65,7 @@ int		parse_config(t_conf *config)
 				free(value);
 				return 1;
 			}
-			ft_strlcpy((char *)current->config_ptr, value, len);
+			ft_strlcpy((char *)current->config_ptr, value, len + 1);
 		}
 		else if (current->type == TYPE_INT)
 		{
@@ -81,7 +82,6 @@ int		parse_config(t_conf *config)
 		free(value);
 		i++;
 	}
-	
 	return 0;
 }
 

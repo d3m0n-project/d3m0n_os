@@ -129,6 +129,7 @@ typedef struct s_control
 typedef	struct s_window
 {
 	char				title[25];
+	char				package[128];
 	int					width;
 	int					height;
 	uint32_t			bg_color;
@@ -137,7 +138,7 @@ typedef	struct s_window
 	struct s_event		events[MAX_WINDOW_EVENTS];
 }	t_window;
 
-int				create_window(t_window *out, const char *title, int w, int h);
+int				create_window(t_window *out, const char *title, const char *package, int w, int h);
 void			init_control(t_control *control, const char *name, e_control_type type);
 void			add_control(t_window *to, t_control *control);
 void			draw_window(t_window *window);
@@ -145,6 +146,7 @@ int				exec_event(int control_id, e_event_type type, t_window *window);
 void			handle_click(int x, int y, int button, t_window *window);
 
 t_window		*get_current_window();
+void			set_current_window(t_window *win);
 
 
 /* linked scripting */

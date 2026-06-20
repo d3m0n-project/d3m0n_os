@@ -147,7 +147,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s
 applications:
 	@rm -rf rootfs/apps/ > /dev/null
 	@mkdir -p rootfs/apps/
-	@cp -r applications/* rootfs/apps/
+	@mkdir -p rootfs/apps/d3m0n/
+	@cp -r applications/* rootfs/apps/d3m0n/
 	@echo "$(COLOR_SUCCESS)[OK] Copied applications list to disk!$(R)"
 
 

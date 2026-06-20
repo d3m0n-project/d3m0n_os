@@ -28,7 +28,9 @@ void	fn_alert(void **args);
 void	template_load(void **args);
 
 /* apps */
-void	fn_apps_list(void **args);
+void	fn_app_list(void **args);
+void	fn_app_open(void **args);
+void	fn_app_exit(void **args);
 
 extern	t_fn_def	funcs[];
 

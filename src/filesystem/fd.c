@@ -71,6 +71,20 @@ int		file_exists(const char *path)
 	return (file.first_cluster != 0 && !file.is_dir);
 }
 
+// TODO: validate paths
+char	*path_add(char *path, char *path2)
+{
+	size_t	l1 = ft_strlen(path);
+	size_t	l2 = ft_strlen(path2);
+	char	*output = ft_calloc(l1 + l2 + 1, sizeof(char));
+	if (!output)
+		return 0;
+	
+	ft_strlcpy(output, path, l1 + l2 + 1);
+	ft_strlcat(output, path2, l1 + l2 + 1);
+	return output;
+}
+
 int		file_delete(const char *path)
 {
 	if (!path)

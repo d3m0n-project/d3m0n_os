@@ -8,7 +8,9 @@ t_fn_def	funcs[] = {
 		.name="template.load",
 		.args_type={ARG_STR, ARG_INT, ARG_INT, [3 ... (MAX_ARGS - 2)] = ARG_STR | ARG_OPTIONAL, ARG_NULL}
 	},
-	{fn_apps_list, {ARG_NULL}, "apps.list"},
+	{fn_app_list, {ARG_NULL}, "app.list"},
+	{fn_app_open, {ARG_STR, ARG_NULL}, "app.open"},
+	{fn_app_exit, {ARG_NULL}, "app.exit"},
 	{0}
 };
 

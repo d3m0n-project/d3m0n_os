@@ -8,5 +8,7 @@ Window:
 	topbar="true";
 
 Text:
+	name="exit";
+	location="0, 50";
 	content="SOON...";
 	color="black";

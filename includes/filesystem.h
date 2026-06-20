@@ -26,13 +26,11 @@ typedef enum
 int			block_write(uint32_t lba, const uint8_t* buffer);
 int			block_read(uint32_t lba, uint8_t* buffer);
 
-int		fat32_mount(int partition_id);
+int			fat32_mount(int partition_id);
+int			filesystem_ready(void);
+int			sd_init(void);
 
-int		filesystem_ready(void);
-
-
-int		sd_init(void);
-
+char		*path_add(char *path, char *path2);
 int			open(const char *path, int flags);
 int			file_exists(const char *path);
 int			file_delete(const char *path);

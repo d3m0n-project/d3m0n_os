@@ -11,7 +11,7 @@
 #include "peripheral.h"
 #include "settings.h"
 
-#include "spi.h"
+#include "package_manager.h"
 
 t_conf		config;
 
@@ -66,9 +66,6 @@ void	kernel_main(void *dtb)
 		log("FAT32 mounted!\n", LOG_SUCCESS);
 	}
 
-	if (parse_config(&config)) panic("Config parsing failed, please check config file\n");
-	else					   log("Config parsed successfully!\n", LOG_SUCCESS);
-
 	list_dir("/");
 
 	//spi_init(10000);
@@ -88,6 +85,10 @@ void	kernel_main(void *dtb)
 	usb_init(); // TODO: maybe make usb driver optional and enabled for testing
 	if (usb_enumerate() < 0) log("USB enumeration did not find a configured root device\n", LOG_WARNING);
 
+	// parse config file
+	if (parse_config(&config)) panic("Config parsing failed, please check config file\n");
+	else					   log("Config parsed successfully!\n", LOG_SUCCESS);
+
 
 	// load spash
 	BmpTexture	splash;
@@ -99,29 +100,50 @@ void	kernel_main(void *dtb)
 	
 
 	// load desktop app manifest
-	if (!parse_manifest("/apps/system/desktop/source/app", &main_window))
+	//log("'%s'\n", 0, config.launcher);
+	char	*manifest = get_app_path_from_package(config.launcher, PACKAGE_MANIFEST);
+	if (manifest && !parse_manifest(manifest, &main_window))
+	{
+		free(manifest);
 		log("Main window created successfully!\n", LOG_SUCCESS);
+	}
 	else	panic("Could not create main window\n");
 	main_window.bg_color = DISPLAY_COLORS[GREY]; // TODO: parse color of window when parsing
 
 
 	t_script_chain	script;
 	init_script(&script);
-	linked_script_add_line("log(\"Hello World!\", \"red\");", &script);
+	linked_script_add_line("app.open(\"com.4re5.d3m0n.system.settings\");", &script);
 	main_window.events[0].type = EVENT_ON_CLICK;
 	main_window.events[0].script = &script;
 	main_window.events[0].trigger_corners[0] = (t_point){.x=10, .y=30};
 	main_window.events[0].trigger_corners[1] = (t_point){.x=75, .y=95};
 
-	if (!parse_layout("/apps/system/desktop/source/layouts/main.layout", &main_window, 0, 0, 0))
+
+	char *main_layout = get_app_path_from_package(config.launcher, PACKAGE_MAIN_LAYOUT);
+	if (main_layout && !parse_layout(main_layout, &main_window, 0, 0, 0))
+	{
+		free(main_layout);
 		log("Parsed layout successfully!\n", LOG_SUCCESS);
+	}
+	else if (!main_layout)
+		panic("Could not find main layout\n");
 	else
 		panic("Invalid layout, could not continue\n");
 
-	if (!parse_source("/apps/system/desktop/source/src/main.src", &main_window))
+
+	char *main_source = get_app_path_from_package(config.launcher, PACKAGE_MAIN_SOURCE);
+	if (!parse_source(main_source, &main_window))
+	{
+		free(main_source);
 		log("Parsed source file successfully!\n", LOG_SUCCESS);
+	}
+	else if (!main_source)
+		panic("Could not find main source\n");
 	else
 		panic("Could not parse src file\n");
+
+
 
 	exec_event(0, EVENT_ON_CREATE, &main_window); // Window.OnCreate
 

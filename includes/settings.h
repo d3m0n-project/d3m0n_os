@@ -12,6 +12,9 @@ typedef struct s_conf
 
 	// clock
 	int		time_mode;
+
+	// launcher
+	char	launcher[STRING_SIZE];
 }	t_conf;
 
 int		parse_config(t_conf *config);

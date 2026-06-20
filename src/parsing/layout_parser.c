@@ -734,6 +734,11 @@ t_window	*get_current_window()
 	return CURRENT_WINDOW;
 }
 
+void		set_current_window(t_window *win)
+{
+	CURRENT_WINDOW = win;
+}
+
 int	parse_layout(const char *path, t_window *win, char **replacements, int offset_x, int offset_y)
 {
 	int					fd;

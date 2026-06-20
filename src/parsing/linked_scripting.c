@@ -52,6 +52,7 @@ typedef struct s_for_apps_node
 {
 	char	*name_var;
 	char	*icon_var;
+	char	*package_var;
 } t_for_apps_node;
 
 static t_script_var	g_vars[SCRIPT_MAX_VARS];
@@ -781,17 +782,21 @@ static int	add_cond_node(char *statement, t_script_chain *script, void (*fn)(voi
 	return append_script_node(script, node);
 }
 
-static int	parse_for_apps_header(char *statement, char **name_out, char **icon_out)
+static int	parse_for_apps_header(char *statement, char **name_out, char **icon_out,
+		char **package_out)
 {
 	char *open;
 	char *close;
 	char *inside;
 	char *comma;
+	char *comma2;
 	char *after;
 	char *name;
 	char *icon;
+	char *package;
 	int consumed;
 
+	*package_out = 0;
 	open = ft_strchr(statement, '(');
 	close = ft_strchr(statement, ')');
 	if (!open || !close || close < open)
@@ -804,15 +809,26 @@ static int	parse_for_apps_header(char *statement, char **name_out, char **icon_o
 	*comma = '\0';
 	name = trim_in_place(inside);
 	icon = trim_in_place(comma + 1);
+	comma2 = ft_strchr(icon, ',');
+	if (comma2)
+	{
+		*comma2 = '\0';
+		package = trim_in_place(comma2 + 1);
+	}
+	else
+		package = 0;
+	icon = trim_in_place(icon);
 	if (!parse_identifier_token(name, &consumed) || name[consumed] != '\0')
 		return 1;
 	if (!parse_identifier_token(icon, &consumed) || icon[consumed] != '\0')
+		return 1;
+	if (package && (!parse_identifier_token(package, &consumed) || package[consumed] != '\0'))
 		return 1;
 	after = trim_in_place(close + 1);
 	if (ft_strncmp(after, "in", 2) != 0)
 		return 1;
 	after = trim_in_place(after + 2);
-	if (ft_strcmp(after, "apps.list()") != 0)
+	if (ft_strcmp(after, "app.list()") != 0)
 		return 1;
 	*name_out = dup_cstr(name);
 	*icon_out = dup_cstr(icon);
@@ -823,6 +839,16 @@ static int	parse_for_apps_header(char *statement, char **name_out, char **icon_o
 		if (*icon_out)
 			free(*icon_out);
 		return 1;
+	}
+	if (package)
+	{
+		*package_out = dup_cstr(package);
+		if (!*package_out)
+		{
+			free(*name_out);
+			free(*icon_out);
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -842,11 +868,12 @@ static int	add_for_apps_node(char *statement, t_script_chain *script)
 			free(node);
 		return 1;
 	}
-	if (parse_for_apps_header(statement, &data->name_var, &data->icon_var))
+	if (parse_for_apps_header(statement, &data->name_var, &data->icon_var,
+			&data->package_var))
 	{
 		free(data);
 		free(node);
-		log("Invalid for apps.list syntax: '%s'\n", LOG_ERROR | LOG_INDENT, statement);
+		log("Invalid for app.list syntax: '%s'\n", LOG_ERROR | LOG_INDENT, statement);
 		return 1;
 	}
 	node->func = op_for_apps;
@@ -854,6 +881,8 @@ static int	add_for_apps_node(char *statement, t_script_chain *script)
 	{
 		free(data->name_var);
 		free(data->icon_var);
+		if (data->package_var)
+			free(data->package_var);
 		free(data);
 		free(node);
 		return 1;
@@ -1155,12 +1184,11 @@ static int	eval_call_and_run(t_call_node *call)
 static void	exec_range(t_script_chain *start, t_script_chain *stop)
 {
 	t_script_chain *cur;
-	static const char *apps[][2] = {
-		{"Test", "default"},
-		{"Wifi", "wifi"},
-		{"BLE", "bluetooth"},
-		{"Contacts", "contacts"},
-		{0, 0}
+	static const char *apps[][3] = {
+		{"Hello World", "default", "com.4re5.d3m0n.test.helloWorld"},
+		{"Settings", "settings", "com.4re5.d3m0n.system.settings"},
+		{"Contacts", "contacts", "com.4re5.d3m0n.communication.contacts"},
+		{0}
 	};
 
 	cur = start;
@@ -1215,6 +1243,8 @@ static void	exec_range(t_script_chain *start, t_script_chain *stop)
 			{
 				var_set_str(d->name_var, apps[i][0]);
 				var_set_str(d->icon_var, apps[i][1]);
+				if (d->package_var)
+					var_set_str(d->package_var, apps[i][2]);
 				exec_range(cur->next, end_node);
 				i++;
 			}
@@ -1355,6 +1385,8 @@ void	free_script(t_script_chain *script)
 				t_for_apps_node *f = (t_for_apps_node *)cur->args[0];
 				free(f->name_var);
 				free(f->icon_var);
+				if (f->package_var)
+					free(f->package_var);
 				free(f);
 			}
 			else

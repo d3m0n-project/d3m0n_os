@@ -14,7 +14,7 @@ First create a main file named `app` and type these lines
 ### description
 `name` is your new app name
 
-`package` is your app 'id'
+`package` is your app 'package' (follows [this convention](./package_convention.md))
 
 `icon` is then path to your icon (png) file or a theme icon ([theme-icons](#theme-icons))
 

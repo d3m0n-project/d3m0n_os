@@ -107,7 +107,7 @@ static int	control_text_auto_font_size(const t_control *control)
 	return (size);
 }
 
-int	create_window(t_window *out, const char *title, int w, int h)
+int	create_window(t_window *out, const char *title, const char *package, int w, int h)
 {
 	int	i = 0;
 	log("Creating a %ix%i Window title: '%s'...\n", LOG_INFO, w, h, title);
@@ -132,9 +132,23 @@ int	create_window(t_window *out, const char *title, int w, int h)
 		return 1;
 	}
 	out->title[i] = '\0';
+
+	i = 0;
+	while (package[i] && i < 127)
+	{
+		out->package[i] = ((char *)package)[i];
+		i++;
+	}
+	if (package[i])
+	{
+		log("Invalid given window package length: max 127 chars\n", LOG_ERROR | LOG_INDENT);
+		return 1;
+	}
+	out->package[i] = '\0';
+
 	out->width = w;
 	out->height = h;
-	out->top_bar = 1;
+	out->top_bar = 1; // TODO: parse manifest
 	out->controls = 0;
 	ft_memset(out->events, 0, MAX_WINDOW_EVENTS * sizeof(t_event));
 	return 0;
@@ -296,7 +310,6 @@ void	draw_control(t_control *control)
 		draw_bmp(control->location.x, control->location.y, control->width, control->height, &texture);
 		free_bmp_texture(&texture);
 		break;
-	
 	default:
 		log("Unknown control type: id=%i\n", LOG_WARNING, control->p_type);
 		break;
