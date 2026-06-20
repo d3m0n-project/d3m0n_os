@@ -142,6 +142,9 @@ void			init_control(t_control *control, const char *name, e_control_type type);
 void			add_control(t_window *to, t_control *control);
 void			draw_window(t_window *window);
 int				exec_event(int control_id, e_event_type type, t_window *window);
+void			handle_click(int x, int y, int button, t_window *window);
+
+t_window		*get_current_window();
 
 
 /* linked scripting */

@@ -5,8 +5,7 @@
 #include "libft.h"
 #include "time.h"
 
-static void	compute_text_position(int anchor, int box_x, int box_y, int box_w, int box_h,
-				int text_w, int text_h, int *out_x, int *out_y)
+static void	compute_text_position(int anchor, int box_x, int box_y, int box_w, int box_h, int text_w, int text_h, int *out_x, int *out_y)
 {
 	int tx = box_x;
 	int ty = box_y;
@@ -139,6 +138,28 @@ int	create_window(t_window *out, const char *title, int w, int h)
 	out->controls = 0;
 	ft_memset(out->events, 0, MAX_WINDOW_EVENTS * sizeof(t_event));
 	return 0;
+}
+
+void	handle_click(int x, int y, int button, t_window *window)
+{
+	if (button == 1) // left click
+	{
+		int	i=-1;
+		while (++i < MAX_WINDOW_EVENTS)
+		{
+			t_point top_left = window->events[i].trigger_corners[0];
+			t_point bottom_right = window->events[i].trigger_corners[1];
+			if (window->events[i].type == EVENT_ON_CLICK)
+			{
+				if (x < top_left.x || x > bottom_right.x)
+					continue;
+				if (y < top_left.y || y > bottom_right.y)
+					continue;
+				exec_script(window->events[i].script);
+				return;
+			}
+		}
+	}
 }
 
 int		exec_event(int control_id, e_event_type type, t_window *window)
@@ -304,9 +325,6 @@ void	draw_window(t_window *window)
 		size_t	time = (time_us() % (1000 * 60 * 24 * 1000)) / (1000*1000*60); // minute of the day
 		int		hours = time / 60;
 		int		minutes = time % 60;
-
-		hours = 13;
-		minutes = 59;
 
 		char	clock[8] = "00:00 AM";
 		if (conf->time_mode == 1) // 24h clock

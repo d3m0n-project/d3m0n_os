@@ -1,8 +1,8 @@
-CC				= arm-none-eabi-gcc
-LD				= arm-none-eabi-ld
-OBJCOPY			= arm-none-eabi-objcopy
+CC					= arm-none-eabi-gcc
+LD					= arm-none-eabi-ld
+OBJCOPY				= arm-none-eabi-objcopy
 
-QEMU			= qemu-system-arm
+QEMU				= qemu-system-arm
 
 # default config
 DEBUG				= 0
@@ -12,49 +12,49 @@ LOGFILE_ENABLED		= 1
 SHOW_IMAGE_STATUS	= 0
 
 ifeq ($(USE_ADMIN), 1)
-	SUDO_EXECUTABLE = sudo
+	SUDO_EXECUTABLE	= sudo
 endif
 
 
-SRC_DIR			= src
-OBJ_DIR			= obj
-BUILD_DIR		= build
-EXPORT_DIR		= export
-BOOT_DIR		= $(BUILD_DIR)/boot
-MOUNT_DIR		= $(BUILD_DIR)/mnt
-FIRMWARE_DIR	= firmware
+SRC_DIR				= src
+OBJ_DIR				= obj
+BUILD_DIR			= build
+EXPORT_DIR			= export
+BOOT_DIR			= $(BUILD_DIR)/boot
+MOUNT_DIR			= $(BUILD_DIR)/mnt
+FIRMWARE_DIR		= firmware
 
-C_FILES			= $(shell find $(SRC_DIR) -name "*.c")
-S_FILES			= $(shell find $(SRC_DIR) -name "*.s" -o -name "*.S")
+C_FILES				= $(shell find $(SRC_DIR) -name "*.c")
+S_FILES				= $(shell find $(SRC_DIR) -name "*.s" -o -name "*.S")
 
-O_FILES			= $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_FILES))
-O_FILES			+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/%.o,$(S_FILES))
+O_FILES				= $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_FILES))
+O_FILES				+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/%.o,$(S_FILES))
 
-D_FILES			= $(O_FILES:.o=.d)
+D_FILES				= $(O_FILES:.o=.d)
 
-DISK			?= disk.img
+DISK				?= disk.img
 
-VERSION			= 2.0.6
-VERSION_NAME	= outset
+VERSION				= 2.0.6
+VERSION_NAME		= outset
 
-IMG_ROOT_NAME	= d3m0n_os_$(VERSION_NAME)_$(VERSION).img
+IMG_ROOT_NAME		= d3m0n_os_$(VERSION_NAME)_$(VERSION).img
 
-NAME			= $(BUILD_DIR)/$(IMG_ROOT_NAME)
-EXPORT_IMG_NAME = $(EXPORT_DIR)/$(IMG_ROOT_NAME)
-ELF				= $(OBJ_DIR)/kernel.elf
+NAME				= $(BUILD_DIR)/$(IMG_ROOT_NAME)
+EXPORT_IMG_NAME 	= $(EXPORT_DIR)/$(IMG_ROOT_NAME)
+ELF					= $(OBJ_DIR)/kernel.elf
 
-IMG_SIZE		= 128
+IMG_SIZE			= 128
 
-LD_FLAGS		= -T linker.ld -lgcc -Wl,-e,_start
-C_FLAGS			= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 \
-				  -Iincludes -mcpu=arm1176jzf-s \
-				  -MMD -MD \
-				  -D DEBUG=$(DEBUG) \
-				  -D DEBUG_OUTLINE=$(DEBUG_OUTLINE) \
-				  -D KERNEL_VERSION=\"$(VERSION)\" \
-				  -D KERNEL_VERSION_NAME=\"$(VERSION_NAME)\" \
-				  -D LOGFILE_ENABLED=$(LOGFILE_ENABLED) \
-				  -D SHOW_IMAGE_STATUS=$(SHOW_IMAGE_STATUS)
+LD_FLAGS			= -T linker.ld -lgcc -Wl,-e,_start
+C_FLAGS				= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 \
+					  -Iincludes -mcpu=arm1176jzf-s \
+					  -MMD -MD \
+					  -D DEBUG=$(DEBUG) \
+					  -D DEBUG_OUTLINE=$(DEBUG_OUTLINE) \
+					  -D KERNEL_VERSION=\"$(VERSION)\" \
+					  -D KERNEL_VERSION_NAME=\"$(VERSION_NAME)\" \
+					  -D LOGFILE_ENABLED=$(LOGFILE_ENABLED) \
+					  -D SHOW_IMAGE_STATUS=$(SHOW_IMAGE_STATUS)
 
 C1=\033[0;38;5;69;49m
 C2=\033[0;38;5;105;49m
@@ -76,7 +76,7 @@ define onoff
 $(if $(filter 1,$(1)),$(COLOR_SUCCESS)ENABLED$(R),$(COLOR_ERROR)DISABLED$(R))
 endef
 
-VARS			:= DEBUG DEBUG_OUTLINE USE_ADMIN LOGFILE_ENABLED SHOW_IMAGE_STATUS
+VARS := DEBUG DEBUG_OUTLINE USE_ADMIN LOGFILE_ENABLED SHOW_IMAGE_STATUS
 MSG_OUTLINE_COLOR=$(C1)
 MSG_COLOR=$(C3)
 show-config:
@@ -106,6 +106,7 @@ $(CONFIG_FILE):
 	@true
 
 config:
+	@mkdir -p $(OBJ_DIR)
 	@printf '%s\n' $(foreach v,$(VARS),$(v)=$($(v))) | sha1sum | awk '{print $$1}' > $(CONFIG_FILE).tmp
 	@if ! cmp -s $(CONFIG_FILE).tmp $(CONFIG_FILE) 2>/dev/null; then \
 		mv $(CONFIG_FILE).tmp $(CONFIG_FILE); \
@@ -208,7 +209,8 @@ run: all
 		-serial mon:stdio \
 		-m 512M \
 		-sd $(DISK) \
-		-kernel $(OBJ_DIR)/kernel.elf
+		-kernel $(OBJ_DIR)/kernel.elf \
+		-usb -device usb-mouse
 
 
 clean:

@@ -36,7 +36,7 @@ void	panic(const char *message)
 		asm volatile("wfi");
 }
 
-void kernel_main(void *dtb)
+void	kernel_main(void *dtb)
 {
 	t_window	main_window;
 
@@ -84,23 +84,34 @@ void kernel_main(void *dtb)
 	if (display_init())		   panic("Could not initialize display\n");
 	else					   log("Display initialized!\n", LOG_SUCCESS);
 
+	// init usb driver
+	usb_init(); // TODO: maybe make usb driver optional and enabled for testing
+	if (usb_enumerate() < 0) log("USB enumeration did not find a configured root device\n", LOG_WARNING);
+
 
 	// load spash
-	BmpTexture  texture;
-	if (bmp_load_image(&texture, "wallpapers/default.bmp")) // TODO: change me
-		log("Could not load BMP texture\n", LOG_ERROR);
-	//else
-	//	draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &texture);
-
-
-	//panic("STOPPED THE EXECUTION HERE\n");
-
+	BmpTexture	splash;
+	if (bmp_load_image(&splash, "wallpapers/splash.bmp"))
+		log("Could not load splash screen\n", LOG_ERROR);
+	else
+		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &splash);
 	usleep(config.splash_time * 1000);
 	
+
+	// load desktop app manifest
 	if (!parse_manifest("/apps/system/desktop/source/app", &main_window))
 		log("Main window created successfully!\n", LOG_SUCCESS);
 	else	panic("Could not create main window\n");
 	main_window.bg_color = DISPLAY_COLORS[GREY]; // TODO: parse color of window when parsing
+
+
+	t_script_chain	script;
+	init_script(&script);
+	linked_script_add_line("log(\"Hello World!\", \"red\");", &script);
+	main_window.events[0].type = EVENT_ON_CLICK;
+	main_window.events[0].script = &script;
+	main_window.events[0].trigger_corners[0] = (t_point){.x=10, .y=30};
+	main_window.events[0].trigger_corners[1] = (t_point){.x=75, .y=95};
 
 	if (!parse_layout("/apps/system/desktop/source/layouts/main.layout", &main_window, 0, 0, 0))
 		log("Parsed layout successfully!\n", LOG_SUCCESS);
@@ -115,7 +126,10 @@ void kernel_main(void *dtb)
 	exec_event(0, EVENT_ON_CREATE, &main_window); // Window.OnCreate
 
 	while (1)
-		usleep(200000);
+	{
+		usb_mouse_poll();
+		usleep(20000);
+	}
 
 	log("Finished kernel!\n", LOG_WARNING);
 	while (1) asm volatile ("wfi");

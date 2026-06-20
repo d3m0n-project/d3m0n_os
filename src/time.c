@@ -4,21 +4,21 @@
 #define TIMER_BASE      0x20003000
 #define TIMER_CLO       (*(volatile uint32_t*)(TIMER_BASE + 0x04))
 
+static  uint64_t        current_time_delta = 0;
+
 static inline uint32_t read_timer()
 {
     return TIMER_CLO;
 }
 
-// milliseconds (since boot)
-uint64_t time_now()
+void    set_time(uint64_t time)
 {
-    return (uint64_t)read_timer();
+    current_time_delta = time;
 }
 
-// microseconds (since boot)
 uint64_t time_us()
 {
-    return (uint64_t)read_timer();
+    return current_time_delta + (uint64_t)read_timer();
 }
 
 void sleep(uint64_t seconds)

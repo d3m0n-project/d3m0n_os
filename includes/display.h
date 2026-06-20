@@ -14,6 +14,8 @@
 	#define DEBUG_OUTLINE	0
 #endif
 
+#define CURSOR_SIZE			4
+
 typedef struct s_font
 {
 	int		dot_count;
@@ -23,14 +25,15 @@ typedef struct s_font
 
 extern uint32_t			DISPLAY_COLORS[16];
 
-int		display_init();
-void	put_pixel(int x, int y, uint32_t color);
-void	draw_rect(int x, int y, int w, int h, uint32_t color);
-void	draw_rect_outline(int x, int y, int w, int h, uint32_t color);
-void	draw_bmp(int x, int y, int w, int h, BmpTexture *texture);
+int			display_init();
+uint32_t	get_pixel(int x, int y);
+void		put_pixel(int x, int y, uint32_t color);
+void		draw_rect(int x, int y, int w, int h, uint32_t color);
+void		draw_rect_outline(int x, int y, int w, int h, uint32_t color);
+void		draw_bmp(int x, int y, int w, int h, BmpTexture *texture);
 
-void	draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);
-int		load_font(const char *path, t_font	*out, int dot_count);
-void	free_font(t_font *font);
+void		draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);
+int			load_font(const char *path, t_font	*out, int dot_count);
+void		free_font(t_font *font);
 
 #endif

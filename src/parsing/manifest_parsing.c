@@ -2,8 +2,9 @@
 
 int	parse_manifest(const char *path, t_window *win)
 {
-	char	*title = get_setting(path, "name");
-	if (!title)
+	int not_found = 0;
+	char	*title = get_setting(path, "name", &not_found);
+	if (!title || not_found)
 	{
 		log("MANIFEST: Could not find key 'name' in app manifest %s\n", LOG_ERROR, path);
 		return 1;

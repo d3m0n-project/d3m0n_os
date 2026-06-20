@@ -20,8 +20,19 @@ void	put_pixel(int x, int y, uint32_t color)
 	volatile uint32_t *fb = (volatile uint32_t *)(uintptr_t)fb_req.fb_addr;
 	fb[y * (fb_req.pitch / 4) + x] = color;
 	#else
-	(void)color;
+	(void)color; // TODO: real put pixel
 	#endif
+}
+
+uint32_t	get_pixel(int x, int y)
+{
+	if (x < 0 || (uint32_t)x >= SCREEN_WIDTH || y < 0 || (uint32_t)y >= SCREEN_HEIGHT)
+		return 0;
+	#if DEBUG == 1
+	volatile uint32_t *fb = (volatile uint32_t *)(uintptr_t)fb_req.fb_addr;
+	return fb[y * (fb_req.pitch / 4) + x];
+	#endif
+	return 0; // TODO: real lcd get pixel
 }
 
 #if DEBUG == 1
@@ -130,11 +141,9 @@ int framebuffer_init(uint32_t width, uint32_t height, uint32_t bpp)
 	g_framebuffer_mbox[33] = 0;
 	g_framebuffer_mbox[34] = MAILBOX_TAG_LAST;
 	if (!mailbox_call(g_framebuffer_mbox, MAILBOX_CH_PROP))
-		return (-1);
-	if (g_framebuffer_mbox[1] != MAILBOX_RESPONSE_SUCCESS
-		|| g_framebuffer_mbox[28] == 0
-		|| g_framebuffer_mbox[33] == 0)
-		return (-1);
+		return -1;
+	if (g_framebuffer_mbox[1] != MAILBOX_RESPONSE_SUCCESS || g_framebuffer_mbox[28] == 0 || g_framebuffer_mbox[33] == 0)
+		return -1;
 	fb_req.width = g_framebuffer_mbox[5];
 	fb_req.height = g_framebuffer_mbox[6];
 	fb_req.virt_width = g_framebuffer_mbox[10];
@@ -145,7 +154,7 @@ int framebuffer_init(uint32_t width, uint32_t height, uint32_t bpp)
 	fb_req.pitch = g_framebuffer_mbox[33];
 	fb_req.fb_addr = (uintptr_t)(g_framebuffer_mbox[28] & 0x3FFFFFFF);
 	fb_req.fb_size = g_framebuffer_mbox[29];
-	return (0);
+	return 0;
 }
 #endif
 

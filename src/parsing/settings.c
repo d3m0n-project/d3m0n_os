@@ -22,15 +22,16 @@ typedef struct s_conf_elem
 	void			*config_ptr;
 	e_conf_type		type;
 	t_range			range;
+	void			*default_value;
 }	t_conf_elem;
 
 int		parse_config(t_conf *config)
 {
 	t_conf_elem	CONFIG_SCHEMA[] = {
-		{"wallpaper", &config->wallpaper, TYPE_STRING, {0}},
-		{"theme", &config->theme, TYPE_STRING, {0}},
-		{"splash_time", &config->splash_time, TYPE_INT, {.min=0, .max=5000}},
-		{"time_mode", &config->time_mode, TYPE_INT, {.min=0, .max=1}},
+		{"wallpaper", &config->wallpaper, TYPE_STRING, {0}, "default.bmp"},
+		{"theme", &config->theme, TYPE_STRING, {0}, "default_dark"},
+		{"splash_time", &config->splash_time, TYPE_INT, {.min=0, .max=5000}, &(int){3000}},
+		{"time_mode", &config->time_mode, TYPE_INT, {.min=0, .max=1}, &(int){0}},
 		{0}
 	};
 	if (!config)
@@ -40,11 +41,17 @@ int		parse_config(t_conf *config)
 	int			i = 0;
 	while (*(char *)(current = &(CONFIG_SCHEMA[i])))
 	{
-		char	*value = get_setting("/config", current->name);
-		if (!value) // error
+		// parse defaults
+		int not_found = 0;
+		char	*value = get_setting("/config", current->name, &not_found);
+		if (!value && !not_found) // error
 			return 1;
-		if ((size_t)value == 1) // not found, skip
+		else if (not_found) // not found, use default
 		{
+			if (current->type == TYPE_STRING)
+				ft_strlcpy((char *)current->config_ptr, current->default_value, ft_strlen(current->default_value));
+			else if (current->type == TYPE_INT)
+				*(int *)current->config_ptr = *(int *)current->default_value;
 			i++;
 			continue;
 		}
@@ -78,7 +85,7 @@ int		parse_config(t_conf *config)
 	return 0;
 }
 
-char	*get_setting(const char *path, const char *key)
+char	*get_setting(const char *path, const char *key, int	*not_found)
 {
 	char	*line;
 	int		fd;
@@ -87,6 +94,7 @@ char	*get_setting(const char *path, const char *key)
 	if (fd < 0)
 		return 0;
 
+	*not_found = 0;
 	while ((line = get_next_line(fd)))
 	{
 		size_t	i;
@@ -135,7 +143,8 @@ char	*get_setting(const char *path, const char *key)
 			{
 				free(line);
 				close(fd);
-				return (char *)1;
+				*not_found = 1;
+				return 0;
 			}
 
 			output = ft_calloc(value_len + 1, sizeof(char));
