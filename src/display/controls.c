@@ -148,6 +148,7 @@ int	create_window(t_window *out, const char *title, const char *package, int w, 
 
 	out->width = w;
 	out->height = h;
+	out->is_launcher = 0;
 	out->top_bar = 1; // TODO: parse manifest
 	out->controls = 0;
 	ft_memset(out->events, 0, MAX_WINDOW_EVENTS * sizeof(t_event));
@@ -339,7 +340,7 @@ void	draw_window(t_window *window)
 		int		hours = time / 60;
 		int		minutes = time % 60;
 
-		char	clock[8] = "00:00 AM";
+		char	clock[9] = "00:00 AM";
 		if (conf->time_mode == 1) // 24h clock
 			clock[5] = '\0';
 		else if (hours >= 12)
@@ -355,6 +356,10 @@ void	draw_window(t_window *window)
 		clock[4] = '0' + minutes % 10;
 
 		draw_text(2, 2, 8, 16, clock, DISPLAY_COLORS[MAGENTA], 0); // TODO: change topbar
+	}
+	if (!window->is_launcher)
+	{
+		draw_text(SCREEN_WIDTH - 15, 5, 10, 10, "X", DISPLAY_COLORS[RED], 0);
 	}
 }
 

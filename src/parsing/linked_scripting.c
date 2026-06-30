@@ -324,8 +324,7 @@ static const char	*var_get_str(const char *name)
 static t_fn_def	*get_def_from_name(char *fn_name)
 {
 	int i = 0;
-	t_fn_def	*current;
-	while (*(char *)(current = &(funcs[i])))
+	while (funcs[i].name)
 	{
 		if (ft_strcmp((char *)funcs[i].name, fn_name) == 0)
 			return &funcs[i];

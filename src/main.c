@@ -108,12 +108,16 @@ void	kernel_main(void *dtb)
 		log("Main window created successfully!\n", LOG_SUCCESS);
 	}
 	else	panic("Could not create main window\n");
+
+	// set window launcher mode
+	main_window.is_launcher = 1;
+
 	main_window.bg_color = DISPLAY_COLORS[GREY]; // TODO: parse color of window when parsing
 
 
 	t_script_chain	script;
 	init_script(&script);
-	linked_script_add_line("app.open(\"com.4re5.d3m0n.system.settings\");", &script);
+	linked_script_add_line("app.open(\"com.4re5.d3m0n.system.settings\");", &script); // TODO: dynamic event from script file/layout
 	main_window.events[0].type = EVENT_ON_CLICK;
 	main_window.events[0].script = &script;
 	main_window.events[0].trigger_corners[0] = (t_point){.x=10, .y=30};

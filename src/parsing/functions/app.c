@@ -12,7 +12,7 @@ void	fn_app_open(void **args)
 {
 	if (!desktop_window)
 		desktop_window = get_current_window();
-	char	*package = ((char **)args)[0]; // TODO: package system
+	char	*package = ((char **)args)[0];
 	char	*layout_path = get_app_path_from_package(package, PACKAGE_MAIN_LAYOUT);
 	if (!layout_path)
 	{

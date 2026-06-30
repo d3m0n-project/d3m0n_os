@@ -132,6 +132,7 @@ typedef	struct s_window
 	char				package[128];
 	int					width;
 	int					height;
+	int					is_launcher;
 	uint32_t			bg_color;
 	uint8_t				top_bar;
 	t_control			*controls;
