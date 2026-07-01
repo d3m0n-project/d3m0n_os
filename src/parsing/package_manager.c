@@ -79,21 +79,21 @@ char *get_app_path_from_package(char *package, e_package_request_type type)
 
 int	load_app_list(void)
 {
-	char	**apps = list_dir_files("/apps");
-	if (!apps)
+	char	**apps_dir = list_dir_files("/apps");
+	if (!apps_dir)
 	{
 		log("APP LIST: Could not find application directory\n", LOG_ERROR);
 		return 1;
 	}
-	for (int i = 0; apps[i]; i++)
+	for (int i = 0; apps_dir[i]; i++)
 	{
-		if (apps[i][0] != '.')
+		if (apps_dir[i][0] != '.')
 		{
-			log("Found app: '%s'\n", 0, apps[i]);
+			log("Found app: '%s'\n", 0, apps_dir[i]);
 		}
-		free(apps[i]);
+		free(apps_dir[i]);
 	}
-	free(apps);
+	free(apps_dir);
 	//"Hello World", "default", "com.4re5.d3m0n.test.helloWorld"
 	return 0;
 }
