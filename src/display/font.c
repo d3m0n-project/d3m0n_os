@@ -1,6 +1,7 @@
 #include "display.h"
 #include "filesystem.h"
 #include "memory.h"
+#include "libft.h"
 
 int	load_font(const char *path, t_font	*out, int dot_count)
 {
@@ -35,7 +36,7 @@ int	load_font(const char *path, t_font	*out, int dot_count)
 			log("Could not allocate memory for font\n", LOG_ERROR);
 			return 1;
 		}
-		memcpy(new_ptr, out->data, total_read);
+		ft_memcpy(new_ptr, out->data, total_read);
 		free(out->data);
 		out->data = new_ptr;
 	}

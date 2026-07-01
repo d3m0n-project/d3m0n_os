@@ -1,6 +1,7 @@
 #include "filesystem.h"
 #include "bmp.h"
 #include "memory.h"
+#include "libft.h"
 #include "time.h"
 
 int bmp_load_image(BmpTexture *out, const char *path)
@@ -20,13 +21,13 @@ int bmp_load_image(BmpTexture *out, const char *path)
 		return 1;
 	}
 
-	memcpy(&out->width, header + 18, sizeof(int));
-	memcpy(&out->height, header + 22, sizeof(int));
+	ft_memcpy(&out->width, header + 18, sizeof(int));
+	ft_memcpy(&out->height, header + 22, sizeof(int));
 	out->bytes_per_pixel = header[28] / 8;
 
 	
 	uint32_t starting_offset = 0;
-	memcpy(&starting_offset, header + 10, sizeof(uint32_t));
+	ft_memcpy(&starting_offset, header + 10, sizeof(uint32_t));
 
 	uint32_t row_size = out->width * out->bytes_per_pixel;
 	uint32_t row_padding = (4 - (row_size % 4)) % 4;

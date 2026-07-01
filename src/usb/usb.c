@@ -566,7 +566,10 @@ int	usb_mouse_poll(void)
 		g_mouse.y = 0;
 	else if (g_mouse.y > SCREEN_HEIGHT)
 		g_mouse.y = SCREEN_HEIGHT;
-
+	
+	g_mouse.buttons = g_mouse_report[0];
+	handle_click(g_mouse.x, g_mouse.y, (unsigned int)g_mouse.buttons, get_current_window());
+	
 	// save last pixels
 	for (int i=0; i<CURSOR_SIZE; i++)
 	{
@@ -576,15 +579,11 @@ int	usb_mouse_poll(void)
 			put_pixel(g_mouse.x + j, g_mouse.y + i, DISPLAY_COLORS[RED]);
 		}
 	}
-	
-	g_mouse.buttons = g_mouse_report[0];
-	handle_click(g_mouse.x, g_mouse.y, (unsigned int)g_mouse.buttons, get_current_window());
-	//log("USB mouse: x=%i y=%i dx=%i dy=%i buttons=0x%x\n", LOG_INFO, , dx, dy, );
+
 	return 1;
 }
 
-static int	usb_finish_device_configuration(usb_device_t *dev,
-		uint8_t device_class)
+static int	usb_finish_device_configuration(usb_device_t *dev, uint8_t device_class)
 {
 	usb_config_descriptor_t	*config;
 	uint16_t				total_len;

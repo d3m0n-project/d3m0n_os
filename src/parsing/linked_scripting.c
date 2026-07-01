@@ -4,9 +4,9 @@
 #include "scripting.h"
 #include "parsing.h"
 
-#define SCRIPT_MAX_VARS 64
-#define SCRIPT_VAR_NAME_MAX 31
-#define IF_STACK_MAX 32
+#define SCRIPT_MAX_VARS		64
+#define SCRIPT_VAR_NAME_MAX	31
+#define IF_STACK_MAX		32
 
 typedef enum e_cond_op
 {

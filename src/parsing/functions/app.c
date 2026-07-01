@@ -75,10 +75,12 @@ void	fn_app_open(void **args)
 void	fn_app_exit(void **args)
 {
 	(void)args;
+	t_window	*current_window = get_current_window();
 	if (!desktop_window)
 	{
 		log("APP.EXIT: Desktop Window not saved yet\n", LOG_WARNING);
 		return;
 	}
+	cleanup_window(current_window);
 	set_current_window(desktop_window);
 }

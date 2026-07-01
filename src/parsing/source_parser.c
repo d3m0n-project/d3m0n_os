@@ -35,7 +35,7 @@ int	parse_source(const char *path, t_window *win)
 	int			fd;
 	int			i;
 	int			line_nb = 0;
-	int			event_id = -1;
+	int			event_id = 0; // start at id=1 to keep id=0 to the closing script
 	int			current_control_id = -1;
 
 	if (!win)

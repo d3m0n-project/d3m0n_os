@@ -23,14 +23,13 @@ t_conf	*get_config()
 
 void	show_kernel_status()
 {
-	log("KERNEL_VERSION:         %s\n", LOG_INFO| LOG_INDENT, KERNEL_VERSION);	
-	log("KERNEL_VERSION_NAME:    %s\n", LOG_INFO | LOG_INDENT, KERNEL_VERSION_NAME);
+	log("KERNEL_VERSION:		 %s\n", LOG_INFO| LOG_INDENT, KERNEL_VERSION);	
+	log("KERNEL_VERSION_NAME:	%s\n", LOG_INFO | LOG_INDENT, KERNEL_VERSION_NAME);
 }
 
 void	panic(const char *message)
 {
 	log(message, LOG_ERROR);
-	/* ensure any buffered log data is flushed to disk for post-mortem */
 	uart_flush_log_buffer();
 	while (1)
 		asm volatile("wfi");
@@ -48,17 +47,17 @@ void	kernel_main(void *dtb)
 	dtb_init(dtb);
 
 	// init heap memory
-	if (heap_init() != 0)      panic("Heap memory init failed\n");
-	else					   log("Heap memory initialized!\n", LOG_SUCCESS);
+	if (heap_init() != 0)		panic("Heap memory init failed\n");
+	else						log("Heap memory initialized!\n", LOG_SUCCESS);
 
 
 	// init fat32 filesystem
-	if (sd_init() < 0)		   panic("SD block interface init failed\n");
-	else					   log("SD block interface initialized!\n", LOG_SUCCESS);
+	if (sd_init() < 0)			panic("SD block interface init failed\n");
+	else						log("SD block interface initialized!\n", LOG_SUCCESS);
 
 
 	// load partition number 2 as rootfs
-	if (fat32_mount(1) < 0)	   panic("FAT32 mount failed\n");
+	if (fat32_mount(1) < 0)		panic("FAT32 mount failed\n");
 	else
 	{
 		log_cleanup(); // cleanup the log file to remove old boots logs
@@ -78,16 +77,16 @@ void	kernel_main(void *dtb)
 	//}
 
 	// init framebuffer
-	if (display_init())		   panic("Could not initialize display\n");
-	else					   log("Display initialized!\n", LOG_SUCCESS);
+	if (display_init())			panic("Could not initialize display\n");
+	else						log("Display initialized!\n", LOG_SUCCESS);
 
 	// init usb driver
 	usb_init(); // TODO: maybe make usb driver optional and enabled for testing
-	if (usb_enumerate() < 0) log("USB enumeration did not find a configured root device\n", LOG_WARNING);
+	if (usb_enumerate() < 0)	log("USB enumeration did not find a configured root device\n", LOG_WARNING);
 
 	// parse config file
-	if (parse_config(&config)) panic("Config parsing failed, please check config file\n");
-	else					   log("Config parsed successfully!\n", LOG_SUCCESS);
+	if (parse_config(&config))	panic("Config parsing failed, please check config file\n");
+	else						log("Config parsed successfully!\n", LOG_SUCCESS);
 
 
 	// load spash
@@ -100,9 +99,9 @@ void	kernel_main(void *dtb)
 	
 
 	// load desktop app manifest
-	//log("'%s'\n", 0, config.launcher);
+	log("'%s'\n", 0, config.launcher);
 	char	*manifest = get_app_path_from_package(config.launcher, PACKAGE_MANIFEST);
-	if (manifest && !parse_manifest(manifest, &main_window))
+	if (manifest && !parse_manifest((const char *)manifest, &main_window))
 	{
 		free(manifest);
 		log("Main window created successfully!\n", LOG_SUCCESS);

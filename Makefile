@@ -10,6 +10,7 @@ DEBUG_OUTLINE		= 0
 USE_ADMIN			= 1
 LOGFILE_ENABLED		= 1
 SHOW_IMAGE_STATUS	= 0
+TRACK_MEMORY_USAGE	= 0
 
 ifeq ($(USE_ADMIN), 1)
 	SUDO_EXECUTABLE	= sudo
@@ -46,7 +47,7 @@ ELF					= $(OBJ_DIR)/kernel.elf
 IMG_SIZE			= 128
 
 LD_FLAGS			= -T linker.ld -lgcc -Wl,-e,_start
-C_FLAGS				= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 \
+C_FLAGS				= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 -g3 \
 					  -Iincludes -mcpu=arm1176jzf-s \
 					  -MMD -MD \
 					  -D DEBUG=$(DEBUG) \
@@ -54,7 +55,9 @@ C_FLAGS				= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 \
 					  -D KERNEL_VERSION=\"$(VERSION)\" \
 					  -D KERNEL_VERSION_NAME=\"$(VERSION_NAME)\" \
 					  -D LOGFILE_ENABLED=$(LOGFILE_ENABLED) \
-					  -D SHOW_IMAGE_STATUS=$(SHOW_IMAGE_STATUS)
+					  -D SHOW_IMAGE_STATUS=$(SHOW_IMAGE_STATUS) \
+					  -D TRACK_MEMORY_USAGE=$(TRACK_MEMORY_USAGE)
+
 
 C1=\033[0;38;5;69;49m
 C2=\033[0;38;5;105;49m
@@ -76,7 +79,7 @@ define onoff
 $(if $(filter 1,$(1)),$(COLOR_SUCCESS)ENABLED$(R),$(COLOR_ERROR)DISABLED$(R))
 endef
 
-VARS := DEBUG DEBUG_OUTLINE USE_ADMIN LOGFILE_ENABLED SHOW_IMAGE_STATUS
+VARS := DEBUG DEBUG_OUTLINE USE_ADMIN LOGFILE_ENABLED SHOW_IMAGE_STATUS TRACK_MEMORY_USAGE
 MSG_OUTLINE_COLOR=$(C1)
 MSG_COLOR=$(C3)
 show-config:

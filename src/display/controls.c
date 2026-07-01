@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "libft.h"
 #include "time.h"
+#include "scripting.h"
 
 static void	compute_text_position(int anchor, int box_x, int box_y, int box_w, int box_h, int text_w, int text_h, int *out_x, int *out_y)
 {
@@ -359,14 +360,33 @@ void	draw_window(t_window *window)
 	}
 	if (!window->is_launcher)
 	{
-		draw_text(SCREEN_WIDTH - 15, 5, 10, 10, "X", DISPLAY_COLORS[RED], 0);
+		int cross_x = SCREEN_WIDTH - 15;
+		int cross_y = 5;
+		int cross_s = 10;
+		draw_text(cross_x, cross_y, cross_s, cross_s, "X", DISPLAY_COLORS[RED], 0); // draw exit icon
+		// add close event if not added yet
+		if (window->events[0].type == EVENT_UNDEFINED)
+		{
+			window->events[0].script = init_script(0);
+			if (!window->events[0].script)
+			{
+				panic("Could not allocate the app close cross script\n");
+				return;
+			}
+			window->events[0].type = EVENT_ON_CLICK;
+			window->events[0].script->func = fn_app_exit;
+			window->events[0].script->args = 0;
+			window->events[0].script->next = 0;
+			window->events[0].trigger_corners[0] = (t_point){.x=cross_x, .y=cross_y};
+			window->events[0].trigger_corners[1] = (t_point){.x=cross_x+cross_s, .y=cross_y+cross_s};
+		}
 	}
 }
 
 void	init_control(t_control *control, const char *name, e_control_type type)
 {
 	int	i = 0;
-	memset(control, 0, sizeof(t_control));
+	ft_memset(control, 0, sizeof(t_control));
 	while (name[i] && i < 24)
 	{
 		control->name[i] = ((char *)name)[i];
@@ -375,4 +395,17 @@ void	init_control(t_control *control, const char *name, e_control_type type)
 	control->enabled = 1;
 	control->p_type = type;
 	control->visible = 1;
+}
+
+void	free_controls(t_window	*win)
+{
+	if (!win)
+		return;
+	t_control	*current = win->controls;
+	while (current)
+	{
+		t_control *next = current->p_next;
+		free(current);
+		current = next;
+	}
 }

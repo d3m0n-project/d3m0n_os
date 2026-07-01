@@ -141,6 +141,7 @@ typedef	struct s_window
 
 int				create_window(t_window *out, const char *title, const char *package, int w, int h);
 void			init_control(t_control *control, const char *name, e_control_type type);
+void			free_controls(t_window	*win);
 void			add_control(t_window *to, t_control *control);
 void			draw_window(t_window *window);
 int				exec_event(int control_id, e_event_type type, t_window *window);
@@ -154,6 +155,10 @@ void			set_current_window(t_window *win);
 int				linked_script_add_line(char *line, t_script_chain *script);
 void			exec_script(t_script_chain *script);
 t_script_chain	*init_script(t_script_chain *script);
+void			free_script(t_script_chain *script);
 
+
+/* cleanup */
+void			cleanup_window(t_window *win);
 
 #endif

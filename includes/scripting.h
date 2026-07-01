@@ -19,7 +19,6 @@ typedef struct s_fn_def
 	const char			*name;
 }	t_fn_def;
 
-
 /* io */
 void	fn_log(void **args);
 void	fn_alert(void **args);
