@@ -40,7 +40,7 @@ int	parse_source(const char *path, t_window *win)
 
 	if (!win)
 		return 1;
-	log("Parsing layout file: '%s'\n", LOG_INFO, path);
+	log("Parsing source file: '%s'\n", LOG_INFO, path);
 	fd = open(path, O_READ);
 	if (fd < 0)
 	{

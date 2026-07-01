@@ -83,7 +83,7 @@ typedef struct s_control
 	t_point				location;
 	uint32_t			color;
 	uint32_t			bg_color;
-	struct s_control	*children;
+	struct s_control	*children; // TODO
 
 	// Text, TextBox, Button, CheckBox, RadioButton,
 	// RoundButton, Switch, TextBox

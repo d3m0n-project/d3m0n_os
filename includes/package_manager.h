@@ -12,5 +12,6 @@ typedef enum
 }	e_package_request_type;
 
 char	*get_app_path_from_package(char *package, e_package_request_type type);
+int		load_app_list(void);
 
 #endif

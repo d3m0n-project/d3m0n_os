@@ -40,7 +40,7 @@ int		parse_config(t_conf *config)
 	
 	t_conf_elem	*current = 0;
 	int			i = 0;
-	while (*(char *)(current = &(CONFIG_SCHEMA[i])))
+	while ((current = &CONFIG_SCHEMA[i])->name)
 	{
 		// parse defaults
 		int not_found = 0;
@@ -90,11 +90,10 @@ char	*get_setting(const char *path, const char *key, int	*not_found)
 	char	*line;
 	int		fd;
 
+	*not_found = 0;
 	fd = open(path, O_READ);
 	if (fd < 0)
 		return 0;
-
-	*not_found = 0;
 	while ((line = get_next_line(fd)))
 	{
 		size_t	i;

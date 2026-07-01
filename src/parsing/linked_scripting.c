@@ -8,6 +8,9 @@
 #define SCRIPT_VAR_NAME_MAX	31
 #define IF_STACK_MAX		32
 
+
+t_app	*apps;
+
 typedef enum e_cond_op
 {
 	COND_NONZERO = 0,
@@ -1183,13 +1186,7 @@ static int	eval_call_and_run(t_call_node *call)
 static void	exec_range(t_script_chain *start, t_script_chain *stop)
 {
 	t_script_chain *cur;
-	static const char *apps[][3] = {
-		{"Hello World", "default", "com.4re5.d3m0n.test.helloWorld"},
-		{"Settings", "settings", "com.4re5.d3m0n.system.settings"},
-		{"Contacts", "contacts", "com.4re5.d3m0n.communication.contacts"},
-		{0}
-	};
-
+	
 	cur = start;
 	while (cur && cur != stop)
 	{
@@ -1238,12 +1235,12 @@ static void	exec_range(t_script_chain *start, t_script_chain *stop)
 			}
 			d = (t_for_apps_node *)cur->args[0];
 			i = 0;
-			while (apps[i][0])
+			while (apps[i].name)
 			{
-				var_set_str(d->name_var, apps[i][0]);
-				var_set_str(d->icon_var, apps[i][1]);
+				var_set_str(d->name_var, apps[i].name);
+				var_set_str(d->icon_var, apps[i].icon);
 				if (d->package_var)
-					var_set_str(d->package_var, apps[i][2]);
+					var_set_str(d->package_var, apps[i].package);
 				exec_range(cur->next, end_node);
 				i++;
 			}

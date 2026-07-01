@@ -89,17 +89,20 @@ void	kernel_main(void *dtb)
 	else						log("Config parsed successfully!\n", LOG_SUCCESS);
 
 
+	if (load_app_list())		panic("Failed to load the apps list\n");
+	else						log("Loaded apps successfully!\n", LOG_SUCCESS);
+
 	// load spash
 	BmpTexture	splash;
 	if (bmp_load_image(&splash, "wallpapers/splash.bmp"))
 		log("Could not load splash screen\n", LOG_ERROR);
 	else
 		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &splash);
+
 	usleep(config.splash_time * 1000);
 	
 
 	// load desktop app manifest
-	log("'%s'\n", 0, config.launcher);
 	char	*manifest = get_app_path_from_package(config.launcher, PACKAGE_MANIFEST);
 	if (manifest && !parse_manifest((const char *)manifest, &main_window))
 	{

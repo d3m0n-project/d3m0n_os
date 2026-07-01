@@ -71,6 +71,16 @@ int		file_exists(const char *path)
 	return (file.first_cluster != 0 && !file.is_dir);
 }
 
+int		dir_exists(const char *path)
+{
+	FAT32_File	file;
+
+	if (!path)
+		return (0);
+	file = fat32_open(path);
+	return (file.first_cluster != 0 && file.is_dir);
+}
+
 // TODO: validate paths
 char	*path_add(char *path, char *path2)
 {
@@ -161,14 +171,4 @@ uint32_t	lseek(int fd, int32_t offset, e_seek_directive whence)
 	g_fds[fd].file.pos = new_pos;
 
 	return new_pos;
-}
-
-static void	print_file(const char *name, uint32_t size)
-{
-	log("    %s (%u bytes)\n", LOG_NONE, name, size);
-}
-void	list_dir(const char *path)
-{
-	log("File listing in %s\n", LOG_NONE, path ? path : "/");
-	fat32_list_dir(path, print_file);
 }

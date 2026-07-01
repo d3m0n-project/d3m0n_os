@@ -1,6 +1,15 @@
 #ifndef SCRIPTING_H
 #define SCRIPTING_H
 
+typedef struct s_app
+{
+	char	*name;
+	char	*icon;
+	char	*package;
+}	t_app;
+
+extern t_app	*apps;
+
 #define MAX_ARGS	32
 
 typedef enum {

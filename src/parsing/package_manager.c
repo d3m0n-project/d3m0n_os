@@ -1,6 +1,7 @@
 #include "package_manager.h"
 #include "filesystem.h"
 #include "memory.h"
+#include "scripting.h"
 #include "libft.h"
 
 static	void	cleanup_splitted(char **splitted)
@@ -74,4 +75,25 @@ char *get_app_path_from_package(char *package, e_package_request_type type)
 
 	cleanup_splitted(parts);
 	return (out);
+}
+
+int	load_app_list(void)
+{
+	char	**apps = list_dir_files("/apps");
+	if (!apps)
+	{
+		log("APP LIST: Could not find application directory\n", LOG_ERROR);
+		return 1;
+	}
+	for (int i = 0; apps[i]; i++)
+	{
+		if (apps[i][0] != '.')
+		{
+			log("Found app: '%s'\n", 0, apps[i]);
+		}
+		free(apps[i]);
+	}
+	free(apps);
+	//"Hello World", "default", "com.4re5.d3m0n.test.helloWorld"
+	return 0;
 }
