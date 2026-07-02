@@ -1,14 +1,16 @@
 # d3m0n source
 
 Window.OnCreate =>
-  log("Loading app launcher...", "orange");
   row = 0;
   col = 0;
   for (name, icon, package) in app.list()
   {
     x_pos = 10 + (75 * row);
     y_pos = 30 + (col * 95);
-    template.load("layouts/appview.template", x_pos, y_pos, icon, name, package);
+    if (col < 3)
+    {
+      template.load("layouts/appview.template", x_pos, y_pos, icon, name, package);
+    }
     row++;
     if (row > 2)
     {
