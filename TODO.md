@@ -8,5 +8,10 @@
   - [ ] Deny click in topbar
 
 
+- [ ] Docs
+	- [ ] Usage docs
+		- [ ] Add a how to create an app, provide tools & examples
+		- [ ] Fix all docs & academy
+
 Docs:
 	window events array: `index 0 = close_window` if app is not launcher

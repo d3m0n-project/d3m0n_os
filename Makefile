@@ -35,7 +35,7 @@ D_FILES				= $(O_FILES:.o=.d)
 
 DISK				?= disk.img
 
-VERSION				= 2.0.6
+VERSION				= 2.0.7
 VERSION_NAME		= outset
 
 IMG_ROOT_NAME		= d3m0n_os_$(VERSION_NAME)_$(VERSION).img
@@ -153,6 +153,10 @@ applications:
 	@mkdir -p rootfs/apps/d3m0n/
 	@cp -r applications/* rootfs/apps/d3m0n/
 	@echo "$(COLOR_SUCCESS)[OK] Copied applications list to disk!$(R)"
+
+	@chmod +x build_package_lst.sh
+	@bash build_package_lst.sh rootfs/apps/* # TODO: do for other modules
+	@echo "$(COLOR_SUCCESS)[OK] Generated package.lst!$(R)"
 
 
 disk: applications

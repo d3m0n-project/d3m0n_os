@@ -14,4 +14,6 @@ typedef enum
 char	*get_app_path_from_package(char *package, e_package_request_type type);
 int		load_app_list(void);
 
+void	cleanup_splitted(char **splitted);
+
 #endif

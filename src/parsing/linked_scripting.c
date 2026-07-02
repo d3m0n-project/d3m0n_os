@@ -9,7 +9,7 @@
 #define IF_STACK_MAX		32
 
 
-t_app	*apps;
+t_app	*apps = 0;
 
 typedef enum e_cond_op
 {
@@ -1185,7 +1185,8 @@ static int	eval_call_and_run(t_call_node *call)
 
 static void	exec_range(t_script_chain *start, t_script_chain *stop)
 {
-	t_script_chain *cur;
+	t_script_chain	*cur;
+	t_conf			*conf = get_config();
 	
 	cur = start;
 	while (cur && cur != stop)
@@ -1237,6 +1238,11 @@ static void	exec_range(t_script_chain *start, t_script_chain *stop)
 			i = 0;
 			while (apps[i].name)
 			{
+				if (!ft_strncmp(apps[i].package, conf->launcher, ft_strlen(conf->launcher) + 1))
+				{
+					i++;
+					continue;
+				}
 				var_set_str(d->name_var, apps[i].name);
 				var_set_str(d->icon_var, apps[i].icon);
 				if (d->package_var)

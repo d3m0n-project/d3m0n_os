@@ -18,5 +18,6 @@ typedef struct s_conf
 }	t_conf;
 
 int		parse_config(t_conf *config);
+t_conf	*get_config();
 
 #endif

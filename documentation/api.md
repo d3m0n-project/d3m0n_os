@@ -2,27 +2,15 @@
 
 > ⚠️ A no code application builder is available [here](https://d3m0n-project.github.io/studio/)
 
-First create a main file named `app` and type these lines
+First create a folder in the app directory that follows [this package convention](./package_convention.md), then add a main file inside named `app` and type these lines
 
     name: myapp
-    package: com.myteam.myapp
-    icon: /path/to/icon.png
-    perms: none
-    start_path: /path/to
-    category: mycategory
+    icon: default
 
 ### description
 `name` is your new app name
 
-`package` is your app 'package' (follows [this convention](./package_convention.md))
-
-`icon` is then path to your icon (png) file or a theme icon ([theme-icons](#theme-icons))
-
-`perms` can be equal to `sudo`(admin) or `none`(default)
-
-`start_path` specifiate the directory where your app will be running
-
-`category` is your app category
+`icon` is a theme icon ([theme-icons](#theme-icons))
 
 Then create a main layout file in the directory `layouts` named `main.layout`.
 
@@ -52,34 +40,19 @@ create now a main source file in the directory `src` named `main.src`.
 		alert(myVariable);
 		
 		# write something in the host terminal in orange
-		logn("[o] loaded myApp", "orange");
-		
-		# execute bash command
-		system("echo test");
-		
-		# call a function called "myFunct" with args 'arg1' and 'arg2' in the dll
-		[/path/to/myDll.dll,myNamespace,myclass,myFunct(arg1, arg2)]
-	
+		log("[o] loaded myApp", "orange");
 
 	# on app quit
-	Window.OnDestroy => 
- 		# display text into the host shell
-   		# from bash command
-		system("echo 'd3m0n path:         $d3m0n'");
-		system("echo 'app source path:    $source'");
-		system("echo 'app layouts path:   $layouts'");
-  
+	Window.OnDestroy =>   
   		# from internal command
-  		console.logn("app ressource path: $ressource", "red");
+  		log("app closed", "red");
 		
 
 
-	Element.OnClick => exec="python $source/main.py" 
+	Element.OnClick =>
+		alert("Clicked Element", "red");
 	
-this file will be executed in the same time that your layout one
-
-
-Finnally export your app by calling the script `app_builder.sh`
+this file will be executed in the same time that your layout and the events will be registered
 
 ## Controls
 In your d3m0n layout file, you can use multiple controls.

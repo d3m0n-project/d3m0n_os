@@ -16,6 +16,5 @@
 #endif
 
 void	panic(const char *message);
-t_conf	*get_config();
 
 #endif

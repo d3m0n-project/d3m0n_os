@@ -3,8 +3,10 @@
 #include "memory.h"
 #include "scripting.h"
 #include "libft.h"
+#include "get_next_line.h"
+#include "settings.h"
 
-static	void	cleanup_splitted(char **splitted)
+void	cleanup_splitted(char **splitted)
 {
 	if (!splitted)
 		return;
@@ -77,23 +79,140 @@ char *get_app_path_from_package(char *package, e_package_request_type type)
 	return (out);
 }
 
+
 int	load_app_list(void)
 {
-	char	**apps_dir = list_dir_files("/apps");
-	if (!apps_dir)
+	char **modules_list = list_dir_files("/apps");
+	if (!modules_list)
 	{
 		log("APP LIST: Could not find application directory\n", LOG_ERROR);
 		return 1;
 	}
-	for (int i = 0; apps_dir[i]; i++)
+
+	if (apps)
 	{
-		if (apps_dir[i][0] != '.')
+		for (int i = 0; apps[i].name; i++)
 		{
-			log("Found app: '%s'\n", 0, apps_dir[i]);
+			free(apps[i].name);
+			free(apps[i].icon);
+			free(apps[i].package);
 		}
-		free(apps_dir[i]);
+		free(apps);
+		apps = 0;
 	}
-	free(apps_dir);
-	//"Hello World", "default", "com.4re5.d3m0n.test.helloWorld"
+
+	int total_n_apps = 0;
+	// count apps
+	for (int i = 0; modules_list[i]; i++)
+	{
+		if (modules_list[i][0] == '.')
+			continue;
+		char	*module_path = path_add("/apps/", modules_list[i]);
+		if (!module_path)
+			continue;		
+
+		char *package_lst = path_add(module_path, "/packages.lst");
+		if (!package_lst)
+		{
+			free(module_path);
+			continue;
+		}
+
+		int fd = open(package_lst, O_READ);
+		if (fd < 0)
+		{
+			log("Could not open package.lst for module %s\n", LOG_ERROR | LOG_INDENT, package_lst);
+			free(module_path);
+			continue;
+		}
+		free(package_lst);
+
+		char *line;
+		while ((line = get_next_line(fd)))
+		{
+			if (line[0] != '#' && line[0] != '\n' && line[0] != '\0')
+				total_n_apps++;
+			free(line);
+		}
+		close(fd);
+	}
+	log(" --- Found %i total apps ---\n", LOG_INFO, total_n_apps);
+
+	apps = ft_calloc(total_n_apps + 1, sizeof(t_app));
+	if (!apps)
+	{
+		cleanup_splitted(modules_list);
+		return 1;
+	}
+
+	// load apps
+	int app_index = 0;
+	for (int i = 0; modules_list[i]; i++)
+	{
+		if (modules_list[i][0] == '.')
+			continue;
+
+		char	*module_path = path_add("/apps/", modules_list[i]);
+		if (!module_path)
+			continue;		
+
+		char *package_lst = path_add(module_path, "/packages.lst");
+		if (!package_lst)
+		{
+			free(module_path);
+			continue;
+		}
+
+		int fd = open(package_lst, O_READ);
+		if (fd < 0)
+		{
+			log("Could not open package.lst for module %s\n", LOG_ERROR | LOG_INDENT, package_lst);
+			free(module_path);
+			continue;
+		}
+		free(package_lst);
+
+		char *line;
+		while ((line = get_next_line(fd)))
+		{
+			if (line[0] == '#' || line[0] == '\n' || line[0] == '\0')
+			{
+				free(line);
+				continue;
+			}
+
+			line[ft_strcspn(line, "\r\n")] = '\0';
+
+			// /apps/module/<relative path>
+			char *manifest = path_add(module_path, line);
+
+			int mfd = open(manifest, O_READ);
+			if (mfd >= 0)
+			{
+				char *mline;
+				while ((mline = get_next_line(mfd)))
+				{
+					mline[ft_strcspn(mline, "\r\n")] = '\0';
+
+					if (!ft_strncmp(mline, "name: ", 6))
+						apps[app_index].name = ft_strdup(mline + 6);
+					else if (!ft_strncmp(mline, "icon: ", 6))
+						apps[app_index].icon = ft_strdup(mline + 6);
+					else if (!ft_strncmp(mline, "package: ", 9))
+						apps[app_index].package = ft_strdup(mline + 9); // TODO: build package from provider and path
+					free(mline);
+				}
+				close(mfd);
+			} else
+				log("Could not find manifest at %s\n", LOG_ERROR | LOG_INDENT, manifest);
+			free(manifest);
+			app_index++;
+			free(line);
+		}
+		free(module_path);
+		close(fd);
+	}
+
+	cleanup_splitted(modules_list);
 	return 0;
 }

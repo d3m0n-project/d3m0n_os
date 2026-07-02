@@ -1,6 +1,2 @@
 name: Files
-package: com.4re5.d3m0n.mysc.files
-icon: files
-perms: none
-start_path: /path/to
-category: mysc
+icon: folder
