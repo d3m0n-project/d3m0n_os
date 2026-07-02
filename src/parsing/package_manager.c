@@ -80,6 +80,106 @@ char *get_app_path_from_package(char *package, e_package_request_type type)
 }
 
 
+char	*get_package_from_manifest_path(char *path)
+{
+	//lower the path str
+	for (int i=0; path[i]; i++)
+		path[i] = ft_tolower(path[i]);
+
+
+	if (ft_strncmp(path, "/apps/", 6) != 0)
+		return 0;
+
+	char	**splitted = ft_split(path, '/');
+	int		module_name_idx = 1; // ['apps', 'module_name', ...]
+	if (!splitted)
+	{
+		log("GET_PKG_FROM_PATH: Could not allocate splitted path array\n", LOG_ERROR | LOG_INDENT);
+		return 0;
+	}
+	if (!splitted[0] || !splitted[module_name_idx]) // if not module name
+	{
+		cleanup_splitted(splitted);
+		return 0;
+	}
+
+	char	*module_path = path_add("/apps/", splitted[module_name_idx]);
+	char	*provider_path = path_add(module_path, "/provider");
+	if (!module_path || !provider_path)
+	{
+		if (module_path)
+			free(module_path);
+		else
+			free(provider_path);
+	}
+	// check that the module is valid
+	if (!file_exists(provider_path))
+	{
+		log("Could not find provider path at %s\n", LOG_ERROR | LOG_INDENT, provider_path);
+		free(module_path);
+		free(provider_path);
+		cleanup_splitted(splitted);
+		return 0;
+	}
+	int fd = open(provider_path, O_READ);
+	if (fd < 0)
+	{
+		free(module_path);
+		free(provider_path);
+		cleanup_splitted(splitted);
+		log("GET_PKG_FROM_PATH: Could not find provider file at %s\n", LOG_ERROR | LOG_INDENT, provider_path);
+		return 0;
+	}
+
+	// read the first 16 chars of file
+	char provider_name[17] = {0};
+	if (read(fd, provider_name, 16) == (uint32_t)-1)
+	{
+		log("Could not read provider for module %s\n", LOG_ERROR | LOG_INDENT, module_path);
+		close(fd);
+		free(module_path);
+		free(provider_path);
+		cleanup_splitted(splitted);
+		return 0;
+	}
+	close(fd);
+	// verify it is alphanumeric
+	for (int i=0; provider_name[i]; i++)
+	{
+		if (!ft_isalnum(provider_name[i]))
+		{
+			log("Provider name need to contain only alphanumerical characters, got '%s'\n", LOG_ERROR | LOG_INDENT, provider_name);
+			free(module_path);
+			free(provider_path);
+			cleanup_splitted(splitted);
+			return 0;
+		}
+	}
+
+
+	// /apps/d3m0n/system/settings/source/app => com.4re5.d3m0n.system.settings
+	// com.[].=5   +   sizeof provider  +  (path-17) + '\0'
+	int final_len = 5 + ft_strlen(path) - 17 + ft_strlen(provider_name) + 1;
+	char *package = ft_calloc(final_len, sizeof(char));
+	if (package)
+	{
+		ft_strlcpy(package, "com.", final_len);
+		ft_strlcat(package, provider_name, final_len);
+		
+		for (int i=module_name_idx; splitted[i]; i++)
+		{
+			ft_strlcat(package, ".", final_len);
+			ft_strlcat(package, splitted[i], final_len);
+		}
+	}
+
+	free(module_path);
+	free(provider_path);
+	cleanup_splitted(splitted);
+	return package;
+}
+
+
 int	load_app_list(void)
 {
 	char **modules_list = list_dir_files("/apps");
@@ -136,7 +236,7 @@ int	load_app_list(void)
 		}
 		close(fd);
 	}
-	log(" --- Found %i total apps ---\n", LOG_INFO, total_n_apps);
+	log("Found %i total apps\n", LOG_INFO, total_n_apps);
 
 	apps = ft_calloc(total_n_apps + 1, sizeof(t_app));
 	if (!apps)
@@ -189,6 +289,12 @@ int	load_app_list(void)
 			int mfd = open(manifest, O_READ);
 			if (mfd >= 0)
 			{
+				apps[app_index].package = get_package_from_manifest_path(manifest);
+				if (!apps[app_index].package) {
+					log("Could not resolve package for app at %s\n", LOG_ERROR, manifest);
+					close(mfd);
+					continue;
+				}
 				char *mline;
 				while ((mline = get_next_line(mfd)))
 				{
@@ -198,8 +304,8 @@ int	load_app_list(void)
 						apps[app_index].name = ft_strdup(mline + 6);
 					else if (!ft_strncmp(mline, "icon: ", 6))
 						apps[app_index].icon = ft_strdup(mline + 6);
-					else if (!ft_strncmp(mline, "package: ", 9))
-						apps[app_index].package = ft_strdup(mline + 9); // TODO: build package from provider and path
+					else
+						log("Invalid line in package manifest: '%s' in %s\n", LOG_ERROR, mline, manifest);
 					free(mline);
 				}
 				close(mfd);

@@ -5,7 +5,7 @@ App packages are formated as follow:
 
 example: `com.4re5.d3m0n.system.desktop` (located in `/apps/d3m0n/system/desktop`)
 
-Note that provider name is stored inside of the module_name's folder.
+Note that provider name is stored inside of the module_name's folder. The provider name is a string of a maximum of 16 alphanumeric characters.
 
 ---
 
@@ -15,11 +15,12 @@ Note that provider name is stored inside of the module_name's folder.
 ├─ module1/                  (module name)
 │  ├─ category/              (category inside of module)
 │  │  ├─ app1/               (app folder)
-│  │  │  ├─ layouts/
-│  │  │  │  ├─ main.layout
-│  │  │  ├─ src/
-│  │  │  │  ├─ main.src
-│  │  │  ├─ app              (app manifest)
+│  │  │  ├─ source/          (app source path, required)
+│  │  │  │  ├─ layouts/
+│  │  │  │  │  ├─ main.layout
+│  │  │  │  ├─ src/
+│  │  │  │  │  ├─ main.src
+│  │  │  │  ├─ app           (app manifest)
 │  │  ├─ app2/
 │  ├─ provider               (contains the provider name)
 ├─ module2/

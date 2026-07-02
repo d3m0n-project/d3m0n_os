@@ -1,5 +1,5 @@
 #include "parsing.h"
-#include "get_next_line.h"
+#include "package_manager.h"
 
 int	parse_manifest(const char *path, t_window *win)
 {
@@ -10,14 +10,21 @@ int	parse_manifest(const char *path, t_window *win)
 		log("MANIFEST: Could not find key 'name' in app manifest %s\n", LOG_ERROR, path);
 		return 1;
 	}
-	//int fd = open("")
-	char	*package = "com.4re5.d3m0n.system.launcher";//get_next_line(fd); // TODO: Do dynamic package
+	char	*package = get_package_from_manifest_path((char *)path);
+	if (!package)
+	{
+		log("MANIFEST: Could not fetch package for manifest '%s'\n", LOG_ERROR | LOG_INDENT, path);
+		free(title);
+		return 1;
+	}
 	if (create_window(win, (const char *)title, (const char *)package, SCREEN_WIDTH, SCREEN_HEIGHT)) // TODO: parse width and height from layout
 	{
 		free(title);
+		free(package);
 		log("MANIFEST: Could not create Window from manifest %s\n", LOG_ERROR, path);
 		return 1;
 	}
+	free(package);
 	free(title);
 	return 0;
 }
