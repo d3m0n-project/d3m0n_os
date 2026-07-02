@@ -15,7 +15,7 @@ typedef enum
 	LOG_INDENT=16
 }	e_logtype;
 
-extern const char *UART_COLORS[16];
+extern const char *UART_COLORS[17];
 
 void	log(const char *fmt, e_logtype type, ...);
 void	log_cleanup(void);

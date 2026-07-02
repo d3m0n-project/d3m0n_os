@@ -10,7 +10,7 @@
 uint32_t	lp_parse_color(char *str);
 int			parse_layout(const char *path, t_window *win, char **replacements, int offset_x, int offset_y);
 
-int			parse_source(const char *path, t_window *win);
+int			parse_source(const char *path, t_window *win, char **replacements);
 
 int			parse_manifest(const char *path, t_window *win);
 

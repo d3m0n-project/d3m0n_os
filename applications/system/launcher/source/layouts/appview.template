@@ -1,9 +1,11 @@
 # d3m0n layout template
 
 Rect:
+	name="$3";
 	location="0, 0";
 	width="65px";
 	height="85px";
+	bg_color="transparent";
 
 Image:
 	src="/themes/default_dark/icons/$0.bmp";

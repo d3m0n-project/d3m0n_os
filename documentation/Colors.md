@@ -1,7 +1,8 @@
 # d3m0n layout colors
 
-d3m0n layout only have **16** colors but you can add custom ones by using **rgb colors**
+d3m0n layout only have **17** colors but you can add custom ones by using **rgb colors**
 
+- ![transparent](https://placehold.co/15x15/black/transparent.png) `transparent`
 - ![black](https://placehold.co/15x15/black/black.png) `black`
 - ![dark_red](https://placehold.co/15x15/darkred/darkred.png) `dark_red`
 - ![red](https://placehold.co/15x15/red/red.png) `red`

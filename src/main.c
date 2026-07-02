@@ -23,7 +23,7 @@ t_conf	*get_config()
 
 void	show_kernel_status()
 {
-	log("KERNEL_VERSION:		 %s\n", LOG_INFO| LOG_INDENT, KERNEL_VERSION);	
+	log("KERNEL_VERSION:		%s\n", LOG_INFO| LOG_INDENT, KERNEL_VERSION);	
 	log("KERNEL_VERSION_NAME:	%s\n", LOG_INFO | LOG_INDENT, KERNEL_VERSION_NAME);
 }
 
@@ -116,16 +116,6 @@ void	kernel_main(void *dtb)
 
 	main_window.bg_color = DISPLAY_COLORS[GREY]; // TODO: parse color of window when parsing
 
-
-	t_script_chain	script;
-	init_script(&script);
-	linked_script_add_line("app.open(\"com.4re5.d3m0n.system.settings\");", &script); // TODO: dynamic event from script file/layout
-	main_window.events[0].type = EVENT_ON_CLICK;
-	main_window.events[0].script = &script;
-	main_window.events[0].trigger_corners[0] = (t_point){.x=10, .y=30};
-	main_window.events[0].trigger_corners[1] = (t_point){.x=75, .y=95};
-
-
 	char *main_layout = get_app_path_from_package(config.launcher, PACKAGE_MAIN_LAYOUT);
 	if (main_layout && !parse_layout(main_layout, &main_window, 0, 0, 0))
 	{
@@ -139,7 +129,7 @@ void	kernel_main(void *dtb)
 
 
 	char *main_source = get_app_path_from_package(config.launcher, PACKAGE_MAIN_SOURCE);
-	if (!parse_source(main_source, &main_window))
+	if (!parse_source(main_source, &main_window, 0))
 	{
 		free(main_source);
 		log("Parsed source file successfully!\n", LOG_SUCCESS);

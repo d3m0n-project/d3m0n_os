@@ -1,0 +1,2 @@
+$3.OnClick =>
+	app.open("$2");

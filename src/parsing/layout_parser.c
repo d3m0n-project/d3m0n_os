@@ -95,6 +95,8 @@ uint32_t	lp_parse_color(char *str)
 		}
 		return (uint32_t)r;
 	}
+	if (!ft_strcmp(str, "transparent"))
+		return DISPLAY_COLORS[TRANSPARENT];
 	if (!ft_strcmp(str, "white"))
 		return DISPLAY_COLORS[WHITE];
 	if (!ft_strcmp(str, "black"))
@@ -576,37 +578,6 @@ static int	lp_apply_control_attr(t_control *control, t_window *win, char *key, c
 			return 0;
 		ft_strlcpy(control->image, value, len);
 		return 1;
-	}
-	else if (!ft_strcmp(key, "on_click"))
-	{
-		t_script_chain	*script = init_script(0);
-		if (!script)
-		{
-			log("Could not allocate script for event %s\n", LOG_ERROR, key);
-			return 0;
-		}
-		if (linked_script_add_line(value, script))
-		{
-			log("Invalid script given for event %s: '%s'\n", LOG_ERROR, key, value);
-			return 0;
-		}
-		for (int i=1; i<MAX_WINDOW_EVENTS; i++)
-		{
-			if (win->events[i].type == EVENT_UNDEFINED)
-			{
-				win->events[i].type = EVENT_ON_CLICK;
-				win->events[i].affected_control_id = 0; // TODO:
-				win->events[i].script = script;
-
-				win->events[i].trigger_corners[0] = control->location;
-				win->events[i].trigger_corners[1] = control->location;
-				win->events[i].trigger_corners[1].x += control->width;
-				win->events[i].trigger_corners[1].y += control->height;
-				return 1;
-			}
-		}
-		return 0;
-		
 	}
 	return 0;
 }

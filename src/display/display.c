@@ -10,11 +10,13 @@ static volatile uint32_t	g_framebuffer_mbox[35]  __attribute__((aligned(16)));
 
 static t_font				main_font;
 
-uint32_t	DISPLAY_COLORS[16] = { 0x00000000, 0x000000bf, 0x000000ff, 0x00007fff, 0x0000ffff, 0x0000bf00, 0x0000ff00, 0x00bf5f00, 0x00ff0000, 0x00bfbf00, 0x00ffff00, 0x00bf00bf, 0x00ff00ff, 0x00191919, 0x007f7f7f, 0x00ffffff};
+uint32_t	DISPLAY_COLORS[17] = { 0xff000000, 0x00000000, 0x000000bf, 0x000000ff, 0x00007fff, 0x0000ffff, 0x0000bf00, 0x0000ff00, 0x00bf5f00, 0x00ff0000, 0x00bfbf00, 0x00ffff00, 0x00bf00bf, 0x00ff00ff, 0x00191919, 0x007f7f7f, 0x00ffffff};
 
 void	put_pixel(int x, int y, uint32_t color)
 {
 	if (x < 0 || (uint32_t)x >= SCREEN_WIDTH || y < 0 || (uint32_t)y >= SCREEN_HEIGHT)
+		return;
+	if (color == 0xff000000) // TODO: real transparency
 		return;
 	#if DEBUG == 1
 	volatile uint32_t *fb = (volatile uint32_t *)(uintptr_t)fb_req.fb_addr;

@@ -3,13 +3,14 @@
 Window.OnCreate =>
   row = 0;
   col = 0;
+  i = 0;
   for (name, icon, package) in app.list()
   {
     x_pos = 10 + (75 * row);
     y_pos = 30 + (col * 95);
     if (col < 3)
     {
-      template.load("layouts/appview.template", x_pos, y_pos, icon, name, package);
+      template.load("layouts/appview.template", x_pos, y_pos, icon, name, package, i);
     }
     row++;
     if (row > 2)
@@ -17,4 +18,5 @@ Window.OnCreate =>
       row = 0;
       col++;
     }
+    i++;
   }

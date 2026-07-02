@@ -15,7 +15,7 @@ Rect:
 Image:
     name="gallery";
     src="gallery";
-    location="bottom-left";
+    location="bottom_left";
     width="9%";
     height="9%";
     margin_bottom="1%";
@@ -23,7 +23,7 @@ Image:
 
 Image:
     name="shoot";
-    src="circle";
+    src="../resources/circle.bmp";
     location="bottom";
     width="9%";
     height="9%";

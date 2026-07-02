@@ -23,7 +23,7 @@ typedef struct s_font
 	uint8_t	*data;
 }	t_font;
 
-extern uint32_t			DISPLAY_COLORS[16];
+extern uint32_t			DISPLAY_COLORS[17];
 
 int			display_init();
 uint32_t	get_pixel(int x, int y);

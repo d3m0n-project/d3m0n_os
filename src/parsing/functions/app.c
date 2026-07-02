@@ -63,7 +63,7 @@ void	fn_app_open(void **args)
 		log("APP.OPEN: Could not parse layout for package: '%s'\n", LOG_ERROR | LOG_INDENT ,package);
 		return;
 	}
-	if (parse_source(src_path, &opened_window))
+	if (parse_source(src_path, &opened_window, 0))
 	{
 		log("APP.OPEN: Could not parse layout for package: '%s'\n", LOG_ERROR | LOG_INDENT ,package);
 		return;

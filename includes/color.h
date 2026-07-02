@@ -5,6 +5,7 @@
 
 typedef enum
 {
+	TRANSPARENT,
 	BLACK,
 	DARK_RED,
 	RED,
