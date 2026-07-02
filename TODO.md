@@ -7,6 +7,9 @@
 - [x] Handle clicks
   - [ ] Deny click in topbar
 
+- [ ] Fix ui system
+ - [ ] Locations need to be ptr so if a position changes the click changes too...
+
 
 - [ ] Docs
 	- [ ] Usage docs

@@ -62,7 +62,6 @@ In your d3m0n layout file, you can use multiple controls.
  - [ProgressBar](ProgressBar.md)
  - [CheckBox](CheckBox.md)
  - [RadioButton](RadioButton.md)
- - [RawHtml (⚠️ don't work)](RawHtml.md)
  - [WebView (⚠️ don't work)](WebView.md)
  - [Rect](Rect.md)
  - [Switch](Switch.md)

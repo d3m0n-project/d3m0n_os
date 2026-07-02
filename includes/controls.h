@@ -161,4 +161,5 @@ void			free_script(t_script_chain *script);
 /* cleanup */
 void			cleanup_window(t_window *win);
 
+
 #endif

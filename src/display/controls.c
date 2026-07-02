@@ -5,108 +5,7 @@
 #include "libft.h"
 #include "time.h"
 #include "scripting.h"
-
-static void	compute_text_position(int anchor, int box_x, int box_y, int box_w, int box_h, int text_w, int text_h, int *out_x, int *out_y)
-{
-	int tx = box_x;
-	int ty = box_y;
-	if (anchor & ANCHOR_LEFT)
-		tx = box_x;
-	else if (anchor & ANCHOR_RIGHT)
-		tx = box_x + box_w - text_w;
-	else
-		tx = box_x + (box_w - text_w) / 2;
-
-	if (anchor & ANCHOR_TOP)
-		ty = box_y;
-	else if (anchor & ANCHOR_BOTTOM)
-		ty = box_y + box_h - text_h;
-	else
-		ty = box_y + (box_h - text_h) / 2;
-
-	if (tx < box_x) tx = box_x;
-	if (ty < box_y) ty = box_y;
-	*out_x = tx;
-	*out_y = ty;
-}
-
-static void	compute_inner_rect(const t_control *control, int *out_x, int *out_y, int *out_w, int *out_h)
-{
-	int x = control->location.x + control->margin_left;
-	int y = control->location.y + control->margin_top;
-	int w = control->width - control->margin_left - control->margin_right;
-	int h = control->height - control->margin_top - control->margin_bottom;
-	if (w < 0) w = 0;
-	if (h < 0) h = 0;
-	*out_x = x;
-	*out_y = y;
-	*out_w = w;
-	*out_h = h;
-}
-
-static void	control_text_metrics(const char *text, int *out_max_len, int *out_lines)
-{
-	int i = 0;
-	int cur = 0;
-	int max = 0;
-	int lines = 1;
-
-	if (!text)
-	{
-		if (out_max_len) *out_max_len = 0;
-		if (out_lines) *out_lines = 0;
-		return;
-	}
-	while (text[i])
-	{
-		if (text[i] == '\n')
-		{
-			if (cur > max) max = cur;
-			cur = 0;
-			lines++;
-		}
-		else
-			cur++;
-		i++;
-	}
-	if (cur > max) max = cur;
-	if (out_max_len) *out_max_len = max;
-	if (out_lines) *out_lines = lines;
-}
-
-static int	control_text_auto_font_size(const t_control *control)
-{
-	int	len;
-	int	from_width;
-	int	from_height;
-	int	size;
-	int	lines;
-
-	if (!control)
-		return (8);
-	if (control->font_size > 0)
-		return (control->font_size);
-	len = 0;
-	lines = 0;
-	control_text_metrics(control->content, &len, &lines);
-	from_width = 0;
-	from_height = 0;
-	if (control->width > 0 && len > 0)
-		from_width = control->width / len;
-	if (control->height > 0)
-		from_height = control->height / 2;
-	if (from_width > 0 && from_height > 0)
-		size = (from_width < from_height) ? from_width : from_height;
-	else if (from_width > 0)
-		size = from_width;
-	else if (from_height > 0)
-		size = from_height;
-	else
-		size = 8;
-	if (size < 1)
-		size = 1;
-	return (size);
-}
+#include "controls_graphics.h"
 
 int	create_window(t_window *out, const char *title, const char *package, int w, int h)
 {
@@ -156,43 +55,6 @@ int	create_window(t_window *out, const char *title, const char *package, int w, 
 	return 0;
 }
 
-void	handle_click(int x, int y, int button, t_window *window)
-{
-	if (button == 1) // left click
-	{
-		int	i=-1;
-		while (++i < MAX_WINDOW_EVENTS)
-		{
-			t_point top_left = window->events[i].trigger_corners[0];
-			t_point bottom_right = window->events[i].trigger_corners[1];
-			if (window->events[i].type == EVENT_ON_CLICK)
-			{
-				if (x < top_left.x || x > bottom_right.x)
-					continue;
-				if (y < top_left.y || y > bottom_right.y)
-					continue;
-				exec_script(window->events[i].script);
-				return;
-			}
-		}
-	}
-}
-
-int		exec_event(int control_id, e_event_type type, t_window *window)
-{
-	int	i=0;
-	while (i < MAX_WINDOW_EVENTS)
-	{
-		if (window->events[i].type == type && control_id == window->events[i].affected_control_id)
-		{
-			exec_script(window->events[i].script);
-			return 0;
-		}
-		i++;
-	}
-	return 1;
-}
-
 void	add_control(t_window *to, t_control *control)
 {
 	t_control	*current = to->controls;
@@ -214,107 +76,27 @@ void	add_control(t_window *to, t_control *control)
 
 void	draw_control(t_control *control)
 {
-	int	font_size;
-
 	if (control->visible == 0)
 		return;
 	switch (control->p_type)
 	{
-	case CONTROL_RECT:
-		draw_rect(control->location.x, control->location.y, control->width, control->height, control->bg_color);
-		break;
-	case CONTROL_TEXT:
-		{
-			int inner_x, inner_y, inner_w, inner_h;
-			int char_w, char_h, text_w, text_h;
-			int draw_x, draw_y;
-			int maxlen = 0;
-			int lines = 0;
-			font_size = control_text_auto_font_size(control);
-			char_w = font_size;
-			char_h = font_size * 2;
-			compute_inner_rect(control, &inner_x, &inner_y, &inner_w, &inner_h);
-			control_text_metrics(control->content, &maxlen, &lines);
-			text_w = char_w * maxlen;
-			text_h = char_h * (lines > 0 ? lines : 1);
-			if (control->bg_color)
-				draw_rect(inner_x, inner_y, inner_w, inner_h, control->bg_color);
-			compute_text_position(control->text_align, inner_x, inner_y, inner_w, inner_h, text_w, text_h, &draw_x, &draw_y);
-			draw_text(draw_x, draw_y, char_w, char_h, control->content, control->color, 0);
-		}
-		break;
-
-	case CONTROL_BUTTON:
-		{
-			int inner_x, inner_y, inner_w, inner_h;
-			int char_w, char_h, text_w, text_h;
-			int draw_x, draw_y;
-			font_size = control_text_auto_font_size(control);
-			char_w = font_size;
-			char_h = font_size * 2;
-			compute_inner_rect(control, &inner_x, &inner_y, &inner_w, &inner_h);
-			// background
-			if (control->bg_color)
-				draw_rect(inner_x, inner_y, inner_w, inner_h, control->bg_color);
-			// image (optional)
-			if (control->image[0])
-			{
-				BmpTexture texture;
-				if (bmp_load_image(&texture, control->image) == 0 && texture.pixels)
-				{
-					int dst_w = inner_w;
-					int dst_h = inner_h;
-					int dst_x = inner_x;
-					int dst_y = inner_y;
-					if (control->mode == 2) // AUTO_SIZE
-					{
-						dst_w = texture.width;
-						dst_h = texture.height;
-					}
-					else if (control->mode == 1) // ZOOM
-					{
-						float sx = (float)inner_w / (float)texture.width;
-						float sy = (float)inner_h / (float)texture.height;
-						float s = (sx < sy) ? sx : sy;
-						dst_w = (int)(texture.width * s);
-						dst_h = (int)(texture.height * s);
-						dst_x = inner_x + (inner_w - dst_w) / 2;
-						dst_y = inner_y + (inner_h - dst_h) / 2;
-					}
-					else if (control->mode == 3) // CENTER
-					{
-						dst_w = texture.width;
-						dst_h = texture.height;
-						dst_x = inner_x + (inner_w - dst_w) / 2;
-						dst_y = inner_y + (inner_h - dst_h) / 2;
-					}
-					draw_bmp(dst_x, dst_y, dst_w, dst_h, &texture);
-					free_bmp_texture(&texture);
-				}
-			}
-			// text
-			control_text_metrics(control->content, &text_w, &text_h);
-			// control_text_metrics returns char counts; convert to pixels
-			text_w = char_w * text_w;
-			text_h = char_h * (text_h > 0 ? text_h : 1);
-			compute_text_position(control->text_align, inner_x, inner_y, inner_w, inner_h, text_w, text_h, &draw_x, &draw_y);
-			draw_text(draw_x, draw_y, char_w, char_h, control->content, control->color, 0);
-		}
-		break;
-	case CONTROL_IMAGE:
-		;
-		BmpTexture	texture;
-		if (bmp_load_image(&texture, control->image))
-		{
-			log("Could not load image '%s' for control '%s'\n", LOG_ERROR | LOG_INDENT, control->image, control->name);
-			return;
-		}
-		draw_bmp(control->location.x, control->location.y, control->width, control->height, &texture);
-		free_bmp_texture(&texture);
-		break;
-	default:
-		log("Unknown control type: id=%i\n", LOG_WARNING, control->p_type);
-		break;
+		case CONTROL_TEXTBOX:		ctrl_draw_textbox(control);		break;
+		case CONTROL_LISTVIEW:		ctrl_draw_listview(control);	break;
+		case CONTROL_PROGRESSBAR:	ctrl_draw_progressbar(control);	break;
+		case CONTROL_CHECKBOX:		ctrl_draw_checkbox(control);	break;
+		case CONTROL_RADIOBUTTON:	ctrl_draw_radiobutton(control);	break;
+		case CONTROL_WEBVIEW:		ctrl_draw_webview(control);		break;
+		case CONTROL_RECT:			ctrl_draw_rect(control);		break;
+		case CONTROL_SWITCH:		ctrl_draw_switch(control);		break;
+		case CONTROL_TEXT:			ctrl_draw_text(control);		break;
+		case CONTROL_IMAGE:			ctrl_draw_image(control);		break;
+		case CONTROL_ROUNDBUTTON:	ctrl_draw_roundbutton(control);	break;
+		case CONTROL_BUTTON:		ctrl_draw_button(control);		break;
+		case CONTROL_HSCROLL:		ctrl_draw_hscroll(control);		break;
+		case CONTROL_VSCROLL:		ctrl_draw_vscroll(control);		break;
+		default:
+			log("Unknown control type: id=%i\n", LOG_WARNING, control->p_type);
+			break;
 	}
 	#if DEBUG_OUTLINE == 1
 		draw_rect_outline(control->location.x, control->location.y, control->width, control->height, OUTLINE_COLOR);
