@@ -218,8 +218,9 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 				panic("Could not access the control pointer\n");
 			else if (current_control_id != 0)
 			{
-				win->events[event_id].trigger_corners[0] = ctrl->location;
-				win->events[event_id].trigger_corners[1] = ctrl->location;
+				t_point	pos = {.x=ctrl->location.x, .y=ctrl->location.y + (win->top_bar?20:0)};
+				win->events[event_id].trigger_corners[0] = pos;
+				win->events[event_id].trigger_corners[1] = pos;
 				win->events[event_id].trigger_corners[1].x += ctrl->width;
 				win->events[event_id].trigger_corners[1].y += ctrl->height;
 			}

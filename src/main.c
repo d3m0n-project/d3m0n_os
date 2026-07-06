@@ -67,18 +67,18 @@ void	kernel_main(void *dtb)
 
 	list_dir("/");
 
-	//spi_init(10000);
-	//char	*text = "Hello World!\n";
-	//while (1)
-	//{
-	//	spi_write_buffer(text, 13);
-	//	uart_print(text);
-	//	sleep(1);
-	//}
-
 	// init framebuffer
 	if (display_init())			panic("Could not initialize display\n");
 	else						log("Display initialized!\n", LOG_SUCCESS);
+
+	//gpio_digitalWrite(PIN_RST, 0);
+	//usleep(200000);
+	//gpio_digitalWrite(PIN_RST, 1);
+	//usleep(200000);
+
+	put_pixel(10, 10, DISPLAY_COLORS[RED]);
+
+	panic("STOPPED\n");
 
 	// init usb driver
 	usb_init(); // TODO: maybe make usb driver optional and enabled for testing

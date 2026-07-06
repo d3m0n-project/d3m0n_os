@@ -7,7 +7,7 @@ Window.OnCreate =>
   for (name, icon, package) in app.list()
   {
     x_pos = 10 + (75 * row);
-    y_pos = 30 + (col * 95);
+    y_pos = 10 + (col * 95);
     if (col < 3)
     {
       template.load("layouts/appview.template", x_pos, y_pos, icon, name, package, i);

@@ -107,17 +107,23 @@ void	draw_window(t_window *window)
 {
 	t_control	*current = window->controls;
 	t_conf		*conf = get_config();
+	int			topbar_height = 20;
 
 	draw_rect(0, 0, window->width, window->height, window->bg_color);
 	while (current)
 	{
+		// move the origin of the canvas to lower for the topbar
+		if (window->top_bar)
+			current->location.y += topbar_height;
 		draw_control(current);
+		if (window->top_bar)
+			current->location.y -= topbar_height;
 		// TODO: children
 		current = current->p_next;
 	}
 	if (window->top_bar)
 	{
-		draw_rect(0, 0, window->width, 20, DISPLAY_COLORS[WHITE]);
+		draw_rect(0, 0, window->width, topbar_height, DISPLAY_COLORS[WHITE]);
 
 		size_t	time = (time_us() % (1000 * 60 * 24 * 1000)) / (1000*1000*60); // minute of the day
 		int		hours = time / 60;
@@ -139,6 +145,8 @@ void	draw_window(t_window *window)
 		clock[4] = '0' + minutes % 10;
 
 		draw_text(2, 2, 8, 16, clock, DISPLAY_COLORS[MAGENTA], 0); // TODO: change topbar
+		if (!window->is_launcher)
+			draw_text(66, 2, 8, 16, window->title, DISPLAY_COLORS[MAGENTA], 0);
 	}
 	if (!window->is_launcher)
 	{

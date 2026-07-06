@@ -172,7 +172,7 @@ disk: applications
 
 
 
-export: all
+export: all applications
 	@echo "$(COLOR_INFO)[IMG] Creating SD image...$(R)"
 
 	@mkdir -p $(EXPORT_DIR)

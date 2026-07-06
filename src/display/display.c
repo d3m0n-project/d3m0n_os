@@ -252,8 +252,8 @@ int display_init()
 	#else
 	if(!lcd_init())
 	{
-		log("Display initialized successfully!\n", LOG_SUCCESS);
-		lcd_clear(MAGENTA);
+		log("LCD Display initialized successfully!\n", LOG_SUCCESS);
+		lcd_clear(0xF81F); // magenta
 		return 0;
 	}
 	else
