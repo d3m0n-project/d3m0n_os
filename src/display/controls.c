@@ -74,12 +74,17 @@ void	add_control(t_window *to, t_control *control)
 	log("Added control: '%s'\n", LOG_SUCCESS, current->name);
 }
 
-void	draw_control(t_control *control)
+void	draw_control(t_control *control, int use_override)
 {
 	t_window	*window = get_current_window();
 
 	if (control->visible == 0)
 		return;
+
+	t_point	saved_location = control->location;
+
+	if (use_override)//control->p_location_override.x >= 0 && control->p_location_override.y >= 0)
+		control->location = control->p_client_location;
 
 	// move the origin of the canvas to lower for the topbar
 	if (window->top_bar)
@@ -105,8 +110,7 @@ void	draw_control(t_control *control)
 			log("Unknown control type: id=%i\n", LOG_WARNING, control->p_type);
 			break;
 	}
-	if (window->top_bar)
-		control->location.y -= TOPBAR_HEIGHT;
+	control->location = saved_location;
 
 	#if DEBUG_OUTLINE == 1
 		draw_rect_outline(control->location.x, control->location.y, control->width, control->height, OUTLINE_COLOR);
@@ -121,7 +125,7 @@ void	draw_window(t_window *window)
 	draw_rect(0, 0, window->width, window->height, window->bg_color);
 	while (current)
 	{
-		draw_control(current);
+		draw_control(current, 0);
 		// TODO: children
 		current = current->p_next;
 	}
@@ -177,8 +181,8 @@ void	draw_topbar(t_window *window)
 			window->events[0].script->func = (void *)fn_app_exit;
 			window->events[0].script->args = 0;
 			window->events[0].script->next = 0;
-			window->events[0].trigger_corners[0] = (t_point){.x=cross_x, .y=cross_y};
-			window->events[0].trigger_corners[1] = (t_point){.x=cross_x+cross_s, .y=cross_y+cross_s};
+			window->events[0].override_trigger_corners[0] = (t_point){.x=cross_x, .y=cross_y};
+			window->events[0].override_trigger_corners[1] = (t_point){.x=cross_x+cross_s, .y=cross_y+cross_s};
 		}
 	}
 }
@@ -195,6 +199,7 @@ void	init_control(t_control *control, const char *name, e_control_type type)
 	control->enabled = 1;
 	control->p_type = type;
 	control->visible = 1;
+	control->p_client_location = (t_point){0, 0};
 }
 
 void	free_controls(t_window	*win)

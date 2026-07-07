@@ -1,5 +1,5 @@
 # d3m0n source
 
 #Window.OnCreate =>
+#	log("a", "lime");
 #template.load("layouts/setting.template", 0, 30, "Test 1", "themes/default_dark/icons/battery-0-white.bmp", "1");
-

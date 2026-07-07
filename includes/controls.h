@@ -63,8 +63,8 @@ typedef enum
 typedef struct s_event
 {
 	e_event_type	type;
-	t_point			trigger_corners[2];
-	int				affected_control_id;
+	t_point			override_trigger_corners[2]; // used in case of non-control events
+	struct s_control		*affected_control;
 	t_script_chain	*script;
 }	t_event;
 
@@ -120,9 +120,10 @@ typedef struct s_control
 
 	// private attributes
 	e_control_anchor	p_anchor;
-	e_control_anchor	p_location_override;
+	e_control_anchor	p_anchor_location;
 	struct s_control	*p_next;
 	e_control_type		p_type;
+	t_point				p_client_location;
 }	t_control;
 
 
@@ -141,12 +142,12 @@ typedef	struct s_window
 
 int				create_window(t_window *out, const char *title, const char *package, int w, int h);
 void			init_control(t_control *control, const char *name, e_control_type type);
-void			draw_control(t_control *control);
+void			draw_control(t_control *control, int use_override);
 void			draw_topbar(t_window *window);
 void			free_controls(t_window	*win);
 void			add_control(t_window *to, t_control *control);
 void			draw_window(t_window *window);
-int				exec_event(int control_id, e_event_type type, t_window *window);
+int				exec_event(t_control *control, e_event_type type, t_window *window);
 void			handle_click(int x, int y, int button, t_window *window);
 
 t_window		*get_current_window();

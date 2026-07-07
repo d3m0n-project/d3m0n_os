@@ -3,25 +3,40 @@
 #include "libft.h"
 #include "controls.h"
 
-static int	get_control_id_by_name(char *name, t_window *window, t_control **ctrl)
+static int	get_control_id_by_name_in_list(char *name, t_control *list, t_control **ctrl, int *current_id)
 {
-	t_control	*current = window->controls;
-	int			current_id = 1;
 	size_t		name_len = ft_strlen(name) + 1;
-	if (ft_strncmp(name, "Window", 7) == 0)
-		return 0;
-	while (current)
+
+	while (list)
 	{
-		if (ft_strncmp(current->name, name, name_len) == 0)
+		int	this_id = *current_id;
+
+		if (ft_strncmp(list->name, name, name_len) == 0)
 		{
 			if (ctrl)
-				*ctrl = current;
-			return current_id;
+				*ctrl = list;
+			return this_id;
 		}
-		current = current->p_next;
-		current_id++;
+		(*current_id)++;
+		if (list->children)
+		{
+			int	found_id = get_control_id_by_name_in_list(name, list->children, ctrl, current_id);
+			if (found_id != -1)
+				return found_id;
+		}
+		list = list->p_next;
 	}
 	return -1;
+}
+
+static int	get_control_id_by_name(char *name, t_window *window, t_control **ctrl)
+{
+	int	current_id;
+
+	if (ft_strncmp(name, "Window", 7) == 0)
+		return 0;
+	current_id = 1;
+	return get_control_id_by_name_in_list(name, window->controls, ctrl, &current_id);
 }
 
 static e_event_type	get_event_type(char *name)
@@ -30,7 +45,7 @@ static e_event_type	get_event_type(char *name)
 		return EVENT_ON_CREATE;
 	if (!ft_strncmp(name, "OnClick", 8))
 		return EVENT_ON_CLICK;
-	return EVENT_UNDEFINED;
+	return EVENT_UNDEFINED; // TODO: add more events
 }
 
 static char	*replace_line_placeholders(const char *line, char **replacements)
@@ -213,16 +228,13 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 				return 1;
 			}
 			// control_id, 0=Window, 1,2,3... = other
-			win->events[event_id].affected_control_id = current_control_id;
+			win->events[event_id].affected_control = ctrl;
 			if (!ctrl && current_control_id != 0)
 				panic("Could not access the control pointer\n");
 			else if (current_control_id != 0)
 			{
-				t_point	pos = {.x=ctrl->location.x, .y=ctrl->location.y + (win->top_bar?20:0)};
-				win->events[event_id].trigger_corners[0] = pos;
-				win->events[event_id].trigger_corners[1] = pos;
-				win->events[event_id].trigger_corners[1].x += ctrl->width;
-				win->events[event_id].trigger_corners[1].y += ctrl->height;
+				win->events[event_id].override_trigger_corners[0] = (t_point){0};
+				win->events[event_id].override_trigger_corners[1] = (t_point){0};
 			}
 		} else if (current_control_id != -1 && i > 0) {
 			if (linked_script_add_line(line + i, win->events[event_id].script))

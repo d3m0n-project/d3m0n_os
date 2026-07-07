@@ -1,11 +1,11 @@
 #include "controls.h"
 
-int		exec_event(int control_id, e_event_type type, t_window *window)
+int		exec_event(t_control *control, e_event_type type, t_window *window)
 {
 	int	i=0;
 	while (i < MAX_WINDOW_EVENTS)
 	{
-		if (window->events[i].type == type && control_id == window->events[i].affected_control_id)
+		if (window->events[i].type == type && control == window->events[i].affected_control) // TODO: maybe ptr eq is not very good idea
 		{
 			exec_script(window->events[i].script);
 			return 0;
@@ -63,7 +63,7 @@ void	handle_click(int x, int y, int button, t_window *window)
 			if (new_off > c->p_scroll_max_size.y)
 				new_off = c->p_scroll_max_size.y;
 			c->p_scroll_offset.y = new_off;
-			draw_control(c);
+			draw_control(c, 1);
 		}
 	}
 
@@ -77,8 +77,18 @@ void	handle_click(int x, int y, int button, t_window *window)
 		int	i=-1;
 		while (++i < MAX_WINDOW_EVENTS)
 		{
-			t_point top_left = window->events[i].trigger_corners[0];
-			t_point bottom_right = window->events[i].trigger_corners[1];
+			t_point top_left = window->events[i].override_trigger_corners[0];
+			t_point bottom_right = window->events[i].override_trigger_corners[1];
+			if (window->events[i].affected_control)
+			{
+				top_left = window->events[i].affected_control->p_client_location;
+				bottom_right = window->events[i].affected_control->p_client_location;
+				bottom_right.x += window->events[i].affected_control->width;
+
+				int topbar_height = (window->top_bar)?TOPBAR_HEIGHT:0;
+				bottom_right.y += window->events[i].affected_control->height + topbar_height;
+				top_left.y += topbar_height;
+			}
 			if (window->events[i].type == EVENT_ON_CLICK)
 			{
 				if (x < top_left.x || x > bottom_right.x)

@@ -522,7 +522,7 @@ static int	lp_apply_control_attr(t_control *control, t_window *win, t_control *p
 		align = lp_parse_align(value);
 		if (align == 0)
 			return -1;
-		control->p_location_override = (e_control_anchor)align;
+		control->p_anchor_location = (e_control_anchor)align;
 		return 1;
 	}
 	else if (!ft_strcmp(key, "text_align"))
@@ -890,6 +890,7 @@ int	parse_layout(const char *path, t_window *win, char **replacements, int offse
 					win->controls = control;
 				tail = control;
 			}
+			control->p_client_location = control->location; // TODO: make sure p_client_location follows location
 		}
 		free(line);
 	}
