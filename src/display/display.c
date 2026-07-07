@@ -53,9 +53,6 @@ void	draw_qemu_outline()
 	// vertical
 	for (int y=0; y<SCREEN_HEIGHT + 1; y++)
 		fb[y * (fb_req.pitch / 4) + SCREEN_WIDTH] = OUTLINE_COLOR;
-	// horizontal
-	for (int x=0; x<SCREEN_WIDTH + 1; x++)
-		fb[SCREEN_HEIGHT * (fb_req.pitch / 4) + x] = OUTLINE_COLOR;
 }
 #endif
 
@@ -274,7 +271,7 @@ int display_init()
 	if(!lcd_init())
 	{
 		log("LCD Display initialized successfully!\n", LOG_SUCCESS);
-		lcd_clear(rgb888_to_rgb565(DISPLAY_COLORS[WHITE])); // magenta
+		lcd_clear(rgb888_to_rgb565(DISPLAY_COLORS[WHITE]));
 		return 0;
 	}
 	else

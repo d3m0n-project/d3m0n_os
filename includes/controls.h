@@ -5,7 +5,8 @@
 #include "display.h"
 #include "d3m0n.h"
 
-#define MAX_WINDOW_EVENTS 255
+#define MAX_WINDOW_EVENTS	255
+#define TOPBAR_HEIGHT		20
 
 typedef struct s_point
 {
@@ -105,9 +106,8 @@ typedef struct s_control
 
 	// Hscroll, Vscroll
 	int					bar;
-
-	// Rect
-	int					scroll; // TODO: remove?
+	t_point				p_scroll_offset;
+	t_point				p_scroll_max_size;
 
 	// ProgressBar
 	int					min;
@@ -141,6 +141,8 @@ typedef	struct s_window
 
 int				create_window(t_window *out, const char *title, const char *package, int w, int h);
 void			init_control(t_control *control, const char *name, e_control_type type);
+void			draw_control(t_control *control);
+void			draw_topbar(t_window *window);
 void			free_controls(t_window	*win);
 void			add_control(t_window *to, t_control *control);
 void			draw_window(t_window *window);

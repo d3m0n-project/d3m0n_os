@@ -166,3 +166,117 @@ char	*get_setting(const char *path, const char *key, int	*not_found)
 	close(fd);
 	return 0;
 }
+
+int	set_setting(const char *path, const char *key, const char *value)
+{
+	char	*line;
+	int		fd;
+	int		found = 0;
+	char	**lines = NULL;
+	int		line_count = 0;
+	int		i;
+
+	if (!path || !key || !value)
+		return 1;
+
+	fd = open(path, O_READ);
+	if (fd < 0)
+		return 1;
+
+	while ((line = get_next_line(fd)))
+	{
+		line_count++;
+		free(line);
+	}
+	close(fd);
+
+	lines = (char **)ft_calloc(line_count + 2, sizeof(char *));
+	if (!lines)
+		return 1;
+
+	fd = open(path, O_READ);
+	if (fd < 0)
+	{
+		free(lines);
+		return 1;
+	}
+
+	i = 0;
+	while ((line = get_next_line(fd)) && i < line_count)
+	{
+		size_t key_len = 0;
+		while (line[key_len] && line[key_len] != ':')
+			key_len++;
+
+		if (line[key_len] == ':' && ft_strlen(key) == key_len && !ft_strncmp(line, key, key_len))
+		{
+			size_t new_len = ft_strlen(key) + 2 + ft_strlen(value);
+			char *new_line = (char *)ft_calloc(new_len + 1, sizeof(char));
+			if (!new_line)
+			{
+				free(line);
+				goto cleanup;
+			}
+			ft_strlcpy(new_line, key, new_len + 1);
+			ft_strlcat(new_line, ": ", new_len + 1);
+			ft_strlcat(new_line, value, new_len + 1);
+			lines[i] = new_line;
+			found = 1;
+			free(line);
+		}
+		else
+			lines[i] = line;
+		i++;
+	}
+	close(fd);
+
+	if (!found)
+		goto cleanup;
+
+	// Write all lines back to file
+	fd = open(path, O_WRITE | O_TRUNC);
+	if (fd < 0)
+		goto cleanup;
+
+	i = 0;
+	while (lines[i])
+	{
+		size_t len = ft_strlen(lines[i]);
+		if (write(fd, lines[i], len) != (int)len)
+		{
+			close(fd);
+			goto cleanup;
+		}
+		// write newline if not already present
+		if (len == 0 || (lines[i][len - 1] != '\n'))
+		{
+			if (write(fd, "\n", 1) != 1)
+			{
+				close(fd);
+				goto cleanup;
+			}
+		}
+		i++;
+	}
+	close(fd);
+
+	// cleanup
+	i = 0;
+	while (lines[i])
+	{
+		free(lines[i]);
+		i++;
+	}
+	free(lines);
+	return 0;
+
+cleanup:
+	i = 0;
+	while (lines[i])
+	{
+		free(lines[i]);
+		i++;
+	}
+	free(lines);
+	return 1;
+}

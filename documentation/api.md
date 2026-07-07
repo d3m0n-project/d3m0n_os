@@ -17,7 +17,6 @@ Then create a main layout file in the directory `layouts` named `main.layout`.
     # d3m0n layout << important!
 	
 	Window:
-		name="My_Window";
 		title="My window";
 		width="200";
 		height="100";
@@ -76,9 +75,9 @@ In your d3m0n layout file, you can use multiple controls.
 You can access your application [Controls](/api.md#controls) with events
 > more infos [here](events)
 
-## Embeded-in functions
+## Embedded-in functions
 Use premade functions into your script (`.src`) file
-> see [here](functions)
+> see [here](./Scripting.md)
 
 # Apparence
 Your system design can be changed to be fancier.
@@ -88,4 +87,4 @@ Your system design can be changed to be fancier.
 Your d3m0n os apparence can be modified by using a theme.
 These ones are located in 
 
-> /usr/share/d3m0n/themes
+> /themes/

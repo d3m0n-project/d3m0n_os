@@ -76,8 +76,15 @@ void	add_control(t_window *to, t_control *control)
 
 void	draw_control(t_control *control)
 {
+	t_window	*window = get_current_window();
+
 	if (control->visible == 0)
 		return;
+
+	// move the origin of the canvas to lower for the topbar
+	if (window->top_bar)
+		control->location.y += TOPBAR_HEIGHT;
+	
 	switch (control->p_type)
 	{
 		case CONTROL_TEXTBOX:		ctrl_draw_textbox(control);		break;
@@ -98,32 +105,35 @@ void	draw_control(t_control *control)
 			log("Unknown control type: id=%i\n", LOG_WARNING, control->p_type);
 			break;
 	}
+	if (window->top_bar)
+		control->location.y -= TOPBAR_HEIGHT;
+
 	#if DEBUG_OUTLINE == 1
 		draw_rect_outline(control->location.x, control->location.y, control->width, control->height, OUTLINE_COLOR);
 	#endif
+	draw_topbar(get_current_window());
 }
 
 void	draw_window(t_window *window)
 {
 	t_control	*current = window->controls;
-	t_conf		*conf = get_config();
-	int			topbar_height = 20;
 
 	draw_rect(0, 0, window->width, window->height, window->bg_color);
 	while (current)
 	{
-		// move the origin of the canvas to lower for the topbar
-		if (window->top_bar)
-			current->location.y += topbar_height;
 		draw_control(current);
-		if (window->top_bar)
-			current->location.y -= topbar_height;
 		// TODO: children
 		current = current->p_next;
 	}
+	draw_topbar(window);
+}
+
+void	draw_topbar(t_window *window)
+{
+	t_conf		*conf = get_config();
 	if (window->top_bar)
 	{
-		draw_rect(0, 0, window->width, topbar_height, DISPLAY_COLORS[WHITE]);
+		draw_rect(0, 0, window->width, TOPBAR_HEIGHT, DISPLAY_COLORS[WHITE]);
 
 		size_t	time = (time_us() % (1000 * 60 * 24 * 1000)) / (1000*1000*60); // minute of the day
 		int		hours = time / 60;
@@ -164,7 +174,7 @@ void	draw_window(t_window *window)
 				return;
 			}
 			window->events[0].type = EVENT_ON_CLICK;
-			window->events[0].script->func = fn_app_exit;
+			window->events[0].script->func = (void *)fn_app_exit;
 			window->events[0].script->args = 0;
 			window->events[0].script->next = 0;
 			window->events[0].trigger_corners[0] = (t_point){.x=cross_x, .y=cross_y};

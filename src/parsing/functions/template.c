@@ -59,7 +59,7 @@ static char	*get_template_source_path(const char *layout_path, t_window *current
 	return (base);
 }
 
-void	template_load(void **args)
+char*	template_load(void **args)
 {
 	char *package = 0;
 	char *relative_path = 0;
@@ -69,7 +69,7 @@ void	template_load(void **args)
 	int y = *(int *)(args)[2];
 
 	t_window	*current_win = get_current_window();
-	char	**strings = (char **)&(args[3]); // list of strings that will replace $0, $1, $2... inside of layout
+	char		**strings = (char **)&(args[3]); // list of strings that will replace $0, $1, $2... inside of layout
 
 	if (!file_exists(path))
 	{
@@ -77,21 +77,21 @@ void	template_load(void **args)
 		if (!package)
 		{
 			log("TEMPLATE.LOAD: Could not allocate memory for app path\n", LOG_ERROR | LOG_INDENT);
-			return;
+			return 0;
 		}
 		relative_path = path_add(package, path);
 		if (!relative_path)
 		{
 			free(package);
 			log("TEMPLATE.LOAD: Could not allocate memory for relative app path\n", LOG_ERROR | LOG_INDENT);
-			return;
+			return 0;
 		}
 		if (!file_exists(relative_path))
 		{
 			log("TEMPLATE.LOAD: Could not find template file: '%s'\n", LOG_ERROR | LOG_INDENT, path);
 			free(package);
 			free(relative_path);
-			return;
+			return 0;
 		}
 	}
 
@@ -107,14 +107,13 @@ void	template_load(void **args)
 			if (arg[j] == '\n' || arg[j] == '\r' || arg[j] == '"' || arg[j] == '\\')
 			{
 				log("TEMPLATE.LOAD: Invalid template replacement string for $%i: '%s'\n", LOG_ERROR | LOG_INDENT, i, arg);
-				return;
+				return 0;
 			}
 			j++;
 		}
 		i++;
 	}
 
-	log("Loading '%s' at x:%i, y:%i\n", LOG_INFO, path, x, y);
 	if (relative_path)
 		path = relative_path;
 	if (parse_layout(path, current_win, strings, x, y))
@@ -131,4 +130,5 @@ void	template_load(void **args)
 		free(relative_path);
 	if (package)
 		free(package);
+	return 0;
 }

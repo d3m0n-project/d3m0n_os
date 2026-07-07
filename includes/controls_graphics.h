@@ -4,6 +4,9 @@
 #include "controls.h"
 #include "log.h"
 
+#define SCROLLBAR_SIZE				10
+#define SCROLLBAR_THUMB_MIN_HEIGHT	30
+
 void	ctrl_draw_textbox(t_control *control);
 void	ctrl_draw_listview(t_control *control);
 void	ctrl_draw_progressbar(t_control *control);

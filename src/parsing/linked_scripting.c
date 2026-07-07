@@ -42,6 +42,7 @@ typedef struct s_call_node
 {
 	t_fn_def	*def;
 	char		**raw_args;
+	char		*var_name;  // variable to store return value, NULL if no assignment
 } t_call_node;
 
 typedef struct s_cond_node
@@ -952,11 +953,100 @@ static int	add_call_node(char *statement, t_script_chain *script)
 	}
 	call->def = def;
 	call->raw_args = raw_args;
+	call->var_name = 0;
 	node->func = op_call;
 	if (make_node_args1(node, call))
 	{
 		free(call);
 		free(node);
+		return 1;
+	}
+	return append_script_node(script, node);
+}
+
+static int	add_call_node_with_assignment(char *statement, char *var_name, t_script_chain *script)
+{
+	int i;
+	int j;
+	char *function_name;
+	char *args_text;
+	t_fn_def *def;
+	t_call_node *call;
+	t_script_chain *node;
+	char **raw_args;
+	char *var_name_dup;
+
+	i = 0;
+	while (statement[i] && statement[i] != '(')
+		i++;
+	if (!statement[i])
+	{
+		log("Could not find opening bracket for function call: '%s'\n", LOG_ERROR | LOG_INDENT, statement);
+		return 1;
+	}
+	j = i + 1;
+	while (statement[j] && statement[j] != ')')
+		j++;
+	if (!statement[j])
+	{
+		log("Could not find closing bracket for function call: '%s'\n", LOG_ERROR | LOG_INDENT, statement);
+		return 1;
+	}
+	statement[i] = '\0';
+	statement[j] = '\0';
+	function_name = trim_in_place(statement);
+	args_text = statement + i + 1;
+	def = get_def_from_name(function_name);
+	if (!def)
+	{
+		log("Unknown function: '%s'\n", LOG_ERROR | LOG_INDENT, function_name);
+		return 1;
+	}
+	if (!def->is_return)
+	{
+		log("Function '%s' does not return a value\n", LOG_ERROR | LOG_INDENT, function_name);
+		return 1;
+	}
+	raw_args = ft_split(args_text, ',');
+	if (!raw_args)
+		return 1;
+	if (validate_arg_types(raw_args, def, function_name))
+	{
+		int k = 0;
+		while (raw_args[k])
+			free(raw_args[k++]);
+		free(raw_args);
+		return 1;
+	}
+	var_name_dup = dup_cstr(var_name);
+	if (!var_name_dup)
+	{
+		int k = 0;
+		while (raw_args[k])
+			free(raw_args[k++]);
+		free(raw_args);
+		return 1;
+	}
+	call = (t_call_node *)ft_calloc(1, sizeof(t_call_node));
+	node = (t_script_chain *)ft_calloc(sizeof(t_script_chain), 1);
+	if (!call || !node)
+	{
+		if (call)
+			free(call);
+		if (node)
+			free(node);
+		free(var_name_dup);
+		return 1;
+	}
+	call->def = def;
+	call->raw_args = raw_args;
+	call->var_name = var_name_dup;
+	node->func = op_call;
+	if (make_node_args1(node, call))
+	{
+		free(call);
+		free(node);
+		free(var_name_dup);
 		return 1;
 	}
 	return append_script_node(script, node);
@@ -1014,11 +1104,25 @@ int		linked_script_add_line(char *line, t_script_chain *script)
 			log("Invalid variable name in assignment: '%s'\n", LOG_ERROR | LOG_INDENT, lhs);
 			return 1;
 		}
-		if (eval_int_expr(rhs, 0) == 0)
+		// looking for pattern: identifier.identifier(
+		if (ft_strchr(rhs, '('))
 		{
-			log("Invalid integer expression in assignment: '%s'\n", LOG_ERROR | LOG_INDENT, rhs);
-			return 1;
+			int paren_pos = 0;
+			while (rhs[paren_pos] && rhs[paren_pos] != '(')
+				paren_pos++;
+			// parse it as a function call
+			if (paren_pos > 0 && get_def_from_name(rhs) == 0)
+			{
+				char func_name_buf[256];
+				if (paren_pos < 256)
+				{
+					ft_strlcpy(func_name_buf, rhs, paren_pos + 1);
+					if (get_def_from_name(func_name_buf))
+						return add_call_node_with_assignment(rhs, lhs, script);
+				}
+			}
 		}
+		// int assignement
 		return add_var_set_node(lhs, rhs, script);
 	}
 	if (ft_strchr(statement, '('))
@@ -1142,6 +1246,7 @@ static int	eval_call_and_run(t_call_node *call)
 	void **eval_args;
 	int i;
 	e_arg_type expected;
+	char *return_value;
 
 	eval_args = (void **)ft_calloc(MAX_ARGS + 1, sizeof(void *));
 	if (!eval_args)
@@ -1172,7 +1277,12 @@ static int	eval_call_and_run(t_call_node *call)
 		}
 		i++;
 	}
-	call->def->fn(eval_args);
+	return_value = call->def->fn(eval_args);
+	if (call->var_name && return_value && call->def->is_return)
+		var_set_str(call->var_name, return_value);
+	if (return_value && call->def->is_return)
+		free(return_value);
+	
 	i = 0;
 	while (eval_args[i])
 	{
@@ -1372,6 +1482,8 @@ void	free_script(t_script_chain *script)
 						free(call->raw_args[i++]);
 					free(call->raw_args);
 				}
+				if (call->var_name)
+					free(call->var_name);
 				free(call);
 			}
 			else if ((cur->func == op_if || cur->func == op_while) && cur->args[0])

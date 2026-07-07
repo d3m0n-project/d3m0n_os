@@ -1,10 +1,5 @@
 # Rect
 
-## Rect special attributes
-    Rect:
-	    scroll="[true/false]";
+Rect has no special attributes, it is just a rectangle.
 
-You can also use [general attributes](GeneralAttributes.md) on this control
-
-### Description
-`scroll` (bool): set if Rect can scroll if it's content is to big
+You can use [general attributes](GeneralAttributes.md) on this control

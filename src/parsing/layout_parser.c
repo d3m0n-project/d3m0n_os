@@ -430,7 +430,16 @@ static int	lp_apply_window_attr(t_window *win, char *key, char *value)
 	return 0;
 }
 
-static int	lp_apply_control_attr(t_control *control, t_window *win, char *key, char *value)
+static t_control	*lp_find_control_by_name(t_control *list, char *name);
+
+static int	lp_get_relative_base(t_window *win, t_control *parent, int is_x)
+{
+	if (parent)
+		return (is_x ? parent->width : parent->height);
+	return (is_x ? (win ? win->width : SCREEN_WIDTH) : (win ? win->height : SCREEN_HEIGHT));
+}
+
+static int	lp_apply_control_attr(t_control *control, t_window *win, t_control *parent, char *key, char *value)
 {
 	if (!ft_strcmp(key, "name"))
 	{
@@ -444,22 +453,22 @@ static int	lp_apply_control_attr(t_control *control, t_window *win, char *key, c
 	}
 	else if (!ft_strcmp(key, "width"))
 	{
-		control->width = lp_parse_percent(value, win ? win->width : SCREEN_WIDTH);
+		control->width = lp_parse_percent(value, lp_get_relative_base(win, parent, 1));
 		return 1;
 	}
 	else if (!ft_strcmp(key, "height"))
 	{
-		control->height = lp_parse_percent(value, win ? win->height : SCREEN_HEIGHT);
+		control->height = lp_parse_percent(value, lp_get_relative_base(win, parent, 0));
 		return 1;
 	}
 	else if (!ft_strcmp(key, "x"))
 	{
-		control->location.x = lp_parse_percent(value, win ? win->width : SCREEN_WIDTH);
+		control->location.x = lp_parse_percent(value, lp_get_relative_base(win, parent, 1));
 		return 1;
 	}
 	else if (!ft_strcmp(key, "y"))
 	{
-		control->location.y = lp_parse_percent(value, win ? win->height : SCREEN_HEIGHT);
+		control->location.y = lp_parse_percent(value, lp_get_relative_base(win, parent, 0));
 		return 1;
 	}
 	else if (!ft_strcmp(key, "visible"))
@@ -534,11 +543,6 @@ static int	lp_apply_control_attr(t_control *control, t_window *win, char *key, c
 	else if (!ft_strcmp(key, "bar"))
 	{
 		control->bar = lp_parse_bool(value);
-		return 1;
-	}
-	else if (!ft_strcmp(key, "scroll"))
-	{
-		control->scroll = lp_parse_bool(value);
 		return 1;
 	}
 	else if (!ft_strcmp(key, "min"))
@@ -617,6 +621,26 @@ static void	lp_append_child(t_control *parent, t_control *child)
 	while (it->p_next)
 		it = it->p_next;
 	it->p_next = child;
+	// update parent's scrollable size if this is a Vscroll
+	if (parent->p_type == CONTROL_VSCROLL)
+	{
+		int max_child_bottom = 0;
+		t_control *c = parent->children;
+		while (c)
+		{
+			int bottom = c->location.y + c->height;
+			if (bottom > max_child_bottom)
+				max_child_bottom = bottom;
+			c = c->p_next;
+		}
+		// p_scroll_max_size.y is total children height minus visible height
+		int scrollable = max_child_bottom - parent->height;
+		if (scrollable < 0)
+			scrollable = 0;
+		parent->p_scroll_max_size.y = scrollable;
+		if (parent->p_scroll_offset.y > parent->p_scroll_max_size.y)
+			parent->p_scroll_offset.y = parent->p_scroll_max_size.y;
+	}
 }
 
 static void	lp_remove_top_level(t_window *win, t_control *target)
@@ -653,8 +677,10 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 	int		lines;
 	int		i;
 	int		apply_ret;
+	t_control	*parent_control;
 
 	lines = 0;
+	parent_control = 0;
 	if (parent_name)
 		parent_name[0] = '\0';
 	while ((line = get_next_line(fd)))
@@ -689,10 +715,13 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 				}
 			}
 			else if (parent_name && !ft_strcmp(key, "parent"))
+			{
 				lp_copy_field(value, parent_name, LAYOUT_PARENT_MAX);
+				parent_control = lp_find_control_by_name(win->controls, parent_name);
+			}
 			else if (control)
 			{
-				apply_ret = lp_apply_control_attr(control, win, key, value);
+				apply_ret = lp_apply_control_attr(control, win, parent_control, key, value);
 				if (apply_ret == 0)
 				{
 					log("Unknown control config at line %i: %s\n", LOG_ERROR, section_line + lines, key);

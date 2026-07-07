@@ -228,9 +228,7 @@ void	usb_init(void)
 	GAHBCFG = GAHBCFG_DMA_EN | GAHBCFG_GLBL_INTR;
 }
 
-static int	usb_transfer_ex(uint8_t addr, uint8_t ep, uint8_t in,
-		uint32_t ep_type, uint16_t mps, uint32_t pid, uint8_t *buf,
-		uint16_t len)
+static int	usb_transfer_ex(uint8_t addr, uint8_t ep, uint8_t in, uint32_t ep_type, uint16_t mps, uint32_t pid, uint8_t *buf, uint16_t len)
 {
 	usb_hc_t	*hc;
 	uint32_t	hcchar;
@@ -268,11 +266,9 @@ static int	usb_transfer_ex(uint8_t addr, uint8_t ep, uint8_t in,
 	return (-3);
 }
 
-static int	usb_transfer(uint8_t addr, uint8_t ep, uint8_t in, uint32_t pid,
-		uint8_t *buf, uint16_t len)
+static int	usb_transfer(uint8_t addr, uint8_t ep, uint8_t in, uint32_t pid, uint8_t *buf, uint16_t len)
 {
-	return usb_transfer_ex(addr, ep, in, HCCHAR_EPTYPE_CTRL,
-		g_root_device.ep0_mps, pid, buf, len);
+	return usb_transfer_ex(addr, ep, in, HCCHAR_EPTYPE_CTRL, g_root_device.ep0_mps, pid, buf, len);
 }
 
 static int	usb_control_transfer_ex(usb_device_t *dev, usb_setup_t *setup, uint8_t *buf)
@@ -289,11 +285,9 @@ static int	usb_control_transfer_ex(usb_device_t *dev, usb_setup_t *setup, uint8_
 	if (len)
 	{
 		if (setup->bmRequestType & 0x80)
-			ret = usb_transfer(addr, USB_EP0, 1, HCTSIZ_PID_DATA1,
-					buf, len);
+			ret = usb_transfer(addr, USB_EP0, 1, HCTSIZ_PID_DATA1, buf, len);
 		else
-			ret = usb_transfer(addr, USB_EP0, 0, HCTSIZ_PID_DATA1,
-					buf, len);
+			ret = usb_transfer(addr, USB_EP0, 0, HCTSIZ_PID_DATA1, buf, len);
 		if (ret)
 			return ret;
 	}
@@ -313,8 +307,7 @@ int	usb_control_transfer(uint8_t addr, usb_setup_t *setup, uint8_t *buf)
 	return usb_control_transfer_ex(&dev, setup, buf);
 }
 
-static int	usb_get_descriptor_len(usb_device_t *dev, uint8_t type,
-		uint8_t index, uint8_t *buf, uint16_t len)
+static int	usb_get_descriptor_len(usb_device_t *dev, uint8_t type, uint8_t index, uint8_t *buf, uint16_t len)
 {
 	usb_setup_t	setup;
 
@@ -570,6 +563,7 @@ int	usb_mouse_poll(void)
 	g_mouse.buttons = g_mouse_report[0];
 	handle_click(g_mouse.x, g_mouse.y, (unsigned int)g_mouse.buttons, get_current_window());
 	
+	draw_topbar(get_current_window()); // TODO:
 	// save last pixels
 	for (int i=0; i<CURSOR_SIZE; i++)
 	{
@@ -579,7 +573,6 @@ int	usb_mouse_poll(void)
 			put_pixel(g_mouse.x + j, g_mouse.y + i, DISPLAY_COLORS[RED]);
 		}
 	}
-
 	return 1;
 }
 

@@ -19,5 +19,7 @@ typedef struct s_conf
 
 int		parse_config(t_conf *config);
 t_conf	*get_config();
+char	*get_setting(const char *path, const char *key, int	*not_found);
+int		set_setting(const char *path, const char *key, const char *value);
 
 #endif

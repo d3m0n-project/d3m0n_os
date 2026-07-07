@@ -23,22 +23,27 @@ char	*get_arg_type_name(e_arg_type type);
 
 typedef struct s_fn_def
 {
-	void				(*fn)(void **);
+	char*				(*fn)(void **);
 	e_arg_type			args_type[MAX_ARGS];
 	const char			*name;
+	int					is_return;
 }	t_fn_def;
 
 /* io */
-void	fn_log(void **args);
-void	fn_alert(void **args);
+char*	fn_log(void **args);
+char*	fn_alert(void **args);
 
 /* template */
-void	template_load(void **args);
+char*	template_load(void **args);
 
 /* apps */
-void	fn_app_list(void **args);
-void	fn_app_open(void **args);
-void	fn_app_exit(void **args);
+char*	fn_app_list(void **args);
+char*	fn_app_open(void **args);
+char*	fn_app_exit(void **args);
+
+/* settings */
+char*	fn_settings_set(void **args);
+char*	fn_settings_get(void **args);
 
 extern	t_fn_def	funcs[];
 
