@@ -5,8 +5,8 @@
 #include "bmp.h"
 #include "color.h"
 
-#define SCREEN_WIDTH		240
-#define SCREEN_HEIGHT		320
+#define SCREEN_WIDTH		320
+#define SCREEN_HEIGHT		480
 
 #define OUTLINE_COLOR		0x00FF00FF
 

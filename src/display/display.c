@@ -12,6 +12,15 @@ static t_font				main_font;
 
 uint32_t	DISPLAY_COLORS[17] = { 0xff000000, 0x00000000, 0x000000bf, 0x000000ff, 0x00007fff, 0x0000ffff, 0x0000bf00, 0x0000ff00, 0x00bf5f00, 0x00ff0000, 0x00bfbf00, 0x00ffff00, 0x00bf00bf, 0x00ff00ff, 0x00191919, 0x007f7f7f, 0x00ffffff};
 
+uint16_t	rgb888_to_rgb565(uint32_t color)
+{
+    uint8_t b = (color >> 16) & 0xFF;
+    uint8_t g = (color >> 8) & 0xFF;
+    uint8_t r = color & 0xFF;
+
+    return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
+}
+
 void	put_pixel(int x, int y, uint32_t color)
 {
 	if (x < 0 || (uint32_t)x >= SCREEN_WIDTH || y < 0 || (uint32_t)y >= SCREEN_HEIGHT)
@@ -22,7 +31,7 @@ void	put_pixel(int x, int y, uint32_t color)
 	volatile uint32_t *fb = (volatile uint32_t *)(uintptr_t)fb_req.fb_addr;
 	fb[y * (fb_req.pitch / 4) + x] = color;
 	#else
-	(void)color; // TODO: real put pixel
+	lcd_drawrect(x, y, 1, 1, rgb888_to_rgb565(color));
 	#endif
 }
 
@@ -52,20 +61,32 @@ void	draw_qemu_outline()
 
 void	draw_hline(int x, int y, int w, uint32_t color)
 {
+	#if DEBUG == 1
 	for (int i=0; i<w; i++)
 		put_pixel(x + i, y, color);
+	#else
+	lcd_drawrect(x, y, w, 1, rgb888_to_rgb565(color));
+	#endif
 }
 
 void	draw_vline(int x, int y, int h, uint32_t color)
 {
+	#if DEBUG == 1
 	for (int i=0; i<h; i++)
 		put_pixel(x, y + i, color);
+	#else
+	lcd_drawrect(x, y, 1, h, rgb888_to_rgb565(color));
+	#endif
 }
 
 void	draw_rect(int x, int y, int w, int h, uint32_t color)
 {
+	#if DEBUG == 1
 	for(int j=0; j<h; j++)
 		draw_hline(x, y + j, w, color);
+	#else
+	lcd_drawrect(x, y, w, h, rgb888_to_rgb565(color));
+	#endif
 }
 
 void	draw_rect_outline(int x, int y, int w, int h, uint32_t color)
@@ -253,7 +274,7 @@ int display_init()
 	if(!lcd_init())
 	{
 		log("LCD Display initialized successfully!\n", LOG_SUCCESS);
-		lcd_clear(0xF81F); // magenta
+		lcd_clear(rgb888_to_rgb565(DISPLAY_COLORS[WHITE])); // magenta
 		return 0;
 	}
 	else
