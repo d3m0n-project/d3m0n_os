@@ -8,7 +8,16 @@
 #define SCREEN_WIDTH		320
 #define SCREEN_HEIGHT		480
 
-#define OUTLINE_COLOR		0x00FF00FF
+#define OUTLINE_COLOR		0xFFFF00FF
+
+
+#define LIGHT_THEME_FG		0xFF202124
+#define LIGHT_THEME_BG		0xFFFFFFFF
+
+#define DARK_THEME_FG		0xFFFFFFFF
+#define DARK_THEME_BG		0xFF121212
+
+
 
 #ifndef DEBUG_OUTLINE
 	#define DEBUG_OUTLINE	0
@@ -26,6 +35,7 @@ typedef struct s_font
 extern uint32_t			DISPLAY_COLORS[17];
 
 int			display_init();
+//uint32_t	blend_agbr(uint32_t color_bg, uint32_t color_fg);
 uint32_t	get_pixel(int x, int y);
 void		put_pixel(int x, int y, uint32_t color);
 void		draw_rect(int x, int y, int w, int h, uint32_t color);

@@ -86,7 +86,7 @@ void	draw_control(t_control *control)
 	// move the origin of the canvas to lower for the topbar
 	if (window->top_bar)
 		control->p_client_location.y += TOPBAR_HEIGHT;
-	
+		
 	switch (control->p_type)
 	{
 		case CONTROL_TEXTBOX:		ctrl_draw_textbox(control);		break;
@@ -111,7 +111,7 @@ void	draw_control(t_control *control)
 	#if DEBUG_OUTLINE == 1
 		draw_rect_outline(control->p_client_location.x, control->p_client_location.y, control->width, control->height, OUTLINE_COLOR);
 	#endif
-	draw_topbar(get_current_window());
+	draw_topbar(get_current_window()); // TODO:
 }
 
 void	draw_window(t_window *window)
@@ -129,72 +129,6 @@ void	draw_window(t_window *window)
 		current = current->p_next;
 	}
 	draw_topbar(window);
-}
-
-void	draw_topbar(t_window *window)
-{
-	t_conf		*conf = get_config();
-	if (window->top_bar)
-	{
-		draw_rect(0, 0, window->width, TOPBAR_HEIGHT, DISPLAY_COLORS[WHITE]);
-
-		size_t	time = (time_us() % (1000 * 60 * 24 * 1000)) / (1000*1000*60); // minute of the day
-		int		hours = time / 60;
-		int		minutes = time % 60;
-
-		char	clock[9] = "00:00 AM";
-		if (conf->time_mode == 1) // 24h clock
-			clock[5] = '\0';
-		else if (hours >= 12)
-		{
-			clock[6] = 'P';
-			if (hours > 12)
-				hours %= 12;
-		}
-		clock[0] = '0' + (hours / 10);
-		clock[1] = '0' + hours % 10;
-
-		clock[3] = '0' + (minutes / 10);
-		clock[4] = '0' + minutes % 10;
-
-		draw_text(2, 2, 8, 16, clock, DISPLAY_COLORS[MAGENTA], 0); // TODO: change topbar
-		if (!window->is_launcher)
-			draw_text(66, 2, 8, 16, window->title, DISPLAY_COLORS[MAGENTA], 0);
-
-		// draw battery and connection status
-		BmpTexture	battery_icon;
-		if (bmp_load_image(&battery_icon, "/themes/material-design-icons/device/battery_full.bmp"))
-		{
-			log("TOPBAR: Could not load battery icon\n", LOG_ERROR);
-			return;
-		}
-
-		draw_bmp(2, 2, 16, 16, &battery_icon, DISPLAY_COLORS[MAGENTA]); // TODO: theme dark or light
-		free_bmp_texture(&battery_icon);
-	}
-	if (!window->is_launcher)
-	{
-		int cross_x = SCREEN_WIDTH - 15;
-		int cross_y = 5;
-		int cross_s = 10;
-		draw_text(cross_x, cross_y, cross_s, cross_s, "X", DISPLAY_COLORS[RED], 0); // draw exit icon
-		// add close event if not added yet
-		if (window->events[0].type == EVENT_UNDEFINED)
-		{
-			window->events[0].script = init_script(0);
-			if (!window->events[0].script)
-			{
-				panic("Could not allocate the app close cross script\n");
-				return;
-			}
-			window->events[0].type = EVENT_ON_CLICK;
-			window->events[0].script->func = (void *)fn_app_exit;
-			window->events[0].script->args = 0;
-			window->events[0].script->next = 0;
-			window->events[0].override_trigger_corners[0] = (t_point){.x=cross_x, .y=cross_y};
-			window->events[0].override_trigger_corners[1] = (t_point){.x=cross_x+cross_s, .y=cross_y+cross_s};
-		}
-	}
 }
 
 void	init_control(t_control *control, const char *name, e_control_type type)

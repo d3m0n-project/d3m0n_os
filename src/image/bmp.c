@@ -4,43 +4,55 @@
 #include "libft.h"
 #include "time.h"
 
-int bmp_load_image(BmpTexture *out, const char *path)
+int	bmp_load_image(BmpTexture *out, const char *path)
 {
 	#if SHOW_IMAGE_STATUS == 1
-	uint64_t start_time = time_us() / 1000;
+	uint64_t	start_time = time_us() / 1000;
 	log("loading BMP...\n", LOG_INFO);
 	#endif
-	int fd = open(path, O_READ);
-	if (fd == -1)
-		return 1;
 
-	char header[54];
+	int			fd = open(path, O_READ);
+	char		header[54];
+	char		*file_pixels = 0;
+	int32_t		height;
+	uint32_t	starting_offset;
+	uint32_t	compression;
+	uint32_t	row_size;
+	uint32_t	stride;
+	uint32_t	data_size;
+	bool		flip;
+
+	if (fd == -1)
+		return (1);
 	if (read(fd, header, 54) != 54)
-	{
-		close(fd);
-		return 1;
-	}
+		goto error;
+	if (header[0] != 'B' || header[1] != 'M')
+		goto error;
 
 	ft_memcpy(&out->width, header + 18, sizeof(int));
-	ft_memcpy(&out->height, header + 22, sizeof(int));
-	out->bytes_per_pixel = header[28] / 8;
+	ft_memcpy(&height, header + 22, sizeof(int32_t));
 
-	
-	uint32_t starting_offset = 0;
+	flip = (height > 0);
+	out->height = (height > 0) ? height : -height;
+
+	out->bytes_per_pixel = header[28] / 8;
+	if (out->bytes_per_pixel != 3 && out->bytes_per_pixel != 4)
+		goto error;
+
+	ft_memcpy(&compression, header + 30, sizeof(uint32_t));
+	if (compression != 0)
+		goto error;
+
 	ft_memcpy(&starting_offset, header + 10, sizeof(uint32_t));
 
-	uint32_t row_size = out->width * out->bytes_per_pixel;
-	uint32_t row_padding = (4 - (row_size % 4)) % 4;
-	uint32_t stride = row_size + row_padding;
+	row_size = out->width * out->bytes_per_pixel;
+	stride = (row_size + 3) & ~3;
+	data_size = stride * out->height;
 
-	uint32_t data_size = stride * out->height;
-
-	char *file_pixels = malloc(data_size);
+	file_pixels = malloc(data_size);
 	if (!file_pixels)
-	{
-		close(fd);
-		return 1;
-	}
+		goto error;
+
 	#if SHOW_IMAGE_STATUS == 1
 	log("BMP header loading: %llums\n", LOG_INDENT | LOG_INFO, (time_us() / 1000) - start_time);
 	#endif
@@ -48,54 +60,77 @@ int bmp_load_image(BmpTexture *out, const char *path)
 	lseek(fd, starting_offset, SEEK_SET);
 
 	if (read(fd, file_pixels, data_size) != data_size)
-	{
-		free(file_pixels);
-		close(fd);
-		return 1;
-	}
+		goto error;
 
 	out->pixels = malloc(out->width * out->height * sizeof(uint32_t));
 	if (!out->pixels)
-	{
-		free(file_pixels);
-		close(fd);
-		return 1;
-	}
+		goto error;
 
 	#if SHOW_IMAGE_STATUS == 1
 	log("BMP bpp: %i\n", LOG_INFO | LOG_INDENT, out->bytes_per_pixel);
-	log("BMP size: %ix%i\n", LOG_INFO | LOG_INDENT, out->width, out->height);
+	log("BMP size: %ix%i\n", LOG_INFO | LOG_INDENT,
+		out->width, out->height);
 	#endif
 
-	for (int y = 0; y < out->height; y++)
+	if (out->bytes_per_pixel == 3)
 	{
-		char *row = file_pixels + (out->height - 1 - y) * stride;
-		uint32_t row_start = y * out->width;
-
-		for (int x = 0; x < out->width; x++)
+		for (int y = 0; y < out->height; y++)
 		{
-			if (out->bytes_per_pixel == 3)
-			{
-				unsigned char *p = (unsigned char *)row + x * 3;
-				out->pixels[row_start + x] = (p[0] << 16) | (p[1] << 8) | (p[2]);
-			}
+			uint8_t		*src;
+			uint32_t	*dst;
+
+			if (flip)
+				src = (uint8_t *)file_pixels + (out->height - 1 - y) * stride;
 			else
+				src = (uint8_t *)file_pixels + y * stride;
+			dst = out->pixels + y * out->width;
+			for (int x = 0; x < out->width; x++)
 			{
-				unsigned char *p = (unsigned char *)row + x * 4;
-				out->pixels[row_start + x] = (p[0] << 16) |	(p[1] << 8) | (p[2]) | (p[3] << 24);
+				*dst++ = (src[0] << 16) | (src[1] << 8) | src[2];
+				src += 3;
 			}
 		}
 	}
+	else
+	{
+		for (int y = 0; y < out->height; y++)
+		{
+			uint8_t		*src;
+			uint32_t	*dst;
+
+			if (flip)
+				src = (uint8_t *)file_pixels + (out->height - 1 - y) * stride;
+			else
+				src = (uint8_t *)file_pixels + y * stride;
+			dst = out->pixels + y * out->width;
+			for (int x = 0; x < out->width; x++)
+			{
+				*dst++ = (src[0] << 16) | (src[1] << 8) | src[2] | (src[3] << 24);
+				src += 4;
+			}
+		}
+	}
+
 	#if SHOW_IMAGE_STATUS == 1
-	log("total BMP loading time: %llums\n", LOG_INFO | LOG_INDENT, (time_us() / 1000) - start_time);
+	log("total BMP loading time: %llums\n",
+		LOG_INFO | LOG_INDENT,
+		(time_us() / 1000) - start_time);
 	#endif
 
 	free(file_pixels);
 	close(fd);
-	return 0;
+	return (0);
+
+error:
+	free(file_pixels);
+	free(out->pixels);
+	close(fd);
+	return (1);
 }
 
 int	free_bmp_texture(BmpTexture *texture)
 {
-	return (free(texture->pixels));
+	if (texture->pixels)
+		return (free(texture->pixels));
+	return 1;
 }

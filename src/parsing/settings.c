@@ -29,7 +29,7 @@ int		parse_config(t_conf *config)
 {
 	t_conf_elem	CONFIG_SCHEMA[] = {
 		{"wallpaper", &config->wallpaper, TYPE_STRING, {0}, "default.bmp"},
-		{"theme", &config->theme, TYPE_STRING, {0}, "default_dark"},
+		{"theme", &config->theme, TYPE_INT, {.min=0, .max=1}, &(int){0}},
 		{"splash_time", &config->splash_time, TYPE_INT, {.min=0, .max=5000}, &(int){3000}},
 		{"time_mode", &config->time_mode, TYPE_INT, {.min=0, .max=1}, &(int){0}},
 		{"launcher", &config->launcher, TYPE_STRING, {0}, "com.4re5.d3m0n.system.launcher"},

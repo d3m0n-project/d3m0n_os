@@ -98,7 +98,6 @@ void	kernel_main(void *dtb)
 
 	usleep(config.splash_time * 1000);
 	
-
 	// load desktop app manifest
 	char	*manifest = get_app_path_from_package(config.launcher, PACKAGE_MANIFEST);
 	if (manifest && !parse_manifest((const char *)manifest, &main_window))

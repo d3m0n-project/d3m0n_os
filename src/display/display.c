@@ -114,8 +114,8 @@ void draw_bmp(int x, int y, int w, int h, BmpTexture *texture, uint32_t override
 			if (src_y >= texture->height)
 				src_y = texture->height - 1;
 
-			if (texture->bytes_per_pixel == 4 // handle transparency
-				&& (texture->pixels[src_y * texture->width + src_x] & 0xFF000000) == 0)
+			// handle transparency
+			if (texture->bytes_per_pixel == 4 && (texture->pixels[src_y * texture->width + src_x] & 0xFF000000) == 0)
 				continue;
 			uint32_t color = texture->pixels[src_y * texture->width + src_x];
 			if ((override_color & 0xFF000000) == 0xFF000000) // if a color override is set

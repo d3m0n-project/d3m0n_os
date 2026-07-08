@@ -10,7 +10,6 @@ void	ctrl_draw_vscroll(t_control	*control)
 	if (control->children)
 	{
 		t_control *child = control->children;
-		//int topbar_height = get_current_window()->top_bar?TOPBAR_HEIGHT:0;
 		while (child)
 		{
 			if (child == control) // avoid infinite loop
@@ -21,7 +20,7 @@ void	ctrl_draw_vscroll(t_control	*control)
 
 			child->p_client_location = (t_point){
 				.x=control->p_client_location.x + saved_x,
-				.y=control->p_client_location.y + saved_y - control->p_scroll_offset.y// - topbar_height
+				.y=control->p_client_location.y + saved_y - control->p_scroll_offset.y
 			};
 
 			// only draw if visible in the vscroll area

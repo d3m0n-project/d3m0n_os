@@ -3,6 +3,7 @@
 
 #include "controls.h"
 #include "log.h"
+#include "math.h"
 
 #define SCROLLBAR_SIZE				10
 #define SCROLLBAR_THUMB_MIN_HEIGHT	30

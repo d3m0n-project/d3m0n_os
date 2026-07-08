@@ -20,7 +20,7 @@ void	handle_click(int x, int y, int button, t_window *window)
 	static int prev_x = -1;
 	static int prev_y = -1;
 	static int prev_buttons = 0;
-	static t_control *dragging_control = NULL;
+	static t_control *dragging_control = 0;
 	int dx = 0;
 	int dy = 0;
 
@@ -40,7 +40,7 @@ void	handle_click(int x, int y, int button, t_window *window)
 			int cy = cur->location.y;
 			if (x >= cx && x <= cx + cur->width && y >= cy && y <= cy + cur->height)
 			{
-				if (cur->p_type == CONTROL_VSCROLL)
+				if (cur->p_type == CONTROL_VSCROLL) // TODO: Hscroll
 				{
 					dragging_control = cur;
 					break;

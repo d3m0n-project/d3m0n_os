@@ -21,3 +21,10 @@ Text:
 	width="100%";
 	parent="v1";
 	height="50px";
+
+#Rect:
+#	parent="v1";
+#	width="100%";
+#	bg_color="lime";
+#	height="800px";
+#	location="0, 100";

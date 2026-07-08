@@ -94,12 +94,14 @@ char	*path_add(char *path, char *path2)
 {
 	size_t	l1 = ft_strlen(path);
 	size_t	l2 = ft_strlen(path2);
-	char	*output = ft_calloc(l1 + l2 + 1, sizeof(char));
+	char	*output = malloc(l1 + l2 + 1);
+
 	if (!output)
-		return 0;
-	
-	ft_strlcpy(output, path, l1 + l2 + 1);
-	ft_strlcat(output, path2, l1 + l2 + 1);
+		return NULL;
+
+	memcpy(output, path, l1);
+	memcpy(output + l1, path2, l2);
+	output[l1 + l2] = '\0';
 	return output;
 }
 

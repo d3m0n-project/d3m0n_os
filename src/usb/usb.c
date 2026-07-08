@@ -563,7 +563,7 @@ int	usb_mouse_poll(void)
 	g_mouse.buttons = g_mouse_report[0];
 	handle_click(g_mouse.x, g_mouse.y, (unsigned int)g_mouse.buttons, get_current_window());
 	
-	draw_topbar(get_current_window()); // TODO:
+	//draw_topbar(get_current_window()); // TODO:
 	// save last pixels
 	for (int i=0; i<CURSOR_SIZE; i++)
 	{

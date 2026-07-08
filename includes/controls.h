@@ -7,6 +7,7 @@
 
 #define MAX_WINDOW_EVENTS	255
 #define TOPBAR_HEIGHT		20
+#define TOPBAR_PADDING		2
 
 typedef struct s_point
 {

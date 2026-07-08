@@ -7,7 +7,7 @@ typedef struct s_conf
 {
 	// style
 	char	wallpaper[STRING_SIZE];
-	char	theme[STRING_SIZE];
+	int		theme;
 	int		splash_time;
 
 	// clock

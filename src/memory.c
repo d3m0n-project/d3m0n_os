@@ -19,11 +19,15 @@ typedef struct block
 
 static block_t	*heap = (block_t *)HEAP_START;
 
-int	heap_init(void)
+int heap_init(void)
 {
+	if (HEAP_SIZE <= sizeof(block_t))
+		return 1;
+
 	heap->size = HEAP_SIZE - sizeof(block_t);
-    heap->free = 1;
-    heap->next = 0;
+	heap->free = 1;
+	heap->next = 0;
+
 	return 0;
 }
 
@@ -64,11 +68,23 @@ void	*malloc(uint32_t size)
 	return 0;
 }
 
-int	free(void *ptr)
+int free(void *ptr)
 {
 	if (!ptr)
 		return 1;
+
+	if ((uint8_t *)ptr < HEAP_START || (uint8_t *)ptr >= HEAP_END)
+	{
+		log("FREE INVALID POINTER 0x%p\n", LOG_ERROR, ptr);
+		return 1;
+	}
+
 	block_t *block = (block_t *)((uint8_t *)ptr - sizeof(block_t));
+	if (block->free)
+	{
+		log("DOUBLE FREE 0x%p\n", LOG_ERROR, ptr);
+		return 1;
+	}
 	block->free = 1;
 	return 0;
 }
