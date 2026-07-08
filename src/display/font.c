@@ -5,11 +5,6 @@
 
 int	load_font(const char *path, t_font	*out, int dot_count)
 {
-	if (dot_count % 16 != 0)
-	{
-		log("Invalid dot count: %i\n", LOG_ERROR, dot_count);
-		return 1;
-	}
 	int	fd = open(path, O_READ);
 	if (fd < 0)
 	{

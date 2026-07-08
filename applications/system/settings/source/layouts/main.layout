@@ -21,4 +21,3 @@ Text:
 	width="100%";
 	parent="v1";
 	height="50px";
-	name="test";

@@ -253,7 +253,7 @@ void	draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_f
 
 int display_init()
 {
-	if (load_font("fonts/ILGH32XF.FNT", &main_font, 32))
+	if (load_font("fonts/ILGH32XF.FNT", &main_font, 32)) // TODO: change font, maybe load vector one
 		return 1;
 	#if DEBUG == 1
 	if(!framebuffer_init(640, 480, 32))
