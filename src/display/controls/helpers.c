@@ -26,8 +26,8 @@ void	compute_text_position(int anchor, int box_x, int box_y, int box_w, int box_
 
 void	compute_inner_rect(const t_control *control, int *out_x, int *out_y, int *out_w, int *out_h)
 {
-	int x = control->location.x + control->margin_left;
-	int y = control->location.y + control->margin_top;
+	int x = control->p_client_location.x + control->margin_left;
+	int y = control->p_client_location.y + control->margin_top;
 	int w = control->width - control->margin_left - control->margin_right;
 	int h = control->height - control->margin_top - control->margin_bottom;
 	if (w < 0) w = 0;
@@ -63,9 +63,12 @@ void	control_text_metrics(const char *text, int *out_max_len, int *out_lines)
 			cur++;
 		i++;
 	}
-	if (cur > max) max = cur;
-	if (out_max_len) *out_max_len = max;
-	if (out_lines) *out_lines = lines;
+	if (cur > max)
+		max = cur;
+	if (out_max_len)
+		*out_max_len = max;
+	if (out_lines)
+		*out_lines = lines;
 }
 
 int	control_text_auto_font_size(const t_control *control)

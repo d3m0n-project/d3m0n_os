@@ -1,17 +1,6 @@
 Rect:
-	name="$2";
+	parent="v1";
+	location="0, $0";
 	width="100%";
 	height="40px";
-	bg_color="grey";
-	location="0, 0";
-
-Text:
-	content="$0";
-	location="40, 5";
-	color="black";
-
-Image:
-	location="5, 5";
-	width="30px";
-	height="30px";
-	src="$1";
+	bg_color="red";

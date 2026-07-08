@@ -15,72 +15,10 @@ Vscroll:
 	location="0, 0";
 	bar="true";
 
-Rect:
-	parent="v1";
-	location="0, 0";
+Text:
+	content="settings";
+	location = "0, 5";
 	width="100%";
-	height="40px";
-	bg_color="red";
-
-Rect:
 	parent="v1";
-	location="0, 45";
-	width="100%";
-	height="40px";
-	bg_color="orange";
-
-Rect:
-	parent="v1";
-	location="0, 90";
-	width="100%";
-	height="40px";
-	bg_color="yellow";
-
-Rect:
-	parent="v1";
-	location="0, 135";
-	width="100%";
-	height="40px";
-	bg_color="green";
-
-Rect:
-	parent="v1";
-	location="0, 180";
-	width="100%";
-	height="40px";
-	bg_color="lime";
-
-Rect:
-	parent="v1";
-	location="0, 225";
-	width="100%";
-	height="40px";
-	bg_color="cyan";
-
-Rect:
-	parent="v1";
-	location="0, 270";
-	width="100%";
-	height="40px";
-	bg_color="dark_cyan";
-
-Rect:
-	parent="v1";
-	location="0, 315";
-	width="100%";
-	height="40px";
-	bg_color="blue";
-
-Rect:
-	parent="v1";
-	location="0, 360";
-	width="100%";
-	height="40px";
-	bg_color="dark_blue";
-
-Rect:
-	parent="v1";
-	location="0, 605";
-	width="100%";
-	height="40px";
-	bg_color="magenta";
+	height="50px";
+	name="test";

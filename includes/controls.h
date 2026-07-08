@@ -142,7 +142,7 @@ typedef	struct s_window
 
 int				create_window(t_window *out, const char *title, const char *package, int w, int h);
 void			init_control(t_control *control, const char *name, e_control_type type);
-void			draw_control(t_control *control, int use_override);
+void			draw_control(t_control *control);
 void			draw_topbar(t_window *window);
 void			free_controls(t_window	*win);
 void			add_control(t_window *to, t_control *control);

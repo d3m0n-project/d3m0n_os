@@ -63,7 +63,7 @@ void	handle_click(int x, int y, int button, t_window *window)
 			if (new_off > c->p_scroll_max_size.y)
 				new_off = c->p_scroll_max_size.y;
 			c->p_scroll_offset.y = new_off;
-			draw_control(c, 1);
+			draw_control(c);
 		}
 	}
 
@@ -84,10 +84,7 @@ void	handle_click(int x, int y, int button, t_window *window)
 				top_left = window->events[i].affected_control->p_client_location;
 				bottom_right = window->events[i].affected_control->p_client_location;
 				bottom_right.x += window->events[i].affected_control->width;
-
-				int topbar_height = (window->top_bar)?TOPBAR_HEIGHT:0;
-				bottom_right.y += window->events[i].affected_control->height + topbar_height;
-				top_left.y += topbar_height;
+				bottom_right.y += window->events[i].affected_control->height;
 			}
 			if (window->events[i].type == EVENT_ON_CLICK)
 			{
