@@ -160,6 +160,17 @@ void	draw_topbar(t_window *window)
 		draw_text(2, 2, 8, 16, clock, DISPLAY_COLORS[MAGENTA], 0); // TODO: change topbar
 		if (!window->is_launcher)
 			draw_text(66, 2, 8, 16, window->title, DISPLAY_COLORS[MAGENTA], 0);
+
+		// draw battery and connection status
+		BmpTexture	battery_icon;
+		if (bmp_load_image(&battery_icon, "/themes/material-design-icons/device/battery_full.bmp"))
+		{
+			log("TOPBAR: Could not load battery icon\n", LOG_ERROR);
+			return;
+		}
+
+		draw_bmp(2, 2, 16, 16, &battery_icon, DISPLAY_COLORS[MAGENTA]); // TODO: theme dark or light
+		free_bmp_texture(&battery_icon);
 	}
 	if (!window->is_launcher)
 	{

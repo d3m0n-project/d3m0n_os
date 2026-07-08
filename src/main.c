@@ -94,7 +94,7 @@ void	kernel_main(void *dtb)
 	if (bmp_load_image(&splash, "wallpapers/splash.bmp"))
 		log("Could not load splash screen\n", LOG_ERROR);
 	else
-		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &splash);
+		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &splash, DISPLAY_COLORS[TRANSPARENT]);
 
 	usleep(config.splash_time * 1000);
 	

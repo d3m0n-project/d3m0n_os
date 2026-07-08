@@ -45,7 +45,7 @@ void	ctrl_draw_button(t_control *control)
 				dst_x = inner_x + (inner_w - dst_w) / 2;
 				dst_y = inner_y + (inner_h - dst_h) / 2;
 			}
-			draw_bmp(dst_x, dst_y, dst_w, dst_h, &texture);
+			draw_bmp(dst_x, dst_y, dst_w, dst_h, &texture, DISPLAY_COLORS[TRANSPARENT]);
 			free_bmp_texture(&texture);
 		}
 	}

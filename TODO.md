@@ -1,14 +1,20 @@
 # d3m0n OS TODO list
 
-- [ ] Add dynamic layout, with possiblity to change layout using script.
+- [x] Add dynamic layout, with possiblity to change layout using script.
 	- [x] Could use small layout file as templates and load them dynamically using scripts
-- [x] System config with clock preference...
+	- [ ] Add multiple windows per app
+- [x] System config with clock preference
+- [ ] Add system theme config (light/dark)
 
 - [x] Handle clicks
-  - [ ] Deny click in topbar
+	- [ ] Deny click in topbar
 
 - [ ] Fix ui system
- - [ ] Locations need to be ptr so if a position changes the click changes too...
+	- [x] Locations need to follow real control position
+	- [ ] Allow user to customize topbar
+
+- [ ] Optimisations
+	- [ ] Load all icons at startup for faster display (keep in memory)
 
 
 - [ ] Docs

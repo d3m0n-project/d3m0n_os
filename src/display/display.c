@@ -10,7 +10,7 @@ static volatile uint32_t	g_framebuffer_mbox[35]  __attribute__((aligned(16)));
 
 static t_font				main_font;
 
-uint32_t	DISPLAY_COLORS[17] = { 0xff000000, 0x00000000, 0x000000bf, 0x000000ff, 0x00007fff, 0x0000ffff, 0x0000bf00, 0x0000ff00, 0x00bf5f00, 0x00ff0000, 0x00bfbf00, 0x00ffff00, 0x00bf00bf, 0x00ff00ff, 0x00191919, 0x007f7f7f, 0x00ffffff};
+uint32_t	DISPLAY_COLORS[17] = { 0x00000000, 0xff000000, 0xff0000bf, 0xff0000ff, 0xff007fff, 0xff00ffff, 0xff00bf00, 0xff00ff00, 0xffbf5f00, 0xffff0000, 0xffbfbf00, 0xffffff00, 0xffbf00bf, 0xffff00ff, 0xff191919, 0xff7f7f7f, 0xffffffff};
 
 uint16_t	rgb888_to_rgb565(uint32_t color)
 {
@@ -25,7 +25,7 @@ void	put_pixel(int x, int y, uint32_t color)
 {
 	if (x < 0 || (uint32_t)x >= SCREEN_WIDTH || y < 0 || (uint32_t)y >= SCREEN_HEIGHT)
 		return;
-	if (color == 0xff000000) // TODO: real transparency
+	if ((color & 0xFF000000) == 0x00000000) // TODO: real transparency
 		return;
 	#if DEBUG == 1
 	volatile uint32_t *fb = (volatile uint32_t *)(uintptr_t)fb_req.fb_addr;
@@ -94,7 +94,7 @@ void	draw_rect_outline(int x, int y, int w, int h, uint32_t color)
 	draw_vline(x + w, y, h, color);
 }
 
-void draw_bmp(int x, int y, int w, int h, BmpTexture *texture)
+void draw_bmp(int x, int y, int w, int h, BmpTexture *texture, uint32_t override_color)
 {
 	if (!texture || !texture->pixels)
 		return;
@@ -117,7 +117,10 @@ void draw_bmp(int x, int y, int w, int h, BmpTexture *texture)
 			if (texture->bytes_per_pixel == 4 // handle transparency
 				&& (texture->pixels[src_y * texture->width + src_x] & 0xFF000000) == 0)
 				continue;
-			put_pixel(x + i, y + j, texture->pixels[src_y * texture->width + src_x]);
+			uint32_t color = texture->pixels[src_y * texture->width + src_x];
+			if ((override_color & 0xFF000000) == 0xFF000000) // if a color override is set
+				color = override_color;
+			put_pixel(x + i, y + j, color);
 		}
 	}
 }

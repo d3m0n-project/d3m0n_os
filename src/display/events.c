@@ -34,7 +34,6 @@ void	handle_click(int x, int y, int button, t_window *window)
 	if (!(prev_buttons & 1) && (button & 1))
 	{
 		t_control *cur = window->controls;
-		//int topbar_height = window->top_bar ? TOPBAR_HEIGHT : 0;
 		while (cur)
 		{
 			int cx = cur->location.x;

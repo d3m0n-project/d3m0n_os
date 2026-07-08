@@ -1,4 +1,5 @@
 # d3m0n source
 
 Window.OnCreate =>
-	template.load("layouts/setting.template", 0, 50, "1", "Test 1", "/themes/default_dark/icons/battery-0-white.bmp");
+	template.load("layouts/setting.template", 0, 50, "1", "Connections", "/themes/default_dark/icons/wifi.bmp");
+	template.load("layouts/setting.template", 0, 105, "2", "Test 1", "/themes/default_dark/icons/battery-0-white.bmp");
