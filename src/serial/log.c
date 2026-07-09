@@ -47,8 +47,15 @@ void	log(const char *fmt, e_logtype type, ...)
 
 			if (fmt[i] == 's')
 				uart_print(va_arg(args, char*));
+			else if (fmt[i] == 'c')
+			{
+				char c = va_arg(args, int);
+				uart_print(&c);
+			}
 			else if (fmt[i] == 'i' || fmt[i] == 'd')
 				uart_putnbr_i(va_arg(args, int));
+			else if (fmt[i] == 'l' && fmt[i++ + 1] == 'u')
+				uart_putnbr_llu((unsigned long long)va_arg(args, unsigned long));
 			else if (fmt[i] == 'l' && fmt[i++ + 1] == 'l' && fmt[i++ + 1] == 'u')
 				uart_putnbr_llu(va_arg(args, unsigned long long));
 			else if (fmt[i] == 'u' || fmt[i] == 'p')

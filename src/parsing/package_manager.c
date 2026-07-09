@@ -91,7 +91,7 @@ char	*get_package_from_manifest_path(char *path)
 	}
 
 	char	*module_path = path_add("/apps/", splitted[module_name_idx]);
-	char	*provider_path = path_add(module_path, "/provider");
+	char	*provider_path = path_add(module_path, "provider");
 	if (!module_path || !provider_path)
 	{
 		if (module_path)
@@ -198,7 +198,7 @@ int	load_app_list(void)
 		if (!module_path)
 			continue;		
 
-		char *package_lst = path_add(module_path, "/packages.lst");
+		char *package_lst = path_add(module_path, "packages.lst");
 		if (!package_lst)
 		{
 			free(module_path);
@@ -243,7 +243,7 @@ int	load_app_list(void)
 		if (!module_path)
 			continue;		
 
-		char *package_lst = path_add(module_path, "/packages.lst");
+		char *package_lst = path_add(module_path, "packages.lst");
 		if (!package_lst)
 		{
 			free(module_path);

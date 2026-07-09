@@ -12,3 +12,200 @@ time_mode: 1
 
 # launcher desktop application
 launcher: com.4re5.d3m0n.system.launcher
+
+
+
+
+
+# ------- icons ---------
+icon_pack: material-design-icons
+
+# wifi
+icon_airplane_mode: device.airplanemode_active  
+icon_wifi_lock: device.wifi_lock
+icon_wifi_off: device.signal_wifi_off
+icon_wifi_level0: device.signal_wifi_0_bar
+icon_wifi_level1: device.signal_wifi_1_bar
+icon_wifi_level2: device.signal_wifi_2_bar
+icon_wifi_level3: device.signal_wifi_3_bar
+icon_wifi_level4: device.signal_wifi_4_bar
+icon_wifi_lock_level1: device.signal_wifi_1_bar_lock
+icon_wifi_lock_level2: device.signal_wifi_2_bar_lock
+icon_wifi_lock_level3: device.signal_wifi_3_bar_lock
+icon_wifi_lock_level4: device.signal_wifi_4_bar_lock
+
+# battery
+icon_battery_20: device.battery_20
+icon_battery_30: device.battery_30
+icon_battery_50: device.battery_50
+icon_battery_60: device.battery_60
+icon_battery_80: device.battery_80
+icon_battery_90: device.battery_90
+icon_battery_100: device.battery_full
+icon_battery_alert: device.battery_alert
+icon_battery_charging_20: device.battery_charging_20
+icon_battery_charging_30: device.battery_charging_30
+icon_battery_charging_50: device.battery_charging_50
+icon_battery_charging_60: device.battery_charging_60
+icon_battery_charging_80: device.battery_charging_80
+icon_battery_charging_90: device.battery_charging_90
+icon_battery_charging_100: device.battery_charging_full
+icon_battery_standard: device.battery_std
+icon_battery_unknown: device.battery_unknown
+
+# bluetooth
+icon_bluetooth: device.bluetooth
+icon_bluetooth_connected: device.bluetooth_connected
+icon_bluetooth_disabled: device.device/bluetooth_disabled
+icon_bluetooth_searching: device.device/bluetooth_searching
+
+# cellular signal
+icon_cellular_level0: device.signal_cellular_0_bar
+icon_cellular_level1: device.signal_cellular_1_bar
+icon_cellular_level2: device.signal_cellular_2_bar
+icon_cellular_level3: device.signal_cellular_3_bar
+icon_cellular_level4: device.signal_cellular_4_bar
+icon_cellular_no_internet0: device.signal_cellular_connected_no_internet_0_bar
+icon_cellular_no_internet1: device.signal_cellular_connected_no_internet_1_bar
+icon_cellular_no_internet2: device.signal_cellular_connected_no_internet_2_bar
+icon_cellular_no_internet3: device.signal_cellular_connected_no_internet_3_bar
+icon_cellular_no_internet4: device.signal_cellular_connected_no_internet_4_bar
+icon_cellular_off: device.signal_cellular_off
+icon_cellular_no_sim: device.signal_cellular_no_sim
+icon_cellular_null: device.signal_cellular_null
+icon_cellular_alt: device.signal_cellular_alt
+
+# storage
+icon_sd_storage: device.sd_storage
+
+# system
+icon_settings: action.settings
+icon_search: action.search
+icon_home: action.home
+icon_lock: action.lock
+icon_lock_open: action.lock_open
+icon_power: action.power_settings_new
+icon_backup: action.backup
+icon_restore: action.restore
+icon_sync: notification.sync
+icon_sync_disabled: notification.sync_disabled
+icon_cached: action.cached
+
+# user
+icon_account: action.account_circle
+icon_visibility: action.visibility
+icon_visibility_off: action.visibility_off
+icon_favorite: action.favorite
+icon_favorite_border: action.favorite_border
+
+# status
+icon_error: alert.error
+icon_warning: alert.warning
+icon_notification: alert.notification_important
+icon_info: action.info
+icon_help: action.help
+icon_bug_report: action.bug_report
+
+# time
+icon_alarm: action.alarm
+icon_alarm_on: action.alarm_on
+icon_alarm_off: action.alarm_off
+icon_schedule: action.schedule
+icon_today: action.today
+icon_event: action.event
+icon_history: action.history
+
+# media
+icon_play: av.play_arrow
+icon_pause: av.pause
+icon_stop: av.stop
+icon_next: av.skip_next
+icon_previous: av.skip_previous
+icon_fast_forward: av.fast_forward
+icon_fast_rewind: av.fast_rewind
+
+# audio
+icon_volume_up: av.volume_up
+icon_volume_down: av.volume_down
+icon_volume_mute: av.volume_mute
+icon_volume_off: av.volume_off
+icon_mic: av.mic
+icon_mic_off: av.mic_off
+icon_headset: hardware.headset
+icon_speaker: hardware.speaker
+
+# camera
+icon_camera: image.camera
+icon_camera_alt: image.camera_alt
+icon_photo: image.photo
+icon_photo_camera: image.photo_camera
+icon_flash_on: image.flash_on
+icon_flash_off: image.flash_off
+icon_videocam: av.videocam
+icon_videocam_off: av.videocam_off
+
+# communication
+icon_phone: communication.phone
+icon_call: communication.call
+icon_call_end: communication.call_end
+icon_contacts: communication.contacts
+icon_chat: communication.chat
+icon_message: communication.message
+icon_email: communication.email
+icon_phone_locked: notification.phone_locked
+icon_phone_missed: notification.phone_missed
+icon_phonelink_ring: communication.phonelink_ring
+
+# editing
+icon_add: content.add
+icon_remove: content.remove
+icon_clear: content.clear
+icon_create: content.create
+icon_save: content.save
+icon_send: content.send
+icon_paste: content.content_paste
+icon_sort: content.sort
+icon_filter: content.filter_list
+icon_delete: action.delete
+
+# location
+icon_place: maps.place
+icon_navigation: maps.navigation
+icon_my_location: maps.my_location
+icon_gps_fixed: device.gps_fixed
+icon_gps_searching: device.gps_not_fixed
+icon_gps_location_searching: device.location_searching
+icon_gps_off: device.gps_off
+icon_location_disabled: device.location_disabled
+icon_location_searching: device.location_searching
+icon_location_disabled: device.location_disabled
+
+# display
+icon_brightness_low: device.brightness_low
+icon_brightness_medium: device.brightness_medium
+icon_brightness_high: device.brightness_high
+icon_brightness_auto: device.brightness_auto
+
+# connectivity
+icon_network_cell: device.network_cell
+icon_network_wifi: device.network_wifi
+icon_data_usage: device.data_usage
+icon_nfc: device.nfc
+
+# hardware
+icon_sim_card: hardware.sim_card
+icon_memory: hardware.memory
+icon_keyboard: hardware.keyboard
+icon_keyboard_up: hardware.keyboard_arrow_up
+icon_keyboard_down: hardware.keyboard_arrow_down
+icon_keyboard_left: hardware.keyboard_arrow_left
+icon_keyboard_right: hardware.keyboard_arrow_right
+icon_smartphone: hardware.smartphone
+
+# toggles
+icon_checkbox_checked: toggle.check_box
+icon_checkbox_unchecked: toggle.check_box_outline_blank
+icon_radio_checked: toggle.radio_button_checked
+icon_radio_unchecked: toggle.radio_button_unchecked
+icon_toggle_on: toggle.toggle_on
+icon_toggle_off: toggle.toggle_off

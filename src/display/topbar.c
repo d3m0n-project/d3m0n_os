@@ -3,6 +3,8 @@
 #include "time.h"
 #include "scripting.h"
 #include "libft.h"
+#include "battery.h"
+#include "icons.h"
 
 static void	draw_clock(t_conf *conf, int *current_pos, uint32_t theme_color)
 {
@@ -26,24 +28,23 @@ static void	draw_clock(t_conf *conf, int *current_pos, uint32_t theme_color)
 	clock[4] = '0' + minutes % 10;
 
 	int size = TOPBAR_HEIGHT - TOPBAR_PADDING * 2;
-	draw_text(*current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size / 2, size, clock, theme_color, 0); // TODO: change topbar
+	draw_text(*current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size / 2, size, clock, theme_color, 0); 
 	*current_pos += (size / 2) * ft_strlen(clock) + TOPBAR_PADDING * 2;
 }
 
-static void	draw_battery(int *current_pos, uint32_t theme_color_fg)
+static void	draw_battery(t_conf *conf, int *current_pos, uint32_t theme_color_fg)
 {
-	BmpTexture	battery_icon = {0};
 	char		battery_percentage[5] = "100%";
-	int			battery_level = 100; // TODO: battery calculation
+	int			charging = is_charging();
+	int			battery_level = get_battery_level();
 	int			size = TOPBAR_HEIGHT - (2*TOPBAR_PADDING);
-	if (bmp_load_image(&battery_icon, "/themes/material-design-icons/device/battery_full.bmp"))
-	{
-		log("TOPBAR: Could not load battery icon\n", LOG_ERROR);
-		return;
-	}
+
+	char		*battery_levels[] = {conf->icon_battery_alert, conf->icon_battery_20, conf->icon_battery_30, conf->icon_battery_50, conf->icon_battery_60, conf->icon_battery_80, conf->icon_battery_90, conf->icon_battery_100};
+	char		*battery_levels_charging[] = {conf->icon_battery_alert, conf->icon_battery_charging_20, conf->icon_battery_charging_30, conf->icon_battery_charging_50, conf->icon_battery_charging_60, conf->icon_battery_charging_80, conf->icon_battery_charging_90, conf->icon_battery_charging_100};
+	
 	if (battery_level < 100)
 	{
-		if (battery_level > 10)
+		if (battery_level >= 10)
 		{
 			battery_percentage[0] = '0' + (battery_level / 10);
 			battery_percentage[1] = '0' + (battery_level % 10);
@@ -55,36 +56,57 @@ static void	draw_battery(int *current_pos, uint32_t theme_color_fg)
 			battery_percentage[2] = '\0';
 		}
 	}
+	int final_idx = 0;
+	if (battery_level < 20)
+		final_idx = 0;
+	else if (battery_level < 30)
+		final_idx = 1;
+	else if (battery_level < 50)
+		final_idx = 2;
+	else if (battery_level < 60)
+		final_idx = 3;
+	else if (battery_level < 80)
+		final_idx = 4;
+	else if (battery_level < 90)
+		final_idx = 5;
+	else if (battery_level < 100)
+		final_idx = 6;
+	else
+		final_idx = 7;
+
+	char	*icon_name = (charging)?battery_levels_charging[final_idx]:battery_levels[final_idx];
+	BmpTexture	*battery_icon = get_icon(icon_name);
+	if (!battery_icon)
+		return;
+
 	draw_text(*current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size/2, size, battery_percentage, theme_color_fg, 0);
 	*current_pos += (size/2) * 4 + TOPBAR_PADDING + TOPBAR_PADDING;
 	
-	draw_bmp(*current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size, size, &battery_icon, theme_color_fg);
+	draw_bmp(*current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size, size, battery_icon, theme_color_fg);
 	*current_pos += TOPBAR_HEIGHT;
-	free_bmp_texture(&battery_icon);
 }
 
-void	draw_connections(int *current_pos, uint32_t theme_color_fg)
+void	draw_connections(t_conf *conf, int *current_pos, uint32_t theme_color_fg)
 {
-	static char	*wifi_states[] = {"notification/wifi_off.bmp", "device/signal_wifi_0_bar.bmp", "device/signal_wifi_1_bar.bmp", "device/signal_wifi_2_bar.bmp", "device/signal_wifi_3_bar.bmp", "device/signal_wifi_4_bar.bmp"};
-	BmpTexture	wifi_icon = {0};
-	int			size = TOPBAR_HEIGHT - (2*TOPBAR_PADDING);
-	int			wifi_level = 2; // TODO: WIFI
+	char		*wifi_states[] = {
+		conf->icon_wifi_off,
+		conf->icon_wifi_level0,
+		conf->icon_wifi_level1,
+		conf->icon_wifi_level2,
+		conf->icon_wifi_level3,
+		conf->icon_wifi_level4
+	};
+	int			size = TOPBAR_HEIGHT - (2 * TOPBAR_PADDING);
+	int			wifi_level = 5; // TODO: WIFI
 	if (wifi_level < 0 || wifi_level > 5)
 		wifi_level = 0;
-	char		*image_path = path_add("/themes/material-design-icons/", wifi_states[wifi_level]);
-	if (!image_path || bmp_load_image(&wifi_icon, image_path))
-	{
-		log("TOPBAR: Could not load wifi icon\n", LOG_ERROR);
-		if (image_path)
-			free(image_path);
+	
+	BmpTexture	*wifi_icon = get_icon(wifi_states[wifi_level]);
+	if (!wifi_icon)
 		return;
-	}
-	if (!image_path)
-		return;
-	free(image_path);
-	draw_bmp(*current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size, size, &wifi_icon, theme_color_fg);
+		
+	draw_bmp(*current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size, size, wifi_icon, theme_color_fg);
 	*current_pos += TOPBAR_HEIGHT;
-	free_bmp_texture(&wifi_icon);
 }
 
 void	draw_topbar(t_window *window)
@@ -99,9 +121,9 @@ void	draw_topbar(t_window *window)
 
 
 		// draw battery and connection status
-		draw_battery(&current_pos, theme_color_fg);
+		draw_battery(conf, &current_pos, theme_color_fg);
 
-		draw_connections(&current_pos, theme_color_fg);
+		draw_connections(conf, &current_pos, theme_color_fg);
 
 		draw_clock(conf, &current_pos, theme_color_fg);
 		

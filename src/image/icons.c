@@ -56,33 +56,56 @@ int	load_icon_pack(char *path)
 
 	list_path = ft_strjoin(path, "/icons.lst");
 	if (!list_path)
-		return (1);
+		return 1;
 
 	fd = open(list_path, O_READ);
-	free(list_path);
-	log("%i\n", fd);
 	if (fd < 0)
-		return (1);
+	{
+		free(list_path);
+		log("ICONS: Could not find icons.lst in icon pack\n", LOG_ERROR);
+		return 1;
+	}
 
 	// count valid icons
 	while ((line = get_next_line(fd)))
 	{
-		if (valid_icon_path(line))
-			max_icons++;
+		size_t i = ft_strlen(line);
 
+		while (i > 0 && (line[i - 1] == '\n' || line[i - 1] == '\r'))
+		{
+			line[i - 1] = '\0';
+			i--;
+		}
+		if (!valid_icon_path(line))
+		{
+			log("ICONS: Invalid icon path at l.%i: '%s'\n", LOG_ERROR, max_icons+1, line);
+			free(line);
+			close(fd);
+			free(list_path);
+			return 1;
+		}	
+		max_icons++;
 		free(line);
 	}
 	close(fd);
+	log("Found %lu icons in the icon pack!\n", LOG_SUCCESS, max_icons);
 	library = malloc(sizeof(t_icon) * max_icons);
 	if (!library)
-		return (1);
+	{
+		free(list_path);
+		log("ICONS: Could not allocate library\n", LOG_ERROR);
+		return 1;
+	}
 
 
-	fd = open(path_add(path, "icons.lst"), O_READ);
+	fd = open(list_path, O_READ);
+	free(list_path);
 	if (fd < 0)
 	{
+		
+		log("ICONS: Could not find icons.lst in icon pack\n", LOG_ERROR);
 		free_library();
-		return (1);
+		return 1;
 	}
 	while ((line = get_next_line(fd)))
 	{
@@ -106,7 +129,8 @@ int	load_icon_pack(char *path)
 			free(line);
 			close(fd);
 			free_library();
-			return (1);
+			log("ICONS: Could not allocate path folder parts\n", LOG_ERROR);
+			return 1;
 		}
 		len = ft_strlen(parts[1]);
 		parts[1][len - 4] = 0;
@@ -121,21 +145,23 @@ int	load_icon_pack(char *path)
 		full_path = path_add(path, line);
 		if (!full_path)
 		{
+			log("ICONS: Could not allocate full path of icon\n", LOG_ERROR);
 			cleanup_splitted(parts);
 			free(line);
 			close(fd);
 			free_library();
-			return (1);
+			return 1;
 		}
 
-		if (!bmp_load_image(&library[library_count].texture, full_path))
+		if (bmp_load_image(&library[library_count].texture, full_path))
 		{
+			log("ICONS: Could not load image at %s\n", LOG_ERROR, full_path);
 			free(full_path);
 			cleanup_splitted(parts);
 			free(line);
 			close(fd);
 			free_library();
-			return (1);
+			return 1;
 		}
 		library_count++;
 		free(full_path);
@@ -148,10 +174,11 @@ int	load_icon_pack(char *path)
 
 BmpTexture	*get_icon(char *name)
 {
-    for (size_t i = 0; i < library_count; i++)
-    {
-        if (!ft_strcmp(library[i].name, name))
-            return &library[i].texture;
-    }
-    return 0;
+	for (size_t i = 0; i < library_count; i++)
+	{
+		if (!ft_strcmp(library[i].name, name))
+			return &library[i].texture;
+	}
+	log("ICONS: Could not find icon '%s'\n", LOG_ERROR, name);
+	return 0;
 }

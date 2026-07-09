@@ -14,11 +14,11 @@ uint32_t	DISPLAY_COLORS[17] = { 0x00000000, 0xff000000, 0xff0000bf, 0xff0000ff, 
 
 uint16_t	rgb888_to_rgb565(uint32_t color)
 {
-    uint8_t b = (color >> 16) & 0xFF;
-    uint8_t g = (color >> 8) & 0xFF;
-    uint8_t r = color & 0xFF;
+	uint8_t b = (color >> 16) & 0xFF;
+	uint8_t g = (color >> 8) & 0xFF;
+	uint8_t r = color & 0xFF;
 
-    return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
+	return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
 }
 
 void	put_pixel(int x, int y, uint32_t color)
@@ -94,32 +94,78 @@ void	draw_rect_outline(int x, int y, int w, int h, uint32_t color)
 	draw_vline(x + w, y, h, color);
 }
 
+static inline uint32_t	alpha_blend(uint32_t src, uint32_t dst)
+{
+	uint32_t a = src >> 24;
+
+	if (a == 255)
+		return src;
+	if (a == 0)
+		return dst;
+
+	uint32_t sr = (src >> 16) & 255;
+	uint32_t sg = (src >> 8) & 255;
+	uint32_t sb = src & 255;
+
+	uint32_t dr = (dst >> 16) & 255;
+	uint32_t dg = (dst >> 8) & 255;
+	uint32_t db = dst & 255;
+
+	uint32_t inv = 255 - a;
+
+	uint32_t r = (sr * a + dr * inv) / 255;
+	uint32_t g = (sg * a + dg * inv) / 255;
+	uint32_t b = (sb * a + db * inv) / 255;
+
+	return 0xFF000000 | (r << 16) | (g << 8) | b;
+}
+
 void draw_bmp(int x, int y, int w, int h, BmpTexture *texture, uint32_t override_color)
 {
 	if (!texture || !texture->pixels)
 		return;
 
-	float scale_x = (float)texture->width / (float)w;
-	float scale_y = (float)texture->height / (float)h;
+	const int tex_w = texture->width;
+	const int tex_h = texture->height;
+
+	const float scale_x = (float)tex_w / w;
+	const float scale_y = (float)tex_h / h;
+
+	const int has_alpha = (texture->bytes_per_pixel == 4);
+	const int use_override = ((override_color >> 24) == 0xFF);
 
 	for (int j = 0; j < h; j++)
 	{
+		int sy = (int)(j * scale_y);
+		if (sy >= tex_h)
+			sy = tex_h - 1;
+
+		const uint32_t *src_row = texture->pixels + sy * tex_w;
+
 		for (int i = 0; i < w; i++)
 		{
-			int src_x = (int)(i * scale_x);
-			int src_y = (int)(j * scale_y);
+			int sx = (int)(i * scale_x);
+			if (sx >= tex_w)
+				sx = tex_w - 1;
 
-			if (src_x >= texture->width)
-				src_x = texture->width - 1;
-			if (src_y >= texture->height)
-				src_y = texture->height - 1;
+			uint32_t color = src_row[sx];
 
-			// handle transparency
-			if (texture->bytes_per_pixel == 4 && (texture->pixels[src_y * texture->width + src_x] & 0xFF000000) == 0)
-				continue;
-			uint32_t color = texture->pixels[src_y * texture->width + src_x];
-			if ((override_color & 0xFF000000) == 0xFF000000) // if a color override is set
-				color = override_color;
+			if (has_alpha)
+			{
+				uint32_t alpha = color >> 24;
+				if (alpha == 0)
+					continue;
+			}
+
+			if (use_override)
+				color = (color & 0xFF000000) | (override_color & 0x00FFFFFF);
+
+			if (has_alpha && (color >> 24) != 255)
+			{
+				uint32_t dst = get_pixel(x + i, y + j);
+				color = alpha_blend(color, dst);
+			}
+
 			put_pixel(x + i, y + j, color);
 		}
 	}

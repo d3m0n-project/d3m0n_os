@@ -94,9 +94,15 @@ void	kernel_main(void *dtb)
 
 	// TODO: threading
 	uint64_t	t = time_us();
-	if (load_icon_pack("/themes/material-design-icons"))
-		log("Could not load icon pack\n", LOG_ERROR);
-	log("loaded icons in %is\n", LOG_INFO, (time_us() - t) / (1000 * 1000));
+	char		*icon_pack_path = path_add("/themes/", config.icon_pack);
+	if (!icon_pack_path || load_icon_pack(icon_pack_path))
+		log("Could not load icon pack: %s\n", LOG_ERROR, icon_pack_path);
+	else
+		log("Loaded icons in %ims\n", LOG_INFO, (time_us() - t) / 1000);
+	if (icon_pack_path)
+		free(icon_pack_path);
+	
+
 
 	usleep(config.splash_time * 1000);
 	

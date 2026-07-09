@@ -92,16 +92,30 @@ int		dir_exists(const char *path)
 // TODO: validate paths
 char	*path_add(char *path, char *path2)
 {
-	size_t	l1 = ft_strlen(path);
-	size_t	l2 = ft_strlen(path2);
-	char	*output = malloc(l1 + l2 + 1);
+	size_t	l1;
+	size_t	l2;
+	int add_slash;
+	char *output;
 
+	if (!path || !path2)
+		return 0;
+
+	l1 = ft_strlen(path);
+	l2 = ft_strlen(path2);
+	add_slash = (l1 > 0 && path[l1 - 1] != '/' && l2 > 0 && path2[0] != '/');
+
+	output = malloc(l1 + l2 + add_slash + 1);
 	if (!output)
-		return NULL;
+		return 0;
 
 	memcpy(output, path, l1);
-	memcpy(output + l1, path2, l2);
-	output[l1 + l2] = '\0';
+
+	if (add_slash)
+		output[l1] = '/';
+
+	memcpy(output + l1 + add_slash, path2, l2);
+	output[l1 + l2 + add_slash] = '\0';
+
 	return output;
 }
 
