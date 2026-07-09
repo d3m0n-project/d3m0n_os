@@ -6,19 +6,6 @@
 #include "get_next_line.h"
 #include "settings.h"
 
-void	cleanup_splitted(char **splitted)
-{
-	if (!splitted)
-		return;
-	int i = 0;
-	while (splitted[i])
-	{
-		free(splitted[i]);
-		i++;
-	}
-	free(splitted);
-}
-
 // format:
 //	 com.provider.module_name.path.to => /apps/module_name/path/to/
 char *get_app_path_from_package(char *package, e_package_request_type type)
@@ -109,7 +96,7 @@ char	*get_package_from_manifest_path(char *path)
 	{
 		if (module_path)
 			free(module_path);
-		else
+		if (provider_path)
 			free(provider_path);
 	}
 	// check that the module is valid

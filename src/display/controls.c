@@ -157,4 +157,5 @@ void	free_controls(t_window	*win)
 		free(current);
 		current = next;
 	}
+	win->controls = 0;
 }

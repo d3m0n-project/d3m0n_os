@@ -36,40 +36,45 @@ char*	fn_app_open(void **args)
 	}
 	
 	if (opened_window.controls) // already initialized, clear controls
-	{
-		t_control	*current = opened_window.controls;
-		while (current)
-		{
-			t_control	*ctrl = current;
-			current = current->p_next;
-			free(ctrl);
-		}
-	}
+		free_controls(&opened_window);
 	if (opened_window.events[0].script) // clear events
 	{
 		for (int i=0; i<MAX_WINDOW_EVENTS; i++)
 		{
 			if (opened_window.events[i].script)
 				free(opened_window.events[i].script);
+			opened_window.events[i].script = 0;
 		}
 	}
 	if (parse_manifest(manifest, &opened_window))
 	{
+		free(layout_path);
+		free(src_path);
+		free(manifest);
 		log("APP.OPEN: Could not parse manifest at '%s' for package: '%s'\n", LOG_ERROR | LOG_INDENT, manifest ,package);
 		return 0;
 	}
 	if (parse_layout(layout_path, &opened_window, 0, 0, 0))
 	{
+		free(layout_path);
+		free(src_path);
+		free(manifest);
 		log("APP.OPEN: Could not parse layout for package: '%s'\n", LOG_ERROR | LOG_INDENT ,package);
 		return 0;
 	}
 	if (parse_source(src_path, &opened_window, 0))
 	{
+		free(layout_path);
+		free(src_path);
+		free(manifest);
 		log("APP.OPEN: Could not parse layout for package: '%s'\n", LOG_ERROR | LOG_INDENT ,package);
 		return 0;
 	}
 	set_current_window(&opened_window);
 	exec_event(0, EVENT_ON_CREATE, &opened_window);
+	free(layout_path);
+	free(src_path);
+	free(manifest);
 	return 0;
 }
 

@@ -15,6 +15,4 @@ char	*get_app_path_from_package(char *package, e_package_request_type type);
 int		load_app_list(void);
 char	*get_package_from_manifest_path(char *path);
 
-void	cleanup_splitted(char **splitted);
-
 #endif

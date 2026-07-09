@@ -20,7 +20,7 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	uint32_t	row_size;
 	uint32_t	stride;
 	uint32_t	data_size;
-	bool		flip;
+	int			flip;
 
 	if (fd == -1)
 		return (1);
@@ -68,8 +68,7 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 
 	#if SHOW_IMAGE_STATUS == 1
 	log("BMP bpp: %i\n", LOG_INFO | LOG_INDENT, out->bytes_per_pixel);
-	log("BMP size: %ix%i\n", LOG_INFO | LOG_INDENT,
-		out->width, out->height);
+	log("BMP size: %ix%i\n", LOG_INFO | LOG_INDENT, out->width, out->height);
 	#endif
 
 	if (out->bytes_per_pixel == 3)
@@ -112,9 +111,7 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	}
 
 	#if SHOW_IMAGE_STATUS == 1
-	log("total BMP loading time: %llums\n",
-		LOG_INFO | LOG_INDENT,
-		(time_us() / 1000) - start_time);
+	log("total BMP loading time: %llums\n", LOG_INFO | LOG_INDENT, (time_us() / 1000) - start_time);
 	#endif
 
 	free(file_pixels);

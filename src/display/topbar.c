@@ -65,10 +65,10 @@ static void	draw_battery(int *current_pos, uint32_t theme_color_fg)
 
 void	draw_connections(int *current_pos, uint32_t theme_color_fg)
 {
-	static char	*wifi_states[6] = {"notification/wifi_off.bmp", "device/signal_wifi_0_bar.bmp", "device/signal_wifi_1_bar.bmp", "device/signal_wifi_2_bar.bmp", "device/signal_wifi_3_bar.bmp", "device/signal_wifi_4_bar.bmp"};
+	static char	*wifi_states[] = {"notification/wifi_off.bmp", "device/signal_wifi_0_bar.bmp", "device/signal_wifi_1_bar.bmp", "device/signal_wifi_2_bar.bmp", "device/signal_wifi_3_bar.bmp", "device/signal_wifi_4_bar.bmp"};
 	BmpTexture	wifi_icon = {0};
 	int			size = TOPBAR_HEIGHT - (2*TOPBAR_PADDING);
-	int			wifi_level = 1; // TODO: WIFI
+	int			wifi_level = 2; // TODO: WIFI
 	if (wifi_level < 0 || wifi_level > 5)
 		wifi_level = 0;
 	char		*image_path = path_add("/themes/material-design-icons/", wifi_states[wifi_level]);
@@ -79,8 +79,6 @@ void	draw_connections(int *current_pos, uint32_t theme_color_fg)
 			free(image_path);
 		return;
 	}
-	log("image_path = %p\n", LOG_INFO, image_path);
-
 	if (!image_path)
 		return;
 	free(image_path);

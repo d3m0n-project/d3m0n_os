@@ -49,6 +49,19 @@ static char	**clean_strings(char	**output, size_t k)
 	return (0);
 }
 
+void	cleanup_splitted(char **splitted)
+{
+	if (!splitted)
+		return;
+	int i = 0;
+	while (splitted[i])
+	{
+		free(splitted[i]);
+		i++;
+	}
+	free(splitted);
+}
+
 char	**ft_split(const char *str, char c)
 {
 	char	**output;

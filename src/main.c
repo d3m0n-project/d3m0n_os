@@ -10,11 +10,7 @@
 #include "time.h"
 #include "peripheral.h"
 #include "settings.h"
-
-// TODO: remove me
-#include "gpio.h"
-#include "spi.h"
-#include "lcd.h"
+#include "icons.h"
 
 
 #include "package_manager.h"
@@ -95,6 +91,12 @@ void	kernel_main(void *dtb)
 		log("Could not load splash screen\n", LOG_ERROR);
 	else
 		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &splash, DISPLAY_COLORS[TRANSPARENT]);
+
+	// TODO: threading
+	uint64_t	t = time_us();
+	if (load_icon_pack("/themes/material-design-icons"))
+		log("Could not load icon pack\n", LOG_ERROR);
+	log("loaded icons in %is\n", LOG_INFO, (time_us() - t) / (1000 * 1000));
 
 	usleep(config.splash_time * 1000);
 	
