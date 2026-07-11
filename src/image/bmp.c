@@ -85,7 +85,7 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 			dst = out->pixels + y * out->width;
 			for (int x = 0; x < out->width; x++)
 			{
-				*dst++ = (src[0] << 16) | (src[1] << 8) | src[2];
+				*dst++ = (0xFFu << 24) | (src[0] << 16) | (src[1] << 8) | src[2];
 				src += 3;
 			}
 		}

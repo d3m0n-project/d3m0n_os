@@ -82,15 +82,15 @@ void	kernel_main(void *dtb)
 	else						log("Config parsed successfully!\n", LOG_SUCCESS);
 
 
-	if (load_app_list())		panic("Failed to load the apps list\n");
-	else						log("Loaded apps successfully!\n", LOG_SUCCESS);
-
 	// load spash
 	BmpTexture	splash;
 	if (bmp_load_image(&splash, "wallpapers/splash.bmp"))
 		log("Could not load splash screen\n", LOG_ERROR);
 	else
 		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &splash, DISPLAY_COLORS[TRANSPARENT]);
+
+	if (load_app_list())		panic("Failed to load the apps list\n");
+	else						log("Loaded apps successfully!\n", LOG_SUCCESS);
 
 	// TODO: threading
 	uint64_t	t = time_us();
@@ -102,9 +102,6 @@ void	kernel_main(void *dtb)
 	if (icon_pack_path)
 		free(icon_pack_path);
 	
-
-
-	usleep(config.splash_time * 1000);
 	
 	// load desktop app manifest
 	char	*manifest = get_app_path_from_package(config.launcher, PACKAGE_MANIFEST);

@@ -75,7 +75,7 @@ static void	draw_battery(t_conf *conf, int *current_pos, uint32_t theme_color_fg
 		final_idx = 7;
 
 	char	*icon_name = (charging)?battery_levels_charging[final_idx]:battery_levels[final_idx];
-	BmpTexture	*battery_icon = get_icon(icon_name);
+	BmpTexture	*battery_icon = get_icon(icon_name, conf);
 	if (!battery_icon)
 		return;
 
@@ -101,7 +101,7 @@ void	draw_connections(t_conf *conf, int *current_pos, uint32_t theme_color_fg)
 	if (wifi_level < 0 || wifi_level > 5)
 		wifi_level = 0;
 	
-	BmpTexture	*wifi_icon = get_icon(wifi_states[wifi_level]);
+	BmpTexture	*wifi_icon = get_icon(wifi_states[wifi_level], conf);
 	if (!wifi_icon)
 		return;
 		
@@ -130,7 +130,7 @@ void	draw_topbar(t_window *window)
 		if (!window->is_launcher)
 		{
 			int size = TOPBAR_HEIGHT - TOPBAR_PADDING * 2;
-			draw_text(current_pos, TOPBAR_PADDING, size / 2, size, window->title, DISPLAY_COLORS[MAGENTA], 0);
+			draw_text(current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size / 2, size, window->title, DISPLAY_COLORS[MAGENTA], 0);
 			current_pos += (size / 2) * ft_strlen(window->title) + TOPBAR_PADDING;
 		}
 	}

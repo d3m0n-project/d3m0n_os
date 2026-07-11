@@ -78,22 +78,16 @@ then execute code (.src) in `/usr/share/d3m0n/temp/APP_TOKEN/src/main.src` (exam
 
 
 ## wallpapers
-Wallpapers are located in `/usr/share/d3m0n/wallpapers`. To change it, edit `wallpaper` in d3m0n [config file](#config-file)
+Wallpapers are located in `/rootfs/wallpapers`. To change it, edit `wallpaper` in d3m0n [config file](#config-file)
 ![image](https://github.com/d3m0n-project/d3m0n_os/assets/71982379/5aa3aa21-c8a5-446c-9387-479a81cb5e0a)
 
 ## config file
 	wallpaper: default
 	theme: default_dark
-	splash_time: 3000
-	shell_port: 3849
 ### description
-`wallpaper` is your wallpaper name (without .png)
+`wallpaper` is your wallpaper name (without .bmp)
 
 `theme` is your theme folder name that contains all icons and sounds
-
-`splash_time` is the time in ms splash screen will be displayed
-
-`shell_port` is machine port where d3m0n shell service will run
 
 
 ## Links

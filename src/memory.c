@@ -75,14 +75,14 @@ int free(void *ptr)
 
 	if ((uint8_t *)ptr < HEAP_START || (uint8_t *)ptr >= HEAP_END)
 	{
-		log("FREE INVALID POINTER 0x%p\n", LOG_ERROR, ptr);
+		log("FREE INVALID POINTER 0x%p\n", LOG_WARNING, ptr);
 		return 1;
 	}
 
 	block_t *block = (block_t *)((uint8_t *)ptr - sizeof(block_t));
 	if (block->free)
 	{
-		log("DOUBLE FREE 0x%p\n", LOG_ERROR, ptr);
+		log("DOUBLE FREE 0x%p\n", LOG_WARNING, ptr);
 		return 1;
 	}
 	block->free = 1;

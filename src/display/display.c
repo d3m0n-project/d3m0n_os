@@ -165,7 +165,6 @@ void draw_bmp(int x, int y, int w, int h, BmpTexture *texture, uint32_t override
 				uint32_t dst = get_pixel(x + i, y + j);
 				color = alpha_blend(color, dst);
 			}
-
 			put_pixel(x + i, y + j, color);
 		}
 	}

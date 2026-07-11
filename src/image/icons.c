@@ -1,5 +1,7 @@
 #include "icons.h"
 #include "get_next_line.h"
+#include "settings.h"
+#include "libft.h"
 
 typedef struct	s_icon
 {
@@ -172,8 +174,25 @@ int	load_icon_pack(char *path)
 	return (0);
 }
 
-BmpTexture	*get_icon(char *name)
+BmpTexture	*get_icon(char *name, t_conf *conf)
 {
+	int		setting_index = -1;
+
+	if (conf)
+	{
+		// check if that is an alias in the config
+		for (setting_index = 0; setting_index < CONF_FIELD_COUNT; setting_index++)
+		{
+			if (conf_offsets[setting_index].type == TYPE_STRING && !ft_strcmp((char *)conf_offsets[setting_index].key, name))
+			{
+				name = (char *)conf + conf_offsets[setting_index].offset;
+				break;
+			}
+		}
+	}
+	
+
+	// search it
 	for (size_t i = 0; i < library_count; i++)
 	{
 		if (!ft_strcmp(library[i].name, name))
