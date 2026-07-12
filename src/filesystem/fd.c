@@ -15,7 +15,7 @@ static int	is_valid_open_flags(int flags)
 {
 	int access_mode;
 
-	if (flags & ~(O_READ | O_WRITE | O_CREATE | O_APPEND | O_TRUNC))
+	if (flags & ~(O_READ | O_WRITE | O_CREATE | O_APPEND))
 		return (0);
 	if ((flags & O_APPEND) && !(flags & O_WRITE))
 		return (0);
@@ -56,14 +56,6 @@ int		open(const char *path, int flags)
 		return (-1);
 	g_fds[fd].file = file;
 	g_fds[fd].mode = (file_open_mode)(flags & (O_READ | O_WRITE | O_CREATE | O_APPEND));
-		if ((flags & O_TRUNC) && (flags & O_WRITE))
-		{
-			fat32_delete(path);
-			file = fat32_create(path);
-			if (file.first_cluster == 0)
-				return (-1);
-			g_fds[fd].file = file;
-		}
 	if (g_fds[fd].mode & O_APPEND)
 		g_fds[fd].file.pos = g_fds[fd].file.size;
 	return (fd);

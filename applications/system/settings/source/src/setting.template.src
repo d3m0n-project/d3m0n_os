@@ -1,2 +1,0 @@
-$0.OnClick =>
-	log("Clicked $0", "red");

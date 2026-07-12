@@ -58,6 +58,11 @@ void	draw_qemu_outline()
 
 void	draw_hline(int x, int y, int w, uint32_t color)
 {
+	if (w < 0)
+	{
+		w = -w;
+		x -= w;
+	}
 	#if DEBUG == 1
 	for (int i=0; i<w; i++)
 		put_pixel(x + i, y, color);
@@ -118,6 +123,112 @@ static inline uint32_t	alpha_blend(uint32_t src, uint32_t dst)
 	uint32_t b = (sb * a + db * inv) / 255;
 
 	return 0xFF000000 | (r << 16) | (g << 8) | b;
+}
+
+static void	draw_ellipse_points(int cx, int cy, int x, int y, uint32_t color)
+{
+	put_pixel(cx + x, cy + y, color);
+	put_pixel(cx - x, cy + y, color);
+	put_pixel(cx + x, cy - y, color);
+	put_pixel(cx - x, cy - y, color);
+}
+
+void	draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int filled)
+{
+	int		x;
+	int		y;
+	long	rx2;
+	long	ry2;
+	long	two_rx2;
+	long	two_ry2;
+	long	d1;
+	long	d2;
+	long	dx;
+	long	dy;
+
+	if (rx <= 0 || ry <= 0)
+		return;
+
+	x = 0;
+	y = ry;
+
+	rx2 = (long)rx * rx;
+	ry2 = (long)ry * ry;
+	two_rx2 = 2 * rx2;
+	two_ry2 = 2 * ry2;
+
+	dx = 0;
+	dy = two_rx2 * y;
+
+	// region 1
+	d1 = ry2 - (rx2 * ry) + (rx2 / 4);
+
+	while (dx < dy)
+	{
+		if (filled)
+		{
+			draw_hline(cx - x, cy + y, 2 * x + 1, color);
+			draw_hline(cx - x, cy - y, 2 * x + 1, color);
+
+			if (x != y)
+			{
+				draw_hline(cx - y, cy + x, 2 * y + 1, color);
+				draw_hline(cx - y, cy - x, 2 * y + 1, color);
+			}
+		}
+		else
+			draw_ellipse_points(cx, cy, x, y, color);
+
+		if (d1 < 0)
+		{
+			x++;
+			dx += two_ry2;
+			d1 += dx + ry2;
+		}
+		else
+		{
+			x++;
+			y--;
+			dx += two_ry2;
+			dy -= two_rx2;
+			d1 += dx - dy + ry2;
+		}
+	}
+
+	// region 2
+	d2 = ry2 * (x * x + x) + rx2 * (y - 1) * (y - 1) - rx2 * ry2;
+
+	while (y >= 0)
+	{
+		if (filled)
+		{
+			draw_hline(cx - x, cy + y, 2 * x + 1, color);
+			draw_hline(cx - x, cy - y, 2 * x + 1, color);
+
+			if (x != y)
+			{
+				draw_hline(cx - y, cy + x, 2 * y + 1, color);
+				draw_hline(cx - y, cy - x, 2 * y + 1, color);
+			}
+		}
+		else
+			draw_ellipse_points(cx, cy, x, y, color);
+
+		if (d2 > 0)
+		{
+			y--;
+			dy -= two_rx2;
+			d2 += rx2 - dy;
+		}
+		else
+		{
+			y--;
+			x++;
+			dx += two_ry2;
+			dy -= two_rx2;
+			d2 += dx - dy + rx2;
+		}
+	}
 }
 
 void draw_bmp(int x, int y, int w, int h, BmpTexture *texture, uint32_t override_color)

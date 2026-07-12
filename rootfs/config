@@ -56,8 +56,8 @@ icon_battery_unknown: device.battery_unknown
 # bluetooth
 icon_bluetooth: device.bluetooth
 icon_bluetooth_connected: device.bluetooth_connected
-icon_bluetooth_disabled: device.device/bluetooth_disabled
-icon_bluetooth_searching: device.device/bluetooth_searching
+icon_bluetooth_disabled: device.bluetooth_disabled
+icon_bluetooth_searching: device.bluetooth_searching
 
 # cellular signal
 icon_cellular_level0: device.signal_cellular_0_bar
@@ -209,3 +209,6 @@ icon_radio_checked: toggle.radio_button_checked
 icon_radio_unchecked: toggle.radio_button_unchecked
 icon_toggle_on: toggle.toggle_on
 icon_toggle_off: toggle.toggle_off
+
+# style
+icon_brush: image.brush

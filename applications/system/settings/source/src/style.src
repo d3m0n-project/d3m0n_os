@@ -1,0 +1,8 @@
+Window.OnCreate =>
+	template.load("layouts/templates/titlebar.template", 0, 0, "Wallpaper & Style");
+
+	# Settings
+	start_y = 38;
+
+	# theme
+	template.load("layouts/templates/switch_setting.template", 0, start_y, "theme", "Use Light Theme");

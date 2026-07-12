@@ -120,9 +120,22 @@ char*	template_load(void **args)
 		log("TEMPLATE.LOAD: Could not load template at x:%i, y:%i\n", LOG_ERROR | LOG_INDENT, x, y);
 	else
 	{
+		// get max event id before
+		int current_event_idx = 1; // id=0 is exit cross
+		while (current_event_idx<MAX_WINDOW_EVENTS && current_win->events[current_event_idx].type != EVENT_UNDEFINED)
+			current_event_idx++;
 		source_path = get_template_source_path(path, current_win);
 		if (source_path && file_exists(source_path) && parse_source(source_path, current_win, strings))
 			log("TEMPLATE.LOAD: Could not load template source '%s'\n", LOG_ERROR | LOG_INDENT, source_path);
+		else
+		{
+			// load events after load
+			for (int i=current_event_idx + 1; i<MAX_WINDOW_EVENTS; i++)
+			{
+				if (current_win->events[i].type == EVENT_ON_CREATE && current_win->events[i].affected_control == 0)
+					exec_script(current_win->events[i].script);
+			}
+		}
 	}
 	if (source_path)
 		free(source_path);

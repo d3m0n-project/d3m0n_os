@@ -1,0 +1,20 @@
+# [config_key, text]
+
+$0_switch.OnClick =>
+	state = state.get("$0_switch", "checked");
+	settings.set("$0", state);
+	
+
+Window.OnCreate =>
+	is_checked = settings.get("$0");
+	if (is_checked == 1)
+	{
+		state.set("$0_switch", "checked", "true");
+	}
+	else
+	{
+		state.set("$0_switch", "checked", "false");
+	}
+	
+	
+	

@@ -11,7 +11,7 @@ Image:
 	width="24px";
 	height="24px";
 	location="3, 3";
-	color="red";
+	color="white";
 
 Text:
 	content="$1";
@@ -19,4 +19,11 @@ Text:
 	font_size="10";
 	color="white";
 	height="30px";
+
+Image:
+	src="icon_keyboard_right";
+	width="24px";
+	height="24px";
+	location="283, 3";
+	color="white";
 

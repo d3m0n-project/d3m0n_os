@@ -90,7 +90,7 @@ uint32_t	lp_parse_color(char *str)
 				if (g > 255) g = 255;
 				if (b < 0) b = 0;
 				if (b > 255) b = 255;
-				return ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
+				return ((uint32_t)0xFF << 24) | ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
 			}
 		}
 		return (uint32_t)r;
@@ -129,7 +129,7 @@ uint32_t	lp_parse_color(char *str)
 		return DISPLAY_COLORS[DARK_GREY];
 	if (!ft_strcmp(str, "grey"))
 		return DISPLAY_COLORS[GREY];
-	return (uint32_t)ft_atoi(str);
+	return (uint32_t)ft_atoi(str) | 0xFF000000;
 }
 
 static int	lp_parse_align(char *value)
@@ -430,8 +430,6 @@ static int	lp_apply_window_attr(t_window *win, char *key, char *value)
 	return 0;
 }
 
-static t_control	*lp_find_control_by_name(t_control *list, char *name);
-
 static int	lp_get_relative_base(t_window *win, t_control *parent, int is_x)
 {
 	if (parent)
@@ -439,7 +437,7 @@ static int	lp_get_relative_base(t_window *win, t_control *parent, int is_x)
 	return (is_x ? (win ? win->width : SCREEN_WIDTH) : (win ? win->height : SCREEN_HEIGHT));
 }
 
-static int	lp_apply_control_attr(t_control *control, t_window *win, t_control *parent, char *key, char *value)
+int	lp_apply_control_attr(t_control *control, t_window *win, t_control *parent, char *key, char *value)
 {
 	if (!ft_strcmp(key, "name"))
 	{
@@ -515,9 +513,7 @@ static int	lp_apply_control_attr(t_control *control, t_window *win, t_control *p
 	{
 		int align;
 
-		if (lp_parse_location_xy(value, &control->location,
-				win ? win->width : SCREEN_WIDTH,
-				win ? win->height : SCREEN_HEIGHT))
+		if (lp_parse_location_xy(value, &control->location, win ? win->width : SCREEN_WIDTH, win ? win->height : SCREEN_HEIGHT))
 			return 1;
 		align = lp_parse_align(value);
 		if (align == 0)
@@ -586,7 +582,7 @@ static int	lp_apply_control_attr(t_control *control, t_window *win, t_control *p
 	return 0;
 }
 
-static t_control	*lp_find_control_by_name(t_control *list, char *name)
+t_control	*lp_find_control_by_name(t_control *list, char *name)
 {
 	t_control *found;
 

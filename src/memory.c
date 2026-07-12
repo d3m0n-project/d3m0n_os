@@ -2,14 +2,6 @@
 #include "log.h"
 #include "memory.h"
 
-extern uint8_t	__heap_start[];
-extern uint8_t	__heap_end[];
-
-#define HEAP_BLOCK_SIZE	32
-#define HEAP_START		__heap_start
-#define HEAP_END		__heap_end
-#define HEAP_SIZE		((uint32_t)HEAP_END - (uint32_t)HEAP_START)
-
 typedef struct block
 {
     uint8_t			free;

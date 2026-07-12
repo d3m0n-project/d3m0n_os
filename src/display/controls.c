@@ -52,6 +52,7 @@ int	create_window(t_window *out, const char *title, const char *package, int w, 
 	out->top_bar = 1; // TODO: parse manifest
 	out->controls = 0;
 	ft_memset(out->events, 0, MAX_WINDOW_EVENTS * sizeof(t_event));
+	ft_memset(out->layout_name, 0, 128);
 	return 0;
 }
 

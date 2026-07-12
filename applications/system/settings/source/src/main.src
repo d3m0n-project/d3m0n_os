@@ -1,5 +1,5 @@
 # d3m0n source
 
 Window.OnCreate =>
-	template.load("layouts/setting.template", 0, 50, "1", "Wifi", "icon_wifi");
-	template.load("layouts/setting.template", 0, 80, "2", "Bluetooth", "icon_bluetooth");
+	template.load("layouts/templates/setting.template", 0, 50, "style", "Wallpaper & Style", "icon_brush");
+	template.load("layouts/templates/setting.template", 0, 80, "bluetooth", "Bluetooth", "icon_bluetooth");

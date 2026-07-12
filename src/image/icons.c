@@ -116,8 +116,13 @@ int	load_icon_pack(char *path)
 		size_t	len;
 
 		len = ft_strlen(line);
-		if (len && line[len - 1] == '\n')
+		if (len > 1 && line[len - 1] == '\n')
+		{
 			line[len - 1] = 0;
+			if (line[len - 2] == '\r')
+				line[len - 2] = 0;
+		}
+			
 		if (!valid_icon_path(line))
 		{
 			free(line);

@@ -17,12 +17,12 @@ int		exec_event(t_control *control, e_event_type type, t_window *window)
 
 void	handle_click(int x, int y, int button, t_window *window)
 {
-	static int prev_x = -1;
-	static int prev_y = -1;
-	static int prev_buttons = 0;
-	static t_control *dragging_control = 0;
-	int dx = 0;
-	int dy = 0;
+	static int			prev_x = -1;
+	static int			prev_y = -1;
+	static int			prev_buttons = 0;
+	static t_control	*dragging_control = 0;
+	int					dx = 0;
+	int					dy = 0;
 
 	if (prev_x >= 0 && prev_y >= 0)
 	{
@@ -33,16 +33,29 @@ void	handle_click(int x, int y, int button, t_window *window)
 	// drag started
 	if (!(prev_buttons & 1) && (button & 1))
 	{
-		t_control *cur = window->controls;
+		t_control *cur = window->controls; // TODO: check if this control is top one
 		while (cur)
 		{
-			int cx = cur->location.x;
-			int cy = cur->location.y;
+			int cx = cur->p_client_location.x;
+			int cy = cur->p_client_location.y;
 			if (x >= cx && x <= cx + cur->width && y >= cy && y <= cy + cur->height)
 			{
-				if (cur->p_type == CONTROL_VSCROLL) // TODO: Hscroll
+				if (cur->p_type == CONTROL_VSCROLL || cur->p_type == CONTROL_HSCROLL) // TODO: Hscroll
 				{
 					dragging_control = cur;
+					break;
+				}
+				else if (cur->p_type == CONTROL_SWITCH || cur->p_type == CONTROL_CHECKBOX || cur->p_type == CONTROL_RADIOBUTTON)
+				{
+					cur->checked = !cur->checked;
+					draw_control(cur);
+					break;
+				}
+				else if (cur->p_type == CONTROL_PROGRESSBAR)
+				{
+					float percentage = (x - cx) / cur->width;
+					cur->value = (cur->max - cur->min) * percentage; // TODO: negative delta
+					draw_control(cur);
 					break;
 				}
 			}

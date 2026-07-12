@@ -43,8 +43,8 @@
 	X(STR, icon_battery_unknown,		"icon_battery_unknown",				"device.battery_unknown") \
 	X(STR, icon_bluetooth,				"icon_bluetooth",					"device.bluetooth") \
 	X(STR, icon_bluetooth_connected,	"icon_bluetooth_connected",			"device.bluetooth_connected") \
-	X(STR, icon_bluetooth_disabled,		"icon_bluetooth_disabled",			"device.device/bluetooth_disabled") \
-	X(STR, icon_bluetooth_searching,	"icon_bluetooth_searching",			"device.device/bluetooth_searching") \
+	X(STR, icon_bluetooth_disabled,		"icon_bluetooth_disabled",			"device.bluetooth_disabled") \
+	X(STR, icon_bluetooth_searching,	"icon_bluetooth_searching",			"device.bluetooth_searching") \
 	X(STR, icon_cellular_level0,		"icon_cellular_level0",				"device.signal_cellular_0_bar") \
 	X(STR, icon_cellular_level1,		"icon_cellular_level1",				"device.signal_cellular_1_bar") \
 	X(STR, icon_cellular_level2,		"icon_cellular_level2",				"device.signal_cellular_2_bar") \
@@ -162,7 +162,8 @@
 	X(STR, icon_radio_checked,			"icon_radio_checked",				"toggle.radio_button_checked") \
 	X(STR, icon_radio_unchecked,		"icon_radio_unchecked",				"toggle.radio_button_unchecked") \
 	X(STR, icon_toggle_on,				"icon_toggle_on",					"toggle.toggle_on") \
-	X(STR, icon_toggle_off,				"icon_toggle_off",					"toggle.toggle_off")
+	X(STR, icon_toggle_off,				"icon_toggle_off",					"toggle.toggle_off") \
+	X(STR, icon_brush,					"icon_brush",						"image.brush")
 
 #define	DECL_STR(member, key, def)				char member[STRING_SIZE];
 #define	DECL_INT(member, key, def, min, max)	int member;

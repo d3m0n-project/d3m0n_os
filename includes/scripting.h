@@ -1,6 +1,8 @@
 #ifndef SCRIPTING_H
 #define SCRIPTING_H
 
+#include "controls.h"
+
 typedef struct s_app
 {
 	char	*name;
@@ -29,6 +31,12 @@ typedef struct s_fn_def
 	int					is_return;
 }	t_fn_def;
 
+typedef struct s_window_stack
+{
+	char	*package;
+	char	*window;
+}	t_window_stack;
+
 /* io */
 char*	fn_log(void **args);
 char*	fn_alert(void **args);
@@ -45,6 +53,18 @@ char*	fn_app_exit(void **args);
 char*	fn_settings_set(void **args);
 char*	fn_settings_get(void **args);
 
-extern	t_fn_def	funcs[];
+/* windows */
+char	*fn_window_open(void **args);
+char	*fn_window_go_back(void **args);
+
+/* control state */
+char	*fn_state_set(void **args);
+char	*fn_state_get(void **args);
+
+
+#define HISTORY_STACK_SIZE	128
+
+extern t_fn_def			funcs[];
+extern t_window_stack	window_stack[];
 
 #endif

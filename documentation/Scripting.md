@@ -5,6 +5,7 @@
 2. [Apps Functions](#apps_functions)
 3. [Templates](#templates)
 4. [Settings](#settings)
+5. [Windows](#windows)
 
 
 ---
@@ -75,3 +76,18 @@ Modify the value of a key in the device config or add a new one if it is not add
 
 Fetch the value of a key in the configuration of the device. Returns an empty string if not found.
 
+
+### 5. Windows
+- `window.open(name: str);`
+
+Opens a window in the current loaded app, `name` is the window name ex: `window.open("main.layout");` results at loading the main window.
+
+---
+- `window.goback();`
+
+Go back to the last window opened.
+
+### 6. Control States
+- `state.set(control_name: str, key: str, value: str);`
+
+Sets a control's field value dynamically. e.g: `state.set("myText", "content", "My New Text");`.

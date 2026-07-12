@@ -186,7 +186,7 @@ int	set_setting(const char *path, const char *key, const char *value)
 	}
 
 	i = 0;
-	while ((line = get_next_line(fd)) && i < line_count)
+	while (i < line_count && (line = get_next_line(fd)))
 	{
 		size_t key_len = 0;
 		while (line[key_len] && line[key_len] != ':')
@@ -218,7 +218,7 @@ int	set_setting(const char *path, const char *key, const char *value)
 		goto cleanup;
 
 	// Write all lines back to file
-	fd = open(path, O_WRITE | O_TRUNC);
+	fd = open(path, O_WRITE);
 	if (fd < 0)
 		goto cleanup;
 
@@ -243,6 +243,21 @@ int	set_setting(const char *path, const char *key, const char *value)
 		i++;
 	}
 	close(fd);
+
+	// set live conf value too
+	t_conf	*conf = get_config();
+	for (int i=0; i<CONF_FIELD_COUNT; i++)
+	{
+		if (!ft_strcmp((char *)conf_offsets[i].key, (char *)key))
+		{
+			uintptr_t	offset = conf_offsets[i].offset + (uintptr_t)conf;
+			if (conf_offsets[i].type == TYPE_INT)
+				*(int *)(offset) = ft_atoi((char *)value);
+			else if (conf_offsets[i].type == TYPE_STRING)
+				ft_strlcpy((char *)(offset), value, STRING_SIZE);
+			break;
+		}
+	}
 
 	// cleanup
 	i = 0;

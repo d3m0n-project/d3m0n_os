@@ -1,0 +1,21 @@
+Rect:
+	name="exit";
+	visible="false";
+	width="100%";
+	height="30px";
+
+Image:
+	src="icon_keyboard_left";
+	location="3, 3";
+	width="24px";
+	height="24px";
+	color="white";
+
+
+Text:
+	color="white";
+	content="$0";
+	width="287px";
+	height="24px";
+	text_align="left";
+	location="30, 3";

@@ -125,6 +125,7 @@ typedef struct s_control
 	struct s_control	*p_next;
 	e_control_type		p_type;
 	t_point				p_client_location;
+	t_point				p_client_size;
 }	t_control;
 
 
@@ -132,6 +133,7 @@ typedef	struct s_window
 {
 	char				title[25];
 	char				package[128];
+	char				layout_name[128];
 	int					width;
 	int					height;
 	int					is_launcher;

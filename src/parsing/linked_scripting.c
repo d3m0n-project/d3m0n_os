@@ -1280,7 +1280,7 @@ static int	eval_call_and_run(t_call_node *call)
 	return_value = call->def->fn(eval_args);
 	if (call->var_name && return_value && call->def->is_return)
 		var_set_str(call->var_name, return_value);
-	if (return_value && call->def->is_return)
+	if (return_value && call->def->is_return && (uintptr_t)return_value >= (uintptr_t)HEAP_START && (uintptr_t)return_value <= (uintptr_t)HEAP_END)
 		free(return_value);
 	
 	i = 0;

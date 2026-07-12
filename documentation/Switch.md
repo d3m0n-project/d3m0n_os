@@ -17,3 +17,5 @@ You can also use [general attributes](GeneralAttributes.md) on this control
 `checked` (bool): set if Switch is already checked when it appears in app
 
 `content` (string): text of the Switch
+
+Note that `color` field is the `active color` and `bg_color` is the inactive one.

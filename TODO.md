@@ -12,6 +12,8 @@
 - [ ] Fix ui system
 	- [x] Locations need to follow real control position
 	- [ ] Allow user to customize topbar
+	- [ ] Set default auto size if none set
+	- [ ] Allow calc(eval) inside of layouts like `calc(100% - 340px - 5px * 2)` + DO `p_client_size`
 
 - [ ] Optimisations
 	- [ ] Load all icons at startup for faster display (keep in memory)

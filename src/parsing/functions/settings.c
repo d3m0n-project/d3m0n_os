@@ -16,9 +16,21 @@ char*	fn_settings_set(void **args)
 char*	fn_settings_get(void **args)
 {
 	char	*key = ((char **)args)[0];
-	int		not_found = 0;
-	char	*result = get_setting("/config", key, &not_found);
-	if (!result && not_found)
-		return 0;
-	return result;
+	t_conf	*conf = get_config();
+
+	for (int i=0; i<CONF_FIELD_COUNT; i++)
+	{
+		if (!ft_strcmp((char *)conf_offsets[i].key, key))
+		{
+			uintptr_t offset = conf_offsets[i].offset + (uintptr_t)conf;
+			if (conf_offsets[i].type == TYPE_INT)
+				return ft_itoa(*(int *)offset);
+			else if (conf_offsets[i].type == TYPE_STRING)
+				return ft_strdup((char *)offset);
+			else
+				log("SETTINGS.GET: Invalid offset type!\n", LOG_WARNING);
+		}
+	}
+	log("SETTINGS.GET: Failed to get key='%s'\n", LOG_ERROR | LOG_INDENT, key);
+	return 0;
 }

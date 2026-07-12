@@ -217,7 +217,7 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 				return 1;
 			}
 
-			log("Assigning event type '%s' to control: '%s'\n", LOG_WARNING | LOG_INDENT, event_name, control_name);
+			log("Assigning event n%i type '%s' to control: '%s'\n", LOG_INFO | LOG_INDENT, event_id, event_name, control_name);
 			t_control	*ctrl = 0;
 			current_control_id = get_control_id_by_name(control_name, win, &ctrl);
 			if (current_control_id == -1)
