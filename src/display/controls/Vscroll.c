@@ -4,9 +4,9 @@
 
 void	ctrl_draw_vscroll(t_control	*control)
 {
-	draw_rect(control->location.x, control->location.y, control->width, control->height, control->bg_color);
-    
-	// sraw children offset by scroll
+	draw_rect(control->p_client_location.x, control->p_client_location.y, control->width, control->height, control->bg_color);
+
+	// draw children offset by scroll
 	if (control->children)
 	{
 		t_control *child = control->children;
@@ -14,18 +14,22 @@ void	ctrl_draw_vscroll(t_control	*control)
 		{
 			if (child == control) // avoid infinite loop
 				break;
-			// compute child's absolute position
-			int saved_x = child->location.x;
-			int saved_y = child->location.y;
-
+			
+			// 100% => 100% without scrollbar included
+			if (child->width == control->width && control->bar)
+				child->width -= SCROLLBAR_SIZE;
+			
 			child->p_client_location = (t_point){
-				.x=control->p_client_location.x + saved_x,
-				.y=control->p_client_location.y + saved_y - control->p_scroll_offset.y
+				.x=child->location.x,
+				.y=child->location.y - control->p_scroll_offset.y
 			};
 
+			// pass scroll to children
+			child->p_scroll_offset = control->p_scroll_offset;
+
 			// only draw if visible in the vscroll area
-			if (child->p_client_location.y + child->height >= control->p_client_location.y && child->p_client_location.y <= control->p_client_location.y + control->height)
-				draw_control(child);
+			if (child->p_client_location.y >= control->p_client_location.y && child->p_client_location.y <= control->p_client_location.y + control->height && child->p_client_location.x >= control->p_client_location.x && child->p_client_location.x <= control->p_client_location.x + control->width)
+				draw_control(child, (t_point){0, -control->p_scroll_offset.y});
 
 			child = child->p_next;
 		}

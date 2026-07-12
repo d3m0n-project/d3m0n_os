@@ -1,11 +1,12 @@
 # d3m0n embeded in functions
 
 ## Summary
-1. [Logging Functions](#logging_functions)
-2. [Apps Functions](#apps_functions)
-3. [Templates](#templates)
-4. [Settings](#settings)
-5. [Windows](#windows)
+1. [Logging Functions](#1-logging-functions)
+2. [Apps Functions](#2-apps-functions)
+3. [Templates](#3-templates)
+4. [Settings](#4-settings)
+5. [Windows](#5-windows)
+6. [Control States](#6-control-states)
 
 
 ---

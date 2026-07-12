@@ -21,7 +21,7 @@ char	*fn_state_set(void **args)
 	if (!lp_apply_control_attr(control, current_window, parent, key, value)) // TODO: find parent
 		log("STATE.SET: Invalid control field: '%s' value: '%s'\n", LOG_ERROR, key, value);
 	else
-		draw_control(control);
+		draw_control(control, (t_point){0, 0});
 	return 0;
 }
 
@@ -45,112 +45,31 @@ char	*fn_state_get(void **args)
 	else if (!ft_strcmp(key, "checked"))										return (control->checked)?"1":"0";
 	else if (!ft_strcmp(key, "bar"))											return (control->bar)?"1":"0";
 	else if (!ft_strcmp(key, "src") || !ft_strcmp(key, "image"))				return ft_strdup(control->image);
+	else if (!ft_strcmp(key, "width"))											return ft_itoa(control->width);
+	else if (!ft_strcmp(key, "height"))											return ft_itoa(control->height);
+	else if (!ft_strcmp(key, "x") || !ft_strcmp(key, "location.x"))				return ft_itoa(control->p_client_location.x);
+	else if (!ft_strcmp(key, "y") || !ft_strcmp(key, "location.y"))				return ft_itoa(control->p_client_location.y);
 
-	// TODO: last fields that require mallocs
-	//else if (!ft_strcmp(key, "width"))
-	//{
-	//	control->width = lp_parse_percent(value, lp_get_relative_base(win, parent, 1));
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "height"))
-	//{
-	//	control->height = lp_parse_percent(value, lp_get_relative_base(win, parent, 0));
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "x"))
-	//{
-	//	control->location.x = lp_parse_percent(value, lp_get_relative_base(win, parent, 1));
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "y"))
-	//{
-	//	control->location.y = lp_parse_percent(value, lp_get_relative_base(win, parent, 0));
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "color"))
-	//{
-	//	control->color = lp_parse_color(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "bg_color"))
-	//{
-	//	control->bg_color = lp_parse_color(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "margin_top"))
-	//{
-	//	control->margin_top = ft_atoi(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "margin_left"))
-	//{
-	//	control->margin_left = ft_atoi(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "margin_right"))
-	//{
-	//	control->margin_right = ft_atoi(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "margin_bottom"))
-	//{
-	//	control->margin_bottom = ft_atoi(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "location"))
-	//{
-	//	int align;
+	else if (!ft_strcmp(key, "margin_top"))										return ft_itoa(control->margin_top);
+	else if (!ft_strcmp(key, "margin_left"))									return ft_itoa(control->margin_left);
+	else if (!ft_strcmp(key, "margin_right"))									return ft_itoa(control->margin_right);
+	else if (!ft_strcmp(key, "margin_bottom"))									return ft_itoa(control->margin_bottom);
 
-	//	if (lp_parse_location_xy(value, &control->location, win ? win->width : SCREEN_WIDTH, win ? win->height : SCREEN_HEIGHT))
-	//		return 1;
-	//	align = lp_parse_align(value);
-	//	if (align == 0)
-	//		return -1;
-	//	control->p_anchor_location = (e_control_anchor)align;
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "text_align"))
-	//{
-	//	control->text_align = lp_parse_align(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "font_size"))
-	//{
-	//	control->font_size = ft_atoi(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "min"))
-	//{
-	//	control->min = ft_atoi(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "max"))
-	//{
-	//	control->max = ft_atoi(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "value"))
-	//{
-	//	control->value = ft_atoi(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "radius"))
-	//{
-	//	control->radius = ft_atoi(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "mode"))
-	//{
-	//	control->mode = lp_parse_image_mode(value);
-	//	return 1;
-	//}
-	//else if (!ft_strcmp(key, "type"))
-	//{
-	//	control->type = lp_parse_textbox_type(value);
-	//	return 1;
-	//}
-
-
-
+	else if (!ft_strcmp(key, "font_size"))										return ft_itoa(control->font_size);
+	else if (!ft_strcmp(key, "min"))											return ft_itoa(control->min);
+	else if (!ft_strcmp(key, "max"))											return ft_itoa(control->max);
+	else if (!ft_strcmp(key, "value"))											return ft_itoa(control->value);
+	else if (!ft_strcmp(key, "radius"))											return ft_itoa(control->radius);
+	
+	else if (!ft_strcmp(key, "mode"))											return ft_itoa(control->mode); // TODO: return mode name instead (need str cmp)?
+	else if (!ft_strcmp(key, "type"))											return ft_itoa(control->type); // TODO: same
+	else if (!ft_strcmp(key, "text_align"))										return ft_itoa(control->text_align); // TODO: same
+	else if (!ft_strcmp(key, "color") || !ft_strcmp(key, "bg_color"))			// TODO: same thing
+	{
+		if (key[0] == 'b')
+			return ft_itoa(control->bg_color);
+		return ft_itoa(control->color); 
+	}
+	log("STATE.GET: Unknown field for a control: '%s'\n", LOG_WARNING, key);
 	return 0;
 }

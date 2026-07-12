@@ -4,6 +4,11 @@
 #include "controls.h"
 #include "log.h"
 #include "math.h"
+#include "color.h"
+
+#define PROGRESSBAR_HEIGHT			6
+#define PROGRESSBAR_PADDING			8
+#define PROGRESSBAR_OFF_COLOR		DISPLAY_COLORS[GREY]
 
 #define SCROLLBAR_SIZE				10
 #define SCROLLBAR_THUMB_MIN_HEIGHT	30

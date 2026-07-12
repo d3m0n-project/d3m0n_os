@@ -1,0 +1,13 @@
+# [config_key, text, min, max]
+
+$0_progress.OnClick =>
+	state = state.get("$0_progress", "value");
+	settings.set("$0", state);
+	state.set("$0_progress_text", "content", state);
+
+
+Window.OnCreate =>
+	value = settings.get("$0");
+	log(value, "magenta");
+	state.set("$0_progress", "value", value);
+	state.set("$0_progress_text", "content", value);

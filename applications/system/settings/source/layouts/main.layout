@@ -17,7 +17,7 @@ Vscroll:
 
 Text:
 	content="Settings";
-	location = "0, 5";
+	location="0, 5";
 	width="100%";
 	parent="v1";
 	height="30px";

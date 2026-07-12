@@ -1,0 +1,38 @@
+Rect:
+	parent="v1";
+	width="294px";
+	height="64px";
+	name="$0";
+	location="8, 0";
+	bg_color="32,32,32";
+
+Text:
+	parent="$0";
+	color="white";
+	location="16, 8";
+	height="24px";
+	content="$1";
+	width="278px";
+	text_align="left";
+
+ProgressBar:
+	name="$0_progress";
+	parent="$0";
+	width="80%";
+	height="24px";
+	color="orange";
+	bg_color="32,32,32";
+	min="$2";
+	max="$3";
+	value="$2";
+	location="16, 32";
+
+Text:
+	parent="$0";
+	name="$0_progress_text";
+	content="$2";
+	width="38px";
+	height="24px";
+	text_align="left";
+	location="256, 32";
+	color="white";

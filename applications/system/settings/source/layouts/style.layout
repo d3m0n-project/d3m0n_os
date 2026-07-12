@@ -5,9 +5,10 @@ Window:
 	bg_color="black";
 	topbar="true";
 
-#Vscroll:
-#	name="v1";
-#	bar="true";
-#	width="100%";
-#	height="450";
-#	location="0, 30";
+Vscroll:
+	name="v1";
+	bar="true";
+	width="100%";
+	height="450";
+	location="0, 30";
+	bg_color="black";

@@ -35,7 +35,7 @@ These attributes can be applied to **every** controls.
 
 `enabled` (bool) define if events can be applied to this control
 
-`parent` (string) define element parent by name (parent needs to be named
+`parent` (string) define element parent by name (parent needs to be named)
 
 `margin_top`, `margin_right`, `margin_left`, `margin_bottom` (int) set margins of your control
 

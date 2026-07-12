@@ -1,4 +1,6 @@
 #include "controls.h"
+#include "log.h"
+#include "controls_graphics.h"
 
 int		exec_event(t_control *control, e_event_type type, t_window *window)
 {
@@ -13,6 +15,30 @@ int		exec_event(t_control *control, e_event_type type, t_window *window)
 		i++;
 	}
 	return 1;
+}
+
+static t_control	*find_clicked_control(t_control *control, int x, int y)
+{
+	while (control)
+	{
+		if (control->children)
+		{
+			t_control *hit = find_clicked_control(control->children, x, y);
+			if (hit)
+				return hit;
+		}
+
+		if (control->enabled)
+		{
+			int cx = control->p_client_location.x;
+			int cy = control->p_client_location.y;
+
+			if (x >= cx && x <= cx + control->width && y >= cy && y <= cy + control->height)
+				return control;
+		}
+		control = control->p_next;
+	}
+	return 0;
 }
 
 void	handle_click(int x, int y, int button, t_window *window)
@@ -33,33 +59,37 @@ void	handle_click(int x, int y, int button, t_window *window)
 	// drag started
 	if (!(prev_buttons & 1) && (button & 1))
 	{
-		t_control *cur = window->controls; // TODO: check if this control is top one
-		while (cur)
+		t_control *cur = find_clicked_control(window->controls, x, y);
+
+		if (cur)
 		{
-			int cx = cur->p_client_location.x;
-			int cy = cur->p_client_location.y;
-			if (x >= cx && x <= cx + cur->width && y >= cy && y <= cy + cur->height)
+			if (cur->p_type == CONTROL_VSCROLL || cur->p_type == CONTROL_HSCROLL) // TODO: Hscroll
+				dragging_control = cur;
+			else if (cur->p_type == CONTROL_SWITCH || cur->p_type == CONTROL_CHECKBOX || cur->p_type == CONTROL_RADIOBUTTON)
 			{
-				if (cur->p_type == CONTROL_VSCROLL || cur->p_type == CONTROL_HSCROLL) // TODO: Hscroll
-				{
-					dragging_control = cur;
-					break;
-				}
-				else if (cur->p_type == CONTROL_SWITCH || cur->p_type == CONTROL_CHECKBOX || cur->p_type == CONTROL_RADIOBUTTON)
-				{
-					cur->checked = !cur->checked;
-					draw_control(cur);
-					break;
-				}
-				else if (cur->p_type == CONTROL_PROGRESSBAR)
-				{
-					float percentage = (x - cx) / cur->width;
-					cur->value = (cur->max - cur->min) * percentage; // TODO: negative delta
-					draw_control(cur);
-					break;
-				}
+				cur->checked = !cur->checked;
+				draw_control(cur, (t_point){0, 0});
 			}
-			cur = cur->p_next;
+			else if (cur->p_type == CONTROL_PROGRESSBAR)
+			{
+				int total_size = cur->width - (PROGRESSBAR_PADDING * 2);
+				if (total_size <= 0)
+				{
+					log("PROGRESSBAR '%s' size is too short to handle it correctly\n", LOG_WARNING | LOG_INDENT);
+					return;
+				}
+
+				int local_x = x - (cur->p_client_location.x + PROGRESSBAR_PADDING);
+				// clamp
+				if (local_x < 0)
+					local_x = 0;
+				if (local_x > total_size)
+					local_x = total_size;
+
+				float percentage = (float)local_x / (float)total_size;
+				cur->value = cur->min + (cur->max - cur->min) * percentage;
+				draw_control(cur, (t_point){0, -cur->p_scroll_offset.y});
+			}
 		}
 	}
 
@@ -75,7 +105,7 @@ void	handle_click(int x, int y, int button, t_window *window)
 			if (new_off > c->p_scroll_max_size.y)
 				new_off = c->p_scroll_max_size.y;
 			c->p_scroll_offset.y = new_off;
-			draw_control(c);
+			draw_control(c, (t_point){0, 0});
 		}
 	}
 

@@ -75,19 +75,24 @@ void	add_control(t_window *to, t_control *control)
 	log("Added control: '%s'\n", LOG_SUCCESS, current->name);
 }
 
-void	draw_control(t_control *control)
+void	draw_control(t_control *control, t_point offset)
 {
 	t_window	*window = get_current_window();
 
 	if (control->visible == 0)
 		return;
 
-	control->p_client_location = control->location;
+	control->p_client_location.x = offset.x + control->location.x;
+	control->p_client_location.y = offset.y + control->location.y;
 
 	// move the origin of the canvas to lower for the topbar
-	if (window->top_bar)
+	if (window->top_bar && offset.x == 0 && offset.y == 0)
 		control->p_client_location.y += TOPBAR_HEIGHT;
+
+	control->p_client_size.x = control->width;
+	control->p_client_size.y = control->height;
 		
+	// TODO: tmp buffer to store pixels and write after
 	switch (control->p_type)
 	{
 		case CONTROL_TEXTBOX:		ctrl_draw_textbox(control);		break;
@@ -112,7 +117,7 @@ void	draw_control(t_control *control)
 	#if DEBUG_OUTLINE == 1
 		draw_rect_outline(control->p_client_location.x, control->p_client_location.y, control->width, control->height, OUTLINE_COLOR);
 	#endif
-	draw_topbar(get_current_window()); // TODO:
+	draw_topbar(window);
 }
 
 void	draw_window(t_window *window)
@@ -125,7 +130,7 @@ void	draw_window(t_window *window)
 		current->p_client_location = current->location;
 		if (window->top_bar)
 			current->p_client_location.y += TOPBAR_HEIGHT;
-		draw_control(current);
+		draw_control(current, (t_point){0, 0});
 		// TODO: children
 		current = current->p_next;
 	}

@@ -2,17 +2,24 @@
 
 void	ctrl_draw_rect(t_control	*control)
 {
-	//t_window *current_win = get_current_window();
-	int y = control->p_client_location.y;
-	int h = control->height;
-	//if (current_win->top_bar && y <= TOPBAR_HEIGHT)
-	//{
-	//	log("y=%i   delta = %i\n", 0, y, ABS(TOPBAR_HEIGHT - y));
-	//	y = TOPBAR_HEIGHT;
-	//	h -= ABS(TOPBAR_HEIGHT - y);
-	//}
+	draw_rect(control->p_client_location.x, control->p_client_location.y, control->width, control->height, control->bg_color);
 
-	// TODO: check that no control overrides on the topbar
+	if (control->children)
+	{
+		t_control *child = control->children;
+		while (child)
+		{
+			if (child == control) // avoid infinite loop
+				break;
+			
+			// apply scroll to children too
+			child->p_scroll_offset = control->p_scroll_offset;
 
-	draw_rect(control->p_client_location.x, y, control->width, h, control->bg_color);
+			// only draw if visible in the area
+			if (child->p_client_location.y + child->height >= control->p_client_location.y && child->p_client_location.y <= control->p_client_location.y + control->height)
+				draw_control(child, (t_point){0, -control->p_scroll_offset.y});
+
+			child = child->p_next;
+		}
+	}
 }
