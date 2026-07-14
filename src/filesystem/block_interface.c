@@ -404,10 +404,7 @@ int	sd_init()
 	// standard capacity card
 	if (!is_sdhc)
 	{
-		if (send_cmd(
-			CMD16,
-			SECTOR_SIZE,
-			RESP_48) < 0)
+		if (send_cmd(CMD16, SECTOR_SIZE, RESP_48) < 0)
 			return -1;
 	}
 
@@ -440,17 +437,11 @@ int	block_read_multi(uint32_t lba, uint32_t count, uint8_t *buffer)
 {
 	uint32_t	addr;
 
-
 	if (!buffer || count == 0)
 		return -1;
 
-
 	addr = is_sdhc?lba:lba * SECTOR_SIZE;
-
-
 	emmc->BLKSIZECNT = (count << 16) | SECTOR_SIZE;
-
-
 	if (send_cmd(CMD18, addr, RESP_48) < 0)
 		return -1;
 
@@ -464,7 +455,6 @@ int	block_read_multi(uint32_t lba, uint32_t count, uint8_t *buffer)
 		copy_from_fifo(buffer);
 		buffer += SECTOR_SIZE;
 	}
-
 
 
 	if (wait_interrupt(INT_DATA_DONE, EMMC_TIMEOUT) < 0)

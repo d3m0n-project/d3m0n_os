@@ -54,13 +54,11 @@ static uint8_t		__attribute__((aligned(4))) g_cluster_buf[FAT32_MAX_CLUSTER_BYTE
 
 typedef struct
 {
-	uint32_t	lba;
-
-
-	uint8_t		data[SECTOR_SIZE * FAT_CACHE_SECTORS];
-	uint8_t		valid;
-	uint8_t		dirty;
-}	FAT_Cache;
+    uint32_t	lba;
+    uint8_t		data[SECTOR_SIZE * FAT_CACHE_SECTORS] __attribute__((aligned(4)));
+    uint8_t		valid;
+    uint8_t		dirty;
+} FAT_Cache;
 
 typedef struct
 {
@@ -76,19 +74,38 @@ static FAT_Cache	fat_cache;
 
 static uint8_t	*fat_get_sector(uint32_t lba)
 {
-	if (fat_cache.valid && fat_cache.lba == lba)
-		return fat_cache.data;
+	uint32_t	offset;
+	uint32_t count;
 
+	// cache
+	if (fat_cache.valid && lba >= fat_cache.lba && lba < fat_cache.lba + FAT_CACHE_SECTORS)
+	{
+		offset = lba - fat_cache.lba;
+		return &fat_cache.data[offset * SECTOR_SIZE];
+	}
+
+	// flush old cache
 	if (fat_cache.valid && fat_cache.dirty)
-		block_write_multi(fat_cache.lba, 1, fat_cache.data);
+		block_write_multi(fat_cache.lba, FAT_CACHE_SECTORS, fat_cache.data);
 
-	if (block_read_multi(lba, 1, fat_cache.data) != 0)
+	// align cache window
+	fat_cache.lba = lba & ~(FAT_CACHE_SECTORS - 1);
+	count = FAT_CACHE_SECTORS;
+	if (fat32.mounted && fat32.fat_size != 0 && fat32.fat_start != 0)
+	{
+		if (fat_cache.lba + count > fat32.fat_start + fat32.fat_size)
+			count = fat32.fat_start + fat32.fat_size - fat_cache.lba;
+	}
+	if (count == 0)
 		return 0;
 
-	fat_cache.lba = lba;
+	if (block_read_multi(fat_cache.lba, count, fat_cache.data) != 0)
+	{
+		fat_cache.valid = 0;
+		return 0;
+	}
 	fat_cache.valid = 1;
 	fat_cache.dirty = 0;
-
 	return fat_cache.data;
 }
 
@@ -269,12 +286,12 @@ static int fat32_write_cluster(uint32_t cluster, const uint8_t *buffer)
 	return 0;
 }
 
-void	fat32_sync(void)
+void fat32_sync(void)
 {
-	if(fat_cache.valid && fat_cache.dirty)
+	if (fat_cache.valid && fat_cache.dirty)
 	{
-		block_write_multi(fat_cache.lba, 1, fat_cache.data);
-		fat_cache.dirty=0;
+		block_write_multi(fat_cache.lba, FAT_CACHE_SECTORS, fat_cache.data);
+		fat_cache.dirty = 0;
 	}
 }
 
