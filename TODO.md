@@ -19,6 +19,8 @@
 	- [x] Load all icons at startup for faster display (keep in memory)
 	- [ ] Keep loaded images in app's memory to avoid reopen at each draw
 
+- [ ] Fix fileystem to avoid bugs & critical vulnerabilities
+
 
 - [ ] Docs
 	- [ ] Usage docs

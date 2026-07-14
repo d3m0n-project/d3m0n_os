@@ -77,17 +77,19 @@ void	kernel_main(void *dtb)
 	usb_init(); // TODO: maybe make usb driver optional and enabled for testing
 	if (usb_enumerate() < 0)	log("USB enumeration did not find a configured root device\n", LOG_WARNING);
 
-	// parse config file
-	if (parse_config(&config))	panic("Config parsing failed, please check config file\n");
-	else						log("Config parsed successfully!\n", LOG_SUCCESS);
-
-
 	// load spash
 	BmpTexture	splash;
 	if (bmp_load_image(&splash, "wallpapers/splash.bmp"))
 		log("Could not load splash screen\n", LOG_ERROR);
 	else
 		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &splash, DISPLAY_COLORS[TRANSPARENT]);
+
+	panic("test SPEED\n");
+
+	// parse config file
+	if (parse_config(&config))	panic("Config parsing failed, please check config file\n");
+	else						log("Config parsed successfully!\n", LOG_SUCCESS);
+
 
 	if (load_app_list())		panic("Failed to load the apps list\n");
 	else						log("Loaded apps successfully!\n", LOG_SUCCESS);

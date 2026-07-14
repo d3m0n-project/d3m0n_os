@@ -57,12 +57,24 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	log("BMP header loading: %llums\n", LOG_INDENT | LOG_INFO, (time_us() / 1000) - start_time);
 	#endif
 
+	uint64_t t = time_us();
+
 	lseek(fd, starting_offset, SEEK_SET);
+
+	log("seek: %llums\n", LOG_INFO | LOG_INDENT, (time_us() - t)/1000);
+
+	t = time_us();
 
 	if (read(fd, file_pixels, data_size) != data_size)
 		goto error;
 
+	log("read: %llums\n", LOG_INFO | LOG_INDENT, (time_us() - t)/1000);
+
+
+	t = time_us();
 	out->pixels = malloc(out->width * out->height * sizeof(uint32_t));
+	log("malloc: %llums\n", LOG_INFO | LOG_INDENT, (time_us() - t)/1000);
+
 	if (!out->pixels)
 		goto error;
 
@@ -71,6 +83,7 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	log("BMP size: %ix%i\n", LOG_INFO | LOG_INDENT, out->width, out->height);
 	#endif
 
+	t = time_us();
 	if (out->bytes_per_pixel == 3)
 	{
 		for (int y = 0; y < out->height; y++)
@@ -109,6 +122,7 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 			}
 		}
 	}
+	log("convert: %llums\n", LOG_INFO | LOG_INDENT, (time_us() - t)/1000);
 
 	#if SHOW_IMAGE_STATUS == 1
 	log("total BMP loading time: %llums\n", LOG_INFO | LOG_INDENT, (time_us() / 1000) - start_time);

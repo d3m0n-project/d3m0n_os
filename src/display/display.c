@@ -231,55 +231,72 @@ void	draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int filled)
 	}
 }
 
-void draw_bmp(int x, int y, int w, int h, BmpTexture *texture, uint32_t override_color)
+void	draw_bmp(int x, int y, int w, int h, BmpTexture *texture, uint32_t override_color)
 {
 	if (!texture || !texture->pixels)
 		return;
 
-	const int tex_w = texture->width;
-	const int tex_h = texture->height;
+	if (w <= 0 || h <= 0)
+		return;
 
-	const float scale_x = (float)tex_w / w;
-	const float scale_y = (float)tex_h / h;
+	const int	tex_w = texture->width;
+	const int	tex_h = texture->height;
 
-	const int has_alpha = (texture->bytes_per_pixel == 4);
-	const int use_override = ((override_color >> 24) == 0xFF);
-
-	for (int j = 0; j < h; j++)
+	// faster lcd
+	#if DEBUG == 0
+	if (w == tex_w && h == tex_h)
 	{
-		int sy = (int)(j * scale_y);
-		if (sy >= tex_h)
-			sy = tex_h - 1;
+		//if (((override_color >> 24) & 0xFF) == 0xFF)
+		goto generic;
+		lcd_blit_argb32_to_rgb565(x, y, w, h, texture->pixels);
+		return;
+	}
 
-		const uint32_t *src_row = texture->pixels + sy * tex_w;
+	generic:
+	#endif
+	{
+		const float scale_x = (float)tex_w / w;
+		const float scale_y = (float)tex_h / h;
 
-		for (int i = 0; i < w; i++)
+		const int has_alpha = (texture->bytes_per_pixel == 4);
+		const int use_override = ((override_color >> 24) == 0xFF);
+
+		for (int j = 0; j < h; j++)
 		{
-			int sx = (int)(i * scale_x);
-			if (sx >= tex_w)
-				sx = tex_w - 1;
+			int sy = (int)(j * scale_y);
+			if (sy >= tex_h)
+				sy = tex_h - 1;
 
-			uint32_t color = src_row[sx];
+			const uint32_t *src_row = texture->pixels + sy * tex_w;
 
-			if (has_alpha)
+			for (int i = 0; i < w; i++)
 			{
-				uint32_t alpha = color >> 24;
-				if (alpha == 0)
-					continue;
-			}
+				int sx = (int)(i * scale_x);
+				if (sx >= tex_w)
+					sx = tex_w - 1;
 
-			if (use_override)
-				color = (color & 0xFF000000) | (override_color & 0x00FFFFFF);
+				uint32_t color = src_row[sx];
+				if (has_alpha)
+				{
+					uint32_t alpha = color >> 24;
+					if (alpha == 0)
+						continue;
+				}
 
-			if (has_alpha && (color >> 24) != 255)
-			{
-				uint32_t dst = get_pixel(x + i, y + j);
-				color = alpha_blend(color, dst);
+				if (use_override)
+					color = (color & 0xFF000000) | (override_color & 0x00FFFFFF);
+
+				if (has_alpha && (color >> 24) != 255)
+				{
+					uint32_t dst = get_pixel(x + i, y + j);
+					color = alpha_blend(color, dst);
+				}
+				put_pixel(x + i, y + j, color);
 			}
-			put_pixel(x + i, y + j, color);
 		}
 	}
 }
+
 
 #if DEBUG == 1
 int framebuffer_init(uint32_t width, uint32_t height, uint32_t bpp)

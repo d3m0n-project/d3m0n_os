@@ -35,7 +35,7 @@ D_FILES				= $(O_FILES:.o=.d)
 
 DISK				?= disk.img
 
-VERSION				= 2.0.7
+VERSION				= 2.0.8
 VERSION_NAME		= outset
 
 IMG_ROOT_NAME		= d3m0n_os_$(VERSION_NAME)_$(VERSION).img

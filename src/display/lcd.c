@@ -1,5 +1,9 @@
 #include "lcd.h"
 #include "gpio.h"
+#ifndef GPIO_OUT
+#define GPIO_OUT 1
+#endif
+
 #include "spi.h"
 #include "display.h"
 #include "time.h"
@@ -57,12 +61,15 @@ static void	lcd_direction(uint8_t direction)
 }
 
 
+// Stream a single RGB565 pixel (3 bytes) into the LCD.
 static inline void	lcd_write_color(uint16_t color)
 {
 	spi_transfer((color >> 8) & 0xF8);
 	spi_transfer((color >> 3) & 0xFC);
 	spi_transfer(color << 3);
 }
+
+
 
 
 static void	lcd_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
@@ -88,28 +95,140 @@ static void	lcd_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 
 void	lcd_drawrect(int x, int y, int w, int h, uint16_t color)
 {
+	// NOTE: original code relied on callers providing valid/clipped coordinates.
+	// Keep behavior identical; only optimize streaming.
+	if (w <= 0 || h <= 0)
+		return;
+
+	const uint32_t total = (uint32_t)w * (uint32_t)h;
+
+	// Pre-encode the same RGB565->LCD triplet once.
+	const uint8_t b0 = (color >> 8) & 0xF8;
+	const uint8_t b1 = (color >> 3) & 0xFC;
+	const uint8_t b2 = (color << 3);
+
+	// Chunked streaming: reduce CPU overhead by avoiding per-pixel function calls.
+	// Each pixel = 3 bytes.
+
+	enum { PIXELS_PER_CHUNK = 64 };
+	uint8_t chunk[PIXELS_PER_CHUNK * 3];
+
+	for (uint32_t i = 0; i < PIXELS_PER_CHUNK; i++)
+	{
+		uint32_t o = i * 3;
+		chunk[o + 0] = b0;
+		chunk[o + 1] = b1;
+		chunk[o + 2] = b2;
+	}
+
 	spi_begin();
-    lcd_set_window(x, y, x+w, y+h);
-    gpio_digitalWrite(PIN_LCD_DC, 1);
-	for (int i=0; i<w*h; i++)
-    	lcd_write_color(color);
-    spi_end();
+	lcd_set_window(x, y, x + w, y + h);
+	gpio_digitalWrite(PIN_LCD_DC, 1);
+
+	uint32_t remaining = total;
+	while (remaining)
+	{
+		uint32_t this_pix = remaining > PIXELS_PER_CHUNK ? PIXELS_PER_CHUNK : remaining;
+		uint32_t bytes = this_pix * 3;
+		const uint8_t *p = chunk;
+		while (bytes--)
+			spi_transfer(*p++);
+		remaining -= this_pix;
+	}
+
+	spi_end();
 }
+
+
+void	lcd_blit_argb32_to_rgb565(int x, int y, int w, int h, const uint32_t *argb_pixels)
+{
+	if (w <= 0 || h <= 0 || !argb_pixels)
+		return;
+
+	const uint32_t total = (uint32_t)w * (uint32_t)h;
+	enum { PIXELS_PER_CHUNK = 64 };
+	uint8_t chunk[PIXELS_PER_CHUNK * 3];
+
+	spi_begin();
+	lcd_set_window(x, y, x + w - 1, y + h - 1);
+	gpio_digitalWrite(PIN_LCD_DC, 1);
+
+	const uint32_t *p = argb_pixels;
+	uint32_t remaining = total;
+	while (remaining)
+	{
+		uint32_t this_pix = remaining > PIXELS_PER_CHUNK ? PIXELS_PER_CHUNK : remaining;
+
+		// Convert + encode RGB565 -> LCD 3-byte format for this chunk.
+		for (uint32_t i = 0; i < this_pix; i++)
+		{
+			uint32_t color = *p++;
+			uint8_t b = (color >> 16) & 0xFF;
+			uint8_t g = (color >> 8) & 0xFF;
+			uint8_t r = color & 0xFF;
+
+			uint16_t rgb565 = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
+
+			uint32_t o = i * 3;
+			chunk[o + 0] = (rgb565 >> 8) & 0xF8;
+			chunk[o + 1] = (rgb565 >> 3) & 0xFC;
+			chunk[o + 2] = (rgb565 << 3);
+		}
+
+		uint32_t bytes = this_pix * 3;
+		const uint8_t *q = chunk;
+		while (bytes--)
+			spi_transfer(*q++);
+
+		remaining -= this_pix;
+	}
+
+	spi_end();
+}
+
+
 
 
 void	lcd_clear(uint16_t color)
 {
+	// Chunked streaming for a constant-color fill.
+	// This avoids per-pixel call overhead (3 SPI transfers remain per pixel).
+	const uint32_t total = (uint32_t)lcd_width * (uint32_t)lcd_height;
+	if (total == 0)
+		return;
+
+	const uint8_t b0 = (color >> 8) & 0xF8;
+	const uint8_t b1 = (color >> 3) & 0xFC;
+	const uint8_t b2 = (color << 3);
+
+	enum { PIXELS_PER_CHUNK = 64 };
+	uint8_t chunk[PIXELS_PER_CHUNK * 3];
+	for (uint32_t i = 0; i < PIXELS_PER_CHUNK; i++)
+	{
+		uint32_t o = i * 3;
+		chunk[o + 0] = b0;
+		chunk[o + 1] = b1;
+		chunk[o + 2] = b2;
+	}
+
 	spi_begin();
-
 	lcd_set_window(0, 0, lcd_width - 1, lcd_height - 1);
-
 	gpio_digitalWrite(PIN_LCD_DC, 1);
 
-	for(uint32_t i=0; i< (uint32_t)lcd_width * lcd_height; i++)
-		lcd_write_color(color);
+	uint32_t remaining = total;
+	while (remaining)
+	{
+		uint32_t this_pix = remaining > PIXELS_PER_CHUNK ? PIXELS_PER_CHUNK : remaining;
+		uint32_t bytes = this_pix * 3;
+		const uint8_t *p = chunk;
+		while (bytes--)
+			spi_transfer(*p++);
+		remaining -= this_pix;
+	}
 
 	spi_end();
 }
+
 
 
 int	lcd_init(void)

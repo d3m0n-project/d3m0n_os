@@ -23,9 +23,10 @@ typedef enum
 	SEEK_END
 }	e_seek_directive;
 
-int			block_write(uint32_t lba, const uint8_t* buffer);
-int			block_read(uint32_t lba, uint8_t* buffer);
+int			block_read_multi(uint32_t lba, uint32_t count, uint8_t *buffer);
+int			block_write_multi(uint32_t lba, uint32_t count, const uint8_t *buffer);
 
+void		fat32_sync(void);
 int			fat32_mount(int partition_id);
 int			filesystem_ready(void);
 int			sd_init(void);
