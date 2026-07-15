@@ -120,7 +120,9 @@ static uint8_t	*fat_get_sector(uint32_t lba)
 	fat_cache_idx = count;
 	fat_cache.valid = 1;
 	fat_cache.dirty = 0;
-	return fat_cache.data;
+
+	offset = lba - fat_cache.lba;
+	return &fat_cache.data[offset * SECTOR_SIZE];
 }
 
 static uint16_t mem_read16(const uint8_t *vp)
@@ -185,7 +187,7 @@ static uint32_t	fat32_max_clusters(void)
 		return 0;
 
 	total_fat_entries = (fat32.fat_size * SECTOR_SIZE) / 4U;
-	return total_fat_entries - 1;
+	return total_fat_entries - 2;
 }
 
 uint32_t	fat32_cluster_to_lba(uint32_t cluster)
@@ -290,9 +292,12 @@ void	fat32_sync(void)
 {
 	if (fat_cache.valid && fat_cache.dirty)
 	{
-		block_write_multi(fat_cache.lba, fat_cache_idx, fat_cache.data);
+		if (block_write_multi(fat_cache.lba, fat_cache_idx, fat_cache.data) != 0)
+			return;
 		fat_cache.dirty = 0;
 	}
+	fat_cache.valid = 0;
+	fat_cache_idx = 0;
 }
 
 static int	fat32_set_fat_entry(uint32_t cluster, uint32_t value)
@@ -310,18 +315,21 @@ static int	fat32_set_fat_entry(uint32_t cluster, uint32_t value)
 	sector_off = fat_offset / SECTOR_SIZE;
 	byte_off = fat_offset % SECTOR_SIZE;
 
-	for (fat_index=0; fat_index < fat32.num_fats; fat_index++)
+	for (fat_index = 0; fat_index < fat32.num_fats; fat_index++)
 	{
 		lba = fat32.fat_start + fat_index * fat32.fat_size + sector_off;
-		uint8_t	*tmp = fat_get_sector(lba);
+
+		uint8_t *tmp = fat_get_sector(lba);
 		if (tmp == 0)
 			return -1;
 
-		uint32_t old;
-		old = mem_read32(tmp + byte_off);
+		uint32_t old = mem_read32(tmp + byte_off);
+
 		mem_write32(tmp + byte_off, (old & 0xF0000000U) | (value & 0x0FFFFFFFU));
+
 		fat_cache.dirty = 1;
 	}
+	//fat32_sync();
 	return 0;
 }
 
@@ -363,22 +371,22 @@ static int fat32_allocate_cluster_after(uint32_t prev_cluster, uint32_t *new_clu
 
 	if (fat32_find_free_cluster(&new_cluster) != 0)
 		return -1;
-	if (new_cluster < 2 || new_cluster >= fat32_max_clusters())
+	if (new_cluster < 2 || new_cluster > fat32_max_clusters())
 		return -1;
 
 	ft_bzero(g_cluster_buf, cluster_bytes());
+	if (fat32_set_fat_entry(prev_cluster, new_cluster) != 0)
+		return -1;
+
 	if (fat32_set_fat_entry(new_cluster, FAT32_EOC) != 0)
 	{
-		fat32_set_fat_entry(new_cluster, 0);
+		fat32_set_fat_entry(prev_cluster, FAT32_EOC);
 		return -1;
 	}
+
 	if (fat32_write_cluster(new_cluster, g_cluster_buf) != 0)
 	{
-		fat32_set_fat_entry(new_cluster, 0);
-		return -1;
-	}
-	if (fat32_set_fat_entry(prev_cluster, new_cluster) != 0)
-	{
+		fat32_set_fat_entry(prev_cluster, FAT32_EOC);
 		fat32_set_fat_entry(new_cluster, 0);
 		return -1;
 	}
@@ -443,7 +451,22 @@ int	fat32_get_next_cluster(uint32_t cluster, uint32_t *next)
 	if (!sector)
 		return -1;
 
+	log("%X %X %X %X\n",
+		LOG_INFO,
+		sector[offset],
+		sector[offset+1],
+		sector[offset+2],
+		sector[offset+3]);
+
 	value = mem_read32(&sector[offset]) & 0x0FFFFFFF;
+
+	
+	log("cluster=%u fat_sector=%u offset=%u value=%x\n",
+		LOG_INFO,
+		cluster,
+		fat_sector,
+		offset,
+		value);
 
 	if (value >= 0x0FFFFFF8)
 	{
