@@ -121,10 +121,7 @@ static int	wait_interrupt(uint32_t mask, uint32_t timeout)
 
 		if (status & INT_ERROR_MASK)
 		{
-			log("IRQ ERROR=%x STATUS=%x\n",
-				LOG_ERROR | LOG_INDENT,
-				status,
-				emmc->STATUS);
+			log("IRQ ERROR=%x STATUS=%x\n", LOG_ERROR | LOG_INDENT, status, emmc->STATUS);
 			emmc->INTERRUPT = status;
 			return -1;
 		}
@@ -465,8 +462,6 @@ int block_read_multi(uint32_t lba, uint32_t count, uint8_t *buffer)
 
 	if (!buffer || count == 0 || count > 0xFFFF)
 		return -1;
-
-	log("read: lba=%u count=%u bytes=%u\n", 0, lba, count, count * SECTOR_SIZE);
 
 	addr = is_sdhc ? lba : lba * SECTOR_SIZE;
 

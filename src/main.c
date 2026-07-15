@@ -85,8 +85,6 @@ void	kernel_main(void *dtb)
 	else
 		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &splash, DISPLAY_COLORS[TRANSPARENT]);
 
-	panic("test SPEED\n");
-
 	// parse config file
 	if (parse_config(&config))	panic("Config parsing failed, please check config file\n");
 	else						log("Config parsed successfully!\n", LOG_SUCCESS);

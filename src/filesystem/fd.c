@@ -58,10 +58,6 @@ int		open(const char *path, int flags)
 	g_fds[fd].mode = (file_open_mode)(flags & (O_READ | O_WRITE | O_CREATE | O_APPEND));
 	if (g_fds[fd].mode & O_APPEND)
 		g_fds[fd].file.pos = g_fds[fd].file.size;
-	log("first cluster=%u size=%u\n",
-		LOG_INFO,
-		file.first_cluster,
-		file.size);
 	return (fd);
 }
 

@@ -150,10 +150,7 @@ static void mem_write32(uint8_t *vp, uint32_t v)
 static uint32_t mem_read32(const uint8_t *vp)
 {
 	const volatile uint8_t *p = vp;
-	return (uint32_t)p[0] |
-		   ((uint32_t)p[1] << 8) |
-		   ((uint32_t)p[2] << 16) |
-		   ((uint32_t)p[3] << 24);
+	return (uint32_t)p[0] | ((uint32_t)p[1] << 8) | ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24);
 }
 
 static int	is_pow2_u32(uint32_t value)
@@ -264,11 +261,6 @@ static int	parse_bpb(uint32_t lba)
 
 	fat_cache.valid = 0;
 	cluster_cache.valid = 0;
-
-	log("sector size = %u\n", LOG_INFO | LOG_INDENT, SECTOR_SIZE);
-	log("sec/cluster = %u\n", LOG_INFO | LOG_INDENT, fat32.sectors_per_cluster);
-	log("cluster bytes = %u\n", LOG_INFO | LOG_INDENT, cluster_bytes());
-
 	return 0;
 }
 
@@ -451,23 +443,7 @@ int	fat32_get_next_cluster(uint32_t cluster, uint32_t *next)
 	if (!sector)
 		return -1;
 
-	log("%X %X %X %X\n",
-		LOG_INFO,
-		sector[offset],
-		sector[offset+1],
-		sector[offset+2],
-		sector[offset+3]);
-
 	value = mem_read32(&sector[offset]) & 0x0FFFFFFF;
-
-	
-	log("cluster=%u fat_sector=%u offset=%u value=%x\n",
-		LOG_INFO,
-		cluster,
-		fat_sector,
-		offset,
-		value);
-
 	if (value >= 0x0FFFFFF8)
 	{
 		*next = 0;
@@ -1021,15 +997,8 @@ int	fat32_read(FAT32_File *file, uint8_t *buffer, uint32_t len)
 
 		if (remaining > 0)
 		{
-			uint32_t old_cluster = cluster;
-
 			if (fat32_get_next_cluster(cluster, &cluster) != 0)
 				return -1;
-
-			log("FAT: %u -> %u\n",
-				LOG_INFO,
-				old_cluster,
-				cluster);
 		}
 	}
 
@@ -1171,10 +1140,7 @@ void	fat32_list_dir(const char *path, void (*print)(const char *name, uint32_t s
 			new_path[i] = '\0';
 		dir = fat32_open(path);
 		if (!dir.is_dir || dir.first_cluster < 2)
-		{
-			log("'%s' %i %lu\n", 1, path, dir.is_dir, dir.first_cluster);
 			return;
-		}
 		cluster = dir.first_cluster;
 	}
 	hops = 0;
