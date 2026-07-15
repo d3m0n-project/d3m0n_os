@@ -23,7 +23,8 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	int			flip;
 
 	if (fd == -1)
-		return (1);
+		return 1;
+
 	if (read(fd, header, 54) != 54)
 		goto error;
 	if (header[0] != 'B' || header[1] != 'M')
@@ -37,11 +38,17 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 
 	out->bytes_per_pixel = header[28] / 8;
 	if (out->bytes_per_pixel != 3 && out->bytes_per_pixel != 4)
+	{
+		log("Invalid bmp bpp=%i only RGB or ARGB accepted\n", LOG_ERROR | LOG_INDENT, out->bytes_per_pixel);
 		goto error;
+	}
 
 	ft_memcpy(&compression, header + 30, sizeof(uint32_t));
 	if (compression != 0)
+	{
+		log("BMP compression is enabled and it is not yet handled\n", LOG_ERROR | LOG_INDENT);
 		goto error;
+	}
 
 	ft_memcpy(&starting_offset, header + 10, sizeof(uint32_t));
 
@@ -51,7 +58,10 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 
 	file_pixels = malloc(data_size);
 	if (!file_pixels)
+	{
+		log("Could not allocate %lu bytes for pixels\n", LOG_ERROR | LOG_INDENT, data_size);
 		goto error;
+	}
 
 	#if SHOW_IMAGE_STATUS == 1
 	log("BMP header loading: %llums\n", LOG_INDENT | LOG_INFO, (time_us() / 1000) - start_time);
@@ -59,14 +69,20 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 
 	uint64_t t = time_us();
 
+	log("offset=%u\n", LOG_INFO | LOG_INDENT, starting_offset);
+	log("width=%d height=%d bpp=%d\n", LOG_INDENT | LOG_INFO, out->width, out->height, out->bytes_per_pixel);
+
 	lseek(fd, starting_offset, SEEK_SET);
 
 	log("seek: %llums\n", LOG_INFO | LOG_INDENT, (time_us() - t)/1000);
 
 	t = time_us();
-
-	if (read(fd, file_pixels, data_size) != data_size)
+	uint32_t	read_data_size = read(fd, file_pixels, data_size);
+	if (read_data_size != data_size)
+	{
+		log("BMP read was invalid: needed %lu, got %lu\n", LOG_ERROR | LOG_INDENT, data_size, read_data_size);
 		goto error;
+	}
 
 	log("read: %llums\n", LOG_INFO | LOG_INDENT, (time_us() - t)/1000);
 

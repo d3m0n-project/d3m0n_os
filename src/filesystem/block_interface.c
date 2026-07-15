@@ -54,8 +54,9 @@
 #define TM_BLKCNT_EN	(1 << 1)
 #define TM_AUTO_CMD12	(1 << 2)
 #define TM_DAT_DIR_READ	(1 << 4)
+#define TM_MULTI_BLOCK	(1 << 5)
 
-#define EMMC_TIMEOUT	1000000U
+#define EMMC_TIMEOUT	10000000U
 
 
 typedef struct
@@ -120,11 +121,37 @@ static int	wait_interrupt(uint32_t mask, uint32_t timeout)
 
 		if (status & INT_ERROR_MASK)
 		{
+			log("IRQ ERROR=%x STATUS=%x\n",
+				LOG_ERROR | LOG_INDENT,
+				status,
+				emmc->STATUS);
 			emmc->INTERRUPT = status;
 			return -1;
 		}
 
 		if (status & mask)
+		{
+			emmc->INTERRUPT = mask;
+			return 0;
+		}
+	}
+
+	return -1;
+}
+
+static int wait_interrupt_only(uint32_t mask, uint32_t timeout)
+{
+	while (timeout--)
+	{
+		uint32_t irq = emmc->INTERRUPT;
+
+		if (irq & INT_ERROR_MASK)
+		{
+			emmc->INTERRUPT = irq;
+			return -1;
+		}
+
+		if (irq & mask)
 		{
 			emmc->INTERRUPT = mask;
 			return 0;
@@ -280,7 +307,7 @@ static int	send_cmd(uint32_t cmd, uint32_t arg, response_type_t resp)
 	if (cmd != CMD0 && cmd != ACMD41)
 		cmdtm |= CMD_CRCCHK_EN;
 
-	if (cmd != CMD0 && cmd != CMD2 && cmd != ACMD41)
+	if (cmd != CMD0 && cmd != CMD2 && cmd != ACMD41 && cmd != CMD12)
 		cmdtm |= CMD_IXCHK_EN;
 
 	if (cmd == CMD17 || cmd == CMD18 || cmd == CMD24 || cmd == CMD25)
@@ -289,7 +316,7 @@ static int	send_cmd(uint32_t cmd, uint32_t arg, response_type_t resp)
 		cmdtm |= TM_BLKCNT_EN;
 
 		if (cmd == CMD18 || cmd == CMD25)
-			cmdtm |= TM_AUTO_CMD12;
+			cmdtm |= TM_MULTI_BLOCK;
 	}
 
 
@@ -415,9 +442,10 @@ int	sd_init()
 	return 0;
 }
 
-static void	copy_from_fifo(uint8_t *buffer)
+static void copy_from_fifo(uint8_t *buffer)
 {
 	volatile uint32_t *dst32 = (volatile uint32_t *)buffer;
+
 	for (int i = 0; i < 128; i++)
 		dst32[i] = emmc->DATA;
 }
@@ -425,45 +453,54 @@ static void	copy_from_fifo(uint8_t *buffer)
 
 static void	copy_to_fifo(const uint8_t *buffer)
 {
-	// Faster RAM -> FIFO copy: use 32-bit loads.
 	const uint32_t *src32 = (const uint32_t *)buffer;
 	for (int i = 0; i < 128; i++)
 		emmc->DATA = src32[i];
 }
 
 
-
-int	block_read_multi(uint32_t lba, uint32_t count, uint8_t *buffer)
+int block_read_multi(uint32_t lba, uint32_t count, uint8_t *buffer)
 {
-	uint32_t	addr;
+	uint32_t addr;
 
-	if (!buffer || count == 0)
+	if (!buffer || count == 0 || count > 0xFFFF)
 		return -1;
 
-	addr = is_sdhc?lba:lba * SECTOR_SIZE;
+	log("read: lba=%u count=%u bytes=%u\n", 0, lba, count, count * SECTOR_SIZE);
+
+	addr = is_sdhc ? lba : lba * SECTOR_SIZE;
+
 	emmc->BLKSIZECNT = (count << 16) | SECTOR_SIZE;
+
 	if (send_cmd(CMD18, addr, RESP_48) < 0)
 		return -1;
 
 	for (uint32_t block = 0; block < count; block++)
 	{
-		if (wait_status_set(SR_READ_AVAIL, EMMC_TIMEOUT) < 0)
+		if (wait_interrupt_only(INT_READ_RDY, EMMC_TIMEOUT) < 0)
 		{
 			sd_reset_data();
+			sd_reset_cmd();
 			return -1;
 		}
+
 		copy_from_fifo(buffer);
 		buffer += SECTOR_SIZE;
 	}
 
-
-	if (wait_interrupt(INT_DATA_DONE, EMMC_TIMEOUT) < 0)
+	if (wait_interrupt_only(INT_DATA_DONE, EMMC_TIMEOUT) < 0)
 	{
 		sd_reset_data();
+		sd_reset_cmd();
 		return -1;
 	}
+
+	if (send_cmd(CMD12, 0, RESP_48) < 0)
+		return -1;
+
 	return 0;
 }
+
 
 int	block_write_multi(uint32_t lba, uint32_t count, const uint8_t *buffer)
 {
@@ -474,16 +511,6 @@ int	block_write_multi(uint32_t lba, uint32_t count, const uint8_t *buffer)
 		return -1;
 
 	addr = is_sdhc?lba:lba * SECTOR_SIZE;
-
-
-	//ACMD23=block count
-	if (send_cmd(CMD55, rca << 16, RESP_48) < 0)
-		return -1;
-
-
-	if (send_cmd(ACMD23, count, RESP_48) < 0)
-		return -1;
-
 	emmc->BLKSIZECNT = (count << 16) | SECTOR_SIZE;
 	if (send_cmd(CMD25, addr, RESP_48) < 0)
 		return -1;
@@ -505,6 +532,9 @@ int	block_write_multi(uint32_t lba, uint32_t count, const uint8_t *buffer)
 		sd_reset_data();
 		return -1;
 	}
+
+	if (send_cmd(CMD12, 0, RESP_48) < 0)
+		return -1;
 
 
 	return 0;

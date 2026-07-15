@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "log.h"
+#include "libft.h"
 
 #define FS_MAX_FDS		64
 #define SECTOR_SIZE		512

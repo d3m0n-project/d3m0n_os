@@ -14,6 +14,7 @@
 
 
 #include "package_manager.h"
+#include <fat32.h>
 
 t_conf		config;
 
@@ -79,7 +80,7 @@ void	kernel_main(void *dtb)
 
 	// load spash
 	BmpTexture	splash;
-	if (bmp_load_image(&splash, "wallpapers/splash.bmp"))
+	if (bmp_load_image(&splash, "/wallpapers/splash.bmp"))
 		log("Could not load splash screen\n", LOG_ERROR);
 	else
 		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &splash, DISPLAY_COLORS[TRANSPARENT]);
