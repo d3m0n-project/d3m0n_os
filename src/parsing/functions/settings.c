@@ -3,6 +3,8 @@
 #include "log.h"
 #include "libft.h"
 
+#include "time.h"
+
 char*	fn_settings_set(void **args)
 {
 	char	*key = ((char **)args)[0];
@@ -10,6 +12,7 @@ char*	fn_settings_set(void **args)
 	
 	if (set_setting("/config", key, value))
 		log("SETTINGS.SET: Failed to set key='%s' value='%s'\n", LOG_ERROR | LOG_INDENT, key, value);
+	// TODO: stats globals for R&W speed...
 	return 0;
 }
 

@@ -2,6 +2,8 @@
 #include "math.h"
 #include "controls.h"
 
+#include "log.h"
+
 void	ctrl_draw_vscroll(t_control	*control)
 {
 	draw_rect(control->p_client_location.x, control->p_client_location.y, control->width, control->height, control->bg_color);
@@ -20,8 +22,8 @@ void	ctrl_draw_vscroll(t_control	*control)
 				child->width -= SCROLLBAR_SIZE;
 			
 			child->p_client_location = (t_point){
-				.x=child->location.x,
-				.y=child->location.y - control->p_scroll_offset.y
+				.x=child->location.x + control->p_client_location.x,
+				.y=child->location.y + control->p_client_location.y - control->p_scroll_offset.y
 			};
 
 			// pass scroll to children

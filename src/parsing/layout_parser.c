@@ -48,6 +48,11 @@ static int	lp_parse_percent(char *str, int max_val)
 	if (len > 0 && str[len - 1] == '%')
 	{
 		percent = ft_atoi(str);
+		if (percent < 0 || percent > 100)
+		{
+			log("Parsing: Invalid percentage: '%s'\n", LOG_ERROR | LOG_INDENT, str);
+			return max_val;
+		}
 		return (max_val * percent) / 100;
 	}
 	return ft_atoi(str);

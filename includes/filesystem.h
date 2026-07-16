@@ -14,7 +14,8 @@ typedef enum
 	O_READ=1,
 	O_WRITE=2,
 	O_CREATE=4,
-	O_APPEND=8
+	O_APPEND=8,
+	O_TRUNC=16
 }	file_open_mode;
 
 typedef enum

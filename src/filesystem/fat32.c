@@ -2,7 +2,8 @@
 #include "fat32.h"
 #include "libft.h"
 
-#define FAT_CACHE_SECTORS			64
+#define FAT_CACHE_ENTRIES			64
+#define CLUSTER_CACHE_ENTRIES		8
 
 #define FAT32_EOC					0x0FFFFFFFU
 #define FAT32_DIR_ENTRY_SIZE		32U
@@ -54,75 +55,83 @@ static uint8_t		__attribute__((aligned(4))) g_cluster_buf[FAT32_MAX_CLUSTER_BYTE
 
 typedef struct
 {
-	uint32_t	lba;
-	uint8_t		data[SECTOR_SIZE * FAT_CACHE_SECTORS] __attribute__((aligned(4)));
-	uint8_t		valid;
-	uint8_t		dirty;
-} FAT_Cache;
+	uint32_t lba;
+	uint8_t data[SECTOR_SIZE] __attribute__((aligned(4)));
+	uint8_t valid;
+	uint8_t dirty;
+	uint32_t age;
+}	FAT_CacheEntry;
+
+
 
 typedef struct
 {
-	uint32_t	cluster;
-	uint8_t		data[FAT32_MAX_CLUSTER_BYTES];
-	uint8_t		valid;
-	uint8_t		dirty;
+	uint32_t cluster;
+	uint8_t data[FAT32_MAX_CLUSTER_BYTES];
+	uint8_t valid;
+	uint8_t dirty;
+	uint32_t age;
 }	ClusterCache;
 
-// caching
-static ClusterCache	cluster_cache;
-static FAT_Cache	fat_cache;
-static int			fat_cache_idx = 0;
+static ClusterCache		cluster_cache[CLUSTER_CACHE_ENTRIES];
+static uint32_t			cluster_cache_clock;
+static FAT_CacheEntry	fat_cache[FAT_CACHE_ENTRIES];
+static uint32_t			fat_cache_clock = 0;
 
-static uint8_t	*fat_get_sector(uint32_t lba)
+static uint8_t *fat_get_sector(uint32_t lba)
 {
-	uint32_t	offset;
-	uint32_t	count;
+	uint32_t i;
+	uint32_t oldest = 0;
+	uint32_t oldest_age = 0xFFFFFFFF;
 
-	// cache
-	if (fat_cache.valid)
+	for (i = 0; i < FAT_CACHE_ENTRIES; i++)
 	{
-		uint32_t window_end = fat_cache.lba + (uint32_t)fat_cache_idx;
-		if (lba >= fat_cache.lba && lba < window_end)
+		if (fat_cache[i].valid && fat_cache[i].lba == lba)
 		{
-			offset = lba - fat_cache.lba;
-			return &fat_cache.data[offset * SECTOR_SIZE];
+			fat_cache[i].age = ++fat_cache_clock;
+			return fat_cache[i].data;
 		}
 	}
 
-
-	// flush old cache
-	if (fat_cache.valid && fat_cache.dirty)
+	// find victim
+	for (i = 0; i < FAT_CACHE_ENTRIES; i++)
 	{
-		if (block_write_multi(fat_cache.lba, fat_cache_idx, fat_cache.data) != 0)
+		if (!fat_cache[i].valid)
+		{
+			oldest = i;
+			break;
+		}
+
+		if (fat_cache[i].age < oldest_age)
+		{
+			oldest_age = fat_cache[i].age;
+			oldest = i;
+		}
+	}
+
+	// flush victim only
+	if (fat_cache[oldest].valid && fat_cache[oldest].dirty)
+	{
+		if (block_write_multi(
+			fat_cache[oldest].lba,
+			1,
+			fat_cache[oldest].data) != 0)
 			return 0;
 	}
 
-	fat_cache.valid = 0;
-	fat_cache.dirty = 0;
-	fat_cache_idx = 0;
-
-	// align cache window
-	fat_cache.lba = lba & ~(FAT_CACHE_SECTORS - 1);
-	count = FAT_CACHE_SECTORS;
-	if (fat32.mounted && fat32.fat_size != 0 && fat32.fat_start != 0)
+	// load one sector
+	if (block_read_multi(lba, 1, fat_cache[oldest].data) != 0)
 	{
-		if (fat_cache.lba + count > fat32.fat_start + fat32.fat_size)
-			count = fat32.fat_start + fat32.fat_size - fat_cache.lba;
-	}
-	if (count == 0)
-		return 0;
-
-	if (block_read_multi(fat_cache.lba, count, fat_cache.data) != 0)
-	{
-		fat_cache.valid = 0;
+		fat_cache[oldest].valid = 0;
 		return 0;
 	}
-	fat_cache_idx = count;
-	fat_cache.valid = 1;
-	fat_cache.dirty = 0;
 
-	offset = lba - fat_cache.lba;
-	return &fat_cache.data[offset * SECTOR_SIZE];
+	fat_cache[oldest].lba = lba;
+	fat_cache[oldest].valid = 1;
+	fat_cache[oldest].dirty = 0;
+	fat_cache[oldest].age = ++fat_cache_clock;
+
+	return fat_cache[oldest].data;
 }
 
 static uint16_t mem_read16(const uint8_t *vp)
@@ -184,14 +193,16 @@ static uint32_t	fat32_max_clusters(void)
 		return 0;
 
 	total_fat_entries = (fat32.fat_size * SECTOR_SIZE) / 4U;
-	return total_fat_entries - 2;
+	return total_fat_entries - 1;
 }
 
 uint32_t	fat32_cluster_to_lba(uint32_t cluster)
 {
 	if (!fat32_ready() || cluster < 2)
 		return 0;
-	return fat32.data_start + (cluster - 2) * fat32.sectors_per_cluster;
+
+	uint64_t lba = (uint64_t)fat32.data_start + (uint64_t)(cluster - 2) * fat32.sectors_per_cluster;
+	return (uint32_t)lba;
 }
 
 static int	parse_bpb(uint32_t lba)
@@ -259,8 +270,6 @@ static int	parse_bpb(uint32_t lba)
 	fat32.data_start = fat32.fat_start + (num_fats * fat_sz32);
 	fat32.mounted = 1;
 
-	fat_cache.valid = 0;
-	cluster_cache.valid = 0;
 	return 0;
 }
 
@@ -280,16 +289,18 @@ static int fat32_write_cluster(uint32_t cluster, const uint8_t *buffer)
 	return 0;
 }
 
-void	fat32_sync(void)
+void fat32_sync(void)
 {
-	if (fat_cache.valid && fat_cache.dirty)
+	uint32_t i;
+
+	for (i = 0; i < FAT_CACHE_ENTRIES; i++)
 	{
-		if (block_write_multi(fat_cache.lba, fat_cache_idx, fat_cache.data) != 0)
-			return;
-		fat_cache.dirty = 0;
+		if (fat_cache[i].valid && fat_cache[i].dirty)
+		{
+			block_write_multi(fat_cache[i].lba, 1, fat_cache[i].data);
+			fat_cache[i].dirty = 0;
+		}
 	}
-	fat_cache.valid = 0;
-	fat_cache_idx = 0;
 }
 
 static int	fat32_set_fat_entry(uint32_t cluster, uint32_t value)
@@ -306,7 +317,6 @@ static int	fat32_set_fat_entry(uint32_t cluster, uint32_t value)
 	fat_offset = cluster * 4U;
 	sector_off = fat_offset / SECTOR_SIZE;
 	byte_off = fat_offset % SECTOR_SIZE;
-
 	for (fat_index = 0; fat_index < fat32.num_fats; fat_index++)
 	{
 		lba = fat32.fat_start + fat_index * fat32.fat_size + sector_off;
@@ -316,10 +326,15 @@ static int	fat32_set_fat_entry(uint32_t cluster, uint32_t value)
 			return -1;
 
 		uint32_t old = mem_read32(tmp + byte_off);
-
 		mem_write32(tmp + byte_off, (old & 0xF0000000U) | (value & 0x0FFFFFFFU));
-
-		fat_cache.dirty = 1;
+		for (uint32_t i = 0; i < FAT_CACHE_ENTRIES; i++)
+		{
+			if (fat_cache[i].valid && fat_cache[i].data == tmp)
+			{
+				fat_cache[i].dirty = 1;
+				break;
+			}
+		}
 	}
 	//fat32_sync();
 	return 0;
@@ -392,6 +407,9 @@ int	fat32_read_cluster(uint32_t cluster, uint8_t *buffer)
 
 	uint32_t	lba;
 	uint32_t	cbytes;
+	uint32_t	i;
+	uint32_t	victim;
+	uint32_t	oldest_age;
 
 	if (!buffer || !fat32_ready() || cluster < 2)
 		return -1;
@@ -402,22 +420,55 @@ int	fat32_read_cluster(uint32_t cluster, uint8_t *buffer)
 
 	cbytes = cluster_bytes();
 
-	if (cluster_cache.valid && cluster_cache.cluster == cluster)
+	// hit
+	for (i = 0; i < CLUSTER_CACHE_ENTRIES; i++)
 	{
-		ft_memcpy(buffer, cluster_cache.data, cbytes);
-		return 0;
+		if (cluster_cache[i].valid && cluster_cache[i].cluster == cluster)
+		{
+			ft_memcpy(buffer, cluster_cache[i].data, cbytes);
+			return 0;
+		}
 	}
 
-	if (block_read_multi(lba, fat32.sectors_per_cluster, cluster_cache.data) != 0)
+	// first invalid or oldest
+	victim = 0;
+	oldest_age = 0xFFFFFFFF;
+	for (i = 0; i < CLUSTER_CACHE_ENTRIES; i++)
+	{
+		if (!cluster_cache[i].valid)
+		{
+			victim = i;
+			break;
+		}
+		if (cluster_cache[i].age < oldest_age)
+		{
+			oldest_age = cluster_cache[i].age;
+			victim = i;
+		}
+	}
+
+	// writeback if dirty
+	if (cluster_cache[victim].valid && cluster_cache[victim].dirty)
+	{
+		if (fat32_write_cluster(cluster_cache[victim].cluster, cluster_cache[victim].data) != 0)
+			return -1;
+		cluster_cache[victim].dirty = 0;
+	}
+
+
+
+	if (block_read_multi(lba, fat32.sectors_per_cluster, cluster_cache[victim].data) != 0)
 		return -1;
 
-	cluster_cache.cluster = cluster;
-	cluster_cache.valid = 1;
-	cluster_cache.dirty = 0;
+	cluster_cache[victim].cluster = cluster;
+	cluster_cache[victim].valid = 1;
+	cluster_cache[victim].dirty = 0;
+	cluster_cache[victim].age = ++cluster_cache_clock;
 
-	ft_memcpy(buffer, cluster_cache.data, cbytes);
+	ft_memcpy(buffer, cluster_cache[victim].data, cbytes);
 	return 0;
 }
+
 
 
 
@@ -559,7 +610,6 @@ static int	fat32_name_to_83(const char *name, uint8_t out[11])
 	base_len = 0;
 	ext_len = 0;
 	pos = 0;
-
 	while (name[pos] && name[pos] != '.' && name[pos] != '/')
 	{
 		if (base_len >= 8)
@@ -730,27 +780,28 @@ static int	fat32_update_dir_entry(FAT32_File *file)
 
 static int	fat32_free_cluster_chain(uint32_t first_cluster)
 {
-	uint32_t	cluster;
-	uint32_t	next;
-	uint32_t	hops;
-	uint32_t	max_clusters;
+	uint32_t cluster;
+	uint32_t next;
+	uint32_t max_clusters;
+	uint32_t hops;
 
 	if (!fat32_ready() || first_cluster < 2)
-		return (-1);
+		return -1;
+
 	cluster = first_cluster;
-	hops = 0;
 	max_clusters = fat32_max_clusters();
+	hops = 0;
 	while (cluster)
 	{
-		if (max_clusters == 0 || hops++ >= max_clusters)
-			return (-1);
+		if (hops++ >= max_clusters)
+			return -1;
 		if (fat32_get_next_cluster(cluster, &next) != 0)
-			return (-1);
+			return -1;
 		if (fat32_set_fat_entry(cluster, 0) != 0)
-			return (-1);
+			return -1;
 		cluster = next;
 	}
-	return (0);
+	return 0;
 }
 
 static int	fat32_delete_dir_entry(FAT32_File *file)
@@ -777,8 +828,7 @@ static int	fat32_delete_dir_entry(FAT32_File *file)
 
 		i--;
 		entry = &g_cluster_buf[i * FAT32_DIR_ENTRY_SIZE];
-		if (entry[DIR_NAME_OFF] == 0x00 || entry[DIR_NAME_OFF] == 0xE5
-			|| entry[DIR_ATTR_OFF] != FAT32_ATTR_LFN)
+		if (entry[DIR_NAME_OFF] == 0x00 || entry[DIR_NAME_OFF] == 0xE5 || entry[DIR_ATTR_OFF] != FAT32_ATTR_LFN)
 			break;
 		seq = entry[0];
 		entry[DIR_NAME_OFF] = 0xE5;
@@ -795,6 +845,8 @@ int	fat32_delete(const char *path)
 	file = fat32_open(path);
 	if (file.first_cluster == 0)
 		return (-1);
+	if (file.is_dir)
+    	return -1;
 	if (fat32_free_cluster_chain(file.first_cluster) != 0)
 		return (-1);
 	if (fat32_delete_dir_entry(&file) != 0)
@@ -923,10 +975,11 @@ FAT32_File fat32_create(const char *path)
 	if (fat32_create_dir_entry(cur_cluster, name83, new_cluster) != 0)
 		return file;
 
-	found = fat32_open(path);
-	if (found.first_cluster == new_cluster)
-		return found;
 	file.first_cluster = new_cluster;
+	file.size = 0;
+	file.pos = 0;
+	file.dir_cluster = cur_cluster;
+	file.is_dir = 0;
 	return file;
 }
 
@@ -980,7 +1033,7 @@ int	fat32_read(FAT32_File *file, uint8_t *buffer, uint32_t len)
 	while (remaining > 0 && cluster)
 	{
 		if (read_hops++ >= max_clusters)
-        	return -1;
+			return -1;
 
 		if (fat32_read_cluster(cluster, g_cluster_buf) != 0)
 			return -1;
@@ -1004,6 +1057,43 @@ int	fat32_read(FAT32_File *file, uint8_t *buffer, uint32_t len)
 
 	file->pos += read_total;
 	return (int)read_total;
+}
+
+int	fat32_truncate(FAT32_File *file)
+{
+	uint32_t	next;
+	uint32_t	old_tail;
+
+	if (!file || !fat32_ready())
+		return -1;
+
+	if (file->first_cluster < 2)
+		return -1;
+	if (fat32_get_next_cluster(file->first_cluster, &next) != 0)
+		return -1;
+
+	old_tail = next;
+	if (fat32_set_fat_entry(file->first_cluster, FAT32_EOC) != 0)
+		return -1;
+	if (old_tail != 0)
+	{
+		if (fat32_free_cluster_chain(old_tail) != 0)
+		{
+			fat32_set_fat_entry(file->first_cluster, FAT32_EOC);
+			return -1;
+		}
+	}
+
+	ft_bzero(g_cluster_buf, cluster_bytes());
+	fat32_write_cluster(file->first_cluster, g_cluster_buf);
+
+	file->size = 0;
+	file->pos = 0;
+
+	if (fat32_update_dir_entry(file) != 0)
+		return -1;
+
+	return 0;
 }
 
 
@@ -1070,6 +1160,19 @@ int	fat32_write(FAT32_File *file, const uint8_t *buffer, uint32_t len)
 		if (block_write_multi(lba, fat32.sectors_per_cluster, g_cluster_buf) != 0)
 			return -1;
 
+		// update cluster cache
+		for (uint32_t ci = 0; ci < CLUSTER_CACHE_ENTRIES; ci++)
+		{
+			if (cluster_cache[ci].valid && cluster_cache[ci].cluster == cluster)
+			{
+				ft_memcpy(cluster_cache[ci].data, g_cluster_buf, cbytes);
+				cluster_cache[ci].dirty = 1;
+				cluster_cache[ci].age = ++cluster_cache_clock;
+				break;
+			}
+		}
+
+
 		write_total += copy_len;
 		remaining -= copy_len;
 		offset = 0;
@@ -1135,10 +1238,11 @@ void	fat32_list_dir(const char *path, void (*print)(const char *name, uint32_t s
 		cluster = fat32.root_cluster;
 	else
 	{
-		char *new_path = (char *)path;
-		for (int i=ft_strlen(new_path) - 1; i>0 && new_path[i] == '/'; i--)
+		char new_path[1024];
+		ft_strlcpy(new_path, path, sizeof(new_path));
+		for (int i = ft_strlen(new_path) - 1; i > 0 && new_path[i] == '/'; i--)
 			new_path[i] = '\0';
-		dir = fat32_open(path);
+		dir = fat32_open(new_path);
 		if (!dir.is_dir || dir.first_cluster < 2)
 			return;
 		cluster = dir.first_cluster;

@@ -20,5 +20,6 @@ int			fat32_read(FAT32_File *file, uint8_t *buffer, uint32_t len);
 int			fat32_write(FAT32_File *file, const uint8_t *buffer, uint32_t len);
 void		fat32_close(FAT32_File *file);
 void		fat32_list_dir(const char *path, void (*print)(const char *name, uint32_t size));
+int			fat32_truncate(FAT32_File *file);
 
 #endif

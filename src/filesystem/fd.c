@@ -15,10 +15,12 @@ static int	is_valid_open_flags(int flags)
 {
 	int access_mode;
 
-	if (flags & ~(O_READ | O_WRITE | O_CREATE | O_APPEND))
+	if (flags & ~(O_READ | O_WRITE | O_CREATE | O_APPEND | O_TRUNC))
 		return (0);
 	if ((flags & O_APPEND) && !(flags & O_WRITE))
 		return (0);
+	if ((flags & O_TRUNC) && !(flags & O_WRITE))
+    	return 0;
 	access_mode = flags & (O_READ | O_WRITE);
 	if (access_mode == 0)
 		return (0);
@@ -54,10 +56,18 @@ int		open(const char *path, int flags)
 	}
 	if (file.is_dir)
 		return (-1);
+
+	if ((flags & O_TRUNC) && (flags & O_WRITE))
+	{
+		if (fat32_truncate(&file) != 0)
+			return -1;
+	}
+	
 	g_fds[fd].file = file;
-	g_fds[fd].mode = (file_open_mode)(flags & (O_READ | O_WRITE | O_CREATE | O_APPEND));
+	g_fds[fd].mode = (file_open_mode)(flags & (O_READ | O_WRITE | O_CREATE | O_APPEND | O_TRUNC));
 	if (g_fds[fd].mode & O_APPEND)
 		g_fds[fd].file.pos = g_fds[fd].file.size;
+	
 	return (fd);
 }
 

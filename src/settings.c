@@ -9,7 +9,7 @@
 #define	SCHEMA(kind, ...)						SCHEMA_##kind(__VA_ARGS__)
 
 t_offset	conf_offsets[] = {
-    CONF_FIELDS(OFFSET)
+	CONF_FIELDS(OFFSET)
 };
 
 int		parse_config(t_conf *config)
@@ -165,7 +165,10 @@ int	set_setting(const char *path, const char *key, const char *value)
 
 	fd = open(path, O_READ);
 	if (fd < 0)
+	{
+		log("SET_SETTING: Failed to open config file %s for line count\n", LOG_ERROR, path);
 		return 1;
+	}
 
 	while ((line = get_next_line(fd)))
 	{
@@ -176,11 +179,15 @@ int	set_setting(const char *path, const char *key, const char *value)
 
 	lines = (char **)ft_calloc(line_count + 2, sizeof(char *));
 	if (!lines)
+	{
+		log("SET_SETTING: Failed to allocate lines of the config\n", LOG_ERROR, path);
 		return 1;
+	}
 
 	fd = open(path, O_READ);
 	if (fd < 0)
 	{
+		log("SET_SETTING: Failed to open config file %s for reading\n", LOG_ERROR, path);
 		free(lines);
 		return 1;
 	}
@@ -198,6 +205,7 @@ int	set_setting(const char *path, const char *key, const char *value)
 			char *new_line = (char *)ft_calloc(new_len + 1, sizeof(char));
 			if (!new_line)
 			{
+				log("SET_SETTING: Failed to allocate new line for config %s\n", LOG_ERROR, path);
 				free(line);
 				goto cleanup;
 			}
@@ -217,10 +225,13 @@ int	set_setting(const char *path, const char *key, const char *value)
 	if (!found)
 		goto cleanup;
 
-	// Write all lines back to file
-	fd = open(path, O_WRITE);
+	// write all lines back to file
+	fd = open(path, O_WRITE | O_TRUNC);
 	if (fd < 0)
+	{
+		log("SET_SETTING: Failed to open again %s for writing\n", LOG_ERROR, path);
 		goto cleanup;
+	}
 
 	i = 0;
 	while (lines[i])
@@ -228,14 +239,16 @@ int	set_setting(const char *path, const char *key, const char *value)
 		size_t len = ft_strlen(lines[i]);
 		if (write(fd, lines[i], len) != (int)len)
 		{
+			log("SET_SETTING: Failed to write %i bytes to %s\n", LOG_ERROR, (int)len, path);
 			close(fd);
 			goto cleanup;
 		}
-		// write newline if not already present
+		// write newline
 		if (len == 0 || (lines[i][len - 1] != '\n'))
 		{
 			if (write(fd, "\n", 1) != 1)
 			{
+				log("SET_SETTING: Failed write newlien to config file %s\n", LOG_ERROR, path);
 				close(fd);
 				goto cleanup;
 			}

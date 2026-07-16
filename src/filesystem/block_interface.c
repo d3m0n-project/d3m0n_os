@@ -433,7 +433,7 @@ int	sd_init()
 	}
 
 	// safe speed: ~25MHz
-	if (sd_set_clock(4) < 0)
+	if (sd_set_clock(4) < 0) // TODO: try to improve sd clock speed
 		return -1;
 
 	return 0;
