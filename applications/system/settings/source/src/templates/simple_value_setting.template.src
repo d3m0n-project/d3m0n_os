@@ -1,0 +1,5 @@
+# [config_key, text]
+
+Window.OnCreate =>
+	value = system.get("$0");
+	state.set("$0_value", "content", value);

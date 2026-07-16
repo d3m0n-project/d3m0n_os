@@ -1,4 +1,4 @@
-#include "battery.h"
+#include "stats.h"
 #include "gpio.h"
 
 #define PIN_CHARGING	22
@@ -13,8 +13,8 @@ int	is_charging(void)
 	#endif
 }
 
-float	get_battery_level(void)
+int	get_battery_level(void)
 {
 	// TODO: battery level
-	return 100.0f;
+	return 100;
 }

@@ -61,6 +61,31 @@ char	*fn_window_go_back(void **args);
 char	*fn_state_set(void **args);
 char	*fn_state_get(void **args);
 
+/* system */
+char	*fn_system_var_get(void **args);
+
+
+/* string manipulation */
+char	*fn_str_len(void **args);
+char	*fn_str_is_empty(void **args);
+char	*fn_str_is_digit(void **args);
+char	*fn_str_is_alpha(void **args);
+char	*fn_str_is_alnum(void **args);
+char	*fn_str_is_space(void **args);
+char	*fn_str_substr(void **args);
+char	*fn_str_join(void **args);
+char	*fn_str_cmp(void **args);
+char	*fn_str_equal(void **args);
+char	*fn_str_starts_with(void **args);
+char	*fn_str_ends_with(void **args);
+char	*fn_str_contains(void **args);
+char	*fn_str_lower(void **args);
+char	*fn_str_upper(void **args);
+char	*fn_str_trim(void **args);
+char	*fn_str_trim_left(void **args);
+char	*fn_str_trim_right(void **args);
+char	*fn_str_replace(void **args);
+char	*fn_str_reverse(void **args);
 
 #define HISTORY_STACK_SIZE	128
 

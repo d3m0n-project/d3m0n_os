@@ -3,7 +3,7 @@
 #include "time.h"
 #include "scripting.h"
 #include "libft.h"
-#include "battery.h"
+#include "stats.h"
 #include "icons.h"
 
 static void	draw_clock(t_conf *conf, int *current_pos, uint32_t theme_color)
@@ -35,8 +35,8 @@ static void	draw_clock(t_conf *conf, int *current_pos, uint32_t theme_color)
 static void	draw_battery(t_conf *conf, int *current_pos, uint32_t theme_color_fg)
 {
 	char		battery_percentage[5] = "100%";
-	int			charging = is_charging();
-	int			battery_level = get_battery_level();
+	int			charging = get_stat(STATIDX_battery_charging, 1);
+	int			battery_level = get_stat(STATIDX_battery_percentage, 1);
 	int			size = TOPBAR_HEIGHT - (2*TOPBAR_PADDING);
 
 	char		*battery_levels[] = {conf->icon_battery_alert, conf->icon_battery_20, conf->icon_battery_30, conf->icon_battery_50, conf->icon_battery_60, conf->icon_battery_80, conf->icon_battery_90, conf->icon_battery_100};
