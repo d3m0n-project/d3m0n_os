@@ -1,0 +1,9 @@
+# [id]
+
+Text:
+	name="button_$0";
+	width="48px";
+	height="48px";
+	color="white";
+	content="$0";
+	location="0, 0";

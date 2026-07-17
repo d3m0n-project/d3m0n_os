@@ -142,5 +142,7 @@ int	free_bmp_texture(BmpTexture *texture)
 {
 	if (texture->pixels)
 		return (free(texture->pixels));
+	if ((uintptr_t)texture >= (uintptr_t)HEAP_START && (uintptr_t)texture <= HEAP_END)
+		free(texture);
 	return 1;
 }

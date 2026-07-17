@@ -17,7 +17,7 @@ int		get_read_speed(void);
 #define STATISTICS(X) \
 	X(battery_charging,		0,	1,			0,			is_charging) \
 	X(battery_percentage,	0,	100,		"%",		get_battery_level) \
-	X(read_speed,			0,	1000000000,	" Mb/s",	get_read_speed)
+	X(read_speed,			0,	1000,	" Mb/s",		get_read_speed)
 
 typedef struct s_stat_entry
 {

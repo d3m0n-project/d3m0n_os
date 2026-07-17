@@ -47,6 +47,8 @@ int		ft_strcmp(char *s1, char *s2);
 void	*ft_memchr(const void *str, int c, size_t len);
 int		ft_memcmp(const void *s1, const void *s2, size_t len);
 int		ft_atoi(char *str);
+char	*ft_strncat(char *dst, const char *src, size_t n);
+char	*ft_strcat(char *dst, const char *src);
 
 char	*ft_strdup(const char *src);
 void	*ft_calloc(size_t nmemb, size_t size);

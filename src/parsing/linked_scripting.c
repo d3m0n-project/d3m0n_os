@@ -4,8 +4,6 @@
 #include "scripting.h"
 #include "parsing.h"
 
-#define SCRIPT_MAX_VARS		64
-#define SCRIPT_VAR_NAME_MAX	31
 #define IF_STACK_MAX		32
 
 
@@ -22,22 +20,6 @@ typedef enum e_cond_op
 	COND_LE
 } t_cond_op;
 
-typedef enum e_script_var_type
-{
-	SCRIPT_VAR_NONE = 0,
-	SCRIPT_VAR_INT,
-	SCRIPT_VAR_STR
-} t_script_var_type;
-
-typedef struct s_script_var
-{
-	char				name[SCRIPT_VAR_NAME_MAX + 1];
-	t_script_var_type	type;
-	int					ival;
-	char				*sval;
-	int					used;
-} t_script_var;
-
 typedef struct s_call_node
 {
 	t_fn_def	*def;
@@ -50,16 +32,15 @@ typedef struct s_cond_node
 	char	*lhs;
 	int		op;
 	char	*rhs;
-} t_cond_node;
+}	t_cond_node;
 
 typedef struct s_for_apps_node
 {
 	char	*name_var;
 	char	*icon_var;
 	char	*package_var;
-} t_for_apps_node;
+}	t_for_apps_node;
 
-static t_script_var	g_vars[SCRIPT_MAX_VARS];
 
 static void	op_var_set(void **args);
 static void	op_var_inc(void **args);
@@ -202,39 +183,39 @@ static int	parse_int_literal(const char *s, int *out)
 	return 1;
 }
 
-static int	var_find(const char *name)
+static int	var_find(const char *name, t_window *win)
 {
 	int i;
 
 	i = 0;
-	while (i < SCRIPT_MAX_VARS)
+	while (i < MAX_WINDOW_VARS)
 	{
-		if (g_vars[i].used && ft_strcmp(g_vars[i].name, (char *)name) == 0)
+		if (win->variables[i].used && ft_strcmp(win->variables[i].name, (char *)name) == 0)
 			return i;
 		i++;
 	}
 	return -1;
 }
 
-static int	var_get_or_create(const char *name)
+static int	var_get_or_create(const char *name, t_window *win)
 {
 	int idx;
 	int i;
 
-	idx = var_find(name);
+	idx = var_find(name, win);
 	if (idx >= 0)
 		return idx;
 	i = 0;
-	while (i < SCRIPT_MAX_VARS)
+	while (i < MAX_WINDOW_VARS)
 	{
-		if (!g_vars[i].used)
+		if (!win->variables[i].used)
 		{
-			g_vars[i].used = 1;
-			g_vars[i].type = SCRIPT_VAR_NONE;
-			g_vars[i].ival = 0;
-			g_vars[i].sval = 0;
-			ft_bzero(g_vars[i].name, sizeof(g_vars[i].name));
-			ft_strlcpy(g_vars[i].name, name, sizeof(g_vars[i].name));
+			win->variables[i].used = 1;
+			win->variables[i].type = SCRIPT_VAR_NONE;
+			win->variables[i].ival = 0;
+			win->variables[i].sval = 0;
+			ft_bzero(win->variables[i].name, sizeof(win->variables[i].name));
+			ft_strlcpy(win->variables[i].name, name, sizeof(win->variables[i].name));
 			return i;
 		}
 		i++;
@@ -242,31 +223,30 @@ static int	var_get_or_create(const char *name)
 	return -1;
 }
 
-static void	var_set_int(const char *name, int value)
+static void	var_set_int(const char *name, int value, t_window *win)
 {
 	int idx;
 
-	idx = var_get_or_create(name);
+	idx = var_get_or_create(name, win);
 	if (idx < 0)
-	{
-		log("Too many script variables, cannot create '%s'\n", LOG_ERROR | LOG_INDENT, name);
 		return;
-	}
-	if (g_vars[idx].type == SCRIPT_VAR_STR && g_vars[idx].sval)
+
+	if (win->variables[idx].sval)
 	{
-		free(g_vars[idx].sval);
-		g_vars[idx].sval = 0;
+		free(win->variables[idx].sval);
+		win->variables[idx].sval = 0;
 	}
-	g_vars[idx].type = SCRIPT_VAR_INT;
-	g_vars[idx].ival = value;
+
+	win->variables[idx].type = SCRIPT_VAR_INT;
+	win->variables[idx].ival = value;
 }
 
-static void	var_set_str(const char *name, const char *value)
+static void	var_set_str(const char *name, const char *value, t_window *win)
 {
 	int idx;
 	char *copy;
 
-	idx = var_get_or_create(name);
+	idx = var_get_or_create(name, win);
 	if (idx < 0)
 	{
 		log("Too many script variables, cannot create '%s'\n", LOG_ERROR | LOG_INDENT, name);
@@ -275,28 +255,29 @@ static void	var_set_str(const char *name, const char *value)
 	copy = dup_cstr(value ? value : "");
 	if (!copy)
 		return;
-	if (g_vars[idx].type == SCRIPT_VAR_STR && g_vars[idx].sval)
-		free(g_vars[idx].sval);
-	g_vars[idx].type = SCRIPT_VAR_STR;
-	g_vars[idx].sval = copy;
+	if (win->variables[idx].type == SCRIPT_VAR_STR && win->variables[idx].sval)
+		free(win->variables[idx].sval);
+	win->variables[idx].ival = 0;
+	win->variables[idx].type = SCRIPT_VAR_STR;
+	win->variables[idx].sval = copy;
 }
 
-static int	var_get_int(const char *name, int *out)
+static int	var_get_int(const char *name, int *out, t_window *win)
 {
 	int idx;
 
-	idx = var_find(name);
-	if (idx < 0 || g_vars[idx].type == SCRIPT_VAR_NONE)
+	idx = var_find(name, win);
+	if (idx < 0 || win->variables[idx].type == SCRIPT_VAR_NONE)
 		return 0;
-	if (g_vars[idx].type == SCRIPT_VAR_INT)
+	if (win->variables[idx].type == SCRIPT_VAR_INT)
 	{
 		if (out)
-			*out = g_vars[idx].ival;
+			*out = win->variables[idx].ival;
 		return 1;
 	}
-	if (g_vars[idx].type == SCRIPT_VAR_STR)
+	if (win->variables[idx].type == SCRIPT_VAR_STR)
 	{
-		if (!parse_int_literal(g_vars[idx].sval, out))
+		if (!parse_int_literal(win->variables[idx].sval, out))
 		{
 			if (out)
 				*out = 0;
@@ -306,21 +287,29 @@ static int	var_get_int(const char *name, int *out)
 	return 0;
 }
 
-static const char	*var_get_str(const char *name)
+static const char *var_get_str(const char *name, t_window *win)
 {
 	int idx;
-	static char int_buf[16];
 
-	idx = var_find(name);
-	if (idx < 0 || g_vars[idx].type == SCRIPT_VAR_NONE)
+	idx = var_find(name, win);
+	if (idx < 0 || win->variables[idx].type == SCRIPT_VAR_NONE)
 		return 0;
-	if (g_vars[idx].type == SCRIPT_VAR_STR)
-		return g_vars[idx].sval;
-	if (g_vars[idx].type == SCRIPT_VAR_INT)
+
+	if (win->variables[idx].type == SCRIPT_VAR_STR)
+		return win->variables[idx].sval;
+
+	if (win->variables[idx].type == SCRIPT_VAR_INT)
 	{
-		ft_bzero(int_buf, sizeof(int_buf));
-		int_to_buf(g_vars[idx].ival, int_buf, (int)sizeof(int_buf));
-		return int_buf;
+		if (win->variables[idx].sval)
+			free(win->variables[idx].sval);
+
+		win->variables[idx].sval = ft_calloc(16, sizeof(char));
+		if (!win->variables[idx].sval)
+			return 0;
+
+		int_to_buf(win->variables[idx].ival, win->variables[idx].sval, 16);
+
+		return win->variables[idx].sval;
 	}
 	return 0;
 }
@@ -383,7 +372,7 @@ static int	make_node_args2(t_script_chain *node, void *a0, void *a1)
 	return 0;
 }
 
-static int	eval_int_expr_rec(const char **p, int *ok);
+static int	eval_int_expr_rec(const char **p, int *ok, t_window *win);
 
 static void	skip_spaces_expr(const char **p)
 {
@@ -391,7 +380,7 @@ static void	skip_spaces_expr(const char **p)
 		(*p)++;
 }
 
-static int	eval_factor(const char **p, int *ok)
+static int	eval_factor(const char **p, int *ok, t_window *win)
 {
 	int sign;
 	int value;
@@ -412,7 +401,7 @@ static int	eval_factor(const char **p, int *ok)
 	if (**p == '(')
 	{
 		(*p)++;
-		value = eval_int_expr_rec(p, ok);
+		value = eval_int_expr_rec(p, ok, win);
 		skip_spaces_expr(p);
 		if (**p != ')')
 		{
@@ -442,7 +431,7 @@ static int	eval_factor(const char **p, int *ok)
 		}
 		ident[i] = '\0';
 		(*p) += consumed;
-		if (!var_get_int(ident, &value))
+		if (!var_get_int(ident, &value, win))
 			value = 0;
 		return sign * value;
 	}
@@ -450,13 +439,13 @@ static int	eval_factor(const char **p, int *ok)
 	return 0;
 }
 
-static int	eval_term(const char **p, int *ok)
+static int	eval_term(const char **p, int *ok, t_window *win)
 {
 	int lhs;
 	int rhs;
 	char op;
 
-	lhs = eval_factor(p, ok);
+	lhs = eval_factor(p, ok, win);
 	if (!*ok)
 		return 0;
 	while (1)
@@ -466,7 +455,7 @@ static int	eval_term(const char **p, int *ok)
 		if (op != '*' && op != '/')
 			break;
 		(*p)++;
-		rhs = eval_factor(p, ok);
+		rhs = eval_factor(p, ok, win);
 		if (!*ok)
 			return 0;
 		if (op == '*')
@@ -484,13 +473,13 @@ static int	eval_term(const char **p, int *ok)
 	return lhs;
 }
 
-static int	eval_int_expr_rec(const char **p, int *ok)
+static int	eval_int_expr_rec(const char **p, int *ok, t_window *win)
 {
 	int lhs;
 	int rhs;
 	char op;
 
-	lhs = eval_term(p, ok);
+	lhs = eval_term(p, ok, win);
 	if (!*ok)
 		return 0;
 	while (1)
@@ -500,7 +489,7 @@ static int	eval_int_expr_rec(const char **p, int *ok)
 		if (op != '+' && op != '-')
 			break;
 		(*p)++;
-		rhs = eval_term(p, ok);
+		rhs = eval_term(p, ok, win);
 		if (!*ok)
 			return 0;
 		if (op == '+')
@@ -511,7 +500,7 @@ static int	eval_int_expr_rec(const char **p, int *ok)
 	return lhs;
 }
 
-static int	eval_int_expr(const char *expr, int *out)
+static int	eval_int_expr(const char *expr, int *out, t_window *win)
 {
 	const char *p;
 	int ok;
@@ -519,7 +508,7 @@ static int	eval_int_expr(const char *expr, int *out)
 
 	p = expr;
 	ok = 1;
-	v = eval_int_expr_rec(&p, &ok);
+	v = eval_int_expr_rec(&p, &ok, win);
 	skip_spaces_expr(&p);
 	if (!ok || *p != '\0')
 		return 0;
@@ -528,7 +517,7 @@ static int	eval_int_expr(const char *expr, int *out)
 	return 1;
 }
 
-static int	parse_arg_type_loose(char *arg, e_arg_type expected)
+static int	parse_arg_type_loose(char *arg, e_arg_type expected, t_window *win)
 {
 	int i;
 	int j;
@@ -544,7 +533,7 @@ static int	parse_arg_type_loose(char *arg, e_arg_type expected)
 		j--;
 	if (j >= i && arg[i] == '"' && arg[j] == '"')
 		return ARG_STR;
-	if (expected == ARG_INT && eval_int_expr(arg, 0))
+	if (expected == ARG_INT && eval_int_expr(arg, 0, win))
 		return ARG_INT;
 	if (parse_identifier_token(arg + i, &consumed))
 	{
@@ -554,12 +543,12 @@ static int	parse_arg_type_loose(char *arg, e_arg_type expected)
 		if (arg[k] == '\0')
 			return ARG_STR;
 	}
-	if (expected != ARG_INT && eval_int_expr(arg, 0))
+	if (expected != ARG_INT && eval_int_expr(arg, 0, win))
 		return ARG_INT;
 	return ARG_NULL;
 }
 
-static int	validate_arg_types(char **args, t_fn_def *def, const char *function_name)
+static int	validate_arg_types(char **args, t_fn_def *def, const char *function_name, t_window *win)
 {
 	int i;
 	int has_optional;
@@ -582,7 +571,7 @@ static int	validate_arg_types(char **args, t_fn_def *def, const char *function_n
 			return 1;
 		}
 		expected = (e_arg_type)(def->args_type[i] & ~ARG_OPTIONAL);
-		actual = (e_arg_type)parse_arg_type_loose(args[i], expected);
+		actual = (e_arg_type)parse_arg_type_loose(args[i], expected, win);
 		if (actual == ARG_NULL || expected == ARG_NULL)
 		{
 			log("Invalid argument syntax for function '%s': '%s'\n", LOG_ERROR | LOG_INDENT, function_name, args[i]);
@@ -785,19 +774,18 @@ static int	add_cond_node(char *statement, t_script_chain *script, void (*fn)(voi
 	return append_script_node(script, node);
 }
 
-static int	parse_for_apps_header(char *statement, char **name_out, char **icon_out,
-		char **package_out)
+static int	parse_for_apps_header(char *statement, char **name_out, char **icon_out, char **package_out)
 {
-	char *open;
-	char *close;
-	char *inside;
-	char *comma;
-	char *comma2;
-	char *after;
-	char *name;
-	char *icon;
-	char *package;
-	int consumed;
+	char	*open;
+	char	*close;
+	char	*inside;
+	char	*comma;
+	char	*comma2;
+	char	*after;
+	char	*name;
+	char	*icon;
+	char	*package;
+	int		consumed;
 
 	*package_out = 0;
 	open = ft_strchr(statement, '(');
@@ -893,7 +881,7 @@ static int	add_for_apps_node(char *statement, t_script_chain *script)
 	return append_script_node(script, node);
 }
 
-static int	add_call_node(char *statement, t_script_chain *script)
+static int	add_call_node(char *statement, t_script_chain *script, t_window *win)
 {
 	int i;
 	int j;
@@ -933,7 +921,7 @@ static int	add_call_node(char *statement, t_script_chain *script)
 	raw_args = ft_split(args_text, ',');
 	if (!raw_args)
 		return 1;
-	if (validate_arg_types(raw_args, def, function_name))
+	if (validate_arg_types(raw_args, def, function_name, win))
 	{
 		int k = 0;
 		while (raw_args[k])
@@ -964,7 +952,7 @@ static int	add_call_node(char *statement, t_script_chain *script)
 	return append_script_node(script, node);
 }
 
-static int	add_call_node_with_assignment(char *statement, char *var_name, t_script_chain *script)
+static int	add_call_node_with_assignment(char *statement, char *var_name, t_script_chain *script, t_window *win)
 {
 	int i;
 	int j;
@@ -1010,7 +998,7 @@ static int	add_call_node_with_assignment(char *statement, char *var_name, t_scri
 	raw_args = ft_split(args_text, ',');
 	if (!raw_args)
 		return 1;
-	if (validate_arg_types(raw_args, def, function_name))
+	if (validate_arg_types(raw_args, def, function_name, win))
 	{
 		int k = 0;
 		while (raw_args[k])
@@ -1052,7 +1040,7 @@ static int	add_call_node_with_assignment(char *statement, char *var_name, t_scri
 	return append_script_node(script, node);
 }
 
-int		linked_script_add_line(char *line, t_script_chain *script)
+int		linked_script_add_line(char *line, t_script_chain *script, t_window *win)
 {
 	char *statement;
 	int consumed;
@@ -1118,7 +1106,7 @@ int		linked_script_add_line(char *line, t_script_chain *script)
 				{
 					ft_strlcpy(func_name_buf, rhs, paren_pos + 1);
 					if (get_def_from_name(func_name_buf))
-						return add_call_node_with_assignment(rhs, lhs, script);
+						return add_call_node_with_assignment(rhs, lhs, script, win);
 				}
 			}
 		}
@@ -1126,27 +1114,27 @@ int		linked_script_add_line(char *line, t_script_chain *script)
 		return add_var_set_node(lhs, rhs, script);
 	}
 	if (ft_strchr(statement, '('))
-		return add_call_node(statement, script);
+		return add_call_node(statement, script, win);
 	log("Unknown script statement: '%s'\n", LOG_ERROR | LOG_INDENT, statement);
 	return 1;
 }
 
-static int	eval_condition(t_cond_node *cond)
+static int	eval_condition(t_cond_node *cond, t_window *win)
 {
 	int lhs;
 	int rhs;
 
 	lhs = 0;
-	if (!var_get_int(cond->lhs, &lhs))
+	if (!var_get_int(cond->lhs, &lhs, win))
 		lhs = 0;
 	if (cond->op == COND_NONZERO)
 		return lhs != 0;
 	rhs = 0;
 	if (!cond->rhs)
 		return 0;
-	if (!eval_int_expr(cond->rhs, &rhs))
+	if (!eval_int_expr(cond->rhs, &rhs, win))
 	{
-		if (!var_get_int(cond->rhs, &rhs))
+		if (!var_get_int(cond->rhs, &rhs, win))
 			rhs = 0;
 	}
 	if (cond->op == COND_EQ)
@@ -1219,7 +1207,7 @@ static void	find_if_else_end(t_script_chain *if_node, t_script_chain **else_node
 	}
 }
 
-static int	eval_string_arg(char *raw, char **out)
+static int	eval_string_arg(char *raw, char **out, t_window *win)
 {
 	char *t;
 	int len;
@@ -1233,7 +1221,7 @@ static int	eval_string_arg(char *raw, char **out)
 		*out = dup_cstr(t + 1);
 		return (*out == 0);
 	}
-	var = var_get_str(t);
+	var = var_get_str(t, win);
 	if (var)
 		*out = dup_cstr(var);
 	else
@@ -1241,7 +1229,7 @@ static int	eval_string_arg(char *raw, char **out)
 	return (*out == 0);
 }
 
-static int	eval_call_and_run(t_call_node *call)
+static int	eval_call_and_run(t_call_node *call, t_window *win)
 {
 	void **eval_args;
 	int i;
@@ -1258,7 +1246,7 @@ static int	eval_call_and_run(t_call_node *call)
 		if (expected == ARG_STR)
 		{
 			char *tmp = dup_cstr(call->raw_args[i]);
-			if (!tmp || eval_string_arg(tmp, (char **)&eval_args[i]))
+			if (!tmp || eval_string_arg(tmp, (char **)&eval_args[i], win))
 			{
 				if (tmp)
 					free(tmp);
@@ -1271,7 +1259,7 @@ static int	eval_call_and_run(t_call_node *call)
 			int *v = (int *)ft_calloc(1, sizeof(int));
 			if (!v)
 				return 1;
-			if (!eval_int_expr(call->raw_args[i], v))
+			if (!eval_int_expr(call->raw_args[i], v, win))
 				*v = 0;
 			eval_args[i] = v;
 		}
@@ -1279,7 +1267,7 @@ static int	eval_call_and_run(t_call_node *call)
 	}
 	return_value = call->def->fn(eval_args);
 	if (call->var_name && return_value && call->def->is_return)
-		var_set_str(call->var_name, return_value);
+		var_set_str(call->var_name, return_value, win);
 	if (return_value && call->def->is_return && (uintptr_t)return_value >= (uintptr_t)HEAP_START && (uintptr_t)return_value <= (uintptr_t)HEAP_END)
 		free(return_value);
 	
@@ -1293,7 +1281,7 @@ static int	eval_call_and_run(t_call_node *call)
 	return 0;
 }
 
-static void	exec_range(t_script_chain *start, t_script_chain *stop)
+static void	exec_range(t_script_chain *start, t_script_chain *stop, t_window *win)
 {
 	t_script_chain	*cur;
 	t_conf			*conf = get_config();
@@ -1311,10 +1299,10 @@ static void	exec_range(t_script_chain *start, t_script_chain *stop)
 				log("Missing closing } for if block\n", LOG_ERROR | LOG_INDENT);
 				return;
 			}
-			if (eval_condition((t_cond_node *)cur->args[0]))
-				exec_range(cur->next, else_node ? else_node : end_node);
+			if (eval_condition((t_cond_node *)cur->args[0], win))
+				exec_range(cur->next, else_node ? else_node : end_node, win);
 			else if (else_node)
-				exec_range(else_node->next, end_node);
+				exec_range(else_node->next, end_node, win);
 			cur = end_node->next;
 			continue;
 		}
@@ -1327,8 +1315,8 @@ static void	exec_range(t_script_chain *start, t_script_chain *stop)
 				log("Missing closing } for while block\n", LOG_ERROR | LOG_INDENT);
 				return;
 			}
-			while (eval_condition((t_cond_node *)cur->args[0]))
-				exec_range(cur->next, end_node);
+			while (eval_condition((t_cond_node *)cur->args[0], win))
+				exec_range(cur->next, end_node, win);
 			cur = end_node->next;
 			continue;
 		}
@@ -1353,11 +1341,11 @@ static void	exec_range(t_script_chain *start, t_script_chain *stop)
 					i++;
 					continue;
 				}
-				var_set_str(d->name_var, apps[i].name);
-				var_set_str(d->icon_var, apps[i].icon);
+				var_set_str(d->name_var, apps[i].name, win);
+				var_set_str(d->icon_var, apps[i].icon, win);
 				if (d->package_var)
-					var_set_str(d->package_var, apps[i].package);
-				exec_range(cur->next, end_node);
+					var_set_str(d->package_var, apps[i].package, win);
+				exec_range(cur->next, end_node, win);
 				i++;
 			}
 			cur = end_node->next;
@@ -1366,30 +1354,17 @@ static void	exec_range(t_script_chain *start, t_script_chain *stop)
 		if (cur->func == op_else || cur->func == op_end)
 			return;
 		if (cur->func == op_call)
-			eval_call_and_run((t_call_node *)cur->args[0]);
+			eval_call_and_run((t_call_node *)cur->args[0], win);
 		else if (cur->func)
 			cur->func(cur->args);
 		cur = cur->next;
 	}
 }
 
-void	exec_script(t_script_chain *script)
+void	exec_script(t_script_chain *script, t_window *win)
 {
-	int i;
-
-	i = 0;
-	while (i < SCRIPT_MAX_VARS)
-	{
-		if (g_vars[i].used && g_vars[i].type == SCRIPT_VAR_STR && g_vars[i].sval)
-			free(g_vars[i].sval);
-		g_vars[i].used = 0;
-		g_vars[i].type = SCRIPT_VAR_NONE;
-		g_vars[i].sval = 0;
-		g_vars[i].ival = 0;
-		i++;
-	}
-	exec_range(script, 0);
-	draw_window(get_current_window());
+	exec_range(script, 0, win);
+	draw_window(get_current_window()); // window may have changed
 }
 
 static void	op_var_set(void **args)
@@ -1397,40 +1372,43 @@ static void	op_var_set(void **args)
 	int value;
 	char *name;
 	char *expr;
+	t_window *win = get_current_window();
 
 	if (!args || !args[0] || !args[1])
 		return;
 	name = (char *)args[0];
 	expr = (char *)args[1];
-	if (!eval_int_expr(expr, &value))
+	if (!eval_int_expr(expr, &value, win))
 		value = 0;
-	var_set_int(name, value);
+	var_set_int(name, value, win);
 }
 
 static void	op_var_inc(void **args)
 {
 	int v;
 	char *name;
+	t_window *win = get_current_window();
 
 	if (!args || !args[0])
 		return;
 	name = (char *)args[0];
-	if (!var_get_int(name, &v))
+	if (!var_get_int(name, &v, win))
 		v = 0;
-	var_set_int(name, v + 1);
+	var_set_int(name, v + 1, win);
 }
 
 static void	op_var_dec(void **args)
 {
 	int v;
 	char *name;
+	t_window *win = get_current_window();
 
 	if (!args || !args[0])
 		return;
 	name = (char *)args[0];
-	if (!var_get_int(name, &v))
+	if (!var_get_int(name, &v, win))
 		v = 0;
-	var_set_int(name, v - 1);
+	var_set_int(name, v - 1, win);
 }
 
 static void	op_if(void **args)

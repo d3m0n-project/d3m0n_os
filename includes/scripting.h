@@ -37,6 +37,7 @@ typedef struct s_window_stack
 	char	*window;
 }	t_window_stack;
 
+
 /* io */
 char*	fn_log(void **args);
 char*	fn_alert(void **args);
@@ -92,4 +93,25 @@ char	*fn_str_reverse(void **args);
 extern t_fn_def			funcs[];
 extern t_window_stack	window_stack[];
 
+#endif
+
+// this part is used due to circular import
+#ifndef SCRIPTING_TO_CONTROLS_H
+#define SCRIPTING_TO_CONTROLS_H
+typedef enum e_script_var_type
+{
+	SCRIPT_VAR_NONE = 0,
+	SCRIPT_VAR_INT,
+	SCRIPT_VAR_STR
+} t_script_var_type;
+#define SCRIPT_VAR_NAME_MAX		31
+
+typedef struct s_script_var
+{
+	char				name[SCRIPT_VAR_NAME_MAX + 1];
+	t_script_var_type	type;
+	int					ival;
+	char				*sval;
+	int					used;
+}	t_script_var;
 #endif

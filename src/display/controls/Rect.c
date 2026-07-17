@@ -1,22 +1,56 @@
 #include "controls_graphics.h"
 
-void	ctrl_draw_rect(t_control	*control)
+void ctrl_draw_rect(t_control *control)
 {
-	draw_rect(control->p_client_location.x, control->p_client_location.y, control->width, control->height, control->bg_color);
+	int x = control->p_client_location.x;
+	int y = control->p_client_location.y;
+	int w = control->width;
+	int h = control->height;
+	int r = control->radius;
+
+	if (r > 0)
+	{
+		int max_r = min(w, h) / 2;
+
+		if (r > max_r)
+			r = max_r;
+
+		// circle
+		if (r == w / 2 && r == h / 2)
+			draw_ellipse(x + w / 2, y + h / 2, w / 2, h / 2, control->bg_color, 1);
+		else
+		{
+			// middle
+			draw_rect(x + r, y, w - 2 * r, h, control->bg_color);
+			draw_rect(x, y + r, w, h - 2 * r, control->bg_color);
+
+			// corners
+			draw_ellipse(x + r,     y + r,     r, r, control->bg_color, 1); // TL
+			draw_ellipse(x + w - r, y + r,     r, r, control->bg_color, 1); // TR
+			draw_ellipse(x + r,     y + h - r, r, r, control->bg_color, 1); // BL
+			draw_ellipse(x + w - r, y + h - r, r, r, control->bg_color, 1); // BR
+		}
+	}
+	else
+		draw_rect(x, y, w, h, control->bg_color);
 
 	if (control->children)
 	{
 		t_control *child = control->children;
+
 		while (child)
 		{
-			if (child == control) // avoid infinite loop
+			if (child == control)
 				break;
-			
-			// apply scroll to children too
-			child->p_scroll_offset = control->p_scroll_offset;
 
-			// only draw if visible in the area
-			if (child->p_client_location.y + child->height >= control->p_client_location.y && child->p_client_location.y <= control->p_client_location.y + control->height)
+			child->p_client_location = (t_point){
+				.x=child->location.x + control->p_client_location.x,
+				.y=child->location.y + control->p_client_location.y
+			};
+
+			child->p_scroll_offset = control->p_scroll_offset;
+			// TODO: check why Rect not relative & remove relative parsing
+			if (child->p_client_location.y + child->height >= y && child->p_client_location.y <= y + h)
 				draw_control(child, (t_point){0, -control->p_scroll_offset.y});
 
 			child = child->p_next;

@@ -1,5 +1,10 @@
 # Rect
 
-Rect has no special attributes, it is just a rectangle.
+## ProgressBar special attributes
+    ProgressBar:
+      radius="15px";
+
+
+`radius` is the corner radius of the rectangle.
 
 You can use [general attributes](GeneralAttributes.md) on this control

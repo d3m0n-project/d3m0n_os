@@ -16,7 +16,7 @@ char	*fn_str_is_digit(void **args)
 {
 	char	*text = ((char **)args)[0];
 	size_t	len = ft_strlen(text);
-	for(int i=0; i<len; i++)
+	for(size_t i=0; i<len; i++)
 	{
 		if (!ft_isdigit(text[i]))
 			return "0";
@@ -27,7 +27,7 @@ char	*fn_str_is_alpha(void **args)
 {
 	char	*text = ((char **)args)[0];
 	size_t	len = ft_strlen(text);
-	for(int i=0; i<len; i++)
+	for(size_t i=0; i<len; i++)
 	{
 		if (!ft_isalpha(text[i]))
 			return "0";
@@ -38,7 +38,7 @@ char	*fn_str_is_alnum(void **args)
 {
 	char	*text = ((char **)args)[0];
 	size_t	len = ft_strlen(text);
-	for(int i=0; i<len; i++)
+	for(size_t i=0; i<len; i++)
 	{
 		if (!ft_isalnum(text[i]))
 			return "0";
@@ -48,13 +48,59 @@ char	*fn_str_is_alnum(void **args)
 char	*fn_str_is_space(void **args)
 {
 	char	*text = ((char **)args)[0];
-	size_t	len = ft_strlen(text);
-	for(int i=0; i<len; i++)
+
+	if (*text == '\0')
+		return "0";
+
+	while (*text)
 	{
-		if (!ft_isspace(text[i]))
+		if (!ft_isspace(*text))
 			return "0";
+		text++;
 	}
 	return "1";
+}
+
+char	*fn_str_replace(void **args)
+{
+	char	*text = ((char **)args)[0];
+	char	*old = ((char **)args)[1];
+	char	*new = ((char **)args)[2];
+
+	char	*result;
+	char	*pos;
+	size_t	old_len;
+	size_t	new_len;
+	size_t	count;
+	size_t	len;
+
+	old_len = ft_strlen(old);
+	new_len = ft_strlen(new);
+	if (old_len == 0)
+		return ft_strdup(text);
+
+	count = 0;
+	pos = text;
+	while ((pos = ft_strnstr(pos, old, ft_strlen(pos))))
+	{
+		count++;
+		pos += old_len;
+	}
+	len = ft_strlen(text) + count * (new_len - old_len);
+	result = malloc(len + 1);
+	if (!result)
+		return 0;
+
+	result[0] = '\0';
+	while ((pos = ft_strnstr(text, old, ft_strlen(text))))
+	{
+		ft_strncat(result, text, pos - text);
+		ft_strcat(result, new);
+
+		text = pos + old_len;
+	}
+	ft_strcat(result, text);
+	return result;
 }
 
 
@@ -128,11 +174,6 @@ char	*fn_str_contains(void **args)
 }
 
 
-char	*fn_str_contains(void **args)
-{
-	
-}
-
 char	*fn_str_lower(void **args)
 {
 	char	*text = ((char **)args)[0];
@@ -142,7 +183,7 @@ char	*fn_str_lower(void **args)
 	if (!dup)
 		return 0;
 	
-	for (int i=0; i<len; i++)
+	for (size_t i=0; i<len; i++)
 		dup[i] = ft_tolower(dup[i]);
 	return dup;
 }
@@ -155,7 +196,7 @@ char	*fn_str_upper(void **args)
 	if (!dup)
 		return 0;
 	
-	for (int i=0; i<len; i++)
+	for (size_t i=0; i<len; i++)
 		dup[i] = ft_toupper(dup[i]);
 	return dup;
 }
@@ -220,11 +261,6 @@ char	*fn_str_trim(void **args)
 	return result;
 }
 
-char	*fn_str_replace(void **args)
-{
-	
-}
-
 
 char	*fn_str_reverse(void **args)
 {
@@ -235,7 +271,7 @@ char	*fn_str_reverse(void **args)
 	if (!dup)
 		return 0;
 	
-	for (int i=0; i<len / 2; i++)
+	for (size_t i=0; i<len / 2; i++)
 	{
 		char	tmp = dup[i];
 		dup[i] = dup[len - 1 - i];

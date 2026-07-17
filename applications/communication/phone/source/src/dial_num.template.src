@@ -1,0 +1,22 @@
+# [id]
+
+Window.OnCreate =>
+	i = $0;
+	if (i == 10)
+	{
+		state.set("button_$0", "content", "*");
+	}
+	if (i == 11)
+	{
+		state.set("button_$0", "content", "0");
+	}
+	if (i == 12)
+	{
+		state.set("button_$0", "content", "#");
+	}
+
+button_$0.OnClick =>
+	value=state.get("phone_number", "content");
+	new_value=state.get("button_$0", "content");
+	value=string.join(value, new_value);
+	state.set("phone_number", "content", value);

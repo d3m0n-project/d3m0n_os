@@ -237,9 +237,9 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 				win->events[event_id].override_trigger_corners[1] = (t_point){0};
 			}
 		} else if (current_control_id != -1 && i > 0) {
-			if (linked_script_add_line(line + i, win->events[event_id].script))
+			if (linked_script_add_line(line + i, win->events[event_id].script, win))
 			{
-				log("Failed to add line to script\n", LOG_ERROR | LOG_INDENT);
+				log("Failed to add line to script: l.%i => '%s'\n", LOG_ERROR | LOG_INDENT, line_nb, line + i);
 				free(line);
 				close(fd);
 				return 1;

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>d3m0n icon viewer</title>
+</head>
+<body style="background-color: black;">
+	<input id="icon_theme" value="material-design-icons" onchange="update()"></input>
+	<div style="width: 100%; height: 300px; overflow-x: hidden; overflow-y: scroll; gap: 20px" id="icon_view"></div>
+	<script>
+		async function update()
+		{
+			var icon_theme = document.getElementById("icon_theme").value;
+			var root_path = `../rootfs/themes/${icon_theme}`;
+			fetch(`${root_path}/icons.lst`).then(response => {
+				response.text().then(text => {
+					var icon_view = document.getElementById("icon_view");
+					icon_view.innerHTML = "";
+					var lines = text.split("\n");
+					lines.forEach(path => {
+						icon_view.innerHTML += `<img style="background: white; width: 50px; height: 50px;" src="${root_path}/${path.replaceAll('.bmp', '.svg')}" onclick="alert('${path.trim().replaceAll('/', '.').replaceAll('.bmp', '')}');">`;
+					});
+				});
+			});
+		}
+		update();
+		
+	</script>
+</body>
+</html>

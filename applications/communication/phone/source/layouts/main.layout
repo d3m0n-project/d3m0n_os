@@ -4,9 +4,30 @@ Window:
 	width="100%";
 	height="100%";
 	title="Phone";
-	bg_color="white";
+	bg_color="32,32,32";
 	topbar="true";
 
 Text:
-	content="SOON...";
-	color="black";
+	content="";
+	name="phone_number";
+	color="white";
+	location="30, 50";
+	width="265px";
+	height="55px";
+	text_align="center";
+
+Rect:
+	name="call_btn";
+	bg_color="green";
+	width="50px";
+	height="50px";
+	location="135, 400";
+	radius="25px";
+
+Image:
+	src="icon_call";
+	color="white";
+	parent="call_btn";
+	width="32px";
+	height="32px";
+	location="9, 9";

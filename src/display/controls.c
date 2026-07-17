@@ -53,6 +53,7 @@ int	create_window(t_window *out, const char *title, const char *package, int w, 
 	out->controls = 0;
 	ft_memset(out->events, 0, MAX_WINDOW_EVENTS * sizeof(t_event));
 	ft_memset(out->layout_name, 0, 128);
+	ft_memset(out->variables, 0, sizeof(t_script_var) * MAX_WINDOW_VARS);
 	return 0;
 }
 

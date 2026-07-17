@@ -9,7 +9,7 @@ int		exec_event(t_control *control, e_event_type type, t_window *window)
 	{
 		if (window->events[i].type == type && control == window->events[i].affected_control) // TODO: maybe ptr eq is not very good idea
 		{
-			exec_script(window->events[i].script);
+			exec_script(window->events[i].script, window);
 			return 0;
 		}
 		i++;
@@ -134,7 +134,7 @@ void	handle_click(int x, int y, int button, t_window *window)
 					continue;
 				if (y < top_left.y || y > bottom_right.y)
 					continue;
-				exec_script(window->events[i].script);
+				exec_script(window->events[i].script, window);
 				return;
 			}
 		}

@@ -133,7 +133,7 @@ char*	template_load(void **args)
 			for (int i=current_event_idx; i<MAX_WINDOW_EVENTS && current_win->events[i].script; i++)
 			{
 				if (current_win->events[i].type == EVENT_ON_CREATE && current_win->events[i].affected_control == 0)
-					exec_script(current_win->events[i].script);
+					exec_script(current_win->events[i].script, current_win);
 			}
 		}
 	}

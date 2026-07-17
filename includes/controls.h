@@ -3,11 +3,14 @@
 
 #include "types.h"
 #include "display.h"
+#include "scripting.h"
 #include "d3m0n.h"
 
 #define MAX_WINDOW_EVENTS	255
 #define TOPBAR_HEIGHT		20
 #define TOPBAR_PADDING		2
+
+#define MAX_WINDOW_VARS			128
 
 typedef struct s_point
 {
@@ -68,6 +71,13 @@ typedef struct s_event
 	struct s_control		*affected_control;
 	t_script_chain	*script;
 }	t_event;
+
+typedef struct s_bmp_cache
+{
+	char				path[255];
+	BmpTexture			*texture;
+	struct s_bmp_cache	*next;
+}	t_bmp_cache;
 
 
 typedef struct s_control
@@ -140,6 +150,8 @@ typedef	struct s_window
 	uint32_t			bg_color;
 	uint8_t				top_bar;
 	t_control			*controls;
+	t_bmp_cache			*bmp_cache;
+	t_script_var		variables[MAX_WINDOW_VARS];
 	struct s_event		events[MAX_WINDOW_EVENTS];
 }	t_window;
 
@@ -158,8 +170,8 @@ void			set_current_window(t_window *win);
 
 
 /* linked scripting */
-int				linked_script_add_line(char *line, t_script_chain *script);
-void			exec_script(t_script_chain *script);
+int				linked_script_add_line(char *line, t_script_chain *script, t_window *win);
+void			exec_script(t_script_chain *script, t_window *win);
 t_script_chain	*init_script(t_script_chain *script);
 void			free_script(t_script_chain *script);
 
