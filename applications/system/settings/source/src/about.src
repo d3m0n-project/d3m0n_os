@@ -1,10 +1,10 @@
 Window.OnCreate =>
-	template.load("layouts/templates/titlebar.template", 0, 0, "About");
+	template.load("layouts/templates/titlebar.template", "", 0, 0, "About");
 
 	# Settings
 
 	# theme
-	template.load("layouts/templates/simple_value_setting.template", 0, 50, "battery_percentage", "Battery Percentage");
-	template.load("layouts/templates/simple_value_setting.template", 0, 90, "battery_charging", "Is Charging");
+	template.load("layouts/templates/simple_value_setting.template", "v1", 0, 10, "battery_percentage", "Battery Percentage");
+	template.load("layouts/templates/simple_value_setting.template", "v1", 0, 50, "battery_charging", "Is Charging");
 
-	template.load("layouts/templates/simple_value_setting.template", 0, 130, "read_speed", "Disk Read");
+	template.load("layouts/templates/simple_value_setting.template", "v1", 0, 90, "read_speed", "Disk Read");

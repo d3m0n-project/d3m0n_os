@@ -76,24 +76,61 @@ void	add_control(t_window *to, t_control *control)
 	log("Added control: '%s'\n", LOG_SUCCESS, current->name);
 }
 
-void	draw_control(t_control *control, t_point offset)
+static int	get_percentage(int value, int max)
 {
-	t_window	*window = get_current_window();
+	if (max <= 0)
+		return (0);
 
-	if (control->visible == 0)
+	return ((long long)value * max) / 100;
+}
+
+void	compute_control_layout(t_control *control, t_control *parent, t_point offset)
+{
+	t_window	*window;
+	int			parent_width;
+	int			parent_height;
+	int			parent_x;
+	int			parent_y;
+
+	window = get_current_window();
+	if (!window || !control)
 		return;
 
-	control->p_client_location.x = offset.x + control->location.x;
-	control->p_client_location.y = offset.y + control->location.y;
+	parent_width = parent ? parent->p_client_size.x : window->width;
+	parent_height = parent ? parent->p_client_size.y : window->height;
 
-	// move the origin of the canvas to lower for the topbar
-	if (window->top_bar && offset.x == 0 && offset.y == 0)
+	parent_x = parent ? parent->p_client_location.x : 0;
+	parent_y = parent ? parent->p_client_location.y : 0;
+
+	// size
+	control->p_client_size.x = control->p_width_is_percent ? get_percentage(control->width, parent_width) : control->width;
+	control->p_client_size.y = control->p_height_is_percent ? get_percentage(control->height, parent_height) : control->height;
+
+	if (parent && (parent->p_type == CONTROL_VSCROLL || parent->p_type == CONTROL_HSCROLL))
+	{
+		if (parent->p_type == CONTROL_VSCROLL && control->p_width_is_percent)
+			control->p_client_size.x -= SCROLLBAR_SIZE;
+		else if (control->p_height_is_percent)
+			control->p_client_size.y -= SCROLLBAR_SIZE;
+	}
+
+
+	// location
+	control->p_client_location.x = parent_x + offset.x + (control->p_x_is_percent ? get_percentage(control->location.x, parent_width) : control->location.x);
+	control->p_client_location.y = parent_y + offset.y + (control->p_y_is_percent ? get_percentage(control->location.y, parent_height) : control->location.y);
+
+	if (!parent && window->top_bar)
 		control->p_client_location.y += TOPBAR_HEIGHT;
+}
 
-	control->p_client_size.x = control->width;
-	control->p_client_size.y = control->height;
-		
-	// TODO: tmp buffer to store pixels and write after
+void	draw_control(t_control *control)
+{
+	t_window	*window;
+	
+	window = get_current_window();
+	if (!control || !control->visible)
+		return;
+
 	switch (control->p_type)
 	{
 		case CONTROL_TEXTBOX:		ctrl_draw_textbox(control);		break;
@@ -116,8 +153,9 @@ void	draw_control(t_control *control, t_point offset)
 	}
 
 	#if DEBUG_OUTLINE == 1
-		draw_rect_outline(control->p_client_location.x, control->p_client_location.y, control->width, control->height, OUTLINE_COLOR);
+		draw_rect_outline(control->p_client_location.x, control->p_client_location.y, control->p_client_size.x, control->p_client_size.y, OUTLINE_COLOR);
 	#endif
+
 	draw_topbar(window);
 }
 
@@ -131,8 +169,8 @@ void	draw_window(t_window *window)
 		current->p_client_location = current->location;
 		if (window->top_bar)
 			current->p_client_location.y += TOPBAR_HEIGHT;
-		draw_control(current, (t_point){0, 0});
-		// TODO: children
+		compute_control_layout(current, 0, (t_point){0, 0});
+		draw_control(current);
 		current = current->p_next;
 	}
 	draw_topbar(window);

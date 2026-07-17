@@ -1,5 +1,4 @@
 Rect:
-	parent="v1";
 	width="294px";
 	height="40px";
 	name="$0";
@@ -9,7 +8,7 @@ Rect:
 Text:
 	parent="$0";
 	color="white";
-	location="16, 8";
+	location="8, 8";
 	height="24px";
 	content="$1";
 	width="139px";
@@ -19,7 +18,7 @@ Text:
 	parent="$0";
 	name="$0_value";
 	text_align="right";
-	location="162px, 8";
+	location="154, 8";
 	content="0";
 	width="132px";
 	height="24px";

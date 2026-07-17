@@ -7,6 +7,9 @@ Window:
 	bg_color="white";
 	topbar="true";
 
-Text:
-	content="SOON...";
-	color="black";
+Vscroll:
+	name="v1";
+	width="100%";
+	bar="true";
+	height="100%";
+	bg_color="black";

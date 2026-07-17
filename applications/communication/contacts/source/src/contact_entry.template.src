@@ -1,0 +1,5 @@
+# [name, icon | 0, color, y]
+
+Window.OnCreate =>
+	letter=string.substr("$0", 0, 1);
+	state.set("$0_$3_letter", "content", letter);

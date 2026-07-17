@@ -1,0 +1,41 @@
+# [name, icon | 0, color, y]
+
+Rect:
+	name="$0_$3_button";
+	width="285px";
+	height="36px";
+	location="12, $3";
+	bg_color="32,32,32";
+
+# TODO: add icon per profile
+#Image:
+#	src="";
+#	location="5, 5";
+#	width="25px";
+#	height="25px";
+#	name="$0_$3_icon";
+
+Rect:
+	parent="$0_$3_button";
+	location="5, 5";
+	width="25px";
+	height="25px";
+	radius="12px";
+	bg_color="$2";
+
+Text:
+	name="$0_$3_letter";
+	parent="$0_$3_button";
+	location="5, 5";
+	width="25px";
+	height="25px";
+	color="white";
+
+Text:
+	content="$0";
+	parent="$0_$3_button";
+	location="45, 5";
+	width="230px";
+	height="25px";
+	color="white";
+	text_align="left";

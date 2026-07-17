@@ -11,6 +11,9 @@ void	ctrl_draw_image(t_control *control)
 	tmp_icon = 0;
 	window = get_current_window();
 
+	if (control->image[0] == '\0') // if no image, skip
+		return;
+
 	// if its a path load it
 	if (ft_strchr(control->image, '/'))
 	{
@@ -68,5 +71,5 @@ void	ctrl_draw_image(t_control *control)
 			return;
 	}
 
-	draw_bmp(control->p_client_location.x, control->p_client_location.y, control->width, control->height, tmp_icon, control->color);
+	draw_bmp(control->p_client_location.x, control->p_client_location.y, control->p_client_size.x, control->p_client_size.y, tmp_icon, control->color);
 }

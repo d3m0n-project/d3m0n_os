@@ -28,8 +28,8 @@ void	compute_inner_rect(const t_control *control, int *out_x, int *out_y, int *o
 {
 	int x = control->p_client_location.x + control->margin_left;
 	int y = control->p_client_location.y + control->margin_top;
-	int w = control->width - control->margin_left - control->margin_right;
-	int h = control->height - control->margin_top - control->margin_bottom;
+	int w = control->p_client_size.x - control->margin_left - control->margin_right;
+	int h = control->p_client_size.y - control->margin_top - control->margin_bottom;
 	if (w < 0) w = 0;
 	if (h < 0) h = 0;
 	*out_x = x;
@@ -88,10 +88,10 @@ int	control_text_auto_font_size(const t_control *control)
 	control_text_metrics(control->content, &len, &lines);
 	from_width = 0;
 	from_height = 0;
-	if (control->width > 0 && len > 0)
-		from_width = control->width / len;
-	if (control->height > 0)
-		from_height = control->height / 2;
+	if (control->p_client_size.x > 0 && len > 0)
+		from_width = control->p_client_size.x / len;
+	if (control->p_client_size.y > 0)
+		from_height = control->p_client_size.y / 2;
 	if (from_width > 0 && from_height > 0)
 		size = (from_width < from_height) ? from_width : from_height;
 	else if (from_width > 0)

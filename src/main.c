@@ -119,7 +119,7 @@ void	kernel_main(void *dtb)
 	main_window.bg_color = DISPLAY_COLORS[GREY]; // TODO: parse color of window when parsing
 
 	char *main_layout = get_app_path_from_package(config.launcher, PACKAGE_MAIN_LAYOUT);
-	if (main_layout && !parse_layout(main_layout, &main_window, 0, 0, 0))
+	if (main_layout && !parse_layout(main_layout, &main_window, 0, 0, 0, 0))
 	{
 		free(main_layout);
 		log("Parsed layout successfully!\n", LOG_SUCCESS);

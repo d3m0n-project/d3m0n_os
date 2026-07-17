@@ -6,7 +6,7 @@ t_fn_def	funcs[] = {
 	{
 		.fn=template_load,
 		.name="template.load",
-		.args_type={ARG_STR, ARG_INT, ARG_INT, [3 ... (MAX_ARGS - 2)] = ARG_STR | ARG_OPTIONAL, ARG_NULL},
+		.args_type={ARG_STR, ARG_STR, ARG_INT, ARG_INT, [4 ... (MAX_ARGS - 2)] = ARG_STR | ARG_OPTIONAL, ARG_NULL},
 		.is_return=0
 	},
 	{fn_app_list, {ARG_NULL}, "app.list", 0}, // special case
@@ -29,7 +29,7 @@ t_fn_def	funcs[] = {
 	{fn_str_lower, {ARG_STR, ARG_NULL}, "string.lower", 1},
 	{fn_str_upper, {ARG_STR, ARG_NULL}, "string.upper", 1},
 
-	{fn_str_substr, {ARG_STR, ARG_STR, ARG_NULL}, "string.substr", 1},
+	{fn_str_substr, {ARG_STR, ARG_INT, ARG_INT, ARG_NULL}, "string.substr", 1},
 	{fn_str_join, {ARG_STR, ARG_STR, ARG_NULL}, "string.join", 1},
 	{fn_str_cmp, {ARG_STR, ARG_STR, ARG_NULL}, "string.cmp", 1},
 	{fn_str_equal, {ARG_STR, ARG_STR, ARG_NULL}, "string.equal", 1},

@@ -17,11 +17,13 @@ char	*fn_state_set(void **args)
 		return 0;
 	}
 
-	t_control	*parent = 0;
-	if (!lp_apply_control_attr(control, current_window, parent, key, value)) // TODO: find parent
+	if (!lp_apply_control_attr(control, key, value))
 		log("STATE.SET: Invalid control field: '%s' value: '%s'\n", LOG_ERROR, key, value);
 	else
-		draw_control(control, (t_point){0, 0});
+	{
+		compute_control_layout(control, control->p_parent, (t_point){0, 0});
+		draw_control(control);
+	}
 	return 0;
 }
 

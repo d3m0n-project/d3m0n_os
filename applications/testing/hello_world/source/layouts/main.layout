@@ -11,3 +11,6 @@ Text:
   content="Hello World!";
   color="white";
   bg_color="black";
+  width="100%";
+  height="50px";
+

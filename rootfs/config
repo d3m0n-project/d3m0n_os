@@ -198,6 +198,7 @@ icon_keyboard_down: hardware.keyboard_arrow_down
 icon_keyboard_left: hardware.keyboard_arrow_left
 icon_keyboard_right: hardware.keyboard_arrow_right
 icon_smartphone: hardware.smartphone
+icon_backspace: content.backspace
 
 # toggles
 icon_checkbox_checked: toggle.check_box

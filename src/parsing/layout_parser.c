@@ -160,14 +160,14 @@ static int	lp_parse_align(char *value)
 	return 0;
 }
 
-static int	lp_parse_location_xy(const char *value, t_point *out, int max_x, int max_y)
+static int	lp_parse_location_xy(const char *value, t_control *control)
 {
 	int i;
 	int j;
 	char xbuf[32];
 	char ybuf[32];
 
-	if (!value || !out)
+	if (!value || !control)
 		return 0;
 	i = 0;
 	while (value[i] == ' ' || (value[i] >= 9 && value[i] <= 13))
@@ -189,8 +189,19 @@ static int	lp_parse_location_xy(const char *value, t_point *out, int max_x, int 
 	ybuf[j] = '\0';
 	if (!xbuf[0] || !ybuf[0])
 		return 0;
-	out->x = lp_parse_percent(xbuf, max_x);
-	out->y = lp_parse_percent(ybuf, max_y);
+
+	int x_last_char = ft_strlen(xbuf) - 1;
+	int y_last_char = ft_strlen(ybuf) - 1;
+
+	control->p_x_is_percent = 0;
+	control->p_y_is_percent = 0;
+	if (x_last_char >= 0 && xbuf[x_last_char] == '%')
+		control->p_x_is_percent = 1;
+	if (y_last_char >= 0 && ybuf[y_last_char] == '%')
+		control->p_y_is_percent = 1;
+
+	control->location.x = ft_atoi(xbuf);
+	control->location.y = ft_atoi(ybuf);
 	return 1;
 }
 
@@ -435,15 +446,9 @@ static int	lp_apply_window_attr(t_window *win, char *key, char *value)
 	return 0;
 }
 
-static int	lp_get_relative_base(t_window *win, t_control *parent, int is_x)
+int	lp_apply_control_attr(t_control *control, char *key, char *value)
 {
-	if (parent)
-		return (is_x ? parent->width : parent->height);
-	return (is_x ? (win ? win->width : SCREEN_WIDTH) : (win ? win->height : SCREEN_HEIGHT));
-}
-
-int	lp_apply_control_attr(t_control *control, t_window *win, t_control *parent, char *key, char *value)
-{
+	int last_char_idx = (ft_strlen(value) - 1);
 	if (!ft_strcmp(key, "name"))
 	{
 		lp_copy_field(value, control->name, sizeof(control->name));
@@ -456,22 +461,38 @@ int	lp_apply_control_attr(t_control *control, t_window *win, t_control *parent, 
 	}
 	else if (!ft_strcmp(key, "width"))
 	{
-		control->width = lp_parse_percent(value, lp_get_relative_base(win, parent, 1));
+		control->p_width_is_percent = 0;
+		if (last_char_idx >= 0 && value[last_char_idx] == '%')
+			control->p_width_is_percent = 1;
+
+		control->width = ft_atoi(value);
 		return 1;
 	}
 	else if (!ft_strcmp(key, "height"))
 	{
-		control->height = lp_parse_percent(value, lp_get_relative_base(win, parent, 0));
+		control->p_height_is_percent = 0;
+		if (last_char_idx >= 0 && value[last_char_idx] == '%')
+			control->p_height_is_percent = 1;
+
+		control->height = ft_atoi(value);
 		return 1;
 	}
 	else if (!ft_strcmp(key, "x"))
 	{
-		control->location.x = lp_parse_percent(value, lp_get_relative_base(win, parent, 1));
+		control->p_x_is_percent = 0;
+		if (last_char_idx >= 0 && value[last_char_idx] == '%')
+			control->p_x_is_percent = 1;
+
+		control->location.x = ft_atoi(value);
 		return 1;
 	}
 	else if (!ft_strcmp(key, "y"))
 	{
-		control->location.y = lp_parse_percent(value, lp_get_relative_base(win, parent, 0));
+		control->p_y_is_percent = 0;
+		if (last_char_idx >= 0 && value[last_char_idx] == '%')
+			control->p_y_is_percent = 1;
+
+		control->location.y = ft_atoi(value);
 		return 1;
 	}
 	else if (!ft_strcmp(key, "visible"))
@@ -518,7 +539,7 @@ int	lp_apply_control_attr(t_control *control, t_window *win, t_control *parent, 
 	{
 		int align;
 
-		if (lp_parse_location_xy(value, &control->location, win ? win->width : SCREEN_WIDTH, win ? win->height : SCREEN_HEIGHT))
+		if (lp_parse_location_xy(value, control))
 			return 1;
 		align = lp_parse_align(value);
 		if (align == 0)
@@ -629,13 +650,13 @@ static void	lp_append_child(t_control *parent, t_control *child)
 		t_control *c = parent->children;
 		while (c)
 		{
-			int bottom = c->location.y + c->height;
+			int bottom = c->p_client_location.y + c->p_client_size.y;
 			if (bottom > max_child_bottom)
 				max_child_bottom = bottom;
 			c = c->p_next;
 		}
 		// p_scroll_max_size.y is total children height minus visible height
-		int scrollable = max_child_bottom - parent->height;
+		int scrollable = max_child_bottom - parent->p_client_size.y;
 		if (scrollable < 0)
 			scrollable = 0;
 		parent->p_scroll_max_size.y = scrollable;
@@ -669,15 +690,15 @@ static void	lp_remove_top_level(t_window *win, t_control *target)
 	}
 }
 
-static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_control *control, char *parent_name, int section_line, int offset_x, int offset_y, char **replacements)
+static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_control *control, char *parent_name, t_control *default_parent, int section_line, int offset_x, int offset_y, char **replacements)
 {
-	char	*line;
-	char	*parsed_line;
-	char	key[LAYOUT_KEY_MAX];
-	char	value[LAYOUT_VALUE_MAX];
-	int		lines;
-	int		i;
-	int		apply_ret;
+	char		*line;
+	char		*parsed_line;
+	char		key[LAYOUT_KEY_MAX];
+	char		value[LAYOUT_VALUE_MAX];
+	int			lines;
+	int			i;
+	int			apply_ret;
 	t_control	*parent_control;
 
 	lines = 0;
@@ -722,7 +743,8 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 			}
 			else if (control)
 			{
-				apply_ret = lp_apply_control_attr(control, win, parent_control, key, value);
+				control->p_parent = parent_control;
+				apply_ret = lp_apply_control_attr(control, key, value);
 				if (apply_ret == 0)
 				{
 					log("Unknown control config at line %i: %s\n", LOG_ERROR, section_line + lines, key);
@@ -753,7 +775,7 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 			free(parsed_line);
 		free(line);
 	}
-	if (control)
+	if (control && (!default_parent || !control->p_parent || (control->p_parent == default_parent)))
 	{
 		control->location.x += offset_x;
 		control->location.y += offset_y;
@@ -771,7 +793,7 @@ void		set_current_window(t_window *win)
 	CURRENT_WINDOW = win;
 }
 
-int	parse_layout(const char *path, t_window *win, char **replacements, int offset_x, int offset_y)
+int	parse_layout(const char *path, t_window *win, char **replacements, char *parent_name_tmp, int offset_x, int offset_y)
 {
 	int					fd;
 	int					line_idx;
@@ -787,6 +809,20 @@ int	parse_layout(const char *path, t_window *win, char **replacements, int offse
 	int					pending_count;
 	int					p;
 	t_control			*parent;
+
+	t_control			*default_parent = 0;
+
+	if (parent_name_tmp)
+	{
+		default_parent = lp_find_control_by_name(win->controls, parent_name_tmp);
+		if (default_parent && default_parent->p_type != CONTROL_VSCROLL && default_parent->p_type != CONTROL_HSCROLL && default_parent->p_type != CONTROL_RECT)
+		{
+			log("Only Rect, Vscroll and Hscroll can have children, parent defaulted to none!\n", LOG_WARNING | LOG_INDENT);	
+			default_parent = 0;
+		} 
+		// only rect and scrolls can have children
+	}
+
 
 	if (!win)
 		return 1;
@@ -834,7 +870,7 @@ int	parse_layout(const char *path, t_window *win, char **replacements, int offse
 		}
 		if (type == CONTROL_WINDOW)
 		{
-			i = lp_parse_block(fd, CONTROL_WINDOW, win, 0, 0, line_idx, offset_x, offset_y, replacements);
+			i = lp_parse_block(fd, CONTROL_WINDOW, win, 0, 0, 0, line_idx, offset_x, offset_y, replacements);
 			if (i < 0)
 			{
 				free(line);
@@ -853,8 +889,8 @@ int	parse_layout(const char *path, t_window *win, char **replacements, int offse
 				close(fd);
 				return 1;
 			}
-			init_control(control, "control", type);
-			i = lp_parse_block(fd, type, win, control, parent_name, line_idx, offset_x, offset_y, replacements);
+			init_control(control, "unnamed_control", type);
+			i = lp_parse_block(fd, type, win, control, parent_name, default_parent, line_idx, offset_x, offset_y, replacements);
 			if (i < 0)
 			{
 				free(control);
@@ -875,6 +911,7 @@ int	parse_layout(const char *path, t_window *win, char **replacements, int offse
 					else
 						win->controls = control;
 					tail = control;
+
 					if (pending_count < LAYOUT_PENDING_MAX)
 					{
 						pending[pending_count].child = control;
@@ -883,6 +920,8 @@ int	parse_layout(const char *path, t_window *win, char **replacements, int offse
 					}
 				}
 			}
+			else if (default_parent)
+				lp_append_child(default_parent, control);
 			else
 			{
 				if (tail)
@@ -891,7 +930,6 @@ int	parse_layout(const char *path, t_window *win, char **replacements, int offse
 					win->controls = control;
 				tail = control;
 			}
-			control->p_client_location = control->location; // TODO: make sure p_client_location follows location
 		}
 		free(line);
 	}

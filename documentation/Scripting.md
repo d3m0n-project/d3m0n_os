@@ -89,9 +89,9 @@ for (name, icon, package) in app.list() {
 
 # 3. Templates
 
-## `template.load(path: str, x: int, y: int, ...strings);`
+## `template.load(path: str, parent_id: str, x: int, y: int, ...strings);`
 
-Loads a UI template file and places it on the screen.
+Loads a UI template file and places it on the screen at relative coordinates (`x`, `y`) with the parent with name `parent_id` if found (use `""` as `parent_id` if you dont want to attach to a parent).
 
 Additional string arguments replace `$N` placeholders:
 
@@ -122,7 +122,7 @@ Text:
 Script:
 
 ```c
-template.load("layouts/test.template", 10, 10, "Hello World!");
+template.load("layouts/test.template", "", 10, 10, "Hello World!");
 ```
 
 ---
@@ -394,7 +394,7 @@ cba
 
 # Substrings
 
-## `string.substr(text: str, start: int, length: int) -> str`
+## `string.substr(text: str, start: int, len: int) -> str`
 
 Returns a portion of a string.
 
@@ -414,18 +414,18 @@ cde
 
 # Joining
 
-## `string.join(separator: str, ...strings) -> str`
+## `string.join(string1: str, string2: str) -> str`
 
-Joins multiple strings using a separator.
+Joins two strings using a separator.
 
 Example:
 
 ```c
-string.join("/", "home", "user", "file.txt");
+string.join("hello", " world");
 ```
 
 Result:
 
 ```text
-home/user/file.txt
+hello world
 ```

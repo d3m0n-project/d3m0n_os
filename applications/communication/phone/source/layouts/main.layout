@@ -21,7 +21,7 @@ Rect:
 	bg_color="green";
 	width="50px";
 	height="50px";
-	location="135, 400";
+	location="135, 390";
 	radius="25px";
 
 Image:
@@ -31,3 +31,11 @@ Image:
 	width="32px";
 	height="32px";
 	location="9, 9";
+
+Image:
+	name="backspace_btn";
+	src="icon_backspace";
+	color="white";
+	width="32px";
+	height="32px";
+	location="204, 399";

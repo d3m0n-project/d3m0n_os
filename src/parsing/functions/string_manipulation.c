@@ -131,8 +131,8 @@ char	*fn_str_equal(void **args)
 char	*fn_str_substr(void **args)
 {
 	char	*text = ((char **)args)[0];
-	int		start = ft_atoi(((char **)args)[1]);
-	int		len = ft_atoi(((char **)args)[2]);
+	int		start = *((int **)args)[1];
+	int		len =   *((int **)args)[2];
 
 	return ft_substr(text, start, len);
 }

@@ -10,7 +10,7 @@ Window:
 
 Image:
 	name="background";
-	src="/wallpapers/default.bmp";
+	src="";
 	location="0, 0";
 	width="100%";
 	height="100%";

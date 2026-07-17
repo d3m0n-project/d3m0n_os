@@ -1,4 +1,7 @@
 # d3m0n source
 
 Window.OnCreate =>
-	log("[o] loaded contacts", "lime");
+	template.load("layouts/contact_entry.template", "v1", 0, 0, "Arnaud", "TODO", "103,162,197", "10");
+	template.load("layouts/contact_entry.template", "v1", 0, 0, "Bertrand", "TODO", "155,206,193", "50");
+	template.load("layouts/contact_entry.template", "v1", 0, 0, "Solene", "TODO", "255,235,211", "100");
+	template.load("layouts/contact_entry.template", "v1", 0, 0, "Jules", "TODO", "255,182,166", "150");

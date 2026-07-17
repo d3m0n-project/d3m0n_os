@@ -9,7 +9,8 @@ void	cleanup_window(t_window *win)
 	{
 		if (win->events[i].type == EVENT_UNDEFINED)
 			continue;
-		free_script(win->events[i].script);
+		if (win->events[i].script)
+			free_script(win->events[i].script);
 		win->events[i].script = 0;
 	}
 	for (int i=0; i < MAX_WINDOW_VARS; i++)

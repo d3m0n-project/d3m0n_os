@@ -61,15 +61,16 @@ static char	*get_template_source_path(const char *layout_path, t_window *current
 
 char*	template_load(void **args)
 {
-	char *package = 0;
-	char *relative_path = 0;
-	char *source_path = 0;
+	char	*package = 0;
+	char	*relative_path = 0;
+	char	*source_path = 0;
 	char	*path = ((char **)args)[0];
-	int x = *(int *)(args)[1];
-	int y = *(int *)(args)[2];
+	char	*parent = ((char **)args)[1];
+	int		x = *(int *)(args)[2];
+	int		y = *(int *)(args)[3];
 
 	t_window	*current_win = get_current_window();
-	char		**strings = (char **)&(args[3]); // list of strings that will replace $0, $1, $2... inside of layout
+	char		**strings = (char **)&(args[4]); // list of strings that will replace $0, $1, $2... inside of layout
 
 	if (!file_exists(path))
 	{
@@ -116,7 +117,7 @@ char*	template_load(void **args)
 
 	if (relative_path)
 		path = relative_path;
-	if (parse_layout(path, current_win, strings, x, y))
+	if (parse_layout(path, current_win, strings, parent, x, y))
 		log("TEMPLATE.LOAD: Could not load template at x:%i, y:%i\n", LOG_ERROR | LOG_INDENT, x, y);
 	else
 	{

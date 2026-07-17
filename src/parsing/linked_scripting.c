@@ -24,7 +24,7 @@ typedef struct s_call_node
 {
 	t_fn_def	*def;
 	char		**raw_args;
-	char		*var_name;  // variable to store return value, NULL if no assignment
+	char		*var_name;  // variable to store return value, 0 if no assignment
 } t_call_node;
 
 typedef struct s_cond_node
@@ -69,19 +69,28 @@ static int	is_ident_char(char c)
 
 static char	*trim_in_place(char *s)
 {
-	int i;
-	int j;
+	int	start;
+	int	end;
+	int	len;
 
 	if (!s)
 		return 0;
-	i = 0;
-	while (s[i] && is_space_char(s[i]))
-		i++;
-	j = ft_strlen(s);
-	while (j > i && is_space_char(s[j - 1]))
-		j--;
-	s[j] = '\0';
-	return s + i;
+
+	start = 0;
+	while (s[start] && is_space_char(s[start]))
+		start++;
+
+	end = ft_strlen(s);
+	while (end > start && is_space_char(s[end - 1]))
+		end--;
+
+	len = end - start;
+
+	if (start > 0)
+		ft_memmove(s, s + start, len);
+
+	s[len] = '\0';
+	return s;
 }
 
 static void	rstrip_semicolon(char *s)
@@ -881,6 +890,62 @@ static int	add_for_apps_node(char *statement, t_script_chain *script)
 	return append_script_node(script, node);
 }
 
+static char	**split_args(const char *s)
+{
+	char	**args;
+	int		count;
+	int		start;
+	int		i;
+	int		in_string;
+
+	if (((char *)s)[0] == '\0')
+		return ft_calloc(1, sizeof(char *));
+	
+	// count
+	count = 1;
+	in_string = 0;
+	for (i = 0; s[i]; i++)
+	{
+		if (s[i] == '"' && (i == 0 || s[i - 1] != '\\'))
+			in_string = !in_string;
+		else if (s[i] == ',' && !in_string)
+			count++;
+	}
+
+	args = ft_calloc(count + 1, sizeof(char *));
+	if (!args)
+		return (0);
+
+	count = 0;
+	start = 0;
+	in_string = 0;
+
+	for (i = 0;; i++)
+	{
+		if (s[i] == '"' && (i == 0 || s[i - 1] != '\\'))
+			in_string = !in_string;
+
+		if ((s[i] == ',' && !in_string) || s[i] == '\0')
+		{
+			char *tmp;
+
+			tmp = ft_substr(s, start, i - start);
+			if (!tmp)
+			{
+				cleanup_splitted(args);
+				return 0;
+			}
+			args[count++] = trim_in_place(tmp);
+
+			if (s[i] == '\0')
+				break;
+			start = i + 1;
+		}
+	}
+	args[count] = 0;
+	return (args);
+}
+
 static int	add_call_node(char *statement, t_script_chain *script, t_window *win)
 {
 	int i;
@@ -918,15 +983,19 @@ static int	add_call_node(char *statement, t_script_chain *script, t_window *win)
 		log("Unknown function: '%s'\n", LOG_ERROR | LOG_INDENT, function_name);
 		return 1;
 	}
-	raw_args = ft_split(args_text, ',');
+	raw_args = split_args(args_text);
 	if (!raw_args)
 		return 1;
 	if (validate_arg_types(raw_args, def, function_name, win))
 	{
 		int k = 0;
 		while (raw_args[k])
-			free(raw_args[k++]);
+		{
+			free(raw_args[k]);
+			raw_args[k++] = 0;
+		}
 		free(raw_args);
+		raw_args = 0;
 		return 1;
 	}
 	call = (t_call_node *)ft_calloc(1, sizeof(t_call_node));
@@ -995,7 +1064,7 @@ static int	add_call_node_with_assignment(char *statement, char *var_name, t_scri
 		log("Function '%s' does not return a value\n", LOG_ERROR | LOG_INDENT, function_name);
 		return 1;
 	}
-	raw_args = ft_split(args_text, ',');
+	raw_args = split_args(args_text);
 	if (!raw_args)
 		return 1;
 	if (validate_arg_types(raw_args, def, function_name, win))
@@ -1110,7 +1179,7 @@ int		linked_script_add_line(char *line, t_script_chain *script, t_window *win)
 				}
 			}
 		}
-		// int assignement
+		// variable assignement
 		return add_var_set_node(lhs, rhs, script);
 	}
 	if (ft_strchr(statement, '('))
@@ -1369,18 +1438,25 @@ void	exec_script(t_script_chain *script, t_window *win)
 
 static void	op_var_set(void **args)
 {
-	int value;
-	char *name;
-	char *expr;
+	int		value;
+	char	*name;
+	char	*expr;
 	t_window *win = get_current_window();
 
 	if (!args || !args[0] || !args[1])
 		return;
 	name = (char *)args[0];
 	expr = (char *)args[1];
-	if (!eval_int_expr(expr, &value, win))
-		value = 0;
-	var_set_int(name, value, win);
+	int last_char_idx = ft_strlen(expr) - 1;
+	if (eval_int_expr(expr, &value, win))
+		var_set_int(name, value, win);
+	else if (last_char_idx >= 0 && expr[0] == '"' && expr[last_char_idx] == '"')
+	{
+		expr[last_char_idx] = '\0';
+		var_set_str(name, expr + 1, win);
+	}
+	else
+		log("Invalid variable set value: '%s'\n", LOG_ERROR | LOG_INDENT, expr);
 }
 
 static void	op_var_inc(void **args)
@@ -1457,19 +1533,23 @@ void	free_script(t_script_chain *script)
 				if (call->raw_args)
 				{
 					while (call->raw_args[i])
-						free(call->raw_args[i++]);
+					{
+						free(call->raw_args[i]); // this line double free
+						call->raw_args[i++] = 0;
+					}
 					free(call->raw_args);
+					call->raw_args = 0;
 				}
-				if (call->var_name)
-					free(call->var_name);
+				free(call->var_name);
+				call->var_name = 0;
 				free(call);
+				cur->args[0] = 0;
 			}
 			else if ((cur->func == op_if || cur->func == op_while) && cur->args[0])
 			{
 				t_cond_node *c = (t_cond_node *)cur->args[0];
 				free(c->lhs);
-				if (c->rhs)
-					free(c->rhs);
+				free(c->rhs);
 				free(c);
 			}
 			else if (cur->func == op_for_apps && cur->args[0])

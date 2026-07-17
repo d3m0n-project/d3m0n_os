@@ -79,7 +79,7 @@ char*	fn_app_open(void **args)
 		log("%s: Could not parse manifest at '%s' for package: '%s'\n", LOG_ERROR | LOG_INDENT, (window_mode)?"WINDOW:OPEN":"APP.OPEN", manifest, package);
 		return 0;
 	}
-	if (parse_layout(layout_path, &opened_window, 0, 0, 0))
+	if (parse_layout(layout_path, &opened_window, 0, 0, 0, 0))
 	{
 		free(layout_path);
 		free(src_path);
@@ -125,6 +125,11 @@ char*	fn_app_exit(void **args)
 	if (!desktop_window)
 	{
 		log("APP.EXIT: Desktop Window not saved yet\n", LOG_WARNING);
+		return 0;
+	}
+	if (current_window == desktop_window)
+	{
+		log("APP.EXIT: Cant quit from launcher app\n", LOG_WARNING);
 		return 0;
 	}
 	cleanup_window(current_window);

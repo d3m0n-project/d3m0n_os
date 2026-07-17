@@ -95,7 +95,9 @@ typedef struct s_control
 	t_point				location;
 	uint32_t			color;
 	uint32_t			bg_color;
-	struct s_control	*children; // TODO
+
+	struct s_control	*p_parent;
+	struct s_control	*children;
 
 	// Text, TextBox, Button, CheckBox, RadioButton,
 	// RoundButton, Switch, TextBox
@@ -136,6 +138,11 @@ typedef struct s_control
 	e_control_type		p_type;
 	t_point				p_client_location;
 	t_point				p_client_size;
+
+	int					p_width_is_percent;
+	int					p_height_is_percent;
+	int					p_x_is_percent;
+	int					p_y_is_percent;
 }	t_control;
 
 
@@ -157,7 +164,8 @@ typedef	struct s_window
 
 int				create_window(t_window *out, const char *title, const char *package, int w, int h);
 void			init_control(t_control *control, const char *name, e_control_type type);
-void			draw_control(t_control *control, t_point offset);
+void			draw_control(t_control *control);
+void			compute_control_layout(t_control *control, t_control *parent, t_point offset);
 void			draw_topbar(t_window *window);
 void			free_controls(t_window	*win);
 void			add_control(t_window *to, t_control *control);

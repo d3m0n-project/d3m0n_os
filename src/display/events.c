@@ -33,7 +33,7 @@ static t_control	*find_clicked_control(t_control *control, int x, int y)
 			int cx = control->p_client_location.x;
 			int cy = control->p_client_location.y;
 
-			if (x >= cx && x <= cx + control->width && y >= cy && y <= cy + control->height)
+			if (x >= cx && x <= cx + control->p_client_size.x && y >= cy && y <= cy + control->p_client_size.y)
 				return control;
 		}
 		control = control->p_next;
@@ -68,11 +68,12 @@ void	handle_click(int x, int y, int button, t_window *window)
 			else if (cur->p_type == CONTROL_SWITCH || cur->p_type == CONTROL_CHECKBOX || cur->p_type == CONTROL_RADIOBUTTON)
 			{
 				cur->checked = !cur->checked;
-				draw_control(cur, (t_point){0, 0});
+				compute_control_layout(cur, cur->p_parent, (t_point){0, 0});
+				draw_control(cur);
 			}
 			else if (cur->p_type == CONTROL_PROGRESSBAR)
 			{
-				int total_size = cur->width - (PROGRESSBAR_PADDING * 2);
+				int total_size = cur->p_client_size.x - (PROGRESSBAR_PADDING * 2);
 				if (total_size <= 0)
 				{
 					log("PROGRESSBAR '%s' size is too short to handle it correctly\n", LOG_WARNING | LOG_INDENT);
@@ -88,7 +89,8 @@ void	handle_click(int x, int y, int button, t_window *window)
 
 				float percentage = (float)local_x / (float)total_size;
 				cur->value = cur->min + (cur->max - cur->min) * percentage;
-				draw_control(cur, (t_point){0, -cur->p_scroll_offset.y});
+				compute_control_layout(cur, cur->p_parent, (t_point){0, -cur->p_scroll_offset.y});
+				draw_control(cur);
 			}
 		}
 	}
@@ -105,7 +107,8 @@ void	handle_click(int x, int y, int button, t_window *window)
 			if (new_off > c->p_scroll_max_size.y)
 				new_off = c->p_scroll_max_size.y;
 			c->p_scroll_offset.y = new_off;
-			draw_control(c, (t_point){0, 0});
+			compute_control_layout(c, c->p_parent, (t_point){0, 0});
+			draw_control(c);
 		}
 	}
 
@@ -125,8 +128,8 @@ void	handle_click(int x, int y, int button, t_window *window)
 			{
 				top_left = window->events[i].affected_control->p_client_location;
 				bottom_right = window->events[i].affected_control->p_client_location;
-				bottom_right.x += window->events[i].affected_control->width;
-				bottom_right.y += window->events[i].affected_control->height;
+				bottom_right.x += window->events[i].affected_control->p_client_size.x;
+				bottom_right.y += window->events[i].affected_control->p_client_size.y;
 			}
 			if (window->events[i].type == EVENT_ON_CLICK)
 			{

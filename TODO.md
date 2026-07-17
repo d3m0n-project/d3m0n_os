@@ -3,10 +3,12 @@
 - [x] Add dynamic layout, with possiblity to change layout using script.
 	- [x] Could use small layout file as templates and load them dynamically using scripts
 	- [x] Add multiple windows per app
+	- [ ] Allow to pass variables to window.open and app.open (used from contact to phone and message)
 - [x] System config with clock preference
 - [x] Add system theme config (light/dark)
 
 - [x] Handle clicks
+	- [ ] Fix remove dragging = looped clicks
 
 - [ ] Fix & Improve ui system
 	- [x] Locations need to follow real control position
@@ -33,3 +35,4 @@ Docs:
 
 ## Known bugs
 - [ ] Cant add a Vscroll inside of vscroll since p_scroll_offset is shared between children
+- [ ] Scripting: cant do `test = myfunc() + 1;` after `test = myfunc()` omitting the `-1`

@@ -1,5 +1,4 @@
 Rect:
-	parent="v1";
 	width="294px";
 	height="40px";
 	name="$0";
@@ -9,7 +8,7 @@ Rect:
 Text:
 	parent="$0";
 	color="white";
-	location="16, 8";
+	location="8, 8";
 	height="24px";
 	content="$1";
 	width="240px";
@@ -18,7 +17,7 @@ Text:
 Switch:
 	parent="$0";
 	name="$0_switch";
-	location="248, 8";
+	location="240, 8";
 	width="48px";
 	height="24px";
 	color="orange";

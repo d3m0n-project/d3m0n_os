@@ -1,6 +1,13 @@
 # d3m0n source
 
 Window.OnCreate =>
+  # set background
+  wallpaper_path="/wallpapers/";
+  wallpaper_name=settings.get("wallpaper");
+  wallpaper_path=string.join(wallpaper_path, wallpaper_name);
+  wallpaper_path=string.join(wallpaper_path, ".bmp");
+  state.set("background", "src", wallpaper_path);
+
   row = 0;
   col = 0;
   i = 0;
@@ -10,7 +17,7 @@ Window.OnCreate =>
     y_pos = 10 + (col * 95);
     if (col < 4)
     {
-      template.load("layouts/appview.template", x_pos, y_pos, icon, name, package, i);
+      template.load("layouts/appview.template", "", x_pos, y_pos, icon, name, package, i);
     }
     row++;
     if (row > 3)

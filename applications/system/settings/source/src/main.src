@@ -1,5 +1,5 @@
 # d3m0n source
 
 Window.OnCreate =>
-	template.load("layouts/templates/setting.template", 0, 50, "style", "Wallpaper & Style", "icon_brush");
-	template.load("layouts/templates/setting.template", 0, 80, "about", "About", "icon_bluetooth");
+	template.load("layouts/templates/setting.template", "v1", 0, 40, "style", "Wallpaper & Style", "icon_brush");
+	template.load("layouts/templates/setting.template", "v1", 0, 80, "about", "About", "icon_smartphone");

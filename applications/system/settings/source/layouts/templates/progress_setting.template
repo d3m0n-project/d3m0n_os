@@ -1,5 +1,4 @@
 Rect:
-	parent="v1";
 	width="294px";
 	height="64px";
 	name="$0";
@@ -9,7 +8,7 @@ Rect:
 Text:
 	parent="$0";
 	color="white";
-	location="16, 8";
+	location="8, 8";
 	height="24px";
 	content="$1";
 	width="278px";
@@ -25,7 +24,7 @@ ProgressBar:
 	min="$2";
 	max="$3";
 	value="$2";
-	location="16, 32";
+	location="8, 32";
 
 Text:
 	parent="$0";

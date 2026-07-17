@@ -1,5 +1,16 @@
 # d3m0n source
 
+backspace_btn.OnClick =>
+	phone_number = state.get("phone_number", "content");
+	len = string.len(phone_number);
+	new_str = string.substr(phone_number, 0, len - 1);
+	state.set("phone_number", "content", new_str);
+
+call_btn.OnClick =>
+	phone_number = state.get("phone_number", "content");
+	str = string.join("calling: ", phone_number);
+	log(str, "orange");
+
 Window.OnCreate =>
 	original_x = 76;
 	x = original_x;
@@ -8,7 +19,7 @@ Window.OnCreate =>
 	i = 1;
 	while (i < 13)
 	{
-		template.load("layouts/dial_num.template", x, y, i);
+		template.load("layouts/dial_num.template", "", x, y, i);
 		
 		x = x + delta;
 		if (x > 205)

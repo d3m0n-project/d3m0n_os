@@ -4,8 +4,8 @@
 #include "libft.h"
 #include "settings.h"
 
-#define	SCHEMA_STR(member, key, def)			{key, config->member, TYPE_STRING, {0}, def},
-#define	SCHEMA_INT(member, key, def, min_n, max_n)	{key, &config->member, TYPE_INT, {.min=min_n,.max=max_n}, &(int){def}},
+#define	SCHEMA_STR(member, def)					{#member, config->member, TYPE_STRING, {0}, def},
+#define	SCHEMA_INT(member, def, min_n, max_n)	{#member, &config->member, TYPE_INT, {.min=min_n,.max=max_n}, &(int){def}},
 #define	SCHEMA(kind, ...)						SCHEMA_##kind(__VA_ARGS__)
 
 t_offset	conf_offsets[] = {

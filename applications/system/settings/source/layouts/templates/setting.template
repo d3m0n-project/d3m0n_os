@@ -1,5 +1,4 @@
 Rect:
-	parent="v1";
 	location="0, 0";
 	width="100%";
 	height="30px";
@@ -7,6 +6,8 @@ Rect:
 	bg_color="dark_grey";
 
 Image:
+	parent="$0";
+	name="DEBUG";
 	src="$2";
 	width="24px";
 	height="24px";
@@ -14,6 +15,7 @@ Image:
 	color="white";
 
 Text:
+	parent="$0";
 	content="$1";
 	location="30, 0";
 	font_size="10";
