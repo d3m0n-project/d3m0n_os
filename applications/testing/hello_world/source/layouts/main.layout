@@ -7,10 +7,9 @@ Window:
 	topbar="true";
 
 Text:
-  location="20, 20";
+  location="0, 0";
   content="Hello World!";
-  color="white";
-  bg_color="black";
+  color="black";
   width="100%";
   height="50px";
 

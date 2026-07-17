@@ -13,3 +13,12 @@ Vscroll:
 	bar="true";
 	height="100%";
 	bg_color="black";
+
+Text:
+	content="Contacts";
+	parent="v1";
+	location="0, 0";
+	width="100%";
+	height="30px";
+	text_align="center";
+	color="white";

@@ -21,8 +21,8 @@ void ctrl_draw_rect(t_control *control)
 		else
 		{
 			// middle
-			draw_rect(x + r, y, w - 2 * r, h, control->bg_color);
-			draw_rect(x, y + r, w, h - 2 * r, control->bg_color);
+			draw_rect(x + r, y, w - 2 * r+1, h+1, control->bg_color);
+			draw_rect(x, y + r, w+1, h - 2 * r+1, control->bg_color);
 
 			// corners
 			draw_ellipse(x + r,     y + r,     r, r, control->bg_color, 1); // TL
@@ -46,7 +46,7 @@ void ctrl_draw_rect(t_control *control)
 			child->p_scroll_offset = control->p_scroll_offset;
 			compute_control_layout(child, control, (t_point){0, -child->p_scroll_offset.y});
 			// TODO: check why Rect not relative & remove relative parsing
-			//if (child->p_client_location.y + child->p_client_size.y >= y && child->p_client_location.y <= y + h)
+			if (child->p_client_location.y + child->p_client_size.y >= y && child->p_client_location.y <= y + h)
 				draw_control(child);
 
 			child = child->p_next;

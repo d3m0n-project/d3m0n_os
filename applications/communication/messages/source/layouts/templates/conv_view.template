@@ -1,0 +1,57 @@
+# [name, message, icon | 0, color, date]
+
+Rect:
+	name="$0_button";
+	width="90%";
+	height="50px";
+	bg_color="32,32,32";
+	location="5%, 0";
+	radius="10px";
+
+Rect:
+	name="$0_icon";
+	parent="$0_button";
+	bg_color="$3";
+	width="35px";
+	height="35px";
+	location="8, 8";
+	radius="17px";
+
+Text:
+	parent="$0_icon";
+	name="$0_letter";
+	content="";
+	width="35px";
+	height="35px";
+	text_align="center";
+	color="white";
+	location="0, 0";
+
+Text:
+	parent="$0_button";
+	content="$0";
+	width="50%";
+	height="20px";
+	text_align="left";
+	color="white";
+	location="55, 8";
+
+Text:
+	parent="$0_button";
+	content="$1";
+	width="70%";
+	height="20px";
+	font_size="7";
+	text_align="left";
+	color="219,219,219";
+	location="55, 25";
+
+
+Text:
+	parent="$0_button";
+	content="$4";
+	width="50px";
+	height="20px";
+	text_align="right";
+	color="219,219,219";
+	location="70%, 8";

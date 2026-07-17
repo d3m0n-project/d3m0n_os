@@ -13,7 +13,7 @@ Window.OnCreate =>
   i = 0;
   for (name, icon, package) in app.list()
   {
-    x_pos = 10 + (75 * row);
+    x_pos = 10 + (78 * row);
     y_pos = 10 + (col * 95);
     if (col < 4)
     {

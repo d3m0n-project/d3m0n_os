@@ -3,10 +3,21 @@
 Window:
 	width="100%";
 	height="100%";
-	title="Gallery";
-	bg_color="white";
+	title="Messages";
+	bg_color="black";
 	topbar="true";
 
 Text:
-	content="SOON...";
-	color="black";
+	content="Messages";
+	color="white";
+	width="100%";
+	height="10%";
+	text_align="center";
+
+Vscroll:
+	name="v1";
+	width="100%";
+	height="90%";
+	bg_color="black";
+	location="0, 10%";
+	bar="true";

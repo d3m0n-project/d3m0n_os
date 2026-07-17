@@ -1,4 +1,5 @@
 # d3m0n source
 
 Window.OnCreate =>
-	log("[o] loaded Color Test", "lime");
+	template.load("layouts/templates/conv_view.template", "v1", 0, 0, "Arnaud", "You: Hello World!", "TODO", "255,182,166", "Wed");
+	template.load("layouts/templates/conv_view.template", "v1", 0, 50, "Bertrand", "You: Hello World2!", "TODO", "255,235,211", "Thu");

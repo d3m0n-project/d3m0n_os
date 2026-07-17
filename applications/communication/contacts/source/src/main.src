@@ -1,7 +1,7 @@
 # d3m0n source
 
 Window.OnCreate =>
-	template.load("layouts/contact_entry.template", "v1", 0, 0, "Arnaud", "TODO", "103,162,197", "10");
-	template.load("layouts/contact_entry.template", "v1", 0, 0, "Bertrand", "TODO", "155,206,193", "50");
-	template.load("layouts/contact_entry.template", "v1", 0, 0, "Solene", "TODO", "255,235,211", "100");
-	template.load("layouts/contact_entry.template", "v1", 0, 0, "Jules", "TODO", "255,182,166", "150");
+	template.load("layouts/contact_entry.template", "v1", 0, 40, "Arnaud", "TODO", "103,162,197");
+	template.load("layouts/contact_entry.template", "v1", 0, 80, "Bertrand", "TODO", "155,206,193");
+	template.load("layouts/contact_entry.template", "v1", 0, 120, "Colin", "TODO", "255,235,211");
+	template.load("layouts/contact_entry.template", "v1", 0, 160, "Damien", "TODO", "255,182,166");
