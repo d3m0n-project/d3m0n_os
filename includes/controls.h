@@ -66,10 +66,10 @@ typedef enum
 
 typedef struct s_event
 {
-	e_event_type	type;
-	t_point			override_trigger_corners[2]; // used in case of non-control events
+	e_event_type			type;
+	t_point					override_trigger_corners[2]; // used in case of non-control events
 	struct s_control		*affected_control;
-	t_script_chain	*script;
+	t_script_chain			*script;
 }	t_event;
 
 typedef struct s_bmp_cache
@@ -132,6 +132,7 @@ typedef struct s_control
 	
 
 	// private attributes
+	int					p_is_reactive; // if a control react to special events (like Vscroll)
 	e_control_anchor	p_anchor;
 	e_control_anchor	p_anchor_location;
 	struct s_control	*p_next;

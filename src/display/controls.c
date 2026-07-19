@@ -188,6 +188,11 @@ void	init_control(t_control *control, const char *name, e_control_type type)
 	control->enabled = 1;
 	control->p_type = type;
 	control->visible = 1;
+
+	if (type == CONTROL_VSCROLL || type == CONTROL_TEXTBOX || type == CONTROL_SWITCH
+		|| type == CONTROL_CHECKBOX || type == CONTROL_HSCROLL || type == CONTROL_RADIOBUTTON
+		|| type == CONTROL_PROGRESSBAR)
+		control->p_is_reactive = 1;
 	control->p_client_location = (t_point){0, 0};
 }
 

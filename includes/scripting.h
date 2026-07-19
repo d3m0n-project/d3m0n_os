@@ -63,6 +63,8 @@ char	*fn_state_set(void **args);
 char	*fn_state_get(void **args);
 
 /* system */
+char	*fn_system_version(void **args);
+char	*fn_system_version_name(void **args);
 char	*fn_system_var_get(void **args);
 
 

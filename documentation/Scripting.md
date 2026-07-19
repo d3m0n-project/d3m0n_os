@@ -238,6 +238,18 @@ speed = system.get("read_speed");
 
 ---
 
+### `system.version() -> str`
+
+Returns the current running kernel version number.
+
+---
+
+### `system.version_name() -> str`
+
+Returns the current running kernel version name.
+
+---
+
 # 8. String Manipulation
 
 All string functions are available through the `string` namespace.

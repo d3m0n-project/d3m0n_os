@@ -12,13 +12,19 @@ t_fn_def	funcs[] = {
 	{fn_app_list, {ARG_NULL}, "app.list", 0}, // special case
 	{fn_app_open, {ARG_STR, ARG_NULL}, "app.open", 0},
 	{fn_app_exit, {ARG_NULL}, "app.exit", 0},
+
 	{fn_settings_set, {ARG_STR, ARG_STR, ARG_NULL}, "settings.set", 0},
 	{fn_settings_get, {ARG_STR, ARG_NULL}, "settings.get", 1},
+
 	{fn_window_open, {ARG_STR, ARG_NULL}, "window.open", 0},
 	{fn_window_go_back, {ARG_NULL}, "window.goback", 0},
+
 	{fn_state_set, {ARG_STR, ARG_STR, ARG_STR, ARG_NULL}, "state.set", 0},
 	{fn_state_get, {ARG_STR, ARG_STR, ARG_NULL}, "state.get", 1},
+
 	{fn_system_var_get, {ARG_STR, ARG_NULL}, "system.get", 1},
+	{fn_system_version, {ARG_NULL}, "system.version", 1},
+	{fn_system_version_name, {ARG_NULL}, "system.version_name", 1},
 
 	{fn_str_len, {ARG_STR, ARG_NULL}, "string.len", 1},
 	{fn_str_is_empty, {ARG_STR, ARG_NULL}, "string.is_empty", 1},

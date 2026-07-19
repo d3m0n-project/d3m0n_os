@@ -6,5 +6,12 @@ Window.OnCreate =>
 	# theme
 	template.load("layouts/templates/simple_value_setting.template", "v1", 0, 10, "battery_percentage", "Battery Percentage");
 	template.load("layouts/templates/simple_value_setting.template", "v1", 0, 50, "battery_charging", "Is Charging");
-
 	template.load("layouts/templates/simple_value_setting.template", "v1", 0, 90, "read_speed", "Disk Read");
+
+	state.set("about_message", "y", "150");
+
+	# version
+	kernel_version = system.version();
+	kernel_version_name = system.version_name();
+	state.set("kernel_version", "content", kernel_version);
+	state.set("kernel_version_name", "content", kernel_version_name);

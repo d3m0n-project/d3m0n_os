@@ -17,15 +17,21 @@ int		exec_event(t_control *control, e_event_type type, t_window *window)
 	return 1;
 }
 
-static t_control	*find_clicked_control(t_control *control, int x, int y)
+static t_control	*find_clicked_control(t_control *control, t_window *win, int x, int y)
 {
 	while (control)
 	{
 		if (control->children)
 		{
-			t_control *hit = find_clicked_control(control->children, x, y);
+			t_control *hit = find_clicked_control(control->children, win, x, y);
 			if (hit)
 				return hit;
+		}
+
+		if (!control->p_is_reactive) // if not reactive, not special script associated
+		{
+			control = control->p_next;
+			continue;
 		}
 
 		if (control->enabled)
@@ -59,7 +65,7 @@ void	handle_click(int x, int y, int button, t_window *window)
 	// drag started
 	if (!(prev_buttons & 1) && (button & 1))
 	{
-		t_control *cur = find_clicked_control(window->controls, x, y);
+		t_control *cur = find_clicked_control(window->controls, window, x, y);
 
 		if (cur)
 		{

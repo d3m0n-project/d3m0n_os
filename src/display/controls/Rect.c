@@ -44,7 +44,7 @@ void ctrl_draw_rect(t_control *control)
 				break;
 
 			child->p_scroll_offset = control->p_scroll_offset;
-			compute_control_layout(child, control, (t_point){0, -child->p_scroll_offset.y});
+			compute_control_layout(child, control, (t_point){0, 0});
 			// TODO: check why Rect not relative & remove relative parsing
 			if (child->p_client_location.y + child->p_client_size.y >= y && child->p_client_location.y <= y + h)
 				draw_control(child);

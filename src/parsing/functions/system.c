@@ -5,6 +5,18 @@
 
 #define UPDATE_DELTA_TIME_MS	500
 
+char	*fn_system_version(void **args)
+{
+	(void)args;
+	return KERNEL_VERSION;
+}
+
+char	*fn_system_version_name(void **args)
+{
+	(void)args;
+	return KERNEL_VERSION_NAME;
+}
+
 char	*fn_system_var_get(void **args)
 {
 	char		*key = ((char **)args)[0];
