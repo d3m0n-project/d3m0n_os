@@ -25,13 +25,23 @@ Rect:
 	location="0, 500";
 	parent="v1";
 
+Text:
+	width="100%";
+	height="20px";
+	parent="about_message";
+	location="0, 0";
+	text_align="center";
+	color="237,237,237";
+	content="Kernel Information";
+
+
 
 Text:
 	name="kernel_version";
 	width="100%";
 	height="20px";
 	parent="about_message";
-	location="0, 0";
+	location="0, 20";
 	content="2.0.0";
 	text_align="center";
 	color="237,237,237";
@@ -41,7 +51,25 @@ Text:
 	width="100%";
 	height="20px";
 	parent="about_message";
-	location="0, 20";
+	location="0, 40";
 	text_align="center";
 	color="237,237,237";
 	content="outset";
+
+Image:
+	src="4re5.4re5";
+	width="64px";
+	height="24px";
+	color="white";
+	parent="about_message";
+	location="85, 70";
+
+Text:
+	width="50%";
+	height="20px";
+	parent="about_message";
+	location="50%, 70";
+	text_align="center";
+	color="orange";
+	content="4re5 group";
+

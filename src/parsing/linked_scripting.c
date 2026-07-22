@@ -3,6 +3,7 @@
 #include "libft.h"
 #include "scripting.h"
 #include "parsing.h"
+#include "random.h"
 
 #define IF_STACK_MAX		32
 
@@ -1358,6 +1359,7 @@ static void	exec_range(t_script_chain *start, t_script_chain *stop, t_window *wi
 	cur = start;
 	while (cur && cur != stop)
 	{
+		rng_add_entropy(time_us()); // add entropy
 		if (cur->func == op_if)
 		{
 			t_script_chain *else_node;

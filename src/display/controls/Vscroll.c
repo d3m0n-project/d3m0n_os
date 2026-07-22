@@ -21,14 +21,11 @@ void	ctrl_draw_vscroll(t_control *control)
 		child->p_scroll_offset = control->p_scroll_offset;
 		compute_control_layout(child, control, (t_point){0, -child->p_scroll_offset.y});
 
-
-		put_pixel(control->p_client_location.x, control->p_client_location.y, DISPLAY_COLORS[YELLOW]);
 		// check if child is in area
 		if ((child->p_client_location.y >= control->p_client_location.y && child->p_client_location.y <= control->p_client_location.y + control->p_client_size.y)
 			&& (child->p_client_location.x >= control->p_client_location.x && child->p_client_location.x <= control->p_client_location.x + control->p_client_size.x))
 		{
 			draw_control(child);
-			put_pixel(child->p_client_location.x, child->p_client_location.y, DISPLAY_COLORS[RED]);
 		}
 
 		child = child->p_next;

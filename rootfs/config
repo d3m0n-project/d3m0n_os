@@ -15,6 +15,7 @@ launcher: com.4re5.d3m0n.system.launcher
 
 # ------- icons ---------
 icon_pack: material-design-icons
+icon_4re5: 4re5.4re5
 
 # wifi
 icon_airplane_mode: device.airplanemode_active  

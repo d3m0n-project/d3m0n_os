@@ -12,9 +12,9 @@
 #include "settings.h"
 #include "icons.h"
 
-
 #include "package_manager.h"
-#include <fat32.h>
+#include <crypto.h>
+#include <random.h>
 
 t_conf		config;
 
@@ -77,6 +77,29 @@ void	kernel_main(void *dtb)
 	// init usb driver
 	usb_init(); // TODO: maybe make usb driver optional and enabled for testing
 	if (usb_enumerate() < 0)	log("USB enumeration did not find a configured root device\n", LOG_WARNING);
+
+
+	log("64: %lu\n", 0, random_u64());
+	log("64: %lu\n", 0, random_u64());
+	log("64: %lu\n", 0, random_u64());
+	log("64: %lu\n", 0, random_u64());
+	log("64: %lu\n", 0, random_u64());
+
+	// rsa test
+	t_RSA_private_key	prv;
+	t_RSA_public_key	pub;
+	if (!rsa_generate_keypair(2048, &prv, &pub))
+		log("Failed to generate a new RSA keypair\n", LOG_ERROR);
+
+	BigInt *c = rsa_encrypt((uint8_t *)"A", 1, &pub);
+	size_t	out_len = 0;
+	uint8_t	*m = rsa_decrypt(c, &out_len, &prv);
+	log("m='%s' %llu\n", 0, m, out_len);
+
+
+	panic("test RSA\n");
+
+
 
 	// load spash
 	BmpTexture	splash;

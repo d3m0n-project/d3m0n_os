@@ -2,6 +2,7 @@
 #include "get_next_line.h"
 #include "libft.h"
 #include "controls.h"
+#include "random.h"
 
 static int	get_control_id_by_name_in_list(char *name, t_control *list, t_control **ctrl, int *current_id)
 {
@@ -124,6 +125,8 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 	int			line_nb = 0;
 	int			event_id = 0; // start at id=1 to keep id=0 to the closing script
 	int			current_control_id = -1;
+
+	rng_add_entropy(time_us()); // add entropy
 
 	if (!win)
 		return 1;

@@ -3,6 +3,33 @@
 #include "memory.h"
 #include "libft.h"
 #include "time.h"
+#include "random.h"
+
+static uint8_t	bmp_extract_channel(uint32_t pixel, uint32_t mask)
+{
+	uint32_t	value;
+	uint32_t	max;
+	int			shift;
+
+	if (!mask)
+		return (255);
+
+	shift = 0;
+	while (((mask >> shift) & 1) == 0)
+		shift++;
+
+	value = (pixel & mask) >> shift;
+
+	max = mask >> shift;
+	while ((max & (max + 1)) != 0)
+		max &= max + 1;
+	max--;
+
+	if (max == 0)
+		return (0);
+
+	return ((value * 255) / max);
+}
 
 int	bmp_load_image(BmpTexture *out, const char *path)
 {
@@ -21,9 +48,18 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	uint32_t	stride;
 	uint32_t	data_size;
 	int			flip;
+	uint32_t	red_mask = 0;
+	uint32_t	green_mask = 0;
+	uint32_t	blue_mask = 0;
+	uint32_t	alpha_mask = 0;
+
+	// this function may leak if alreay loaded pixels
+	out->pixels = 0;
 
 	if (fd == -1)
 		return 1;
+
+	rng_add_entropy(time_us()); // add entropy
 
 	if (read(fd, header, 54) != 54)
 		goto error;
@@ -43,14 +79,48 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 		goto error;
 	}
 
+
 	ft_memcpy(&compression, header + 30, sizeof(uint32_t));
-	if (compression != 0)
+	if (compression != 0 && compression != 3 && compression != 6)
 	{
-		log("BMP compression is enabled and it is not yet handled\n", LOG_ERROR | LOG_INDENT);
+		log("Unsupported BMP compression %u\n", LOG_ERROR | LOG_INDENT, compression);
 		goto error;
 	}
 
 	ft_memcpy(&starting_offset, header + 10, sizeof(uint32_t));
+	if (compression == 3 || compression == 6)
+	{
+		if (read(fd, (char *)&red_mask, 4) != 4)
+			goto error;
+		if (read(fd, (char *)&green_mask, 4) != 4)
+			goto error;
+		if (read(fd, (char *)&blue_mask, 4) != 4)
+			goto error;
+
+		if (out->bytes_per_pixel == 4)
+		{
+			if (read(fd, (char *)&alpha_mask, 4) != 4)
+				alpha_mask = 0;
+		}
+	}
+	else
+	{
+		// standard mask
+		if (out->bytes_per_pixel == 3)
+		{
+			red_mask = 0x00FF0000;
+			green_mask = 0x0000FF00;
+			blue_mask = 0x000000FF;
+			alpha_mask = 0;
+		}
+		else
+		{
+			red_mask = 0x00FF0000;
+			green_mask = 0x0000FF00;
+			blue_mask = 0x000000FF;
+			alpha_mask = 0xFF000000;
+		}
+	}
 
 	row_size = out->width * out->bytes_per_pixel;
 	stride = (row_size + 3) & ~3;
@@ -84,42 +154,53 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	log("BMP size: %ix%i\n", LOG_INFO | LOG_INDENT, out->width, out->height);
 	#endif
 
-	if (out->bytes_per_pixel == 3)
+	for (int y = 0; y < out->height; y++)
 	{
-		for (int y = 0; y < out->height; y++)
-		{
-			uint8_t		*src;
-			uint32_t	*dst;
+		uint8_t		*src;
+		uint32_t	*dst;
 
-			if (flip)
-				src = (uint8_t *)file_pixels + (out->height - 1 - y) * stride;
-			else
-				src = (uint8_t *)file_pixels + y * stride;
-			dst = out->pixels + y * out->width;
-			for (int x = 0; x < out->width; x++)
+		if (flip)
+			src = (uint8_t *)file_pixels + (out->height - 1 - y) * stride;
+		else
+			src = (uint8_t *)file_pixels + y * stride;
+		dst = out->pixels + y * out->width;
+		for (int x = 0; x < out->width; x++)
+		{
+			uint32_t	pixel;
+			uint8_t		r;
+			uint8_t		g;
+			uint8_t		b;
+			uint8_t		a;
+
+			if (out->bytes_per_pixel == 3)
 			{
-				*dst++ = (0xFFu << 24) | (src[0] << 16) | (src[1] << 8) | src[2];
+				b = src[0];
+				g = src[1];
+				r = src[2];
+				a = 255;
 				src += 3;
 			}
-		}
-	}
-	else
-	{
-		for (int y = 0; y < out->height; y++)
-		{
-			uint8_t		*src;
-			uint32_t	*dst;
-
-			if (flip)
-				src = (uint8_t *)file_pixels + (out->height - 1 - y) * stride;
 			else
-				src = (uint8_t *)file_pixels + y * stride;
-			dst = out->pixels + y * out->width;
-			for (int x = 0; x < out->width; x++)
 			{
-				*dst++ = (src[0] << 16) | (src[1] << 8) | src[2] | (src[3] << 24);
+				ft_memcpy(&pixel, src, 4);
+
+				if (compression == 0)
+				{
+					b = src[0];
+					g = src[1];
+					r = src[2];
+					a = src[3];
+				}
+				else
+				{
+					r = bmp_extract_channel(pixel, red_mask);
+					g = bmp_extract_channel(pixel, green_mask);
+					b = bmp_extract_channel(pixel, blue_mask);
+					a = alpha_mask?bmp_extract_channel(pixel, alpha_mask):255;
+				}
 				src += 4;
 			}
+			*dst++ = ((uint32_t)a << 24) | ((uint32_t)b << 16) | ((uint32_t)g << 8) | (uint32_t)r;
 		}
 	}
 
@@ -132,8 +213,10 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	return (0);
 
 error:
-	free(file_pixels);
-	free(out->pixels);
+	if (file_pixels)
+		free(file_pixels);
+	if (out->pixels)
+		free(out->pixels);
 	close(fd);
 	return (1);
 }

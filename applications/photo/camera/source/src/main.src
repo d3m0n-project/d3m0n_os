@@ -7,4 +7,4 @@ shoot.OnClick =>
 	log("take a photo", "red");
 
 gallery.OnClick =>
-	log("open gallery", "red");
+	app.open("com.4re5.d3m0n.photo.gallery");

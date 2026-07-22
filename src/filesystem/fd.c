@@ -1,6 +1,7 @@
 #include "filesystem.h"
 #include "fat32.h"
 #include "get_next_line.h"
+#include "random.h"
 
 typedef struct fs_fd
 {
@@ -32,6 +33,8 @@ int		open(const char *path, int flags)
 	int			fd;
 	int			i;
 	FAT32_File	file;
+
+	rng_add_entropy(time_us()); // add entropy
 
 	if (!path || !is_valid_open_flags(flags))
 		return (-1);
@@ -159,6 +162,8 @@ int		close(int fd)
 {
 	if (fd >= FS_MAX_FDS || fd < 0 || g_fds[fd].mode == FILE_NOT_CREATED)
 		return (-1);
+
+	rng_add_entropy(time_us()); // add entropy
 
 	g_fds[fd].mode = FILE_NOT_CREATED;
 	fat32_close(&(g_fds[fd].file));

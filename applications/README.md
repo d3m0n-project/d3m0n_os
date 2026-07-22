@@ -1,10 +1,8 @@
 # d3m0n OS pre installed apps
 
-this directory is used as documentation and remote repo.
-To install package just do `fetch <packagename>` inside [d3m0n shell](https://github.com/d3m0n-project/d3m0n_os/tree/main/documentation/shell)
-
 ## TODO: Apps
 - [x] launcher
+- [ ] calculator
 - [ ] gallery
 - [ ] camera
 - [ ] contacts
@@ -28,7 +26,7 @@ To install package just do `fetch <packagename>` inside [d3m0n shell](https://gi
     - <img width="15" src="/rootfs/themes/default_dark/icons/messages.png"> [messages](./communication/messages)   
   - system
     - <img width="15" src="/rootfs/themes/default_dark/icons/settings.png"> [settings](./system/settings)
-    - lockscreen
+    - <img width="15" src="/rootfs/themes/default_dark/icons/default.png"> [launcher](./system/launcher)
   - photo
     - <img width="15" src="/rootfs/themes/default_dark/icons/camera.png"> [camera](./photo/camera)
     - <img width="15" src="/rootfs/themes/default_dark/icons/gallery.png"> [gallery](./photo/gallery)
@@ -45,6 +43,6 @@ To install package just do `fetch <packagename>` inside [d3m0n shell](https://gi
     - <img width="15" src="/rootfs/themes/default_dark/icons/radio.png"> [radio](./modules/radio)
   - testing (for debug purposes)
     -  <img width="15" src=""> [Color test](./testing/color)
-    -  <img width="15" src=""> [HelloWorld](./testing/HelloWorld)
+    -  <img width="15" src=""> [HelloWorld](./testing/hello_world)
 - keyboard
   - keyboard app

@@ -101,6 +101,12 @@ void	compute_control_layout(t_control *control, t_control *parent, t_point offse
 
 	parent_x = parent ? parent->p_client_location.x : 0;
 	parent_y = parent ? parent->p_client_location.y : 0;
+	
+	if (!parent && window->top_bar)
+	{
+		parent_y += TOPBAR_HEIGHT;
+		parent_height -= TOPBAR_HEIGHT;
+	}
 
 	// size
 	control->p_client_size.x = control->p_width_is_percent ? get_percentage(control->width, parent_width) : control->width;
@@ -116,11 +122,30 @@ void	compute_control_layout(t_control *control, t_control *parent, t_point offse
 
 
 	// location
-	control->p_client_location.x = parent_x + offset.x + (control->p_x_is_percent ? get_percentage(control->location.x, parent_width) : control->location.x);
-	control->p_client_location.y = parent_y + offset.y + (control->p_y_is_percent ? get_percentage(control->location.y, parent_height) : control->location.y);
-
-	if (!parent && window->top_bar)
-		control->p_client_location.y += TOPBAR_HEIGHT;
+	if (control->p_anchor_location)
+	{
+		int x = parent_x + offset.x;
+		int y = parent_y + offset.y;
+		int align = control->p_anchor_location;
+		
+		if (align & ANCHOR_BOTTOM)
+			y += parent_height - control->p_client_size.y;
+		else if (align & ANCHOR_CENTER_Y)
+			y += parent_height / 2 - control->p_client_size.y / 2;
+		
+		if (align & ANCHOR_RIGHT)
+			x += parent_width - control->p_client_size.x;
+		else if (align & ANCHOR_CENTER_X)
+			x += parent_width / 2 - control->p_client_size.x / 2;
+		
+		control->p_client_location.x = x;
+		control->p_client_location.y = y;
+	}
+	else
+	{
+		control->p_client_location.x = parent_x + offset.x + (control->p_x_is_percent ? get_percentage(control->location.x, parent_width) : control->location.x);
+		control->p_client_location.y = parent_y + offset.y + (control->p_y_is_percent ? get_percentage(control->location.y, parent_height) : control->location.y);
+	}
 }
 
 void	draw_control(t_control *control)
