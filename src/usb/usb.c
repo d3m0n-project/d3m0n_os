@@ -582,18 +582,15 @@ static int	usb_finish_device_configuration(usb_device_t *dev, uint8_t device_cla
 	uint16_t				total_len;
 	int						ret;
 
-	ret = usb_get_descriptor_len(dev, USB_DESC_CONFIG, 0, g_usb_buf,
-			sizeof(usb_config_descriptor_t));
+	ret = usb_get_descriptor_len(dev, USB_DESC_CONFIG, 0, g_usb_buf, sizeof(usb_config_descriptor_t));
 	if (ret)
 	{
-		log("USB: failed to read config descriptor header (%i)\n",
-			LOG_ERROR, ret);
+		log("USB: failed to read config descriptor header (%i)\n", LOG_ERROR, ret);
 		return ret;
 	}
 	config = (usb_config_descriptor_t *)g_usb_buf;
 	total_len = usb_min_u16(config->wTotalLength, sizeof(g_usb_buf));
-	ret = usb_get_descriptor_len(dev, USB_DESC_CONFIG, 0, g_usb_buf,
-			total_len);
+	ret = usb_get_descriptor_len(dev, USB_DESC_CONFIG, 0, g_usb_buf, total_len);
 	if (ret)
 	{
 		log("USB: failed to read config descriptor (%i)\n", LOG_ERROR, ret);
@@ -617,8 +614,7 @@ static int	usb_finish_device_configuration(usb_device_t *dev, uint8_t device_cla
 	{
 		ret = usb_hid_set_boot_protocol(dev, g_mouse.interface);
 		if (ret)
-			log("USB: HID SET_PROTOCOL boot failed (%i)\n",
-				LOG_WARNING, ret);
+			log("USB: HID SET_PROTOCOL boot failed (%i)\n", LOG_WARNING, ret);
 		else
 			log("USB: HID mouse ready for polling\n", LOG_SUCCESS);
 	}
@@ -638,8 +634,7 @@ static int	usb_enumerate_address_zero(usb_device_t *dev, uint8_t new_addr, uint8
 	ret = usb_get_descriptor_len(dev, USB_DESC_DEVICE, 0, g_usb_buf, 8);
 	if (ret)
 	{
-		log("USB: failed to read initial device descriptor (%i)\n",
-			LOG_ERROR, ret);
+		log("USB: failed to read initial device descriptor (%i)\n", LOG_ERROR, ret);
 		return ret;
 	}
 	device = (usb_device_descriptor_t *)g_usb_buf;
@@ -652,12 +647,10 @@ static int	usb_enumerate_address_zero(usb_device_t *dev, uint8_t new_addr, uint8
 		log("USB: SET_ADDRESS failed (%i)\n", LOG_ERROR, ret);
 		return ret;
 	}
-	ret = usb_get_descriptor_len(dev, USB_DESC_DEVICE, 0, g_usb_buf,
-			sizeof(usb_device_descriptor_t));
+	ret = usb_get_descriptor_len(dev, USB_DESC_DEVICE, 0, g_usb_buf, sizeof(usb_device_descriptor_t));
 	if (ret)
 	{
-		log("USB: failed to read full device descriptor (%i)\n",
-			LOG_ERROR, ret);
+		log("USB: failed to read full device descriptor (%i)\n", LOG_ERROR, ret);
 		return ret;
 	}
 	device = (usb_device_descriptor_t *)g_usb_buf;
@@ -685,8 +678,7 @@ int	usb_enumerate(void)
 		return ret;
 	}
 	log("USB: root port reset complete, speed=%s\n", LOG_INFO | LOG_INDENT, g_root_device.speed_low ? "low" : "full");
-	ret = usb_enumerate_address_zero(&g_root_device, USB_ADDR_FIRST,
-			g_root_device.speed_low, &device_class);
+	ret = usb_enumerate_address_zero(&g_root_device, USB_ADDR_FIRST, g_root_device.speed_low, &device_class);
 	if (ret)
 		return ret;
 	if (device_class == USB_CLASS_HUB)

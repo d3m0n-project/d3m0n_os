@@ -78,28 +78,37 @@ void	kernel_main(void *dtb)
 	usb_init(); // TODO: maybe make usb driver optional and enabled for testing
 	if (usb_enumerate() < 0)	log("USB enumeration did not find a configured root device\n", LOG_WARNING);
 
-
-	log("64: %lu\n", 0, random_u64());
-	log("64: %lu\n", 0, random_u64());
-	log("64: %lu\n", 0, random_u64());
-	log("64: %lu\n", 0, random_u64());
-	log("64: %lu\n", 0, random_u64());
-
 	// rsa test
 	t_RSA_private_key	prv;
 	t_RSA_public_key	pub;
+	uint64_t	t = time_us() / 1000;
 	if (!rsa_generate_keypair(2048, &prv, &pub))
 		log("Failed to generate a new RSA keypair\n", LOG_ERROR);
+	else
+	{
+		log("generating key: %llums\n", 0, time_us() / 1000 - t);
+		log("n: ", 0);
+		big_int_display(&prv.n, 1);
+		log("e: ", 0);
+		big_int_display(&prv.e, 1);
+		log("d: ", 0);
+		big_int_display(&prv.d, 1);
+	}
 
-	BigInt *c = rsa_encrypt((uint8_t *)"A", 1, &pub);
+	t = time_us() / 1000;
+	BigInt *c = rsa_encrypt((uint8_t *)"Hello World!", 13, &pub);
+	log("encrypting: %llums\n", 0, time_us() / 1000 - t);
 	size_t	out_len = 0;
+	t = time_us() / 1000;
 	uint8_t	*m = rsa_decrypt(c, &out_len, &prv);
+	log("decrypting: %llums\n", 0, time_us() / 1000 - t);
 	log("m='%s' %llu\n", 0, m, out_len);
 
+	log("original bytes: ", 0);
+	BigInt	*o = big_int_from_bytes((uint8_t *)"Hello World!", 13);
+	big_int_display(o, 0);
 
 	panic("test RSA\n");
-
-
 
 	// load spash
 	BmpTexture	splash;
@@ -117,7 +126,7 @@ void	kernel_main(void *dtb)
 	else						log("Loaded apps successfully!\n", LOG_SUCCESS);
 
 	// TODO: threading
-	uint64_t	t = time_us();
+	t = time_us();
 	char		*icon_pack_path = path_add("/themes/", config.icon_pack);
 	if (!icon_pack_path || load_icon_pack(icon_pack_path))
 		log("Could not load icon pack: %s\n", LOG_ERROR, icon_pack_path);

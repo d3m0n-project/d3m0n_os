@@ -42,6 +42,6 @@ BigInt		*rsa_encrypt(uint8_t	*bytes, size_t len, t_RSA_public_key *pub);
 uint8_t		*rsa_decrypt(BigInt	*c, size_t *out_len, t_RSA_private_key *prv);
 
 // chacha20
-void   	 chacha20_block(uint32_t out[16], const uint32_t key[8], uint32_t counter, const uint32_t nonce[3]);
+void   		chacha20_block(uint32_t out[16], const uint32_t key[8], uint32_t counter, const uint32_t nonce[3]);
 
 #endif

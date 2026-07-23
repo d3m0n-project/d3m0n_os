@@ -1,5 +1,6 @@
 #include "algorithm.h"
 #include "log.h"
+#include "random.h"
 
 BigInt	*big_int_from_uint(uint32_t n)
 {
@@ -13,12 +14,17 @@ BigInt	*big_int_from_uint(uint32_t n)
 	out->digits[0] = n;
 	return out;
 }
-static int	big_int_is_odd(BigInt *n)
+int	big_int_is_odd(BigInt *n)
 {
 	return n->digits[0] & 1;
 }
 
-static int	big_int_is_zero(BigInt *n)
+int	big_int_is_even(BigInt *n)
+{
+	return !big_int_is_odd(n);
+}
+
+int	big_int_is_zero(BigInt *n)
 {
 	return n->length == 1 && n->digits[0] == 0;
 }
@@ -54,7 +60,7 @@ uint8_t	*big_int_get_bytes(BigInt *n, size_t *byte_len)
 		tmp[j + 0] = (limb >> 24) & 0xFF;
 		tmp[j + 1] = (limb >> 16) & 0xFF;
 		tmp[j + 2] = (limb >>  8) & 0xFF;
-		tmp[j + 3] =  limb        & 0xFF;
+		tmp[j + 3] =  limb		& 0xFF;
 	}
 
 	// skip zeros
@@ -236,17 +242,6 @@ BigInt	*big_int_sub(BigInt *n1, BigInt *n2)
 	return out;
 }
 
-static int	big_int_get_bit(BigInt *a, size_t bit)
-{
-	size_t limb = bit / 32;
-	size_t offset = bit % 32;
-
-	if (limb >= a->length)
-		return 0;
-
-	return (a->digits[limb] >> offset) & 1;
-}
-
 void	big_int_normalize(BigInt *n)
 {
 	while (n->length > 1 && n->digits[n->length - 1] == 0)
@@ -258,7 +253,7 @@ void	big_int_normalize(BigInt *n)
 		n->sign = 1;
 }
 
-static void big_int_shl1(BigInt *a)
+void big_int_shl1(BigInt *a)
 {
 	uint32_t carry = 0;
 
@@ -279,7 +274,7 @@ static void big_int_shl1(BigInt *a)
 }
 
 
-static void	big_int_shr1(BigInt *a)
+void	big_int_shr1(BigInt *a)
 {
 	uint32_t carry = 0;
 	for (size_t i = a->length; i-- > 0;)
@@ -331,7 +326,7 @@ long	big_int_cmp(BigInt *n1, BigInt *n2)
 	return n1->sign * mag;
 }
 
-static long	big_int_cmp_abs(BigInt *a, BigInt *b)
+long	big_int_cmp_abs(BigInt *a, BigInt *b)
 {
 	if (a->length != b->length)
 		return a->length > b->length ? 1 : -1;
@@ -378,34 +373,24 @@ BigIntDiv	*big_int_div(BigInt *num, BigInt *den)
 	}
 
 	// find highest bit
-	size_t bits = num->length * 32;
-	while (bits > 0 && big_int_get_bit(num, bits - 1) == 0)
-		bits--;
-
-	for (size_t i = bits; i-- > 0;)
+	size_t top = num->length - 1;
+	while (top > 0 && num->digits[top] == 0)
+		top--;
+	
+	for (size_t limb = num->length; limb-- > 0;)
 	{
-		big_int_shl1(out->remainder);
-		if (big_int_get_bit(num, i))
+		uint32_t word = num->digits[limb];
+		for (int bit = 31; bit >= 0; bit--)
 		{
-			out->remainder->digits[0] |= 1;
-			out->remainder->sign = 1;
-		}
-
-		if (big_int_cmp_abs(out->remainder, den) >= 0)
-		{
-			BigInt *tmp = big_int_sub(out->remainder, den);
-			if (!tmp)
+			big_int_shl1(out->remainder);
+			out->remainder->digits[0] |= (word >> bit) & 1;
+			if (big_int_cmp_abs(out->remainder, den) >= 0)
 			{
-				free(out->quotient);
+				BigInt *tmp = big_int_sub(out->remainder, den);
 				free(out->remainder);
-				free(out);
-				return 0;
+				out->remainder = tmp;
+				big_int_set_bit(out->quotient, limb * 32 + bit);
 			}
-			free(out->remainder);
-			out->remainder = tmp;
-			big_int_normalize(out->remainder);
-			// quotient bit = 1
-			big_int_set_bit(out->quotient, i);
 		}
 	}
 	big_int_normalize(out->quotient);
@@ -544,43 +529,120 @@ BigInt	*big_int_mod(BigInt *div, BigInt *den)
 
 BigInt	*big_int_modular_pow(BigInt *base, BigInt *exp, BigInt *mod)
 {
-	BigInt	*result = big_int_from_uint(1);
-	BigInt	*b = big_int_mod(base, mod);
-	BigInt	*e = big_int_copy(exp);
+    t_mont_ctx	ctx;
 
-	if (!result || !b || !e)
-		goto error;
+    if (!montgomery_ctx_init(&ctx, mod))
+        return 0;
 
-	while (!big_int_is_zero(e))
-	{
-		if (big_int_is_odd(e))
-		{
-			BigInt *tmp = big_int_mul(result, b);
-			BigInt *r = big_int_mod(tmp, mod);
+    BigInt *result = montgomery_to(&ctx.one, &ctx);
+    BigInt *b      = montgomery_to(base, &ctx);
+    BigInt *e      = big_int_copy(exp);
 
-			free(tmp);
-			free(result);
-			result = r;
-			if (!result)
-				goto error;
-		}
+    if (!result || !b || !e)
+        goto error;
 
-		BigInt *tmp = big_int_mul(b, b);
-		BigInt *bb = big_int_mod(tmp, mod);
-		free(tmp);
-		free(b);
-		b = bb;
-		if (!b)
-			goto error;
-		big_int_shr1(e);
-	}
-	free(b);
-	free(e);
-	return result;
+    while (!big_int_is_zero(e))
+    {
+        if (big_int_is_odd(e))
+        {
+            BigInt *tmp = montgomery_mul(result, b, &ctx.n, ctx.n0_inv);
+            free(result);
+            result = tmp;
+            if (!result)
+                goto error;
+        }
+
+        BigInt *tmp = montgomery_mul(b, b, &ctx.n, ctx.n0_inv);
+        free(b);
+        b = tmp;
+        if (!b)
+            goto error;
+        big_int_shr1(e);
+    }
+
+    BigInt *out = montgomery_from(result, &ctx);
+    free(result);
+    free(b);
+    free(e);
+    return out;
 
 error:
-	free(result);
-	free(b);
-	free(e);
-	return 0;
+    free(result);
+    free(b);
+    free(e);
+    return 0;
+}
+
+size_t big_int_bit_length(BigInt *n)
+{
+	if (n->length == 0)
+		return 0;
+
+	uint32_t msw = n->digits[n->length - 1];
+	if (msw == 0)
+		return 0;
+
+	size_t bits = (n->length - 1) * 32;
+	while (msw)
+	{
+		bits++;
+		msw >>= 1;
+	}
+	return bits;
+}
+
+BigInt	*big_int_random_bits(size_t bits)
+{
+	if (bits == 0)
+		return big_int_from_uint(0);
+
+	size_t byte_count = (bits + 7) / 8;
+	uint8_t *buf = malloc(byte_count);
+	if (!buf)
+		return 0;
+
+	random_bytes(buf, byte_count);
+	unsigned excess = (unsigned)(byte_count * 8 - bits);
+	if (excess > 0)
+	{
+		uint8_t mask = (uint8_t)(0xFFu >> excess);
+		buf[byte_count - 1] &= mask;
+	}
+
+	BigInt *x = big_int_from_bytes(buf, byte_count);
+	free(buf);
+	return x;
+}
+
+BigInt	*big_int_rng(BigInt *min, BigInt *max)
+{
+	if (big_int_cmp(min, max) > 0)
+		return 0;
+
+	BigInt *range = big_int_sub(max, min);	  // range = max - min
+	size_t bits = big_int_bit_length(range);
+	BigInt *candidate = 0;
+	while (1)
+	{
+		candidate = big_int_random_bits(bits);
+		if (big_int_cmp(candidate, range) <= 0)
+			break;
+		free(candidate);
+	}
+
+	BigInt *result = big_int_add(min, candidate);
+	free(candidate);
+	free(range);
+	return result;
+}
+
+uint32_t	big_int_mod_small(BigInt *n, uint32_t p)
+{
+	if (p == 0)
+		return 0;
+
+	uint64_t r=0;
+	for (int i = (int)n->length - 1; i >= 0; i--)
+		r = ((r << 32) | n->digits[i]) % p;
+	return (uint32_t)r;
 }
