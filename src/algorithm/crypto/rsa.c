@@ -270,15 +270,10 @@ static int	rsa_generate_prime_number(size_t size, BigInt *out)
 		big_int_normalize(out);
 
 		count++;
-		uint64_t t = time_us() / 1000;
-		int filter = small_prime_filter(out);
-		log("filter: %lums\n", 0, time_us() / 1000 - t);
-		t = time_us() / 1000;
-		if (filter && miller_rabin(out))
+		if (small_prime_filter(out) && miller_rabin(out))
 			is_prime = 1;
 		else
 			log("RSA: Generation failed, creating a new prime... [%i/%i]\n", LOG_WARNING | LOG_INDENT, count, MAX_RSA_GENERATION_LOOP);
-		log("miller: %lums\n", 0, time_us() / 1000 - t);
 	}
 	if (count == MAX_RSA_GENERATION_LOOP)
 	{

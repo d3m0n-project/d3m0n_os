@@ -529,48 +529,48 @@ BigInt	*big_int_mod(BigInt *div, BigInt *den)
 
 BigInt	*big_int_modular_pow(BigInt *base, BigInt *exp, BigInt *mod)
 {
-    t_mont_ctx	ctx;
+	t_mont_ctx	ctx;
 
-    if (!montgomery_ctx_init(&ctx, mod))
-        return 0;
+	if (!montgomery_ctx_init(&ctx, mod))
+		return 0;
 
-    BigInt *result = montgomery_to(&ctx.one, &ctx);
-    BigInt *b      = montgomery_to(base, &ctx);
-    BigInt *e      = big_int_copy(exp);
+	BigInt *result = montgomery_to(&ctx.one, &ctx);
+	BigInt *b	  = montgomery_to(base, &ctx);
+	BigInt *e	  = big_int_copy(exp);
 
-    if (!result || !b || !e)
-        goto error;
+	if (!result || !b || !e)
+		goto error;
 
-    while (!big_int_is_zero(e))
-    {
-        if (big_int_is_odd(e))
-        {
-            BigInt *tmp = montgomery_mul(result, b, &ctx.n, ctx.n0_inv);
-            free(result);
-            result = tmp;
-            if (!result)
-                goto error;
-        }
+	while (!big_int_is_zero(e))
+	{
+		if (big_int_is_odd(e))
+		{
+			BigInt *tmp = montgomery_mul(result, b, &ctx.n, ctx.n0_inv);
+			free(result);
+			result = tmp;
+			if (!result)
+				goto error;
+		}
 
-        BigInt *tmp = montgomery_mul(b, b, &ctx.n, ctx.n0_inv);
-        free(b);
-        b = tmp;
-        if (!b)
-            goto error;
-        big_int_shr1(e);
-    }
+		BigInt *tmp = montgomery_mul(b, b, &ctx.n, ctx.n0_inv);
+		free(b);
+		b = tmp;
+		if (!b)
+			goto error;
+		big_int_shr1(e);
+	}
 
-    BigInt *out = montgomery_from(result, &ctx);
-    free(result);
-    free(b);
-    free(e);
-    return out;
+	BigInt *out = montgomery_from(result, &ctx);
+	free(result);
+	free(b);
+	free(e);
+	return out;
 
 error:
-    free(result);
-    free(b);
-    free(e);
-    return 0;
+	free(result);
+	free(b);
+	free(e);
+	return 0;
 }
 
 size_t big_int_bit_length(BigInt *n)
