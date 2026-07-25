@@ -284,6 +284,17 @@ static int fat32_write_cluster(uint32_t cluster, const uint8_t *buffer)
 	if (lba == 0)
 		return -1;
 
+	for (uint32_t i = 0; i < CLUSTER_CACHE_ENTRIES; i++)
+	{
+		if (cluster_cache[i].valid && cluster_cache[i].cluster == cluster)
+		{
+			memcpy(cluster_cache[i].data, (uint8_t *)buffer, cluster_bytes());
+			cluster_cache[i].dirty = 0;
+			cluster_cache[i].age = ++cluster_cache_clock;
+			break;
+		}
+	}
+
 	if (block_write_multi(lba, fat32.sectors_per_cluster, buffer) != 0)
 		return -1;
 	return 0;
@@ -545,6 +556,7 @@ static int	fat32_create_dir_entry(uint32_t dir_cluster, const uint8_t name83[11]
 				mem_write16(entry + DIR_FSTCLUSHI_OFF, (uint16_t)(first_cluster >> 16));
 				mem_write16(entry + DIR_FSTCLUSLO_OFF, (uint16_t)(first_cluster & 0xFFFF));
 				mem_write32(entry + DIR_FILESIZE_OFF, 0);
+
 				return fat32_write_cluster(cluster, g_cluster_buf);
 			}
 		}
@@ -886,7 +898,6 @@ FAT32_File	fat32_open(const char *path)
 	}
 
 	cur_cluster = fat32.root_cluster;
-
 	while (1)
 	{
 		comp_len = 0;
@@ -980,7 +991,8 @@ FAT32_File fat32_create(const char *path)
 	file.pos = 0;
 	file.dir_cluster = cur_cluster;
 	file.is_dir = 0;
-	return file;
+
+	return fat32_open(path);
 }
 
 

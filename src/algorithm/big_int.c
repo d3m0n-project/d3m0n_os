@@ -45,6 +45,28 @@ void	big_int_display(BigInt *n, int decimal)
 	log("\n", 0);
 }
 
+uint8_t	*big_int_to_fixed_bytes(BigInt *a, size_t len)
+{
+	uint8_t *out = ft_calloc(len, 1);
+	if (!out)
+		return 0;
+
+	size_t byte_len = (a->length) * 4;
+	if (byte_len > len)
+	{
+		free(out);
+		return 0;
+	}
+
+	for (size_t i = 0; i < byte_len; i++)
+	{
+		size_t limb = i / 4;
+		size_t shift = (i % 4) * 8;
+		out[len - 1 - i] = (a->digits[limb] >> shift) & 0xFF;
+	}
+	return out;
+}
+
 uint8_t	*big_int_get_bytes(BigInt *n, size_t *byte_len)
 {
 	size_t full_len = n->length * sizeof(uint32_t);

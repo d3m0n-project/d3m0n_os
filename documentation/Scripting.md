@@ -109,7 +109,7 @@ Template:
 # d3m0n layout
 
 Image:
-    src="/themes/default_dark/icons/default.bmp";
+    src="default";
     location="0, 0";
     width="65px";
     height="65px";

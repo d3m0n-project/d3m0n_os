@@ -12,6 +12,8 @@ typedef struct	s_icon
 static t_icon	*library = 0;
 static size_t	library_count = 0;
 
+#define DEFAULT_ICON_PATH	"/themes/default.bmp"
+
 static int	valid_icon_path(const char *path)
 {
 	char	**parts;
@@ -91,13 +93,18 @@ int	load_icon_pack(char *path)
 	}
 	close(fd);
 	log("Found %lu icons in the icon pack!\n", LOG_SUCCESS, max_icons);
-	library = malloc(sizeof(t_icon) * max_icons);
+	library = malloc(sizeof(t_icon) * (max_icons + 1));
 	if (!library)
 	{
 		free(list_path);
 		log("ICONS: Could not allocate library\n", LOG_ERROR);
 		return 1;
 	}
+
+	// load default icon
+	library[library_count++] = (t_icon){0};
+	ft_strlcpy(library[0].name, "default", 32);
+	bmp_load_image(&library[0].texture, DEFAULT_ICON_PATH);
 
 
 	fd = open(list_path, O_READ);
@@ -143,7 +150,7 @@ int	load_icon_pack(char *path)
 		parts[1][len - 4] = 0;
 
 
-		/* category.iconname */
+		// category.iconname
 		ft_strlcpy(library[library_count].name, parts[0], sizeof(library[library_count].name));
 		ft_strlcat(library[library_count].name, ".", sizeof(library[library_count].name));
 		ft_strlcat(library[library_count].name, parts[1], sizeof(library[library_count].name));

@@ -290,7 +290,29 @@ int	load_app_list(void)
 					if (!ft_strncmp(mline, "name: ", 6))
 						apps[app_index].name = ft_strdup(mline + 6);
 					else if (!ft_strncmp(mline, "icon: ", 6))
+					{
+						if (!file_exists(mline + 6)) // relative to app path
+						{
+							char *app_path = get_app_path_from_package(apps[app_index].package, PACKAGE_PATH);
+							if (app_path)
+							{
+								char *relative_path = path_add(app_path, mline + 6);
+								if (relative_path)
+								{
+									if (file_exists(relative_path))
+									{
+										apps[app_index].icon = relative_path;
+										free(mline);
+										free(app_path);
+										continue;
+									}
+									free(relative_path);
+								}
+								free(app_path);
+							}
+						}
 						apps[app_index].icon = ft_strdup(mline + 6);
+					}
 					else
 						log("Invalid line in package manifest: '%s' in %s\n", LOG_ERROR, mline, manifest);
 					free(mline);

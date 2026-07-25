@@ -49,6 +49,7 @@ BigInt		*big_int_mod_inverse(BigInt *e, BigInt *phi);
 BigInt		*big_int_mod(BigInt *div, BigInt *den);
 BigInt		*big_int_copy(BigInt *src);
 BigInt		*big_int_from_bytes(const uint8_t *bytes, size_t len);
+uint8_t		*big_int_to_fixed_bytes(BigInt *a, size_t len);
 void		big_int_normalize(BigInt *n);
 BigInt		*big_int_modular_pow(BigInt *base, BigInt *exp, BigInt *mod);
 uint8_t		*big_int_get_bytes(BigInt *n, size_t *byte_len);

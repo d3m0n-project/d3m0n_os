@@ -20,10 +20,10 @@ static uint8_t	bmp_extract_channel(uint32_t pixel, uint32_t mask)
 
 	value = (pixel & mask) >> shift;
 
-	max = mask >> shift;
-	while ((max & (max + 1)) != 0)
-		max &= max + 1;
-	max--;
+	uint32_t bits = mask >> shift;
+	while (bits & ~1)
+		bits >>= 1;
+	max = (mask >> shift);
 
 	if (max == 0)
 		return (0);

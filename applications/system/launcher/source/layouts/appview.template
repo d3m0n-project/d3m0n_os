@@ -8,7 +8,7 @@ Rect:
 	bg_color="transparent";
 
 Image:
-	src="/themes/default_dark/icons/$0.bmp";
+	src="$0";
 	location="0, 0";
 	width="65px";
 	height="65px";

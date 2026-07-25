@@ -13,6 +13,8 @@
 #include "icons.h"
 
 #include "package_manager.h"
+
+#include "fat32.h"
 #include <crypto.h>
 #include <random.h>
 
@@ -81,34 +83,34 @@ void	kernel_main(void *dtb)
 	// rsa test
 	t_RSA_private_key	prv;
 	t_RSA_public_key	pub;
-	uint64_t	t = time_us() / 1000;
-	if (!rsa_generate_keypair(2048, &prv, &pub))
-		log("Failed to generate a new RSA keypair\n", LOG_ERROR);
-	else
-	{
-		log("generating key: %llums\n", 0, time_us() / 1000 - t);
-		log("n: ", 0);
-		big_int_display(&prv.n, 1);
-		log("e: ", 0);
-		big_int_display(&prv.e, 1);
-		log("d: ", 0);
-		big_int_display(&prv.d, 1);
-	}
+	if (!rsa_private_key_require("/security/private.key", &prv, &pub))
+		panic("Failed to get your RSA keypair!\n");
+	
+	size_t	em_len = 0;
+	uint8_t	*em = pkcs1_v1_5_generate_em(&pub, (uint8_t *)"Hello World!", 12, &em_len);
 
-	t = time_us() / 1000;
-	BigInt *c = rsa_encrypt((uint8_t *)"Hello World!", 13, &pub);
-	log("encrypting: %llums\n", 0, time_us() / 1000 - t);
+
+	BigInt *c = rsa_encrypt(em, em_len, &pub);
+	if (!c)
+		log("Failed to encrypt RSA\n", LOG_ERROR);
 	size_t	out_len = 0;
-	t = time_us() / 1000;
 	uint8_t	*m = rsa_decrypt(c, &out_len, &prv);
-	log("decrypting: %llums\n", 0, time_us() / 1000 - t);
-	log("m='%s' %llu\n", 0, m, out_len);
+	if (!m)
+		log("Failed to decrypt RSA\n", LOG_ERROR);
+	uint8_t	*msg = pkcs1_v1_5_decode_em(m, out_len, &out_len);
+	if (!msg)
+		log("Failed to decrypt pkcs#1 v1.5\n", LOG_ERROR);
 
-	log("original bytes: ", 0);
-	BigInt	*o = big_int_from_bytes((uint8_t *)"Hello World!", 13);
-	big_int_display(o, 0);
-
-	panic("test RSA\n");
+	log("msg bytes: ", 0);
+	for (size_t i=0; i<out_len; i++)
+		log("%X ", 0, msg[i]);
+	log("\n", 0);
+	log("msg: '", 0);
+	for (size_t i=0; i<out_len; i++)
+		log("%c", 0, msg[i]);
+	log("'\n", 0);
+	
+	// ---
 
 	// load spash
 	BmpTexture	splash;
@@ -126,7 +128,7 @@ void	kernel_main(void *dtb)
 	else						log("Loaded apps successfully!\n", LOG_SUCCESS);
 
 	// TODO: threading
-	t = time_us();
+	uint64_t t = time_us();
 	char		*icon_pack_path = path_add("/themes/", config.icon_pack);
 	if (!icon_pack_path || load_icon_pack(icon_pack_path))
 		log("Could not load icon pack: %s\n", LOG_ERROR, icon_pack_path);

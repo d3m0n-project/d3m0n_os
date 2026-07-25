@@ -38,10 +38,27 @@ void		sha256_final(sha256_ctx *ctx, uint8_t hash[32]);
 
 // rsa
 int			rsa_generate_keypair(size_t size, t_RSA_private_key *prv, t_RSA_public_key *pub);
-BigInt		*rsa_encrypt(uint8_t	*bytes, size_t len, t_RSA_public_key *pub);
+BigInt		*rsa_encrypt(uint8_t *bytes, size_t len, t_RSA_public_key *pub);
 uint8_t		*rsa_decrypt(BigInt	*c, size_t *out_len, t_RSA_private_key *prv);
+
+// DER ASN.1 Certificates
+int			rsa_private_key_write_der(char *filename, t_RSA_private_key *key);
+int			rsa_private_key_read_der(char *filename, t_RSA_private_key *prv, t_RSA_public_key *pub);
+int			rsa_private_key_require(char *filename, t_RSA_private_key *prv, t_RSA_public_key *pub);
+
+// RSAES-pkcs#1 v1.5
+uint8_t		*pkcs1_v1_5_generate_em(t_RSA_public_key *pub, uint8_t *message, size_t len, size_t *out_len);
+uint8_t		*pkcs1_v1_5_decode_em(uint8_t *em, size_t len, size_t *out_len);
+
+
 
 // chacha20
 void   		chacha20_block(uint32_t out[16], const uint32_t key[8], uint32_t counter, const uint32_t nonce[3]);
+
+
+
+// base64
+char		*base64_encode(uint8_t *data, size_t len);
+uint8_t		*base64_decode(char *data, size_t *out_len);
 
 #endif

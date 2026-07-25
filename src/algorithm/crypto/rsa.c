@@ -23,6 +23,10 @@ static BigInt	*calc_phi(BigInt *p, BigInt *q, BigInt **p_minus_1, BigInt **q_min
 
 uint8_t	*rsa_decrypt(BigInt	*c, size_t *out_len, t_RSA_private_key *prv)
 {
+	if (big_int_cmp(c, &prv->n) >= 0)
+		return 0;
+
+
 	BigInt	*m1 = big_int_modular_pow(c, &prv->dp, &prv->p);
 	BigInt	*m2 = big_int_modular_pow(c, &prv->dq, &prv->q);
 	if (!m1 || !m2)
@@ -69,6 +73,7 @@ uint8_t	*rsa_decrypt(BigInt	*c, size_t *out_len, t_RSA_private_key *prv)
 		return 0;
 	}
 	tmp = big_int_mul(h, &prv->q);
+	free(h);
 	if (!tmp)
 	{
 		free(m2);
@@ -80,16 +85,15 @@ uint8_t	*rsa_decrypt(BigInt	*c, size_t *out_len, t_RSA_private_key *prv)
 	if (!m)
 		return 0;
 
-	log("decrypted integer:\n", 0);
-	big_int_display(m, 0);
-
-
-	uint8_t	*bytes = big_int_get_bytes(m, out_len);
+	size_t len = (big_int_bit_length(&prv->n) + 7) / 8;
+	uint8_t	*bytes = big_int_to_fixed_bytes(m, len);
+	if (bytes && out_len)
+		*out_len = len;
 	free(m);
 	return bytes;
 }
 
-BigInt	*rsa_encrypt(uint8_t	*bytes, size_t len, t_RSA_public_key *pub)
+BigInt	*rsa_encrypt(uint8_t *bytes, size_t len, t_RSA_public_key *pub)
 {
 	BigInt	*m = big_int_from_bytes(bytes, len);
 	if (!m)
@@ -272,8 +276,6 @@ static int	rsa_generate_prime_number(size_t size, BigInt *out)
 		count++;
 		if (small_prime_filter(out) && miller_rabin(out))
 			is_prime = 1;
-		else
-			log("RSA: Generation failed, creating a new prime... [%i/%i]\n", LOG_WARNING | LOG_INDENT, count, MAX_RSA_GENERATION_LOOP);
 	}
 	if (count == MAX_RSA_GENERATION_LOOP)
 	{
@@ -289,6 +291,8 @@ int	rsa_generate_keypair(size_t size, t_RSA_private_key *prv, t_RSA_public_key *
 	BigInt		e = {.length=1, .digits={65537}, .sign=1};
 	BigInt		p = {.length=1, .digits={0}, .sign=1}; // random prime
 	BigInt		q = {.length=1, .digits={0}, .sign=1}; // random prime
+
+	log("RSA: Generating keypair...\n", LOG_INFO);
 	
 retry_generation:
 	if (!rsa_generate_prime_number(size, &p) || !rsa_generate_prime_number(size, &q))
@@ -296,6 +300,7 @@ retry_generation:
 		log("RSA: Could not generate a random prime number for p or q\n", LOG_ERROR);
 		return 0;
 	}
+	log("Generated p and q primes successfully!\n", LOG_SUCCESS | LOG_INDENT);
 	
 	if (big_int_cmp(&p, &q) == 0)
 	{
