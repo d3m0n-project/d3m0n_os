@@ -2,6 +2,7 @@
 #define SCRIPTING_H
 
 #include "controls.h"
+#include "libft.h"
 
 typedef struct s_app
 {
@@ -89,6 +90,10 @@ char	*fn_str_trim_left(void **args);
 char	*fn_str_trim_right(void **args);
 char	*fn_str_replace(void **args);
 char	*fn_str_reverse(void **args);
+
+/* ir */
+char	*fn_ir_emit(void **args);
+
 
 #define HISTORY_STACK_SIZE	128
 

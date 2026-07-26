@@ -17,9 +17,12 @@
 	- [ ] Allow calc(eval) inside of layouts like `calc(100% - 340px - 5px * 2)` + DO `p_client_size`
 	- [ ] Add `inherit` keyword for children
 
+- [ ] IR
+	- [ ] Use hardware PWM pin 12 to generate 38Khz carrier. (also change pin 5->12) 
+
 - [ ] Optimisations
 	- [x] Load all icons at startup for faster display (keep in memory)
-	- [ ] Keep loaded images in app's memory to avoid reopen at each draw
+	- [x] Keep loaded images in app's memory to avoid reopen at each draw
 	- [ ] SPI use DMA for faster transfer
 
 - [ ] Fix fileystem to avoid bugs & critical vulnerabilities
@@ -36,4 +39,4 @@ Docs:
 
 ## Known bugs
 - [ ] Cant add a Vscroll inside of vscroll since p_scroll_offset is shared between children
-- [ ] Scripting: cant do `test = myfunc() + 1;` after `test = myfunc()` omitting the `-1`
+- [ ] Scripting: cant do `test = myfunc() + 1;` after `test = myfunc()` omitting the `+1`

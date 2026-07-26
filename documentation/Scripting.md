@@ -12,6 +12,7 @@ This document describes the built-in functions available to d3m0n scripts.
 6. [Control States](#6-control-states)
 7. [System](#7-system)
 8. [String Manipulation](#8-string-manipulation)
+9. [Infra Red (IR)](#9-infra-red)
 
 ---
 
@@ -441,3 +442,24 @@ Result:
 ```text
 hello world
 ```
+
+---
+
+# 9. Infrared
+
+## `ir.emit(protocol: str, address: int, command: int);`
+
+Emit infrared signal.
+
+Example:
+
+```c
+ir.emit("NEC", 0x00, 0x45); // power off
+```
+
+Available protocols:
+
+| Name |
+|-|
+| `NEC` | 
+| `RC5` |

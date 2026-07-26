@@ -34,7 +34,6 @@ t_fn_def	funcs[] = {
 	{fn_str_is_space, {ARG_STR, ARG_NULL}, "string.is_space", 1},
 	{fn_str_lower, {ARG_STR, ARG_NULL}, "string.lower", 1},
 	{fn_str_upper, {ARG_STR, ARG_NULL}, "string.upper", 1},
-
 	{fn_str_substr, {ARG_STR, ARG_INT, ARG_INT, ARG_NULL}, "string.substr", 1},
 	{fn_str_join, {ARG_STR, ARG_STR, ARG_NULL}, "string.join", 1},
 	{fn_str_cmp, {ARG_STR, ARG_STR, ARG_NULL}, "string.cmp", 1},
@@ -47,6 +46,8 @@ t_fn_def	funcs[] = {
 	{fn_str_trim_right, {ARG_STR, ARG_NULL}, "string.trim_right", 1},
 	{fn_str_replace, {ARG_STR, ARG_STR, ARG_NULL}, "string.replace", 1},
 	{fn_str_reverse, {ARG_STR, ARG_NULL}, "string.reverse", 1},
+
+	{fn_ir_emit, {ARG_STR, ARG_INT, ARG_INT, ARG_NULL}, "ir.emit", 0},
 	{0}
 };
 

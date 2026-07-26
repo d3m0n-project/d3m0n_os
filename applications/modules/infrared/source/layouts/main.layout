@@ -1,0 +1,138 @@
+Window:
+  title="Infrared - $0";
+  bg_color="#202020";
+  width="100%";
+  height="100%";
+  topbar="true";
+
+Image:
+  name="back";
+  color="#ffffff";
+  bg_color="transparent";
+  width="24px";
+  height="24px";
+  location="8px, 8px";
+  src="icon_keyboard_left";
+
+Text:
+  name="control_wpv2nd";
+  color="#ffffff";
+  bg_color="transparent";
+  width="194px";
+  height="23px";
+  location="32px, 8px";
+  content="$0";
+  font_size="14";
+  text_align="left";
+
+Rect:
+  name="ir_button";
+  color="transparent";
+  bg_color="transparent";
+  width="75px";
+  height="75px";
+  location="15px, 49px";
+  radius="0";
+
+Rect:
+  name="ir_btn";
+  parent="ir_button";
+  color="transparent";
+  bg_color="#171717";
+  width="48px";
+  height="48px";
+  location="14px, 0px";
+  radius="8";
+
+Text:
+  name="ir_btn_text";
+  parent="ir_button";
+  color="#ffffff";
+  bg_color="transparent";
+  width="66px";
+  height="21px";
+  location="5px, 49px";
+  content="Text";
+  font_size="16";
+  text_align="top";
+
+Image:
+  name="control_czuesz";
+  parent="ir_btn_";
+  color="#ffffff";
+  bg_color="transparent";
+  width="32px";
+  height="32px";
+  location="8px, 7px";
+  src="icon_keyboard_left";
+  mode="stretch";
+
+Rect:
+  name="control_q8csia";
+  color="transparent";
+  bg_color="transparent";
+  width="75px";
+  height="75px";
+  location="108px, 49px";
+  radius="0";
+
+Rect:
+  name="control_niocp2";
+  parent="control_q8csia";
+  color="transparent";
+  bg_color="#171717";
+  width="48px";
+  height="48px";
+  location="14px, 0px";
+  radius="8";
+
+Image:
+  name="control_6iyhhg";
+  parent="control_niocp2";
+  color="#ffffff";
+  bg_color="transparent";
+  width="32px";
+  height="32px";
+  location="8px, 7px";
+  src="icon_keyboard_left";
+  mode="stretch";
+
+Text:
+  name="control_1e7tay";
+  parent="control_q8csia";
+  color="#ffffff";
+  bg_color="transparent";
+  width="66px";
+  height="21px";
+  location="5px, 49px";
+  content="Text";
+  font_size="16";
+  text_align="top";
+
+Rect:
+  name="control_1s5j7i";
+  color="#111111";
+  bg_color="#eeeeee";
+  width="250px";
+  height="27px";
+  location="31px, 133px";
+  radius="8";
+
+Image:
+  name="control_igp5xd";
+  parent="control_1s5j7i";
+  color="#111111";
+  bg_color="transparent";
+  width="24px";
+  height="24px";
+  location="106px, 0px";
+  mode="stretch";
+
+Image:
+  name="edit_btn";
+  color="#111111";
+  bg_color="transparent";
+  width="24px";
+  height="24px";
+  location="282px, 8px";
+  mode="stretch";

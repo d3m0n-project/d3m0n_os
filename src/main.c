@@ -17,9 +17,9 @@
 #include "fat32.h"
 #include <crypto.h>
 #include <random.h>
+#include "ir.h"
 
 t_conf		config;
-
 t_conf	*get_config()
 {
 	return	&config;
@@ -45,7 +45,6 @@ void	kernel_main(void *dtb)
 	t_window	main_window;
 
 	log("Loading kernel...\n", LOG_INFO);
-
 	show_kernel_status();
 
 	// load DTB
@@ -88,8 +87,6 @@ void	kernel_main(void *dtb)
 	
 	size_t	em_len = 0;
 	uint8_t	*em = pkcs1_v1_5_generate_em(&pub, (uint8_t *)"Hello World!", 12, &em_len);
-
-
 	BigInt *c = rsa_encrypt(em, em_len, &pub);
 	if (!c)
 		log("Failed to encrypt RSA\n", LOG_ERROR);
@@ -111,6 +108,8 @@ void	kernel_main(void *dtb)
 	log("'\n", 0);
 	
 	// ---
+
+
 
 	// load spash
 	BmpTexture	splash;
