@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en" style="overflow: clip;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>d3m0n App Studio</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101116; --panel:#1a1c24; --line:#303340; --soft:#a8afc1; --accent:#7c6cff; --canvas:#f7f7f4; }
+    * { box-sizing:border-box; } body { margin:0; min-width:0; background:var(--bg); color:#f4f5fa; font:14px Inter,system-ui,sans-serif; }
+    button,input,select,textarea { font:inherit; } button { cursor:pointer; color:inherit; border:1px solid var(--line); border-radius:7px; padding:8px 10px; background:#252836; } button:hover { border-color:#7166da; background:#30344a; } button.primary { background:var(--accent); border-color:var(--accent); } button.danger { color:#ff9eaa; }
+    header { min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 20px; border-bottom:1px solid var(--line); background:#161820; } header h1 { font-size:17px; margin:0; letter-spacing:.2px; white-space:nowrap; } header h1 span { color:var(--accent); } .actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; align-items:center; }
+    main { height:calc(100vh - 64px); display:grid; grid-template-columns:minmax(205px,245px) minmax(320px,1fr) minmax(250px,310px); }
+    aside { overflow:auto; padding:16px; background:var(--panel); } aside.left { border-right:1px solid var(--line); } aside.right { border-left:1px solid var(--line); }
+    h2 { margin:0 0 10px; font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--soft); } .section { margin-bottom:22px; }
+    .palette { display:grid; grid-template-columns:1fr 1fr; gap:7px; } .palette button { text-align:left; padding:9px; font-size:12px; }
+    .tree { display:flex; flex-direction:column; gap:3px; } .tree-row { display:flex; align-items:center; gap:5px; min-height:30px; border-radius:5px; padding:3px 5px; cursor:pointer; } .tree-row:hover,.tree-row.active { background:#2b2f3d; } .tree-row .kind { color:#9891ff; font-size:11px; min-width:69px; } .tree-row .name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .workspace { display:flex; flex-direction:column; min-width:0; min-height:480px; background:#12141b; } .toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:12px 18px; border-bottom:1px solid var(--line); color:var(--soft); } .toolbar label { display:flex; align-items:center; gap:5px; } .toolbar input { width:58px; }
+    .canvas-area { flex:1; min-height:440px; overflow:auto; display:grid; place-items:center; padding:35px; background-image:radial-gradient(#313542 1px,transparent 1px); background-size:16px 16px; }
+    #canvas-shell { padding:11px; background:#242735; border-radius:13px; box-shadow:0 16px 55px #0008; } #canvas { width:320px; height:480px; position:relative; overflow:hidden; background:#fff; color:#111; transform-origin:center; }
+    .node { position:absolute; min-width:8px; min-height:8px; outline:1px solid transparent; cursor:move; user-select:none; } .node.selected { outline:2px solid var(--accent); } .node:hover { outline:1px dashed #685cf5; } .node > .preview { width:100%; height:100%; overflow:hidden; pointer-events:none; } .node > textarea.preview { min-height:0; resize:none; opacity:1; } .node-handle { position:absolute; width:8px; height:8px; background:#fff; border:2px solid var(--accent); z-index:10; } .node-handle[data-handle="nw"] { top:-5px; left:-5px; cursor:nw-resize; } .node-handle[data-handle="ne"] { top:-5px; right:-5px; cursor:ne-resize; } .node-handle[data-handle="sw"] { bottom:-5px; left:-5px; cursor:sw-resize; } .node-handle[data-handle="se"] { bottom:-5px; right:-5px; cursor:se-resize; }
+    .empty { color:#767b8c; font-size:13px; text-align:center; line-height:1.5; }
+    #inspector { display:flex; flex-direction:column; gap:12px; } .inspector-header { display:flex; align-items:center; justify-content:space-between; gap:10px; padding-bottom:12px; border-bottom:1px solid var(--line); } .inspector-header h2 { margin:0; color:#f4f5fa; } .inspector-header button { padding:5px 8px; } .inspector-section { padding:12px; border:1px solid var(--line); border-radius:8px; background:#171923; } .inspector-section h2 { margin-bottom:12px; } .inspector-section .hint { margin:10px 0 0; } .field { display:grid; grid-template-columns:minmax(76px,.8fr) minmax(0,1.2fr); align-items:center; gap:10px; margin:9px 0; color:var(--soft); font-size:12px; } .field > label { min-width:0; overflow:hidden; text-overflow:ellipsis; } input,select,textarea { min-width:0; width:100%; color:#f5f6fb; background:#11131a; border:1px solid #393d4c; border-radius:5px; padding:7px; } input[type=color] { padding:2px; height:31px; } input[type=checkbox] { width:20px; min-width:20px; margin:0; } .color-field { display:flex; align-items:center; gap:8px; } .color-field input[type=color] { width:42px; flex:0 0 42px; } .color-field label { display:flex; align-items:center; gap:4px; white-space:nowrap; font-size:11px; } textarea { min-height:58px; resize:vertical; } .two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } .two .field { grid-template-columns:24px minmax(0,1fr); margin:0; } .hint { color:#858b9d; font-size:11px; line-height:1.45; margin:8px 0 0; } #file { display:none; }
+    .code-modal { position:fixed; inset:0; display:none; place-items:center; background:#000a; z-index:9; } .code-modal.open { display:grid; } .modal-card { width:min(760px,90vw); background:#1b1e29; border:1px solid #41465a; border-radius:10px; padding:16px; } .modal-card textarea { height:55vh; font:12px ui-monospace,monospace; } .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:10px; }
+
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+    @media (max-width: 900px) {
+      header { align-items:flex-start; } .actions { justify-content:flex-start; }
+      main { grid-template-columns:minmax(190px, .8fr) minmax(0, 1.4fr); }
+      aside.right { grid-column:1 / -1; border-left:0; border-top:1px solid var(--line); }
+      #inspector { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+      .inspector-header { grid-column:1 / -1; }
+    }
+    @media (max-width: 620px) {
+      header { padding:12px 14px; flex-direction:column; } .actions { width:100%; } .actions button { flex:1 1 auto; }
+      main { display:flex; flex-direction:column; min-height:0; }
+      aside { padding:14px; } aside.left { border-right:0; border-bottom:1px solid var(--line); }
+      .left .section { margin-bottom:16px; } .palette { grid-template-columns:repeat(3,minmax(0,1fr)); }
+      .workspace { order:-1; min-height:430px; } .toolbar { padding:10px 14px; } .canvas-area { min-height:380px; padding:25px 16px; place-items:start center; }
+      #canvas-shell { transform:scale(.9); transform-origin:top center; margin-bottom:-35px; }
+      #inspector { display:flex; } .inspector-header { grid-column:auto; }
+      .field { grid-template-columns:minmax(78px,30%) minmax(0,1fr); } .two { grid-template-columns:1fr; }
+      .modal-card { width:calc(100vw - 24px); padding:12px; }
+    }
+    .application-list{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:12px;
+      margin-top:16px;
+      max-height:65vh;
+      overflow:auto;
+    }
+
+    .application{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      background:#252836;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:10px;
+      cursor:pointer;
+    }
+
+    .application:hover{
+      border-color:var(--accent);
+      background:#30344a;
+    }
+
+    .application img{
+      width:48px;
+      height:48px;
+      object-fit:contain;
+      image-rendering:auto;
+      border-radius:6px;
+      background:#111;
+    }
+
+    .application .name{
+      font-weight:600;
+    }
+
+    .application .description{
+      font-size:12px;
+      color:var(--soft);
+    }
+  </style>
+</head>
+<body>
+  <header><h1>d3m0n <span>App Studio</span></h1><div class="actions"><button id="new-layout">New</button><button id="import">Import</button><input id="file" type="file" accept=".layout,.txt"><input id="image-file" type="file" accept="image/*" multiple hidden><button id="view-code">View code</button><button id="build" class="primary">Download layout</button></div></header>
+  <main>
+    <aside class="left">
+      <div class="section"><h2>Controls</h2><div class="palette" id="palette"></div><p class="hint">Add a control, then select its parent in the inspector. Containers such as Rect and Vscroll can hold full layouts.</p></div>
+      <div class="section"><h2>Layout tree</h2><div id="tree" class="tree"></div></div>
+      <div class="section"><h2>Templates</h2><div style="display:flex;gap:6px"><button id="make-template" style="flex:1">Create from selected parent</button><button id="import-template">Import</button></div><input id="template-file" type="file" accept=".template,.layout,.txt" hidden><div id="templates" class="tree" style="margin-top:8px"></div><p class="hint">A template stores a parent and its child layout for use from scripts or repeated screens.</p></div>
+    </aside>
+    <section class="workspace">
+      <div class="toolbar"><strong id="app-label">Untitled app</strong><span>·</span><label>Zoom <input id="zoom" type="number" value="2" min="1" max="3" step=".25">×</label><span id="selection-label">No selection</span></div>
+      <div class="canvas-area"><div id="canvas-shell"><div id="canvas" aria-label="app layout canvas"></div></div></div>
+    </section>
+    <aside class="right"><div id="inspector"><div class="empty">Select a control to edit it.<br>Click a control on the canvas or in the layout tree.</div></div></aside>
+  </main>
+  <div id="startup-modal" class="code-modal open">
+    <div class="modal-card" style="max-width:900px">
+      <h2>Open Application</h2>
+      <div id="application-list" class="application-list">
+        <div class="empty">Loading applications...</div>
+      </div>
+    </div>
+  </div>
+  <div id="code-modal" class="code-modal"><div class="modal-card"><h2>Generated layout</h2><textarea id="code-output" spellcheck="false"></textarea><div class="modal-actions"><button id="copy-code">Copy</button><button id="close-code">Close</button></div></div></div>
+  <script src="./app.js"></script>
+  <script>loadApplications();</script>
+</body>
+</html>
