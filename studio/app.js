@@ -6,6 +6,69 @@ const canvas = document.querySelector('#canvas'),
 const startupModal = document.getElementById("startup-modal");
 const applicationList = document.getElementById("application-list");
 var cached_apps = undefined;
+let currentAppFS = null;
+let currentLayoutPath = null;
+let currentSrcPath = null;
+let modifiedFiles = {};
+let config = {};
+
+function flattenFiles(entries, prefix = "", fs = {})
+{
+    for (const entry of entries)
+    {
+        if (!Array.isArray(entry))
+            continue;
+
+        const name = entry[0];
+        if (entry.length === 2 && typeof entry[1] === "string")
+        {
+            fs[prefix + name] = entry[1];
+            continue;
+        }
+        if (typeof name === "string")
+        {
+            flattenFiles(entry.slice(1), prefix + name + "/", fs);
+        }
+    }
+    return fs;
+}
+
+function openLayout(path)
+{
+    const content=currentAppFS[path];
+    if (!content)
+        return;
+
+    currentLayoutPath=path;
+    currentSrcPath=getSrcForLayout(path);
+    parse(content);
+    document.querySelector("#app-label").textContent = path;
+}
+
+function getLayoutFiles()
+{
+    return Object.keys(currentAppFS)
+        .filter(x => x.startsWith("layouts/"));
+}
+
+
+function getSrcForLayout(layout)
+{
+    let name = layout
+        .split("/")
+        .pop()
+        .replace(".layout", ".src");
+
+    let candidate = "src/" + name;
+    if (currentAppFS[candidate])
+        return candidate;
+
+    candidate = layout.replace(".layout", ".src");
+    if (currentAppFS[candidate])
+        return candidate;
+
+    return null;
+}
 
 function findFile(tree, filename) {
     for (const entry of tree) {
@@ -32,6 +95,23 @@ function findFile(tree, filename) {
     return null;
 }
 
+async function loadAppFilesystem(app)
+{
+    currentAppFS = {};
+
+    flattenFiles(app.files);
+    console.log(currentAppFS);
+    currentLayoutPath = "layouts/main.layout";
+    if (!currentAppFS[currentLayoutPath])
+    {
+        console.error("Missing main layout");
+        return;
+    }
+    currentSrcPath = "src/main.src";
+    parse(currentAppFS[currentLayoutPath]);
+    currentApplication = app;
+}
+
 async function loadApplications()
 {
     if (!startupModal.classList.contains("open"))
@@ -43,9 +123,7 @@ async function loadApplications()
         cached_apps = apps;
     }
     else
-    {
         apps = cached_apps;
-    }
 
     applicationList.innerHTML = "";
     for (const app of apps)
@@ -72,11 +150,8 @@ async function loadApplications()
 
         const card = document.createElement("div");
         card.className = "application";
-
         const img = document.createElement("img");
-
         let icon = null;
-
         if (manifest.icon)
             icon = findFile(app.files, manifest.icon);
 
@@ -90,22 +165,25 @@ async function loadApplications()
                 </svg>`);
 
         const info = document.createElement("div");
-
         info.innerHTML = `
             <div class="name">${manifest.name || "Unnamed App"}</div>
             <div class="description">${manifest.description || ""}</div>
         `;
 
         card.append(img, info);
-
         card.onclick = () => {
-            console.log("Selected application:", app);
             window.currentApplication = app;
             window.currentManifest = manifest;
 
-            startupModal.classList.remove("open");
-        };
+            currentAppFS = flattenFiles(app.files);
 
+            startupModal.classList.remove("open");
+
+            currentLayoutPath = "layouts/main.layout";
+            currentSrcPath = "src/main.src";
+
+            parse(currentAppFS[currentLayoutPath]);
+        };
         applicationList.appendChild(card);
     }
 
@@ -307,18 +385,19 @@ function node(type, over = {}) {
         id: uid(),
         type,
         parent: '',
-        x: 10,
-        y: 10,
+        x: 0,
+        y: 0,
         width: c.w,
         height: c.h,
+        position_anchor: null,
         units: {
             x: 'px',
             y: 'px',
             width: 'px',
             height: 'px'
         },
-        color: '#111111',
-        bg_color: ['Rect', 'Vscroll', 'Hscroll'].includes(type) ? '#eeeeee' : 'transparent',
+        color: '#ffffff',
+        bg_color: 'transparent',
         visible: true,
         enabled: true,
         content: c.content || '',
@@ -345,7 +424,7 @@ function add(type) {
     normalizeNodeNumbers(n);
     model.nodes.push(n);
     selectedId = n.id;
-    render()
+    render();
 }
 
 function preview(n) {
@@ -416,6 +495,40 @@ function nodeEl(n) {
 function drawCanvas() {
     canvas.style.background = model.window.bg_color === 'transparent' ? 'transparent' : pickerColor(model.window.bg_color || '#fff');
     canvas.replaceChildren(...model.nodes.map(nodeEl))
+}
+
+function drawAppFilesystem()
+{
+    const old = document.querySelector("#app-files");
+    if (old)
+        old.remove();
+
+    if (!currentAppFS)
+        return;
+
+    const container = document.createElement("div");
+    container.id="app-files";
+    container.className="section";
+    container.innerHTML="<h2>Files</h2>";
+    const tree=document.createElement("div");
+    tree.className="tree";
+
+    Object.keys(currentAppFS)
+    .filter(x=>x.startsWith("layouts/"))
+    .forEach(file=>{
+        const row=document.createElement("div");
+        row.className="tree-row";
+        row.innerHTML=`
+            <span class="kind">Layout</span>
+            <span class="name">${file}</span>
+        `;
+
+        row.onclick=()=>openLayout(file);
+        tree.append(row);
+    });
+
+    container.append(tree);
+    document.querySelector(".left").prepend(container);
 }
 
 function drawTree() {
@@ -842,9 +955,14 @@ function readLayout(text) {
         Object.entries(values).forEach(([key, value]) => {
             if (key === 'name') n.id = value || uid();
             else if (key === 'location') {
-                const [x, y] = value.split(',').map(dimension);
-                n.x = x.value; n.y = y.value;
-                n.units.x = x.unit; n.units.y = y.unit;
+                if (value == "top_left" || value == "top" || value == "top_right" || value == "left" || value == "center" || value == "right" || value == "bottom_left" || value == "bottom" || value == "bottom_right")
+                    n.anchor = value;
+                else
+                {
+                    const [x, y] = value.split(',').map(dimension);
+                    n.x = x.value; n.y = y.value;
+                    n.units.x = x.unit; n.units.y = y.unit;
+                }
             } else if (key === 'width' || key === 'height') {
                 const size = dimension(value);
                 n[key] = size.value; n.units[key] = size.unit;
@@ -934,7 +1052,7 @@ function layout(nodes, window = false) {
             bg_color: n.bg_color,
             width: fmt(n.width, n.units.width),
             height: fmt(n.height, n.units.height),
-            location: `${fmt(n.x,n.units.x)}, ${fmt(n.y,n.units.y)}`
+            location: (n.anchor)? n.anchor : `${fmt(n.x,n.units.x)}, ${fmt(n.y,n.units.y)}`
         };
         for (const [k, v] of Object.entries({
                 ...base,
@@ -952,13 +1070,15 @@ function generate() {
     return layout(model.nodes, true)
 }
 
-function render() {
+function render()
+{
     model.nodes.forEach(normalizeNodeNumbers);
     synchronizeTemplates();
     drawCanvas();
     drawTree();
     drawTemplates();
     drawInspector();
+    drawAppFilesystem();
     document.querySelector('#app-label').textContent = model.window.title || model.window.name || 'Untitled app';
     document.querySelector('#selection-label').textContent = selectedId === 'window' ? 'Window selected' : selectedId ? `${byId(selectedId).type} selected` : 'No selection'
 }
@@ -1031,6 +1151,81 @@ document.querySelector('#file').onchange = e => {
     }
     e.target.value = '';
 };
+
+document.querySelector("#edit-src").onclick=()=>{
+      if (!currentSrcPath)
+      {
+          alert("No source file associated");
+          return;
+      }
+
+      document.querySelector("#src-title").textContent=currentSrcPath;
+
+      document.querySelector("#src-editor").value=currentAppFS[currentSrcPath];
+
+      document.querySelector("#src-modal").classList.add("open");
+  };
+
+
+  document.querySelector("#close-src").onclick=()=>{
+      document.querySelector("#src-modal").classList.remove("open");
+  };
+
+
+  document.querySelector("#save-src").onclick=()=>{
+      currentAppFS[currentSrcPath] = document.querySelector("#src-editor").value;
+      document.querySelector("#src-modal").classList.remove("open");
+  };
+
+  document.querySelector("#save-app").onclick=()=>{
+    if (!currentLayoutPath)
+        return;
+
+    currentAppFS[currentLayoutPath]=generate();
+    modifiedFiles={
+        ...currentAppFS
+    };
+    console.log("Modified app files:", modifiedFiles);
+
+    /*
+      Later:
+      POST modifiedFiles to Flask:
+      /api/save
+    */
+};
+
+async function get_icon(name)
+{
+    let icon_pack = config['icon_pack'];
+    if (!icon_pack)
+        return null;
+
+    let res = await fetch(`/api/icons/${name}`);
+    if (!res.ok)
+        throw new Error("Failed to load icon");
+
+    let blob = await res.blob();
+    return URL.createObjectURL(blob);
+}
+
+async function get_config()
+{
+    let res = await fetch("/api/config");
+    let text = await res.text();
+    let lines = text.split('\n');
+    config = {};
+    lines.forEach(l => {
+        l = l.trim();
+        if (!l.startsWith('#') && l.includes(':'))
+        {
+            let k = l.split(":")[0].trim();
+            let v = l.split(":")[1].trim();
+            config[k] = v;
+        }
+    });
+}
+
+get_config();
 document.querySelector('#zoom').oninput = e => document.querySelector('#canvas-shell').style.transform = `scale(${e.target.value})`;
 canvas.onclick = () => select('window');
 render();

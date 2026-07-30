@@ -4,5 +4,7 @@ obj/
 build/
 export/
 rootfs/apps/
+rootfs/security/*
 firmware/kernel8.img
 firmware/kernel.img
+

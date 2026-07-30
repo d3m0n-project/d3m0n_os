@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>d3m0n App Studio</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <style>
     :root { color-scheme: dark; --bg:#101116; --panel:#1a1c24; --line:#303340; --soft:#a8afc1; --accent:#7c6cff; --canvas:#f7f7f4; }
     * { box-sizing:border-box; } body { margin:0; min-width:0; background:var(--bg); color:#f4f5fa; font:14px Inter,system-ui,sans-serif; }
@@ -100,7 +101,14 @@
       <div class="section"><h2>Templates</h2><div style="display:flex;gap:6px"><button id="make-template" style="flex:1">Create from selected parent</button><button id="import-template">Import</button></div><input id="template-file" type="file" accept=".template,.layout,.txt" hidden><div id="templates" class="tree" style="margin-top:8px"></div><p class="hint">A template stores a parent and its child layout for use from scripts or repeated screens.</p></div>
     </aside>
     <section class="workspace">
-      <div class="toolbar"><strong id="app-label">Untitled app</strong><span>·</span><label>Zoom <input id="zoom" type="number" value="2" min="1" max="3" step=".25">×</label><span id="selection-label">No selection</span></div>
+      <div class="toolbar">
+        <strong id="app-label">Untitled app</strong>
+        <span>·</span>
+        <label>Zoom <input id="zoom" type="number" value="2" min="1" max="3" step=".25">×</label>
+        <span id="selection-label">No selection</span>
+        <button id="edit-src">Code</button>
+        <button id="save-app" class="primary">Save</button>
+      </div>
       <div class="canvas-area"><div id="canvas-shell"><div id="canvas" aria-label="app layout canvas"></div></div></div>
     </section>
     <aside class="right"><div id="inspector"><div class="empty">Select a control to edit it.<br>Click a control on the canvas or in the layout tree.</div></div></aside>
@@ -110,6 +118,16 @@
       <h2>Open Application</h2>
       <div id="application-list" class="application-list">
         <div class="empty">Loading applications...</div>
+      </div>
+    </div>
+  </div>
+  <div id="src-modal" class="code-modal">
+    <div class="modal-card">
+      <h2 id="src-title">Source</h2>
+      <textarea id="src-editor" spellcheck="false"></textarea>
+      <div class="modal-actions">
+        <button id="save-src">Save</button>
+        <button id="close-src">Close</button>
       </div>
     </div>
   </div>

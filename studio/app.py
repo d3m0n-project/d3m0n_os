@@ -15,6 +15,7 @@ app = Flask(__name__)
 BASE_DIR = Path(__file__).resolve().parent
 ROOTFS_CONFIG = (BASE_DIR / "../rootfs/config").resolve()
 APPS_DIR = (BASE_DIR / "../rootfs/apps").resolve()
+icon_pack = None
 
 
 @app.route("/")
@@ -25,6 +26,11 @@ def index():
 @app.route("/style.css")
 def style():
     return send_from_directory(BASE_DIR, "style.css")
+
+
+@app.route("/favicon.ico")
+def icon():
+    return send_from_directory(BASE_DIR, "favicon.ico")
 
 
 @app.route("/app.js")
@@ -56,19 +62,16 @@ def build_tree(path: Path):
 
 
 def read_file(path: Path):
-    # Images: resize then return base64
     if path.suffix.lower() in IMAGE_EXTENSIONS:
         try:
             with Image.open(path) as img:
-                img.thumbnail((512, 512))  # Max width/height
+                img.thumbnail((512, 512))
 
-                # Convert unsupported modes
                 if img.mode not in ("RGB", "RGBA"):
                     img = img.convert("RGB")
 
                 buffer = io.BytesIO()
 
-                # JPEG is much smaller for photos
                 if path.suffix.lower() in {".jpg", ".jpeg"}:
                     img.save(buffer, format="JPEG", quality=75, optimize=True)
                     mime = "image/jpeg"
@@ -95,6 +98,24 @@ def read_file(path: Path):
         }
 
 
+@app.route("/api/icons/<path:filename>")
+def icons(filename):
+    global icon_pack
+    if not icon_pack:
+        if not ROOTFS_CONFIG.exists():
+            return Response("Config file not found", status=404)
+
+        lines = ROOTFS_CONFIG.read_text(encoding="utf-8").split('\n')
+        for line in lines:
+            line = line.strip()
+            k, v = tuple([p.strip() for p in line.split(':')])
+            if k == "icon_pack":
+                icon_pack = v
+    if not icon_pack or '.' in icon_pack or '/' in icon_pack:
+        return Response("icon_pack not found", status=404)
+    return send_from_directory(f"../rootfs/theme/{icon_pack}/", filename)
+
+
 @app.route("/api/applications")
 def applications():
     apps = []
@@ -102,7 +123,6 @@ def applications():
     if not APPS_DIR.exists():
         return jsonify([])
 
-    # Find every file named "app" anywhere under ../rootfs/apps
     for manifest_path in APPS_DIR.rglob("app"):
         if not manifest_path.is_file():
             continue
@@ -115,7 +135,6 @@ def applications():
         )
 
         hierarchy = []
-
         for item in sorted(app_dir.iterdir(), key=lambda p: (p.is_file(), p.name)):
             if item.is_dir():
                 hierarchy.append(build_tree(item))
@@ -129,7 +148,6 @@ def applications():
             "manifest": manifest,
             "files": hierarchy
         })
-
     return jsonify(apps)
 
 

@@ -8,7 +8,7 @@ QEMU				= qemu-system-arm
 DEBUG				= 0
 DEBUG_OUTLINE		= 0
 USE_ADMIN			= 1
-LOGFILE_ENABLED		= 1
+LOGFILE_ENABLED		= 0 # TODO: remove this: too slow
 SHOW_IMAGE_STATUS	= 0
 TRACK_MEMORY_USAGE	= 0
 
@@ -35,7 +35,7 @@ D_FILES				= $(O_FILES:.o=.d)
 
 DISK				?= disk.img
 
-VERSION				= 2.0.8
+VERSION				= 2.0.9
 VERSION_NAME		= outset
 
 IMG_ROOT_NAME		= d3m0n_os_$(VERSION_NAME)_$(VERSION).img
@@ -145,7 +145,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s
 	@mkdir -p $(dir $@)
 	@echo "$(COLOR_INFO)[AS] $<$(R)"
 	@$(CC) $(C_FLAGS) -c $< -o $@
-
 
 applications:
 	@rm -rf rootfs/apps/ > /dev/null
