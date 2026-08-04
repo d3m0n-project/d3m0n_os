@@ -19,6 +19,9 @@
 #include <random.h>
 #include "ir.h"
 
+#include "usermode.h"
+
+
 t_conf		config;
 t_conf	*get_config()
 {
@@ -70,6 +73,8 @@ void	kernel_main(void *dtb)
 	}
 
 	list_dir("/");
+
+	test_func(); // TODO: remove me
 
 	// init framebuffer
 	if (display_init())			panic("Could not initialize display\n");

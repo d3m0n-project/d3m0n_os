@@ -23,6 +23,8 @@ _vectors:
 .extern stack_top
 .extern _vectors
 
+.extern swi_handler
+
 
 _start:
 	# set supervisor mode, disable interrupts
@@ -94,15 +96,6 @@ hang:
 undefined_handler:
 	stmfd	sp!, {r0-r12, lr}
 	mov	r1, #0
-	mov	r0, sp
-	bl	kernel_panic
-	b	.
-
-
-
-swi_handler:
-	stmfd	sp!, {r0-r12, lr}
-	mov	r1, #1
 	mov	r0, sp
 	bl	kernel_panic
 	b	.
