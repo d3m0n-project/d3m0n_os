@@ -17,7 +17,7 @@ void test_func(void)
 {
 	log("launching in user mode\n", LOG_INFO);
 
-	int fd = open("test", O_READ);
+	int fd = open("test_app", O_READ);
 	if (fd < 0)
 	{
 		log("err\n", 0);

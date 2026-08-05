@@ -2,14 +2,20 @@
 #include "log.h"
 #include "usermode.h"
 
-int	sys_exit(uint32_t mode, uint32_t, uint32_t, uint32_t)
+int	sys_exit(uint32_t mode, uint32_t a1, uint32_t a2, uint32_t a3)
 {
+	(void)a1;
+	(void)a2;
+	(void)a3;
 	log("exited with status code: %llu\n", LOG_WARNING, mode);
 	return (int)mode;
 }
 
-int	sys_print(uint32_t str, uint32_t, uint32_t, uint32_t)
+int	sys_print(uint32_t str, uint32_t a1, uint32_t a2, uint32_t a3)
 {
+	(void)a1;
+	(void)a2;
+	(void)a3;
 	log((char *)str, LOG_NONE);
 	return 0;
 }

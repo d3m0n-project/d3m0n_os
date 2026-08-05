@@ -1,9 +1,9 @@
 #include "elf.h"
 
-int	detect_type(int fd)
+char	elf_get_binary_code(int fd)
 {
 	char	*buffer;
-	size_t	buffer_size = 4096;
+	size_t	buffer_size = 5;
 	size_t	bytes_read;
 	size_t	total_read = 0;
 
@@ -14,11 +14,10 @@ int	detect_type(int fd)
 	while ((bytes_read = read(fd, buffer + total_read, buffer_size - total_read)) > 0)
 	{
 		total_read += bytes_read;
-
 		if (total_read == buffer_size)
 		{
 			size_t new_size = buffer_size * 2;
-			char *new_buffer = ft_realloc(buffer, new_size);
+			char *new_buffer = ft_realloc(buffer, total_read, new_size);
 			if (!new_buffer)
 			{
 				free(buffer);
@@ -48,12 +47,13 @@ int	detect_type(int fd)
 		if (identification_header.BITS_ARCH == 1) // 32 bits
 		{
 			elf_header_32	header;
-			if (total_read < sizeof(elf_header_identification) + sizeof(elf_header_32))
+			if (total_read < sizeof(elf_header_32))
 			{
 				free(buffer);
 				return 1;
 			}
 			ft_memcpy(&header, buffer, sizeof(elf_header_32));
+
 			if (identification_header.ENDIANNESS == 2)
 				parse_elf_to_lsb(&header, 0, 0);
 			print_elf_file_report(&header);
@@ -105,17 +105,17 @@ int	detect_type(int fd)
 				uint32_t name_offset = u32(sh->NAME);
 				char *name = shstrtab + name_offset;
 
-				log("[%2u] %s %u\n", 0, i, name, u32(sh->OFFSET));
+				log("[%u] %s %u\n", 0, i, name, u32(sh->OFFSET));
 				if (ft_strcmp(name, ".text") == 0)
 				{
 					// display entry point code
 					unsigned char	*sh_bytes = (unsigned char *)buffer + u32(sh->OFFSET);
 					for (uint32_t i=0; i<u32(sh->SIZE); i++)
-						log("%x ", sh_bytes[i]);
+						log("%x ", 0, sh_bytes[i]);
 					//x86_disasm(sh_bytes, u32(sh->SIZE));
 					//for (int i=0; i < u32(sh->SIZE); i++)
 					//	log("%.2x ", sh_bytes[i]);
-					//log("\n");
+					log("\n", 0);
 				}
 			}
 		}

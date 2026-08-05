@@ -78,6 +78,6 @@ t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *));
 
 void	cleanup_splitted(char **splitted);
 
-char	*ft_realloc(char *buffer, size_t new_size);
+char	*ft_realloc(char *buffer, size_t old_size, size_t new_size);
 
 #endif
