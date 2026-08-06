@@ -2,10 +2,9 @@ ENTRY(_start)
 
 SECTIONS
 {
-	. = 0x8000;
+	. = 0x00000000;
 
-
-	.vectors : ALIGN(32)
+	.vectors 0x0 : ALIGN(32)
 	{
 		KEEP(*(.vectors))
 	}

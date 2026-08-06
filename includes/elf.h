@@ -5,6 +5,7 @@
 #include "memory.h"
 #include "types.h"
 #include "filesystem.h"
+#include "proc.h"
 
 #define ELF_SIG "\x7F""ELF"
 
@@ -67,14 +68,45 @@ typedef struct elf_header_32
 
 #pragma pack(pop)
 
+typedef enum
+{
+	ET_NONE=0,        // No file type
+	ET_REL=1,         // Relocatable file
+	ET_EXEC=2,        // Executable file
+	ET_DYN=3,         // Shared object file
+	ET_CORE=4,        // Core file
+	ET_LOOS=0xfe00,   // Operating system-specific
+	ET_HIOS=0xfeff,   // Operating system-specific
+	ET_LOPROC=0xff00, // Processor-specific
+	ET_HIPROC=0xffff  // Processor-specific
+}	e_elf_header_type;
+
+typedef enum
+{
+	PT_NULL=0,
+	PT_LOAD=1,
+	PT_DYNAMIC=2,
+	PT_INTERP=3,
+	PT_NOTE=4,
+	PT_SHLIB=5,
+	PT_PHDR=6,
+	PT_TLS=7,
+	PT_LOOS=0x60000000,
+	PT_HIOS=0x6fffffff,
+	PT_LOPROC=0x70000000,
+	PT_HIPROC=0x7fffffff
+}	e_elf_program_header_type;
+
 
 /* functions */
-int			detect_type(int fd);
-void		print_elf_file_report(elf_header_32 *header);
-void		parse_elf_to_lsb(elf_header_32 *header, elf_program_header_32 *prog_h, elf_section_header_32 *section_h);
+int					parse_elf_headers(int fd);
+struct s_process	*elf_to_proc(char *elf_path);
+void				print_elf_file_report(elf_header_32 *header);
+void				parse_elf_to_lsb(elf_header_32 *header, elf_program_header_32 *prog_h, elf_section_header_32 *section_h);
+
 
 /* utils */
-uint16_t	u16(const char b[2]);
-uint32_t	u32(const char b[4]);
+uint16_t			u16(const char b[2]);
+uint32_t			u32(const char b[4]);
 
 #endif

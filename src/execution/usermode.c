@@ -1,6 +1,6 @@
 #include "types.h"
 #include "log.h"
-#include "elf/elf.h"
+#include "elf.h"
 
 extern void	enter_user(uint32_t entry, uint32_t stack);
 
@@ -24,9 +24,12 @@ void test_func(void)
 		while (1) {}
 	}
 
-	detect_type(fd);
+	//uint8_t	*code;
+	if (parse_elf_headers(fd))
+		log("err while parsing elf\n", LOG_ERROR);
+		
 
-	//uint8_t	code[] = {};
+	//[] = {};
 
 	enter_user((uint32_t)test_code, (uint32_t)(user_stack + sizeof(user_stack)));
 	log("finished\n", LOG_INFO);

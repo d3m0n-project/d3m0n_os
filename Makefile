@@ -29,7 +29,7 @@ C_FILES				= $(shell find $(SRC_DIR) -name "*.c")
 S_FILES				= $(shell find $(SRC_DIR) -name "*.s" -o -name "*.S")
 
 O_FILES				= $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_FILES))
-O_FILES				+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/%.o,$(S_FILES))
+O_FILES				+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/asm/%.o,$(S_FILES))
 
 D_FILES				= $(O_FILES:.o=.d)
 
@@ -48,7 +48,7 @@ IMG_SIZE			= 128
 
 LD_FLAGS			= -T linker.ld -lgcc -Wl,-e,_start
 C_FLAGS				= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 -g3 \
-					  -Iincludes -mcpu=arm1176jzf-s \
+					  -Iincludes -mcpu=arm1176jzf-s -marm -fno-omit-frame-pointer -mno-apcs-frame \
 					  -MMD -MD \
 					  -D DEBUG=$(DEBUG) \
 					  -D DEBUG_OUTLINE=$(DEBUG_OUTLINE) \
@@ -141,7 +141,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
 
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.s
+$(OBJ_DIR)/asm/%.o: $(SRC_DIR)/%.s
 	@mkdir -p $(dir $@)
 	@echo "$(COLOR_INFO)[AS] $<$(R)"
 	@$(CC) $(C_FLAGS) -c $< -o $@

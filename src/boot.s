@@ -3,14 +3,26 @@
 .global _vectors
 
 _vectors:
-	ldr	pc, =_start
-	ldr	pc, =undefined_handler
-	ldr	pc, =swi_handler
-	ldr	pc, =prefetch_abort_handler
-	ldr	pc, =data_abort_handler
-	ldr	pc, =reserved_handler
-	ldr	pc, =irq_handler
-	ldr	pc, =fiq_handler
+	ldr pc, [pc,#0x18]
+	ldr pc, [pc,#0x18]
+	ldr pc, [pc,#0x18]
+	ldr pc, [pc,#0x18]
+	ldr pc, [pc,#0x18]
+	ldr pc, [pc,#0x18]
+	ldr pc, [pc,#0x18]
+	ldr pc, [pc,#0x18]
+
+	.align 2
+	.word _start
+	.word undefined_handler
+	.word swi_handler
+	.word prefetch_abort_handler
+	.word data_abort_handler
+	.word reserved_handler
+	.word irq_handler
+	.word fiq_handler
+
+.size _vectors, .-_vectors
 
 
 .section .text.boot
@@ -23,6 +35,10 @@ _vectors:
 .extern stack_top
 .extern _vectors
 
+.global irq_handler
+.type irq_handler, %function
+.extern current_process
+
 .extern swi_handler
 
 
@@ -31,15 +47,21 @@ _start:
 	msr	cpsr_c, #0xD3
 
 
-	# setup base vectors address
-	ldr	r0, =_vectors
-	mcr	p15, 0, r0, c12, c0, 0
+	# copy exception vectors to 0x00000000
+	ldr r0, =_vectors
+	mov r1, #0
+	mov r2, #64
 
+copy_vectors:
+	ldrb r3, [r0], #1
+	strb r3, [r1], #1
+	subs r2, r2, #1
+	bne copy_vectors
 
-	# setup stacks
+stack_setup:
 	ldr	r0, =stack_top
 
-
+vector_table_defs:
 	/* FIQ */
 	msr	cpsr_c, #0xD1
 	mov	sp, r0
@@ -132,14 +154,45 @@ reserved_handler:
 	b	.
 
 
-
 irq_handler:
-	stmfd	sp!, {r0-r12, lr}
-	mov	r1, #5
-	mov	r0, sp
-	bl	kernel_panic
-	b	.
+	sub lr, lr, #4
 
+	/* Save registers */
+	stmfd sp!, {r0-r12, lr}
+
+	/* Save SPSR */
+	mrs r0, spsr
+	stmfd sp!, {r0}
+
+
+	/* current_process->context = sp */
+	ldr r1, =current_process
+	ldr r1, [r1]
+
+	str sp, [r1]
+
+
+	bl irq_dispatch
+
+
+	/* load new process */
+	ldr r1, =current_process
+	ldr r1, [r1]
+
+	ldr sp, [r1]
+
+
+	/* restore SPSR */
+	ldmfd sp!, {r0}
+	msr spsr_cxsf, r0
+
+
+	/* restore registers */
+	ldmfd sp!, {r0-r12, lr}
+
+
+	/* return from IRQ */
+	subs pc, lr, #0
 
 fiq_handler:
 	stmfd	sp!, {r0-r12, lr}

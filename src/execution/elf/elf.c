@@ -1,4 +1,6 @@
 #include "elf.h"
+#include "time.h"
+#include "proc.h"
 
 static const char *get_file_type(char file_type[2])
 {
@@ -190,4 +192,28 @@ void	parse_elf_to_lsb(elf_header_32 *header, elf_program_header_32 *prog_h, elf_
 		reverse_bytes(section_h->ADDRALIGN, 4);
 		reverse_bytes(section_h->ENTSIZE, 4);
 	}
+}
+
+
+void	test(void)
+{
+	while (1) {
+		log("A", 0);
+		usleep(5000);
+	};
+}
+void	test2(void)
+{
+	while (1) {
+		log("B", 0);
+		usleep(5000);
+	};
+}
+
+t_process	*elf_to_proc(char *elf_path)
+{
+	(void)elf_path;
+	process_create(test, "test1");
+	t_process	*proc = process_create(test2, "test2");
+	return proc;
 }

@@ -18,6 +18,8 @@
 #include <crypto.h>
 #include <random.h>
 #include "ir.h"
+#include "proc.h"
+#include "IRQ.h"
 
 #include "usermode.h"
 
@@ -74,8 +76,24 @@ void	kernel_main(void *dtb)
 
 	list_dir("/");
 
-	test_func(); // TODO: remove me
 
+
+
+	timer_init();
+	enable_irq();
+
+	elf_to_proc("test_app");
+
+	process_list();
+
+	scheduler_start();
+	
+	//test_func(); // TODO: remove me
+
+	
+	
+	
+	
 	// init framebuffer
 	if (display_init())			panic("Could not initialize display\n");
 	else						log("Display initialized!\n", LOG_SUCCESS);
