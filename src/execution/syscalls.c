@@ -326,7 +326,10 @@ int	syscall_dispatch(uint32_t number, uint32_t a0, uint32_t a1, uint32_t a2, uin
 int	syscall_handler(syscall_frame_t *frame)
 {
 	int ret = syscall_dispatch(frame->r7, frame->r0, frame->r1, frame->r2, frame->r3);
-	if (frame->r7 == SYSCALL_EXIT_INDEX && !current_process)
+	/* SYS_EXIT terminates the calling process.
+	 * Always return the exit flag so the assembly stub performs a context
+	 * switch to the next scheduled process (which sys_exit already selected). */
+	if (frame->r7 == SYSCALL_EXIT_INDEX)
 		return 1;
 
 	frame->r0 = ret;

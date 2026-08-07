@@ -353,6 +353,7 @@ parse_error:
 
 int	rsa_private_key_require(char *filename, t_RSA_private_key *prv, t_RSA_public_key *pub)
 {
+	log("'%s' 0x%x\n", 0, filename, filename);
 	if (file_exists(filename))
 		return (rsa_private_key_read_der(filename, prv, pub) >= 0);
 	else

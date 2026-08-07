@@ -9,6 +9,7 @@ kernel_cpsr:
 
 .section .text
 .extern syscall_handler
+.extern current_process
 
 enter_user:
 	@ save kernel continuation
@@ -55,13 +56,27 @@ swi_handler:
 
 exit_user_mode:
 	add sp, sp, #(14*4)
-	@ restore kernel CPSR
-	ldr r0, =kernel_cpsr
-	ldr r1, [r0]
-	msr cpsr_cxsf, r1
 
+	msr cpsr_c,#0xD2                 @ switch to IRQ mode
 
-	@ jump back to kernel
-	ldr r0, =kernel_return
-	ldr lr, [r0]
-	bx lr
+	ldr r1, =current_process
+	ldr r1, [r1]
+
+	ldr sp, [r1,#0]                  @ proc->sp (saved IRQ frame)
+
+	ldmfd sp!,{r0}                   @ SPSR
+	msr spsr_cxsf,r0
+
+	ldr r2,[r1,#16]                  @ proc->mode
+	cmp r2,#0                        @ PROCESS_KERNEL?
+	beq 1f
+
+	@ user process
+	msr cpsr_c,#0xDF                 @ SYS mode
+	ldr r0,[r1,#4]                   @ proc->user_sp
+	mov sp,r0
+	msr cpsr_c,#0xD2                 @ back to IRQ mode
+
+1:
+	ldmfd sp!,{r0-r12,lr}
+	subs pc,lr,#0

@@ -155,46 +155,27 @@ reserved_handler:
 
 
 irq_handler:
-
-    /*
-     * IRQ return address correction
-     */
+    @ IRQ return address correction
     sub lr, lr, #4
 
 
-    /*
-     * Save interrupted context
-     *
-     * IRQ stack:
-     *
-     * sp ->
-     *   SPSR
-     *   r0-r12
-     *   lr
-     */
+    @ Save interrupted context
     stmfd sp!, {r0-r12,lr}
 
     mrs r0, spsr
     stmfd sp!, {r0}
 
 
-    /*
-     * current_process
-     */
     ldr r1, =current_process
     ldr r1, [r1]
 
 
-    /*
-     * Save IRQ frame
-     */
+    @Save IRQ frame
     str sp, [r1,#0]
 
 
 
-    /*
-     * Save SYS stack only for USER processes
-     */
+    @ USER processes
     ldr r2, [r1,#16]       @ mode
 
     cmp r2, #0             @ PROCESS_KERNEL
@@ -202,109 +183,61 @@ irq_handler:
 
 
 
-    /*
-     * Switch to SYS mode
-     */
+    @ switch to SYS mode
     mrs r2,cpsr
     bic r2,r2,#0x1f
     orr r2,r2,#0x1f        @ SYS
     msr cpsr_c,r2
 
 
-    /*
-     * Save user stack
-     */
+    @ Save user stack
     mov r3,sp
     str r3,[r1,#4]
 
 
-
-    /*
-     * Return to IRQ mode
-     */
+    @ return to IRQ mode
     msr cpsr_c,#0xD2
 
 
-
 no_save_user_stack:
-
-
-
-    /*
-     * scheduler
-     */
     bl irq_dispatch
 
-
-
-    /*
-     * Reload current process
-     */
     ldr r1, =current_process
     ldr r1, [r1]
 
-
-
-    /*
-     * Restore IRQ frame
-     */
+	@ restore IRQ frame
     ldr sp,[r1,#0]
 
-
-
-    /*
-     * Restore SPSR
-     */
+	@ restore SPSR
     ldmfd sp!,{r0}
     msr spsr_cxsf,r0
 
 
 
-    /*
-     * Restore SYS stack only for USER processes
-     */
+    @ USER processes
     ldr r2,[r1,#16]
 
     cmp r2,#0
     beq no_restore_user_stack
 
 
-
-    /*
-     * Switch SYS mode
-     */
+    @ switch SYS mode
     msr cpsr_c,#0xDF
 
 
-    /*
-     * Restore user stack
-     */
+    @ restore user stack
     ldr r0,[r1,#4]
     mov sp,r0
 
 
 
-    /*
-     * Back IRQ
-     */
+    @ back IRQ
     msr cpsr_c,#0xD2
 
 
-
 no_restore_user_stack:
-
-
-
-    /*
-     * Restore registers
-     */
+    @ restore regs
     ldmfd sp!,{r0-r12,lr}
-
-
-
-    /*
-     * Return from IRQ
-     */
     subs pc,lr,#0
 
 fiq_handler:

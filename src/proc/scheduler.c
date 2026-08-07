@@ -76,7 +76,6 @@ void schedule(void)
 {
 	t_process *old = current_process;
 
-	//log("switch %s -> ", 0, current_process->proc_name, 0);
 	if (old && old->state == PROC_RUNNING)
 		old->state = PROC_READY;
 
@@ -112,14 +111,10 @@ void timer_handler(void)
 	if (!current_process)
 		return;
 
-	//log("%s sp=%x\n", 0,
-    //    current_process->proc_name,
-    //    current_process->sp);
 
 	if (--current_process->time_slice <= 0)
 	{
 		current_process->time_slice = TIME_SLICE_MS;
-		process_list();
 		schedule();
 	}
 }

@@ -1,5 +1,6 @@
 # d3m0n OS TODO list
 
+## Original project TODO
 - [x] Add dynamic layout, with possiblity to change layout using script.
 	- [x] Could use small layout file as templates and load them dynamically using scripts
 	- [x] Add multiple windows per app
@@ -18,7 +19,7 @@
 	- [ ] Add `inherit` keyword for children
 
 - [ ] IR
-	- [ ] Use hardware PWM pin 12 to generate 38Khz carrier. (also change pin 5->12) 
+	- [ ] Use hardware PWM pin 12 to generate 38Khz carrier. (also change pin 5->12)
 
 - [ ] Optimisations
 	- [x] Load all icons at startup for faster display (keep in memory)
@@ -27,7 +28,6 @@
 
 - [ ] Fix fileystem to avoid bugs & critical vulnerabilities
 
-
 - [ ] Docs
 	- [ ] Usage docs
 		- [ ] Add a how to create an app, provide tools & examples
@@ -35,7 +35,6 @@
 
 Docs:
 	window events array: `index 0 = close_window` if app is not launcher
-
 
 ## Known bugs
 - [ ] Cant add a Vscroll inside of vscroll since p_scroll_offset is shared between children

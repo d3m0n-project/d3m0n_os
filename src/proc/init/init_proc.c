@@ -40,6 +40,8 @@ void	rsa_require_thread(void)
 	for (size_t i=0; i<out_len; i++)
 		log("%c", 0, msg[i]);
 	log("'\n", 0);
+
+	process_exit_current(0);
 }
 
 void	app_and_icon_loader_thread(void)
@@ -57,6 +59,8 @@ void	app_and_icon_loader_thread(void)
 		log("Loaded icons in %ims\n", LOG_INFO, (time_us() - t) / 1000);
 	if (icon_pack_path)
 		kfree(icon_pack_path);	
+	
+	process_exit_current(0);
 }
 
 
@@ -66,23 +70,20 @@ void	init_proc(void)
 	t_window	main_window;
 
 	log("[init] started at %llums\n", LOG_SUCCESS, time_us() / 1000);
-	log("init_proc is at 0x%x\n", 0, (uint32_t)init_proc);
 
-	elf_to_proc("test_app"); // TODO: change me
+	//elf_to_proc("test_app"); // TODO: change me
+	
+
+	process_create(rsa_require_thread,          "SECURITY.RSA", 1);
+	//process_create(app_and_icon_loader_thread,  "LOADER.app+icon", 1);
+	
 	process_list();
 
 	while (1)
 	{
-		log("init...\n", 0);
+		log("...\n", 0);
 		usleep(1000000);
 	}
-
-	process_create(rsa_require_thread, "[SECURITY]RSA", 1);
-
-
-	process_create(app_and_icon_loader_thread, "[LOADER]app+icon", 1);
-	
-	
 	
 	// load desktop app manifest
 	char	*manifest = get_app_path_from_package(config->launcher, PACKAGE_MANIFEST);

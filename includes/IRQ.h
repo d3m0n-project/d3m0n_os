@@ -26,7 +26,7 @@
 #define SYSTEM_TIMER_1_IRQ		(1 << 1)
 
 
-#define TIMER_TICK_US 100000
+#define TIMER_TICK_US			1000
 
 
 void timer_init(void);
