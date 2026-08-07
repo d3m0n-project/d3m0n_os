@@ -12,7 +12,7 @@ char	*base64_encode(uint8_t *data, size_t len)
 	if (size == 0)
 		return 0;
 
-	char*	out = malloc(size);
+	char*	out = kmalloc(size);
 	if (!out)
 		return 0;
 	
@@ -59,7 +59,7 @@ uint8_t		*base64_decode(char *data, size_t *out_len)
 	if (*out_len == 0)
 		return 0;
 	
-	uint8_t	*plain = malloc(*out_len);
+	uint8_t	*plain = kmalloc(*out_len);
 	if (!plain)
 		return 0;
 	

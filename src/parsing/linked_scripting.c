@@ -243,7 +243,7 @@ static void	var_set_int(const char *name, int value, t_window *win)
 
 	if (win->variables[idx].sval)
 	{
-		free(win->variables[idx].sval);
+		kfree(win->variables[idx].sval);
 		win->variables[idx].sval = 0;
 	}
 
@@ -266,7 +266,7 @@ static void	var_set_str(const char *name, const char *value, t_window *win)
 	if (!copy)
 		return;
 	if (win->variables[idx].type == SCRIPT_VAR_STR && win->variables[idx].sval)
-		free(win->variables[idx].sval);
+		kfree(win->variables[idx].sval);
 	win->variables[idx].ival = 0;
 	win->variables[idx].type = SCRIPT_VAR_STR;
 	win->variables[idx].sval = copy;
@@ -311,7 +311,7 @@ static const char *var_get_str(const char *name, t_window *win)
 	if (win->variables[idx].type == SCRIPT_VAR_INT)
 	{
 		if (win->variables[idx].sval)
-			free(win->variables[idx].sval);
+			kfree(win->variables[idx].sval);
 
 		win->variables[idx].sval = ft_calloc(16, sizeof(char));
 		if (!win->variables[idx].sval)
@@ -345,7 +345,7 @@ static int	append_script_node(t_script_chain *script, t_script_chain *new_node)
 	if (!script->func && !script->next && !script->args)
 	{
 		ft_memcpy(script, new_node, sizeof(t_script_chain));
-		free(new_node);
+		kfree(new_node);
 		return 0;
 	}
 	tail = script;
@@ -663,7 +663,7 @@ static int	parse_condition_expr(char *expr, t_cond_node *cond)
 	cond->op = op;
 	if (rhs && !cond->rhs)
 	{
-		free(cond->lhs);
+		kfree(cond->lhs);
 		return 1;
 	}
 	return 0;
@@ -696,18 +696,18 @@ static int	add_var_set_node(char *name, char *expr, t_script_chain *script)
 	if (!name_dup || !expr_dup)
 	{
 		if (name_dup)
-			free(name_dup);
+			kfree(name_dup);
 		if (expr_dup)
-			free(expr_dup);
-		free(node);
+			kfree(expr_dup);
+		kfree(node);
 		return 1;
 	}
 	node->func = op_var_set;
 	if (make_node_args2(node, name_dup, expr_dup))
 	{
-		free(name_dup);
-		free(expr_dup);
-		free(node);
+		kfree(name_dup);
+		kfree(expr_dup);
+		kfree(node);
 		return 1;
 	}
 	return append_script_node(script, node);
@@ -724,14 +724,14 @@ static int	add_var_incdec_node(char *name, int is_inc, t_script_chain *script)
 	name_dup = dup_cstr(name);
 	if (!name_dup)
 	{
-		free(node);
+		kfree(node);
 		return 1;
 	}
 	node->func = is_inc ? op_var_inc : op_var_dec;
 	if (make_node_args1(node, name_dup))
 	{
-		free(name_dup);
-		free(node);
+		kfree(name_dup);
+		kfree(node);
 		return 1;
 	}
 	return append_script_node(script, node);
@@ -759,26 +759,26 @@ static int	add_cond_node(char *statement, t_script_chain *script, void (*fn)(voi
 	if (!cond || !node)
 	{
 		if (cond)
-			free(cond);
+			kfree(cond);
 		if (node)
-			free(node);
+			kfree(node);
 		return 1;
 	}
 	if (parse_condition_expr(expr, cond))
 	{
-		free(cond);
-		free(node);
+		kfree(cond);
+		kfree(node);
 		log("Invalid condition expression: '%s'\n", LOG_ERROR | LOG_INDENT, expr);
 		return 1;
 	}
 	node->func = fn;
 	if (make_node_args1(node, cond))
 	{
-		free(cond->lhs);
+		kfree(cond->lhs);
 		if (cond->rhs)
-			free(cond->rhs);
-		free(cond);
-		free(node);
+			kfree(cond->rhs);
+		kfree(cond);
+		kfree(node);
 		return 1;
 	}
 	return append_script_node(script, node);
@@ -836,9 +836,9 @@ static int	parse_for_apps_header(char *statement, char **name_out, char **icon_o
 	if (!*name_out || !*icon_out)
 	{
 		if (*name_out)
-			free(*name_out);
+			kfree(*name_out);
 		if (*icon_out)
-			free(*icon_out);
+			kfree(*icon_out);
 		return 1;
 	}
 	if (package)
@@ -846,8 +846,8 @@ static int	parse_for_apps_header(char *statement, char **name_out, char **icon_o
 		*package_out = dup_cstr(package);
 		if (!*package_out)
 		{
-			free(*name_out);
-			free(*icon_out);
+			kfree(*name_out);
+			kfree(*icon_out);
 			return 1;
 		}
 	}
@@ -864,28 +864,28 @@ static int	add_for_apps_node(char *statement, t_script_chain *script)
 	if (!data || !node)
 	{
 		if (data)
-			free(data);
+			kfree(data);
 		if (node)
-			free(node);
+			kfree(node);
 		return 1;
 	}
 	if (parse_for_apps_header(statement, &data->name_var, &data->icon_var,
 			&data->package_var))
 	{
-		free(data);
-		free(node);
+		kfree(data);
+		kfree(node);
 		log("Invalid for app.list syntax: '%s'\n", LOG_ERROR | LOG_INDENT, statement);
 		return 1;
 	}
 	node->func = op_for_apps;
 	if (make_node_args1(node, data))
 	{
-		free(data->name_var);
-		free(data->icon_var);
+		kfree(data->name_var);
+		kfree(data->icon_var);
 		if (data->package_var)
-			free(data->package_var);
-		free(data);
-		free(node);
+			kfree(data->package_var);
+		kfree(data);
+		kfree(node);
 		return 1;
 	}
 	return append_script_node(script, node);
@@ -992,10 +992,10 @@ static int	add_call_node(char *statement, t_script_chain *script, t_window *win)
 		int k = 0;
 		while (raw_args[k])
 		{
-			free(raw_args[k]);
+			kfree(raw_args[k]);
 			raw_args[k++] = 0;
 		}
-		free(raw_args);
+		kfree(raw_args);
 		raw_args = 0;
 		return 1;
 	}
@@ -1004,9 +1004,9 @@ static int	add_call_node(char *statement, t_script_chain *script, t_window *win)
 	if (!call || !node)
 	{
 		if (call)
-			free(call);
+			kfree(call);
 		if (node)
-			free(node);
+			kfree(node);
 		return 1;
 	}
 	call->def = def;
@@ -1015,8 +1015,8 @@ static int	add_call_node(char *statement, t_script_chain *script, t_window *win)
 	node->func = op_call;
 	if (make_node_args1(node, call))
 	{
-		free(call);
-		free(node);
+		kfree(call);
+		kfree(node);
 		return 1;
 	}
 	return append_script_node(script, node);
@@ -1072,8 +1072,8 @@ static int	add_call_node_with_assignment(char *statement, char *var_name, t_scri
 	{
 		int k = 0;
 		while (raw_args[k])
-			free(raw_args[k++]);
-		free(raw_args);
+			kfree(raw_args[k++]);
+		kfree(raw_args);
 		return 1;
 	}
 	var_name_dup = dup_cstr(var_name);
@@ -1081,8 +1081,8 @@ static int	add_call_node_with_assignment(char *statement, char *var_name, t_scri
 	{
 		int k = 0;
 		while (raw_args[k])
-			free(raw_args[k++]);
-		free(raw_args);
+			kfree(raw_args[k++]);
+		kfree(raw_args);
 		return 1;
 	}
 	call = (t_call_node *)ft_calloc(1, sizeof(t_call_node));
@@ -1090,10 +1090,10 @@ static int	add_call_node_with_assignment(char *statement, char *var_name, t_scri
 	if (!call || !node)
 	{
 		if (call)
-			free(call);
+			kfree(call);
 		if (node)
-			free(node);
-		free(var_name_dup);
+			kfree(node);
+		kfree(var_name_dup);
 		return 1;
 	}
 	call->def = def;
@@ -1102,9 +1102,9 @@ static int	add_call_node_with_assignment(char *statement, char *var_name, t_scri
 	node->func = op_call;
 	if (make_node_args1(node, call))
 	{
-		free(call);
-		free(node);
-		free(var_name_dup);
+		kfree(call);
+		kfree(node);
+		kfree(var_name_dup);
 		return 1;
 	}
 	return append_script_node(script, node);
@@ -1319,10 +1319,10 @@ static int	eval_call_and_run(t_call_node *call, t_window *win)
 			if (!tmp || eval_string_arg(tmp, (char **)&eval_args[i], win))
 			{
 				if (tmp)
-					free(tmp);
+					kfree(tmp);
 				return 1;
 			}
-			free(tmp);
+			kfree(tmp);
 		}
 		else if (expected == ARG_INT)
 		{
@@ -1339,15 +1339,15 @@ static int	eval_call_and_run(t_call_node *call, t_window *win)
 	if (call->var_name && return_value && call->def->is_return)
 		var_set_str(call->var_name, return_value, win);
 	if (return_value && call->def->is_return && (uintptr_t)return_value >= (uintptr_t)HEAP_START && (uintptr_t)return_value <= (uintptr_t)HEAP_END)
-		free(return_value);
+		kfree(return_value);
 	
 	i = 0;
 	while (eval_args[i])
 	{
-		free(eval_args[i]);
+		kfree(eval_args[i]);
 		i++;
 	}
-	free(eval_args);
+	kfree(eval_args);
 	return 0;
 }
 
@@ -1536,43 +1536,43 @@ void	free_script(t_script_chain *script)
 				{
 					while (call->raw_args[i])
 					{
-						free(call->raw_args[i]); // this line double free
+						kfree(call->raw_args[i]); // this line double free
 						call->raw_args[i++] = 0;
 					}
-					free(call->raw_args);
+					kfree(call->raw_args);
 					call->raw_args = 0;
 				}
-				free(call->var_name);
+				kfree(call->var_name);
 				call->var_name = 0;
-				free(call);
+				kfree(call);
 				cur->args[0] = 0;
 			}
 			else if ((cur->func == op_if || cur->func == op_while) && cur->args[0])
 			{
 				t_cond_node *c = (t_cond_node *)cur->args[0];
-				free(c->lhs);
-				free(c->rhs);
-				free(c);
+				kfree(c->lhs);
+				kfree(c->rhs);
+				kfree(c);
 			}
 			else if (cur->func == op_for_apps && cur->args[0])
 			{
 				t_for_apps_node *f = (t_for_apps_node *)cur->args[0];
-				free(f->name_var);
-				free(f->icon_var);
+				kfree(f->name_var);
+				kfree(f->icon_var);
 				if (f->package_var)
-					free(f->package_var);
-				free(f);
+					kfree(f->package_var);
+				kfree(f);
 			}
 			else
 			{
 				int i = 0;
 				while (cur->args[i])
 				{
-					free(cur->args[i]);
+					kfree(cur->args[i]);
 					i++;
 				}
 			}
-			free(cur->args);
+			kfree(cur->args);
 		}
 		cur = cur->next;
 	}

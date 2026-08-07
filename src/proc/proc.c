@@ -1,8 +1,11 @@
 #include "proc.h"
 
-#define PAGE_SIZE		4096
+#define PAGE_SIZE			4096
+#define USER_STACK_PAGES	4
 
 uint32_t			current_pid = 0;
+
+extern void		start_first_process(t_process *proc);
 
 
 void	*alloc_pages(size_t pages)
@@ -12,47 +15,22 @@ void	*alloc_pages(size_t pages)
 
 void prepare_initial_stack(t_process *p, void (*entry)(void))
 {
-    uint32_t *stack;
+	uint32_t *stack = (uint32_t *)p->kernel_stack + (4 * PAGE_SIZE / sizeof(uint32_t));
 
-    stack = (uint32_t *)p->kernel_stack +
-            (4 * PAGE_SIZE / sizeof(uint32_t));
+	*(--stack) = (uint32_t)entry;
 
-
-    /*
-     * irq_handler restores:
-     *
-     * ldmia sp!, {r0}
-     * msr spsr_cxsf,r0
-     * ldmia sp!, {r0-r12,lr}
-     * subs pc,lr,#0
-     */
+	// regs
+	for (int i=0;i<13;i++)
+		*(--stack)=0;
 
 
-    // lr restored by irq return
-    *(--stack) = (uint32_t)entry;
+	*(--stack)=0x6000001F;
 
 
-    // r12-r0
-    *(--stack) = 0; // r12
-    *(--stack) = 0; // r11
-    *(--stack) = 0; // r10
-    *(--stack) = 0; // r9
-    *(--stack) = 0; // r8
-    *(--stack) = 0; // r7
-    *(--stack) = 0; // r6
-    *(--stack) = 0; // r5
-    *(--stack) = 0; // r4
-    *(--stack) = 0; // r3
-    *(--stack) = 0; // r2
-    *(--stack) = 0; // r1
-    *(--stack) = 0; // r0
+	p->sp=(uint32_t)stack;
 
 
-    // SPSR
-    *(--stack) = 0x60000153;
-
-
-    p->ctx.cpsr = (uint32_t)stack;
+	p->user_sp = ((uint32_t)p->user_stack + (USER_STACK_PAGES * PAGE_SIZE)) & ~7;
 }
 
 uint32_t	allocate_pid()
@@ -88,16 +66,61 @@ t_process	*process_create(void (*entry)(void), char *name)
 	ft_strlcpy(p->proc_name, name, 64); // copy proc name
 
 	p->pid = allocate_pid();
-	p->state = PROC_READY;
+	p->state = PROC_READY; // TODO: priorities and state scheduling system
 
 	p->kernel_stack = alloc_pages(4);
-	if (!p->kernel_stack)
+	p->user_stack   = alloc_pages(USER_STACK_PAGES);
+	if (!p->kernel_stack || !p->user_stack)
 	{
-		free(p);
+		if (p->user_stack)
+			kfree(p->user_stack);
+		if (p->kernel_stack)
+			kfree(p->kernel_stack);
+		kfree(p);
 		return 0;
 	}
+	p->user_sp = (uint32_t)p->user_stack + (USER_STACK_PAGES * PAGE_SIZE);
+	p->user_sp &= ~7;
+
 	prepare_initial_stack(p, entry);
 
 	scheduler_add(p);
 	return p;
+}
+
+void	process_exit_current(uint32_t status_code)
+{
+	t_process	*exiting;
+	t_process	*next;
+
+	log("exited with status code: %llu\n", LOG_WARNING, status_code);
+	exiting = current_process;
+	if (!exiting)
+		return ;
+	exiting->state = PROC_ZOMBIE;
+	scheduler_remove(exiting);
+	if (exiting->address_space)
+		kfree(exiting->address_space);
+	if (exiting->user_stack)
+		kfree(exiting->user_stack);
+	if (exiting->kernel_stack)
+		kfree(exiting->kernel_stack);
+	kfree(exiting);
+	current_process = 0;
+	if (!scheduled_processes)
+	{
+		while (1)
+			;
+	}
+	next = scheduler_next();
+	if (!next)
+	{
+		while (1)
+			;
+	}
+	next->state = PROC_RUNNING;
+	current_process = next;
+	start_first_process(next);
+	while (1)
+		;
 }

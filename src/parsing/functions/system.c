@@ -36,7 +36,7 @@ char	*fn_system_var_get(void **args)
 			if (stats[i].unit)
 			{
 				char *final = ft_strjoin(int_value, stats[i].unit);
-				free(int_value);
+				kfree(int_value);
 				return final;
 			}
 			else
@@ -44,7 +44,7 @@ char	*fn_system_var_get(void **args)
 				if (stats[i].min == 0 && stats[i].max == 1) // bool
 				{
 					char	*final = ft_strdup((stats[i].value)?"true":"false");
-					free(int_value);
+					kfree(int_value);
 					return final;
 				}
 			}

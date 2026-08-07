@@ -16,7 +16,7 @@ void	cleanup_window(t_window *win)
 	for (int i=0; i < MAX_WINDOW_VARS; i++)
 	{
 		if (win->variables[i].used && win->variables[i].type == SCRIPT_VAR_STR && win->variables[i].sval)
-			free(win->variables[i].sval);
+			kfree(win->variables[i].sval);
 		win->variables[i].used = 0;
 		win->variables[i].type = SCRIPT_VAR_NONE;
 		win->variables[i].sval = 0;
@@ -34,7 +34,7 @@ void	cleanup_window(t_window *win)
 				free_bmp_texture(current->texture);
 			current->texture = 0;
 			t_bmp_cache *next = current->next;
-			free(current);
+			kfree(current);
 			current = next;
 		}
 		win->bmp_cache = 0;

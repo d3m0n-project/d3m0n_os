@@ -155,44 +155,140 @@ reserved_handler:
 
 
 irq_handler:
-	sub lr, lr, #4
 
-	/* Save registers */
-	stmfd sp!, {r0-r12, lr}
-
-	/* Save SPSR */
-	mrs r0, spsr
-	stmfd sp!, {r0}
+	/*
+	 * ARM IRQ lr points 4 bytes after instruction
+	 */
+	sub lr,lr,#4
 
 
-	/* current_process->context = sp */
-	ldr r1, =current_process
-	ldr r1, [r1]
 
-	str sp, [r1]
+	/*
+	 * Save process registers
+	 *
+	 * IRQ stack
+	 */
+	stmfd sp!,{r0-r12,lr}
 
 
+
+	/*
+	 * Save SPSR
+	 */
+	mrs r0,spsr
+	stmfd sp!,{r0}
+
+
+
+	/*
+	 * current_process->sp = sp
+	 */
+	ldr r1,=current_process
+	ldr r1,[r1]
+
+	str sp,[r1]
+
+
+	/*
+	 * Save the outgoing process SYS stack pointer
+	 */
+	mrs r2,cpsr
+
+	bic r2,r2,#0x1f
+	orr r2,r2,#0x1f       @ SYS
+
+	msr cpsr_c,r2
+
+	mov r3,sp
+	str r3,[r1,#4]
+
+
+	/*
+	 * Back to IRQ mode
+	 */
+	mrs r2,cpsr
+
+	bic r2,r2,#0x1f
+	orr r2,r2,#0x12       @ IRQ
+
+	msr cpsr_c,r2
+
+
+
+	/*
+	 * scheduler
+	 */
 	bl irq_dispatch
 
 
-	/* load new process */
-	ldr r1, =current_process
-	ldr r1, [r1]
 
-	ldr sp, [r1]
-
-
-	/* restore SPSR */
-	ldmfd sp!, {r0}
-	msr spsr_cxsf, r0
+	/*
+	 * get new process
+	 */
+	ldr r1,=current_process
+	ldr r1,[r1]
 
 
-	/* restore registers */
-	ldmfd sp!, {r0-r12, lr}
+
+	/*
+	 * Restore IRQ frame
+	 */
+	ldr sp,[r1]
 
 
-	/* return from IRQ */
-	subs pc, lr, #0
+
+	/*
+	 * Restore SPSR
+	 */
+	ldmfd sp!,{r0}
+
+	msr spsr_cxsf,r0
+
+
+
+	/*
+	 * Switch to SYS mode
+	 * and install user SP
+	 */
+	mrs r2,cpsr
+
+	bic r2,r2,#0x1f
+	orr r2,r2,#0x1f       @ SYS
+
+	msr cpsr_c,r2
+
+
+
+	ldr r0,[r1,#4]
+
+	mov sp,r0
+
+
+
+	/*
+	 * Back to IRQ mode
+	 */
+	mrs r2,cpsr
+
+	bic r2,r2,#0x1f
+	orr r2,r2,#0x12       @ IRQ
+
+	msr cpsr_c,r2
+
+
+
+	/*
+	 * Restore registers
+	 */
+	ldmfd sp!,{r0-r12,lr}
+
+
+
+	/*
+	 * Return to process
+	 */
+	subs pc,lr,#0
+
 
 fiq_handler:
 	stmfd	sp!, {r0-r12, lr}

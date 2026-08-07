@@ -5,7 +5,7 @@
 t_process				*scheduled_processes = 0;
 static t_process		*scheduled_processes_tail = 0;
 t_process				*current_process = 0;
-#define TIME_SLICE_MS	10
+#define TIME_SLICE_MS	1
 
 extern void	start_first_process(t_process *proc);
 
@@ -76,13 +76,13 @@ void schedule(void)
 {
 	t_process *old = current_process;
 
-	log("switch %s -> ", 0, current_process->proc_name, 0);
+	//log("switch %s -> ", 0, current_process->proc_name, 0);
 	if (old)
 		old->state = PROC_READY;
 
 	t_process *next = scheduler_next();
 
-	log("%s\n", 0, next->proc_name, 0);
+	//log("%s\n", 0, next->proc_name, 0);
 
 	if (!next)
 		return;
@@ -115,9 +115,9 @@ void timer_handler(void)
 	if (!current_process)
 		return;
 
-	log("%s sp=%x\n", 0,
-        current_process->proc_name,
-        current_process->sp);
+	//log("%s sp=%x\n", 0,
+    //    current_process->proc_name,
+    //    current_process->sp);
 
 	if (--current_process->time_slice <= 0)
 	{
@@ -130,14 +130,9 @@ void irq_dispatch(void)
 {
 	uint32_t pending = IRQ_PENDING_1;
 
-	log(".",0);
-
 	if (pending & (1 << 1))
 	{
 		ST_CS = (1 << 1);
-
-		uint32_t next = ST_CLO + 100000;
-		ST_C1 = next;
 
 		timer_handler();
 	}

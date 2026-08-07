@@ -18,28 +18,28 @@ ExtendedGCD	*big_int_extended_gcd(BigInt *a, BigInt *b)
 
 		BigInt *qr = big_int_mul(div->quotient, r);
 		BigInt *new_r = big_int_sub(old_r, qr);
-		free(qr);
-		free(old_r);
+		kfree(qr);
+		kfree(old_r);
 		old_r = r;
 		r = new_r;
 
 		BigInt *qs = big_int_mul(div->quotient, s);
 		BigInt *new_s = big_int_sub(old_s, qs);
-		free(qs);
-		free(old_s);
+		kfree(qs);
+		kfree(old_s);
 		old_s = s;
 		s = new_s;
 
 		BigInt *qt = big_int_mul(div->quotient, t);
 		BigInt *new_t = big_int_sub(old_t, qt);
-		free(qt);
-		free(old_t);
+		kfree(qt);
+		kfree(old_t);
 		old_t = t;
 		t = new_t;
 
-		free(div->quotient);
-		free(div->remainder);
-		free(div);
+		kfree(div->quotient);
+		kfree(div->remainder);
+		kfree(div);
 	}
 
 	BigInt *y;
@@ -49,14 +49,14 @@ ExtendedGCD	*big_int_extended_gcd(BigInt *a, BigInt *b)
 		BigInt		*tmp = big_int_sub(old_r, xa);
 		BigIntDiv	*div = big_int_div(tmp, b);
 
-		free(xa);
-		free(tmp);
+		kfree(xa);
+		kfree(tmp);
 		if (!div)
 			return 0;
 
 		y = div->quotient;
-		free(div->remainder);
-		free(div);
+		kfree(div->remainder);
+		kfree(div);
 	}
 	else
 		y = big_int_from_uint(0);
@@ -70,9 +70,9 @@ ExtendedGCD	*big_int_extended_gcd(BigInt *a, BigInt *b)
 	out->gcd = old_r;
 	out->x = old_s;
 	out->y = y;
-	free(r);
-	free(s);
-	free(t);
+	kfree(r);
+	kfree(s);
+	kfree(t);
 
 	return out;
 }

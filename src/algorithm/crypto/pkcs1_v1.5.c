@@ -12,7 +12,7 @@ uint8_t	*pkcs1_v1_5_generate_em(t_RSA_public_key *pub, uint8_t *message, size_t 
 	if (len > k - 11)
 		return 0;
 
-	uint8_t *buff = malloc(sizeof(uint8_t) * k);
+	uint8_t *buff = kmalloc(sizeof(uint8_t) * k);
 	if (!buff)
 		return 0;
 

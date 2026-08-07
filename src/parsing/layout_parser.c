@@ -711,12 +711,12 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 		i = lp_skip_ws(line, 0);
 		if (line[i] == '\0' || line[i] == '\n' || line[i] == '\r')
 		{
-			free(line);
+			kfree(line);
 			break;
 		}
 		if (line[i] == '#')
 		{
-			free(line);
+			kfree(line);
 			continue;
 		}
 		parsed_line = lp_apply_replacements(line, replacements);
@@ -731,8 +731,8 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 				{
 					log("Unknown window config at line %i: %s\n", LOG_ERROR, section_line + lines, key);
 					if (parsed_line != line)
-						free(parsed_line);
-					free(line);
+						kfree(parsed_line);
+					kfree(line);
 					return -1;
 				}
 			}
@@ -749,16 +749,16 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 				{
 					log("Unknown control config at line %i: %s\n", LOG_ERROR, section_line + lines, key);
 					if (parsed_line != line)
-						free(parsed_line);
-					free(line);
+						kfree(parsed_line);
+					kfree(line);
 					return -1;
 				}
 				if (apply_ret < 0)
 				{
 					log("Invalid control config value at line %i: %s=\"%s\"\n", LOG_ERROR, section_line + lines, key, value);
 					if (parsed_line != line)
-						free(parsed_line);
-					free(line);
+						kfree(parsed_line);
+					kfree(line);
 					return -1;
 				}
 			}
@@ -766,14 +766,14 @@ static int	lp_parse_block(int fd, e_control_type section_type, t_window *win, t_
 		else
 		{
 			log("Invalid config syntax at line %i: %s\n", LOG_ERROR, section_line + lines, parsed_line);
-			free(line);
+			kfree(line);
 			if (parsed_line != line)
-				free(parsed_line);
+				kfree(parsed_line);
 			return -1;
 		}
 		if (parsed_line != line)
-			free(parsed_line);
-		free(line);
+			kfree(parsed_line);
+		kfree(line);
 	}
 	if (control && (!default_parent || !control->p_parent || (control->p_parent == default_parent)))
 	{
@@ -843,7 +843,7 @@ int	parse_layout(const char *path, t_window *win, char **replacements, char *par
 		line_idx++;
 		if (lp_is_blank_or_comment(line))
 		{
-			free(line);
+			kfree(line);
 			continue;
 		}
 		i = lp_skip_ws(line, 0);
@@ -857,14 +857,14 @@ int	parse_layout(const char *path, t_window *win, char **replacements, char *par
 		if (line[i + j] != ':')
 		{
 			log("Invalid layout section at line %i: %s\n", LOG_ERROR, line_idx, line);
-			free(line);
+			kfree(line);
 			close(fd);
 			return 1;
 		}
 		if (!lp_get_control_type(section, &type))
 		{
 			log("Unknown layout section at line %i: %s\n", LOG_ERROR, line_idx, section);
-			free(line);
+			kfree(line);
 			close(fd);
 			return 1;
 		}
@@ -873,7 +873,7 @@ int	parse_layout(const char *path, t_window *win, char **replacements, char *par
 			i = lp_parse_block(fd, CONTROL_WINDOW, win, 0, 0, 0, line_idx, offset_x, offset_y, replacements);
 			if (i < 0)
 			{
-				free(line);
+				kfree(line);
 				close(fd);
 				return 1;
 			}
@@ -881,11 +881,11 @@ int	parse_layout(const char *path, t_window *win, char **replacements, char *par
 		}
 		else
 		{
-			control = (t_control *)malloc(sizeof(t_control));
+			control = (t_control *)kmalloc(sizeof(t_control));
 			if (!control)
 			{
 				log("Memory allocation failed for control\n", LOG_ERROR);
-				free(line);
+				kfree(line);
 				close(fd);
 				return 1;
 			}
@@ -893,8 +893,8 @@ int	parse_layout(const char *path, t_window *win, char **replacements, char *par
 			i = lp_parse_block(fd, type, win, control, parent_name, default_parent, line_idx, offset_x, offset_y, replacements);
 			if (i < 0)
 			{
-				free(control);
-				free(line);
+				kfree(control);
+				kfree(line);
 				close(fd);
 				return 1;
 			}
@@ -931,7 +931,7 @@ int	parse_layout(const char *path, t_window *win, char **replacements, char *par
 				tail = control;
 			}
 		}
-		free(line);
+		kfree(line);
 	}
 	for (p = 0; p < pending_count; p++)
 	{

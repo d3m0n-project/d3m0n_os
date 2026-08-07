@@ -19,11 +19,11 @@ static void	der_append(DERBuffer *b, const void *src, size_t n)
 		while (newCap < b->len + n)
 			newCap *= 2;
 
-		uint8_t	*new_data = malloc(newCap);
+		uint8_t	*new_data = kmalloc(newCap);
 		if (!new_data)
 			return;
 		ft_memcpy(new_data, b->data, b->len);
-		free(b->data);
+		kfree(b->data);
 		b->data = new_data;
 		b->cap = newCap;
 	}
@@ -136,7 +136,7 @@ static int	der_read_integer(const uint8_t *buf, size_t buf_len, size_t *off, Big
 		return -1;
 
 	ft_memcpy(dst, tmp, sizeof(BigInt));
-	free(tmp);
+	kfree(tmp);
 	*off = start + len;
 	return 0;
 }
@@ -159,12 +159,12 @@ int	rsa_private_key_write_der(char *filename, t_RSA_private_key *key)
 		buf = big_int_get_bytes(lst[i], &len);
 		if (!buf)
 		{
-			free(body.data);
-			free(out.data);
+			kfree(body.data);
+			kfree(out.data);
 			return -1;
 		}
 		der_integer(&body, buf, len);
-		free(buf);
+		kfree(buf);
 	}	
 
 	// wrap sequence
@@ -176,15 +176,15 @@ int	rsa_private_key_write_der(char *filename, t_RSA_private_key *key)
 	if (fd < 0)
 	{
 		log("DER: Could not write certificate to '%s'\n", LOG_ERROR, filename);
-		free(body.data);
-		free(out.data);
+		kfree(body.data);
+		kfree(out.data);
 		return -1;
 	}
 	char	*b64_buf = base64_encode(out.data, out.len);
 	if (!b64_buf)
 	{
-		free(body.data);
-		free(out.data);
+		kfree(body.data);
+		kfree(out.data);
 		return -1;
 	}
 	size_t	b64_len = ft_strlen(b64_buf);
@@ -205,9 +205,9 @@ int	rsa_private_key_write_der(char *filename, t_RSA_private_key *key)
 	write(fd, "-----END RSA PRIVATE KEY-----\n", 30);
 	close(fd);
 
-	free(body.data);
-	free(out.data);
-	free(b64_buf);
+	kfree(body.data);
+	kfree(out.data);
+	kfree(b64_buf);
 
 	return 0;
 }
@@ -236,24 +236,24 @@ int	rsa_private_key_read_der(char *filename, t_RSA_private_key *key, t_RSA_publi
 
 		if (line_i == 0 && ft_strncmp(line, "-----BEGIN RSA PRIVATE KEY-----", len) != 0)
 		{
-			free(line);
+			kfree(line);
 			goto invalid_key;
 		}
 		else if (line_i == 0)
 		{
 			valid_header_and_footer = 1;
 			line_i++;
-			free(line);
+			kfree(line);
 			continue;
 		}
 		else if (line_i > 0 && ft_strcmp(line, "-----END RSA PRIVATE KEY-----") == 0)
 		{
-			free(line);
+			kfree(line);
 			if (valid_header_and_footer != 1)
 			{
 				log("DER: Invalid header-footer structure in certificate\n", LOG_ERROR);
 				if (b64_buff)
-					free(b64_buff);
+					kfree(b64_buff);
 				return -1;
 			}
 			
@@ -262,7 +262,7 @@ int	rsa_private_key_read_der(char *filename, t_RSA_private_key *key, t_RSA_publi
 		}
 		else if (len > 64)
 		{
-			free(line);
+			kfree(line);
 			goto invalid_key;
 		}
 
@@ -270,10 +270,10 @@ int	rsa_private_key_read_der(char *filename, t_RSA_private_key *key, t_RSA_publi
 		if (!b64_buff)
 		{
 			b64_buff_size = 65;
-			b64_buff = malloc(sizeof(char) * 64 + 1);
+			b64_buff = kmalloc(sizeof(char) * 64 + 1);
 			if (!b64_buff)
 			{
-				free(line);
+				kfree(line);
 				return -1;
 			}
 			ft_strlcpy(b64_buff, line, 65);
@@ -285,28 +285,28 @@ int	rsa_private_key_read_der(char *filename, t_RSA_private_key *key, t_RSA_publi
 			char *tmp_buff = ft_strjoin(b64_buff, line);
 			if (!tmp_buff)
 			{
-				free(line);
+				kfree(line);
 				return -1;
 			}
 			
-			free(b64_buff);
+			kfree(b64_buff);
 			b64_buff = tmp_buff;
 		}
 
 		line_i++;
-		free(line);
+		kfree(line);
 	}
 	close(fd);
 	if (valid_header_and_footer != 2)
 	{
 		log("DER: Invalid header and footer for certificate\n", LOG_ERROR);
-		free(b64_buff);
+		kfree(b64_buff);
 		return -1;
 	}
 
 	size_t	b64_decoded_len = 0;
 	uint8_t	*b64_decoded = base64_decode(b64_buff, &b64_decoded_len);
-	free(b64_buff);
+	kfree(b64_buff);
 	if (!b64_decoded)
 		return -1;
 
@@ -337,7 +337,7 @@ int	rsa_private_key_read_der(char *filename, t_RSA_private_key *key, t_RSA_publi
 	ft_memcpy(&pub->n, &key->n, sizeof(BigInt));
 	ft_memcpy(&pub->e, &key->e, sizeof(BigInt));
 
-	free(b64_decoded);
+	kfree(b64_decoded);
 	return (0);
 
 invalid_key:
@@ -346,7 +346,7 @@ invalid_key:
 	return -1;
 
 parse_error:
-	free(b64_decoded);
+	kfree(b64_decoded);
 	log("DER: Invalid ASN.1 RSA private key\n", LOG_ERROR);
 	return (-1);
 }

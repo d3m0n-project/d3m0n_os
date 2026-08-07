@@ -27,35 +27,35 @@ char*	fn_app_open(void **args)
 	{
 		log("%s: Could not allocate window paths\n", LOG_ERROR | LOG_INDENT, (window_mode)?"WINDOW:OPEN":"APP.OPEN");
 		if (layout_path)
-			free(layout_path);
+			kfree(layout_path);
 		if (src_path)
-			free(src_path);
+			kfree(src_path);
 		return 0;
 	}
 
 	// create path with the window name
 	char	*new_layout_path = path_add(layout_path, window_name);
 	char	*new_src_path = path_add(src_path, window_name);
-	free(src_path);
-	free(layout_path);
+	kfree(src_path);
+	kfree(layout_path);
 	if (!new_layout_path || !new_src_path)
 	{
 		if (new_layout_path)
-			free(new_layout_path);
+			kfree(new_layout_path);
 		if (new_src_path)
-			free(new_src_path);
+			kfree(new_src_path);
 		return 0;
 	}
 	layout_path = ft_strjoin(new_layout_path, ".layout");
 	src_path = ft_strjoin(new_src_path, ".src"); // path/to/abc.layout => path/to/abc.src
-	free(new_src_path);
-	free(new_layout_path);
+	kfree(new_src_path);
+	kfree(new_layout_path);
 	if (!src_path || !layout_path)
 	{
 		if (layout_path)
-			free(layout_path);
+			kfree(layout_path);
 		if (src_path)
-			free(src_path);
+			kfree(src_path);
 		return 0;
 	}
 	
@@ -63,8 +63,8 @@ char*	fn_app_open(void **args)
 	char	*manifest = get_app_path_from_package(package, PACKAGE_MANIFEST);
 	if (!manifest)
 	{
-		free(src_path);
-		free(layout_path);
+		kfree(src_path);
+		kfree(layout_path);
 		log("%s: Could not allocate app manifest path\n", LOG_ERROR | LOG_INDENT, (window_mode)?"WINDOW:OPEN":"APP.OPEN");
 		return 0;
 	}
@@ -73,25 +73,25 @@ char*	fn_app_open(void **args)
 
 	if (parse_manifest(manifest, &opened_window))
 	{
-		free(layout_path);
-		free(src_path);
-		free(manifest);
+		kfree(layout_path);
+		kfree(src_path);
+		kfree(manifest);
 		log("%s: Could not parse manifest at '%s' for package: '%s'\n", LOG_ERROR | LOG_INDENT, (window_mode)?"WINDOW:OPEN":"APP.OPEN", manifest, package);
 		return 0;
 	}
 	if (parse_layout(layout_path, &opened_window, 0, 0, 0, 0))
 	{
-		free(layout_path);
-		free(src_path);
-		free(manifest);
+		kfree(layout_path);
+		kfree(src_path);
+		kfree(manifest);
 		log("%s: Could not parse layout for package: '%s'\n", LOG_ERROR | LOG_INDENT, (window_mode)?"WINDOW:OPEN":"APP.OPEN", package);
 		return 0;
 	}
 	if (parse_source(src_path, &opened_window, 0))
 	{
-		free(layout_path);
-		free(src_path);
-		free(manifest);
+		kfree(layout_path);
+		kfree(src_path);
+		kfree(manifest);
 		log("%s: Could not parse layout for package: '%s'\n", LOG_ERROR | LOG_INDENT, (window_mode)?"WINDOW:OPEN":"APP.OPEN", package);
 		return 0;
 	}
@@ -101,9 +101,9 @@ char*	fn_app_open(void **args)
 		for (int i=0; i<HISTORY_STACK_SIZE; i++)
 		{
 			if (window_stack[i].package)
-				free(window_stack[i].package);
+				kfree(window_stack[i].package);
 			if (window_stack[i].window)
-				free(window_stack[i].window);
+				kfree(window_stack[i].window);
 			ft_memset(&window_stack[i], 0, sizeof(t_window_stack));
 		}
 		window_stack[0].package = ft_strdup(package);
@@ -112,9 +112,9 @@ char*	fn_app_open(void **args)
 	ft_strlcpy(opened_window.layout_name, window_name, 128);
 	set_current_window(&opened_window);
 	exec_event(0, EVENT_ON_CREATE, &opened_window);
-	free(layout_path);
-	free(src_path);
-	free(manifest);
+	kfree(layout_path);
+	kfree(src_path);
+	kfree(manifest);
 	return 0;
 }
 

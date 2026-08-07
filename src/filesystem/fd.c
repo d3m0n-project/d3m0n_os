@@ -109,7 +109,7 @@ char	*path_add(char *path, char *path2)
 	l2 = ft_strlen(path2);
 	add_slash = (l1 > 0 && path[l1 - 1] != '/' && l2 > 0 && path2[0] != '/');
 
-	output = malloc(l1 + l2 + add_slash + 1);
+	output = kmalloc(l1 + l2 + add_slash + 1);
 	if (!output)
 		return 0;
 
@@ -131,6 +131,80 @@ int		file_delete(const char *path)
 	if (!file_exists(path) || fat32_delete(path))
 		return 1;
 	return 0;
+}
+
+int		dir_create(const char *path)
+{
+	FAT32_File	dir;
+
+	if (!path)
+		return (1);
+	dir = fat32_mkdir(path);
+	if (dir.first_cluster == 0 || !dir.is_dir)
+		return (1);
+	return (0);
+}
+
+int		dir_delete(const char *path)
+{
+	if (!path)
+		return (1);
+	if (!dir_exists(path) || fat32_rmdir(path) != 0)
+		return (1);
+	return (0);
+}
+
+int		file_rename(const char *old_path, const char *new_path)
+{
+	int		in_fd;
+	int		out_fd;
+	int		ret;
+	uint32_t	rd;
+	char		buf[512];
+
+	if (!old_path || !new_path)
+		return (-1);
+	if (dir_exists(old_path) || file_exists(new_path) || dir_exists(new_path))
+		return (-1);
+	in_fd = open(old_path, O_READ);
+	if (in_fd < 0)
+		return (-1);
+	out_fd = open(new_path, O_WRITE | O_CREATE | O_TRUNC);
+	if (out_fd < 0)
+	{
+		close(in_fd);
+		return (-1);
+	}
+	ret = 0;
+	while (1)
+	{
+		rd = read(in_fd, buf, sizeof(buf));
+		if (rd == (uint32_t)-1)
+		{
+			ret = -1;
+			break;
+		}
+		if (rd == 0)
+			break;
+		if (write(out_fd, buf, rd) != (int)rd)
+		{
+			ret = -1;
+			break;
+		}
+	}
+	close(in_fd);
+	close(out_fd);
+	if (ret != 0)
+	{
+		file_delete(new_path);
+		return (-1);
+	}
+	if (file_delete(old_path) != 0)
+	{
+		file_delete(new_path);
+		return (-1);
+	}
+	return (0);
 }
 
 uint32_t	read(int fd, char *buffer, uint32_t count)

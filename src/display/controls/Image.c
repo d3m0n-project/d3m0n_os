@@ -42,7 +42,7 @@ void	ctrl_draw_image(t_control *control)
 			if (bmp_load_image(tmp_icon, control->image))
 			{
 				log("Could not load image '%s' for control '%s'\n", LOG_ERROR, control->image, control->name);
-				free(tmp_icon);
+				kfree(tmp_icon);
 				return;
 			}
 
@@ -50,7 +50,7 @@ void	ctrl_draw_image(t_control *control)
 			if (!cache)
 			{
 				free_bmp_texture(tmp_icon);
-				free(tmp_icon);
+				kfree(tmp_icon);
 				return;
 			}
 

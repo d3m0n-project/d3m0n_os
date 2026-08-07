@@ -87,7 +87,7 @@ char	*fn_str_replace(void **args)
 		pos += old_len;
 	}
 	len = ft_strlen(text) + count * (new_len - old_len);
-	result = malloc(len + 1);
+	result = kmalloc(len + 1);
 	if (!result)
 		return 0;
 
@@ -223,7 +223,7 @@ char	*fn_str_trim_right(void **args)
 	while (len > 0 && ft_isspace(text[len - 1]))
 		len--;
 
-	dup = malloc(len + 1);
+	dup = kmalloc(len + 1);
 	if (!dup)
 		return 0;
 
@@ -251,7 +251,7 @@ char	*fn_str_trim(void **args)
 	while (len > 0 && ft_isspace(start[len - 1]))
 		len--;
 
-	result = malloc(len + 1);
+	result = kmalloc(len + 1);
 	if (!result)
 		return 0;
 

@@ -229,7 +229,7 @@ void	free_controls(t_window	*win)
 	while (current)
 	{
 		t_control *next = current->p_next;
-		free(current);
+		kfree(current);
 		current = next;
 	}
 	win->controls = 0;

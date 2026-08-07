@@ -521,7 +521,8 @@ int	fat32_get_next_cluster(uint32_t cluster, uint32_t *next)
 
 
 
-static int	fat32_create_dir_entry(uint32_t dir_cluster, const uint8_t name83[11], uint32_t first_cluster)
+static int	fat32_create_dir_entry(uint32_t dir_cluster, const uint8_t name83[11], uint32_t first_cluster,
+	uint8_t attrs)
 {
 	uint32_t	cluster;
 	uint32_t	entries;
@@ -552,7 +553,7 @@ static int	fat32_create_dir_entry(uint32_t dir_cluster, const uint8_t name83[11]
 			{
 				ft_bzero(entry, FAT32_DIR_ENTRY_SIZE);
 				ft_memcpy(entry + DIR_NAME_OFF, name83, 11);
-				entry[DIR_ATTR_OFF] = 0x20;
+				entry[DIR_ATTR_OFF] = attrs;
 				mem_write16(entry + DIR_FSTCLUSHI_OFF, (uint16_t)(first_cluster >> 16));
 				mem_write16(entry + DIR_FSTCLUSLO_OFF, (uint16_t)(first_cluster & 0xFFFF));
 				mem_write32(entry + DIR_FILESIZE_OFF, 0);
@@ -983,7 +984,7 @@ FAT32_File fat32_create(const char *path)
 		return file;
 	if (fat32_set_fat_entry(new_cluster, FAT32_EOC) != 0)
 		return file;
-	if (fat32_create_dir_entry(cur_cluster, name83, new_cluster) != 0)
+	if (fat32_create_dir_entry(cur_cluster, name83, new_cluster, 0x20U) != 0)
 		return file;
 
 	file.first_cluster = new_cluster;
@@ -993,6 +994,127 @@ FAT32_File fat32_create(const char *path)
 	file.is_dir = 0;
 
 	return fat32_open(path);
+}
+
+static int	fat32_is_directory_empty(uint32_t dir_cluster)
+{
+	uint32_t	cluster;
+	uint32_t	entries;
+	uint32_t	i;
+	uint8_t		*entry;
+	uint32_t	hops;
+	uint32_t	max_clusters;
+
+	cluster = dir_cluster;
+	hops = 0;
+	max_clusters = fat32_max_clusters();
+	while (cluster)
+	{
+		if (max_clusters == 0 || hops++ >= max_clusters)
+			return (0);
+		if (fat32_read_cluster(cluster, g_cluster_buf) != 0)
+			return (0);
+		entries = cluster_bytes() / FAT32_DIR_ENTRY_SIZE;
+		i = 0;
+		while (i < entries)
+		{
+			entry = &g_cluster_buf[i * FAT32_DIR_ENTRY_SIZE];
+			if (entry[DIR_NAME_OFF] == 0x00)
+				return (1);
+			if (entry[DIR_NAME_OFF] == 0xE5)
+			{
+				i++;
+				continue;
+			}
+			if (entry[DIR_ATTR_OFF] == FAT32_ATTR_LFN)
+			{
+				i++;
+				continue;
+			}
+			if (entry[DIR_ATTR_OFF] & 0x08U)
+			{
+				i++;
+				continue;
+			}
+			return (0);
+		}
+		if (fat32_get_next_cluster(cluster, &cluster) != 0)
+			return (0);
+	}
+	return (1);
+}
+
+FAT32_File	fat32_mkdir(const char *path)
+{
+	FAT32_File	dir;
+	FAT32_File	found;
+	uint32_t	cur_cluster;
+	uint32_t	new_cluster;
+	uint8_t		name83[11];
+	char		comp[256];
+	uint32_t	comp_len;
+	const char	*remaining;
+
+	dir = (FAT32_File){0};
+	if (!path || !fat32_ready())
+		return (dir);
+	if (*path == '/')
+		path++;
+	cur_cluster = fat32.root_cluster;
+	remaining = path;
+	while (1)
+	{
+		comp_len = 0;
+		while (remaining[comp_len] && remaining[comp_len] != '/' && comp_len < 255U)
+		{
+			comp[comp_len] = remaining[comp_len];
+			comp_len++;
+		}
+		comp[comp_len] = '\0';
+		if (comp_len == 0)
+			return (dir);
+		if (remaining[comp_len] == '\0')
+			break;
+		found = (FAT32_File){0};
+		if (!fat32_search_dir(cur_cluster, comp, &found) || !found.is_dir)
+			return (dir);
+		cur_cluster = found.first_cluster;
+		remaining += comp_len + 1U;
+	}
+	if (fat32_name_to_83(comp, name83) < 0)
+		return (dir);
+	if (fat32_search_dir(cur_cluster, comp, &found))
+		return (dir);
+	if (fat32_find_free_cluster(&new_cluster) != 0)
+		return (dir);
+	if (new_cluster < 2 || new_cluster >= fat32_max_clusters())
+		return (dir);
+	ft_bzero(g_cluster_buf, cluster_bytes());
+	if (fat32_write_cluster(new_cluster, g_cluster_buf) != 0)
+		return (dir);
+	if (fat32_set_fat_entry(new_cluster, FAT32_EOC) != 0)
+		return (dir);
+	if (fat32_create_dir_entry(cur_cluster, name83, new_cluster, FAT32_ATTR_DIRECTORY) != 0)
+		return (dir);
+	return (fat32_open(path));
+}
+
+int	fat32_rmdir(const char *path)
+{
+	FAT32_File	dir;
+
+	dir = fat32_open(path);
+	if (dir.first_cluster == 0 || !dir.is_dir)
+		return (-1);
+	if (dir.dir_cluster < 2)
+		return (-1);
+	if (!fat32_is_directory_empty(dir.first_cluster))
+		return (-1);
+	if (fat32_free_cluster_chain(dir.first_cluster) != 0)
+		return (-1);
+	if (fat32_delete_dir_entry(&dir) != 0)
+		return (-1);
+	return (0);
 }
 
 

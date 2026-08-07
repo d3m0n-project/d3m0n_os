@@ -21,8 +21,8 @@ void	*ft_calloc(size_t nmemb, size_t size)
 		return (0);
 	total_size = nmemb * size;
 	if (total_size == 0)
-		return (malloc(0));
-	buff = malloc(sizeof(char) * total_size);
+		return (kmalloc(0));
+	buff = kmalloc(sizeof(char) * total_size);
 	if (!buff)
 		return (0);
 	ft_memset(buff, 0, total_size);

@@ -20,7 +20,6 @@ typedef struct
 	uint32_t	lr;
 }	syscall_frame_t;
 
-void	test_func(void);
 int		syscall_handler(syscall_frame_t *frame);
 
 #endif

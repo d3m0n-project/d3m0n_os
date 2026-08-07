@@ -143,7 +143,7 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 	while ((line = get_next_line(fd)) != 0)
 	{
 		replaced_line = replace_line_placeholders(line, replacements);
-		free(line);
+		kfree(line);
 		line = replaced_line;
 		if (!line)
 		{
@@ -163,14 +163,14 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 		
 		if (line[i] == '\0') // skip empty lines
 		{
-			free(line);
+			kfree(line);
 			continue;
 		}
 
 		if ((i > 0 && current_control_id == -1)) // invalid: defining nothing
 		{
 			log("Invalid line at l:%i, '%s'\n", LOG_ERROR | LOG_INDENT, line_nb, line);
-			free(line);
+			kfree(line);
 			close(fd);
 			return 1;
 		}
@@ -178,7 +178,7 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 		{
 			if (line[i] == '#' || line[i] == '\0') // skip comments and empty lines
 			{
-				free(line);
+				kfree(line);
 				continue;
 			}
 			int j = 0;
@@ -196,7 +196,7 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 			if (event_name[k] == '\0')
 			{
 				log("Invalid event definition at l.%i: '%s'\n", LOG_ERROR | LOG_INDENT, line_nb, event_name);
-				free(line);
+				kfree(line);
 				close(fd);
 				return 1;
 			}
@@ -207,7 +207,7 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 			win->events[event_id].script = init_script(0);
 			if (!win->events[event_id].script)
 			{
-				free(line);
+				kfree(line);
 				close(fd);
 				return 1;
 			}
@@ -215,7 +215,7 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 			if (win->events[event_id].type == EVENT_UNDEFINED)
 			{
 				log("Unknown event type: '%s'\n", LOG_ERROR | LOG_INDENT, event_name);
-				free(line);
+				kfree(line);
 				close(fd);
 				return 1;
 			}
@@ -226,7 +226,7 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 			if (current_control_id == -1)
 			{
 				log("Could not find control with name: '%s'\n", LOG_ERROR | LOG_INDENT, control_name);
-				free(line);
+				kfree(line);
 				close(fd);
 				return 1;
 			}
@@ -243,18 +243,18 @@ int	parse_source(const char *path, t_window *win, char **replacements)
 			if (linked_script_add_line(line + i, win->events[event_id].script, win))
 			{
 				log("Failed to add line to script: l.%i => '%s'\n", LOG_ERROR | LOG_INDENT, line_nb, line + i);
-				free(line);
+				kfree(line);
 				close(fd);
 				return 1;
 			}
 		} else {
 			log("Invalid line at l.%i: '%s'\n", LOG_ERROR | LOG_INDENT, line_nb, line + i);
-			free(line);
+			kfree(line);
 			close(fd);
 			return 1;
 		}
 
-		free(line);
+		kfree(line);
 	}
 	close(fd);
 	return 0;

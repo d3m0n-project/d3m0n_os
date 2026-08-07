@@ -19,7 +19,7 @@ char	*ft_strcat_realloc(char *s1, char *s2, uint32_t n)
 	char		*new;
 
 	s1_len = ft_strlen(s1);
-	new = malloc(s1_len + n + 1);
+	new = kmalloc(s1_len + n + 1);
 	if (!new)
 		return (0);
 	i = 0;
@@ -29,7 +29,7 @@ char	*ft_strcat_realloc(char *s1, char *s2, uint32_t n)
 		i++;
 	}
 	if (s1)
-		free(s1);
+		kfree(s1);
 	s1 = 0;
 	while (n-- > 0 && s2 && *s2)
 		new[i++] = *(s2++);

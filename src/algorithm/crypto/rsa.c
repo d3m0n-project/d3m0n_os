@@ -13,9 +13,9 @@ static BigInt	*calc_phi(BigInt *p, BigInt *q, BigInt **p_minus_1, BigInt **q_min
 	if (!*p_minus_1 || !*q_minus_1)
 	{
 		if (*p_minus_1)
-			free(*p_minus_1);
+			kfree(*p_minus_1);
 		if (*q_minus_1)
-			free(*q_minus_1);
+			kfree(*q_minus_1);
 		return 0;
 	}
 	return big_int_mul(*p_minus_1, *q_minus_1);
@@ -32,9 +32,9 @@ uint8_t	*rsa_decrypt(BigInt	*c, size_t *out_len, t_RSA_private_key *prv)
 	if (!m1 || !m2)
 	{
 		if (m1)
-			free(m1);
+			kfree(m1);
 		if (m2)
-			free(m2);
+			kfree(m2);
 		return 0;
 	}
 	BigInt *tmp;
@@ -45,43 +45,43 @@ uint8_t	*rsa_decrypt(BigInt	*c, size_t *out_len, t_RSA_private_key *prv)
 		BigInt *diff = big_int_sub(m2, m1);
 		if (!diff)
 		{
-			free(m1);
-			free(m2);
+			kfree(m1);
+			kfree(m2);
 			return 0;
 		}
 		tmp = big_int_sub(&prv->p, diff);
-		free(diff);
+		kfree(diff);
 	}
-	free(m1);
+	kfree(m1);
 	if (!tmp)
 	{
-		free(m2);
+		kfree(m2);
 		return 0;
 	}
 	BigInt	*new_tmp = big_int_mul(&prv->qInv, tmp);
-	free(tmp);
+	kfree(tmp);
 	if (!new_tmp)
 	{
-		free(m2);
+		kfree(m2);
 		return 0;
 	}
 	BigInt	*h = big_int_mod(new_tmp, &prv->p);
-	free(new_tmp);
+	kfree(new_tmp);
 	if (!h)
 	{
-		free(m2);
+		kfree(m2);
 		return 0;
 	}
 	tmp = big_int_mul(h, &prv->q);
-	free(h);
+	kfree(h);
 	if (!tmp)
 	{
-		free(m2);
+		kfree(m2);
 		return 0;
 	}
 	BigInt	*m = big_int_add(tmp, m2);
-	free(tmp);
-	free(m2);
+	kfree(tmp);
+	kfree(m2);
 	if (!m)
 		return 0;
 
@@ -89,7 +89,7 @@ uint8_t	*rsa_decrypt(BigInt	*c, size_t *out_len, t_RSA_private_key *prv)
 	uint8_t	*bytes = big_int_to_fixed_bytes(m, len);
 	if (bytes && out_len)
 		*out_len = len;
-	free(m);
+	kfree(m);
 	return bytes;
 }
 
@@ -102,12 +102,12 @@ BigInt	*rsa_encrypt(uint8_t *bytes, size_t len, t_RSA_public_key *pub)
 	if (big_int_cmp(m, &pub->n) >= 0)
 	{
 		log("RSA: message is too long to be encrypted! (0 <= m < n)\n", LOG_ERROR);
-		free(m);
+		kfree(m);
 		return 0;
 	}
 
 	BigInt *c = big_int_modular_pow(m, &pub->e, &pub->n);
-	free(m);
+	kfree(m);
 	if (!c)
 		return 0;
 	return c;
@@ -315,31 +315,31 @@ retry_generation:
 	if (!n || !phi_n || !p_minus_1 || !q_minus_1)
 	{
 		if (n)
-			free(n);
+			kfree(n);
 		if (phi_n)
-			free(phi_n);
+			kfree(phi_n);
 		if (p_minus_1)
-			free(p_minus_1);
+			kfree(p_minus_1);
 		if (q_minus_1)
-			free(q_minus_1);
+			kfree(q_minus_1);
 		return 0;
 	}
 	BigInt	*gcd = big_int_gcd(&e, phi_n);
 	if (!gcd)
 	{
-		free(n);
-		free(phi_n);
-		free(p_minus_1);
-		free(q_minus_1);
+		kfree(n);
+		kfree(phi_n);
+		kfree(p_minus_1);
+		kfree(q_minus_1);
 		return 0;
 	}
 	if (gcd->length != 1 || gcd->digits[0] != 1 || gcd->sign != 1)
 	{
-		free(n);
-		free(phi_n);
-		free(gcd);
-		free(p_minus_1);
-		free(q_minus_1);
+		kfree(n);
+		kfree(phi_n);
+		kfree(gcd);
+		kfree(p_minus_1);
+		kfree(q_minus_1);
 		tries++;
 		if (tries < MAX_TRIES)
 		{
@@ -356,11 +356,11 @@ retry_generation:
 	BigInt	*d = big_int_mod_inverse(&e, phi_n);
 	if (!d)
 	{
-		free(n);
-		free(phi_n);
-		free(gcd);
-		free(p_minus_1);
-		free(q_minus_1);
+		kfree(n);
+		kfree(phi_n);
+		kfree(gcd);
+		kfree(p_minus_1);
+		kfree(q_minus_1);
 		return 0;
 	}
 
@@ -370,16 +370,16 @@ retry_generation:
 	if (!dp || !dq || !qInv)
 	{
 		if (qInv)
-			free(qInv);
+			kfree(qInv);
 		if (dp)
-			free(dp);
+			kfree(dp);
 		if (dq)
-			free(dq);
-		free(n);
-		free(phi_n);
-		free(gcd);
-		free(p_minus_1);
-		free(q_minus_1);
+			kfree(dq);
+		kfree(n);
+		kfree(phi_n);
+		kfree(gcd);
+		kfree(p_minus_1);
+		kfree(q_minus_1);
 		return 0;
 	}
 
@@ -399,15 +399,15 @@ retry_generation:
 	ft_memcpy(&prv->dq, dq, sizeof(BigInt));
 	ft_memcpy(&prv->qInv, qInv, sizeof(BigInt));
 
-	free(n);
-	free(phi_n);
-	free(gcd);
-	free(d);
-	free(p_minus_1);
-	free(q_minus_1);
-	free(dp);
-	free(dq);
-	free(qInv);
+	kfree(n);
+	kfree(phi_n);
+	kfree(gcd);
+	kfree(d);
+	kfree(p_minus_1);
+	kfree(q_minus_1);
+	kfree(dp);
+	kfree(dq);
+	kfree(qInv);
 
 	return 1;
 }

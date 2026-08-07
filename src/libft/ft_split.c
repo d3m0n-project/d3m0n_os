@@ -44,8 +44,8 @@ static int	count_words(const char *str, char c)
 static char	**clean_strings(char	**output, size_t k)
 {
 	while (k > 0)
-		free(output[--k]);
-	free(output);
+		kfree(output[--k]);
+	kfree(output);
 	return (0);
 }
 
@@ -56,10 +56,10 @@ void	cleanup_splitted(char **splitted)
 	int i = 0;
 	while (splitted[i])
 	{
-		free(splitted[i]);
+		kfree(splitted[i]);
 		i++;
 	}
-	free(splitted);
+	kfree(splitted);
 }
 
 char	**ft_split(const char *str, char c)

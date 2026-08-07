@@ -1,5 +1,6 @@
 #include "log.h"
 #include "random.h"
+#include <stdarg.h>
 
 const char *UART_COLORS[17] = {"\e[0;38;5;0;49m", "\e[0;38;5;0;49m", "\e[0;31m", "\e[1;31m", "\e[38;5;208m", "\e[1;33m", "\e[0;32m", "\e[1;32m", "\e[0;34m", "\e[1;34m", "\e[0;36m", "\e[1;36m", "\e[0;35m", "\e[1;35m", "\e[0;30m", "\e[1;30m", "\e[1;37m"};
 
@@ -49,11 +50,11 @@ void	log(const char *fmt, e_logtype type, ...)
 			i++;
 
 			if (fmt[i] == 's')
-				uart_print(va_arg(args, char*));
+				uart_print(va_arg(args, char *));
 			else if (fmt[i] == 'c')
 			{
 				char c = va_arg(args, int);
-				uart_print(&c);
+				uart_putc(c);
 			}
 			else if (fmt[i] == 'i' || fmt[i] == 'd')
 				uart_putnbr_i(va_arg(args, int));
@@ -67,16 +68,12 @@ void	log(const char *fmt, e_logtype type, ...)
 				uart_putnbr_llu_hex(va_arg(args, unsigned int));
 			else
 			{
-				char	buf[2] = {0};
-				buf[0] = fmt[i];
-				uart_print(buf);
+				uart_putc(fmt[i]);
 			}
 		}
 		else
 		{
-			char	buf[2] = {0};
-			buf[0] = fmt[i];
-			uart_print(buf);
+			uart_putc(fmt[i]);
 		}
 	}
 	uart_print("\033[0m"); // reset color

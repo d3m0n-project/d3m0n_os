@@ -23,7 +23,7 @@ static int	load_executable(elf_header_32 header, elf_header_identification ident
 	}
 	//if (base_offset == (unsigned int)-1)
 	//{
-	//	free(buffer);
+	//	kfree(buffer);
 	//	return 1;
 	//}
 	
@@ -75,7 +75,7 @@ int	parse_elf_headers(int fd)
 	size_t	bytes_read;
 	size_t	total_read = 0;
 
-	buffer = malloc(buffer_size);
+	buffer = kmalloc(buffer_size);
 	if (!buffer)
 		return 1;
 
@@ -88,7 +88,7 @@ int	parse_elf_headers(int fd)
 			char *new_buffer = ft_realloc(buffer, total_read, new_size);
 			if (!new_buffer)
 			{
-				free(buffer);
+				kfree(buffer);
 				return 1;
 			}
 			buffer = new_buffer;
@@ -97,7 +97,7 @@ int	parse_elf_headers(int fd)
 	}
 	if (bytes_read == (size_t)-1)
 	{
-		free(buffer);
+		kfree(buffer);
 		return 1;
 	}
 
@@ -108,7 +108,7 @@ int	parse_elf_headers(int fd)
 		// read identification header
 		if (total_read < sizeof(elf_header_identification))
 		{
-			free(buffer);
+			kfree(buffer);
 			return 1;
 		}
 		ft_memcpy(&identification_header, buffer, sizeof(elf_header_identification));
@@ -117,7 +117,7 @@ int	parse_elf_headers(int fd)
 			elf_header_32	header;
 			if (total_read < sizeof(elf_header_32))
 			{
-				free(buffer);
+				kfree(buffer);
 				return 1;
 			}
 			ft_memcpy(&header, buffer, sizeof(elf_header_32));
@@ -133,7 +133,7 @@ int	parse_elf_headers(int fd)
 
 			if (u32(header.PROGRAM_HEADER_OFFSET) + u16(header.PROGRAM_HEADER_ENTRY_COUNT) * sizeof(elf_program_header_32) > total_read)
 			{
-				free(buffer);
+				kfree(buffer);
 				return 1;
 			}
 
@@ -148,7 +148,7 @@ int	parse_elf_headers(int fd)
 				break;
 
 			case ET_REL:
-				free(buffer);
+				kfree(buffer);
 				return 0; // ELF not executable
 			default:
 				return 0; // other
@@ -157,22 +157,22 @@ int	parse_elf_headers(int fd)
 		else if (identification_header.BITS_ARCH == 2) // 64 bits
 		{
 			log("64 bit elf are not handled yet.\n", 0);
-			free(buffer);
+			kfree(buffer);
 			return 1;
 		}
 		else // unknown
 		{
 			log("Unknown elf bit format.\n", 0);
-			free(buffer);
+			kfree(buffer);
 			return 1;
 		}
 	}
 	else
 	{
 		// other binary files are not handled yet
-		free(buffer);
+		kfree(buffer);
 		return 1; 
 	}
-	free(buffer);
+	kfree(buffer);
 	return 0;
 }

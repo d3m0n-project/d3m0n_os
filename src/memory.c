@@ -23,7 +23,7 @@ int heap_init(void)
 	return 0;
 }
 
-void	*malloc(uint32_t size)
+void	*kmalloc(uint32_t size)
 {
 	size = (size + 7) & ~7; // align to 8 bytes
 
@@ -60,7 +60,7 @@ void	*malloc(uint32_t size)
 	return 0;
 }
 
-int free(void *ptr)
+int kfree(void *ptr)
 {
 	if (!ptr)
 		return 1;

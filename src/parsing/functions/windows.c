@@ -44,8 +44,8 @@ char	*fn_window_go_back(void **args)
 	char *app_open_args[] = {package, window, 0};
 	fn_app_open((void **)app_open_args);
 
-	free(package);
-	free(window);
+	kfree(package);
+	kfree(window);
 
 	window_stack[window_stack_top].package = 0;
 	window_stack[window_stack_top].window = 0;

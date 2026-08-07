@@ -4,24 +4,14 @@
 #include "display.h"
 #include "filesystem.h"
 #include "memory.h"
-#include "bmp.h"
-#include "controls.h"
-#include "parsing.h"
+
+
 #include "time.h"
 #include "peripheral.h"
-#include "settings.h"
-#include "icons.h"
-
-#include "package_manager.h"
-
-#include "fat32.h"
-#include <crypto.h>
-#include <random.h>
-#include "ir.h"
 #include "proc.h"
 #include "IRQ.h"
 
-#include "usermode.h"
+
 
 
 t_conf		config;
@@ -47,8 +37,6 @@ void	panic(const char *message)
 
 void	kernel_main(void *dtb)
 {
-	t_window	main_window;
-
 	log("Loading kernel...\n", LOG_INFO);
 	show_kernel_status();
 
@@ -76,23 +64,6 @@ void	kernel_main(void *dtb)
 
 	list_dir("/");
 
-
-
-
-	timer_init();
-	enable_irq();
-
-	elf_to_proc("test_app");
-
-	process_list();
-
-	scheduler_start();
-	
-	//test_func(); // TODO: remove me
-
-	
-	
-	
 	
 	// init framebuffer
 	if (display_init())			panic("Could not initialize display\n");
@@ -101,38 +72,6 @@ void	kernel_main(void *dtb)
 	// init usb driver
 	usb_init(); // TODO: maybe make usb driver optional and enabled for testing
 	if (usb_enumerate() < 0)	log("USB enumeration did not find a configured root device\n", LOG_WARNING);
-
-	// rsa test
-	t_RSA_private_key	prv;
-	t_RSA_public_key	pub;
-	if (!rsa_private_key_require("/security/private.key", &prv, &pub))
-		panic("Failed to get your RSA keypair!\n");
-	
-	size_t	em_len = 0;
-	uint8_t	*em = pkcs1_v1_5_generate_em(&pub, (uint8_t *)"Hello World!", 12, &em_len);
-	BigInt *c = rsa_encrypt(em, em_len, &pub);
-	if (!c)
-		log("Failed to encrypt RSA\n", LOG_ERROR);
-	size_t	out_len = 0;
-	uint8_t	*m = rsa_decrypt(c, &out_len, &prv);
-	if (!m)
-		log("Failed to decrypt RSA\n", LOG_ERROR);
-	uint8_t	*msg = pkcs1_v1_5_decode_em(m, out_len, &out_len);
-	if (!msg)
-		log("Failed to decrypt pkcs#1 v1.5\n", LOG_ERROR);
-
-	log("msg bytes: ", 0);
-	for (size_t i=0; i<out_len; i++)
-		log("%X ", 0, msg[i]);
-	log("\n", 0);
-	log("msg: '", 0);
-	for (size_t i=0; i<out_len; i++)
-		log("%c", 0, msg[i]);
-	log("'\n", 0);
-	
-	// ---
-
-
 
 	// load spash
 	BmpTexture	splash;
@@ -146,66 +85,13 @@ void	kernel_main(void *dtb)
 	else						log("Config parsed successfully!\n", LOG_SUCCESS);
 
 
-	if (load_app_list())		panic("Failed to load the apps list\n");
-	else						log("Loaded apps successfully!\n", LOG_SUCCESS);
+	timer_init();
+	enable_irq();
+	if (!process_create(init_proc, "init"))
+		panic("Could not launch init process!\n");
 
-	// TODO: threading
-	uint64_t t = time_us();
-	char		*icon_pack_path = path_add("/themes/", config.icon_pack);
-	if (!icon_pack_path || load_icon_pack(icon_pack_path))
-		log("Could not load icon pack: %s\n", LOG_ERROR, icon_pack_path);
-	else
-		log("Loaded icons in %ims\n", LOG_INFO, (time_us() - t) / 1000);
-	if (icon_pack_path)
-		free(icon_pack_path);
-	
-	
-	// load desktop app manifest
-	char	*manifest = get_app_path_from_package(config.launcher, PACKAGE_MANIFEST);
-	if (manifest && !parse_manifest((const char *)manifest, &main_window))
-	{
-		free(manifest);
-		log("Main window created successfully!\n", LOG_SUCCESS);
-	}
-	else	panic("Could not create main window\n");
+	scheduler_start();
 
-	// set window launcher mode
-	main_window.is_launcher = 1;
-
-	main_window.bg_color = DISPLAY_COLORS[GREY]; // TODO: parse color of window when parsing
-
-	char *main_layout = get_app_path_from_package(config.launcher, PACKAGE_MAIN_LAYOUT);
-	if (main_layout && !parse_layout(main_layout, &main_window, 0, 0, 0, 0))
-	{
-		free(main_layout);
-		log("Parsed layout successfully!\n", LOG_SUCCESS);
-	}
-	else if (!main_layout)
-		panic("Could not find main layout\n");
-	else
-		panic("Invalid layout, could not continue\n");
-
-
-	char *main_source = get_app_path_from_package(config.launcher, PACKAGE_MAIN_SOURCE);
-	if (!parse_source(main_source, &main_window, 0))
-	{
-		free(main_source);
-		log("Parsed source file successfully!\n", LOG_SUCCESS);
-	}
-	else if (!main_source)
-		panic("Could not find main source\n");
-	else
-		panic("Could not parse src file\n");
-
-
-
-	exec_event(0, EVENT_ON_CREATE, &main_window); // Window.OnCreate
-
-	while (1)
-	{
-		usb_mouse_poll();
-		usleep(20000);
-	}
 
 	log("Finished kernel!\n", LOG_WARNING);
 	while (1) asm volatile ("wfi");

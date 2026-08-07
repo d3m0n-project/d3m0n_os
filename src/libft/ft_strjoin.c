@@ -20,7 +20,7 @@ char	*ft_strjoin(const char *s1, const char *s2)
 
 	s1_size = ft_strlen(s1);
 	s2_size = ft_strlen(s2);
-	joined_str = malloc(sizeof(char) * (s1_size + 1 + s2_size));
+	joined_str = kmalloc(sizeof(char) * (s1_size + 1 + s2_size));
 	if (!joined_str)
 		return (0);
 	ft_strlcpy(joined_str, s1, s1_size + 1);

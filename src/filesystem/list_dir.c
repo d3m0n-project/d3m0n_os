@@ -20,14 +20,14 @@ static void	collect_file(const char *name, uint32_t size)
 	{
 		size_t new_capacity = g_file_list->capacity ? g_file_list->capacity * 2 : 8;
 
-		char **new_files = malloc(sizeof(char *) * (new_capacity + 1));
+		char **new_files = kmalloc(sizeof(char *) * (new_capacity + 1));
 		if (!new_files)
 			return;
 
 		if (g_file_list->files)
 		{
 			ft_memcpy(new_files, g_file_list->files, sizeof(char *) * g_file_list->count);
-			free(g_file_list->files);
+			kfree(g_file_list->files);
 		}
 
 		g_file_list->files = new_files;

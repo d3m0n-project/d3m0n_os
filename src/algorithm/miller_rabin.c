@@ -25,7 +25,7 @@ int miller_witness(BigInt *n, BigInt *a, Context *context)
 
 	if (big_int_cmp(x, &one) == 0 || big_int_cmp(x, n_minus_1) == 0)
 	{
-		free(x);
+		kfree(x);
 		return 0;
 	}
 	for (unsigned int i = 1; i < s; i++)
@@ -33,30 +33,30 @@ int miller_witness(BigInt *n, BigInt *a, Context *context)
 		BigInt *sq = big_int_mul(x, x);
 		if (!sq)
 		{
-			free(x);
+			kfree(x);
 			return 1;
 		}
 
 		BigInt *next = big_int_mod(sq, n);
-		free(sq);
-		free(x);
+		kfree(sq);
+		kfree(x);
 		if (!next)
 			return 1;
 
 		x = next;
 		if (big_int_cmp(x, n_minus_1) == 0)
 		{
-			free(x);
+			kfree(x);
 			return 0;
 		}
 
 		if (big_int_cmp(x, &one) == 0)
 		{
-			free(x);
+			kfree(x);
 			return 1;
 		}
 	}
-	free(x);
+	kfree(x);
 	return 1;
 }
 
@@ -82,15 +82,15 @@ int	miller_rabin(BigInt *n)
 	BigInt	*n_minus_1 = big_int_sub(n, &one);
 	if (!n_minus_1)
 	{
-		free(n_minus_2);
+		kfree(n_minus_2);
 		return 0;
 	}
 	// n-1 = 2^s * d
 	BigInt *d = big_int_copy(n_minus_1);
 	if (!d)
 	{
-		free(n_minus_1);
-		free(n_minus_2);
+		kfree(n_minus_1);
+		kfree(n_minus_2);
 		return 0;
 	}
 	unsigned int s = 0;
@@ -107,23 +107,23 @@ int	miller_rabin(BigInt *n)
 		BigInt *a = big_int_rng(&two, n_minus_2);
 		if (!a)
 		{
-			free(n_minus_1);
-			free(d);
-			free(n_minus_2);
+			kfree(n_minus_1);
+			kfree(d);
+			kfree(n_minus_2);
 			return 0;
 		}
 		if (miller_witness(n, a, &context))
 		{
-			free(n_minus_1);
-			free(d);
-			free(n_minus_2);
-			free(a);
+			kfree(n_minus_1);
+			kfree(d);
+			kfree(n_minus_2);
+			kfree(a);
 			return 0;
 		}
-		free(a);
+		kfree(a);
 	}
-	free(n_minus_1);
-	free(d);
-	free(n_minus_2);
+	kfree(n_minus_1);
+	kfree(d);
+	kfree(n_minus_2);
 	return 1;
 }

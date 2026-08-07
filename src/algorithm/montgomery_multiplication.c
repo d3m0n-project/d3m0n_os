@@ -7,7 +7,7 @@ BigInt *montgomery_from(BigInt *x, t_mont_ctx *ctx)
 		return 0;
 
 	BigInt *r = montgomery_mul(tmp, &ctx->one, &ctx->n, ctx->n0_inv);
-	free(tmp);
+	kfree(tmp);
 	return r;
 }
 
@@ -18,7 +18,7 @@ BigInt	*montgomery_to(BigInt *x, t_mont_ctx *ctx)
 		return 0;
 
 	BigInt *r = montgomery_mul(tmp, &ctx->r2, &ctx->n, ctx->n0_inv);
-	free(tmp);
+	kfree(tmp);
 	return r;
 }
 
@@ -50,7 +50,7 @@ static BigInt	*mont_compute_r2(BigInt *n)
 			if (!tmp)
 				return 0;
 			r = *tmp;
-			free(tmp);
+			kfree(tmp);
 		}
 	}
 	return big_int_copy(&r);
@@ -69,7 +69,7 @@ int	montgomery_ctx_init(t_mont_ctx *ctx, BigInt *n)
 	if (!r2)
 		return 0;
 	ft_memcpy(&ctx->r2, r2, sizeof(BigInt));
-	free(r2);
+	kfree(r2);
 
 	// one
 	ctx->one = (BigInt){.sign=1, .length=1, .digits={1}};
@@ -148,10 +148,10 @@ BigInt *montgomery_mul(BigInt *a, BigInt *b, BigInt *n, uint32_t n0_inv)
 		BigInt *tmp = big_int_sub(r, n);
 		if (!tmp)
 		{
-			free(r);
+			kfree(r);
 			return 0;
 		}
-		free(r);
+		kfree(r);
 		r = tmp;
 	}
 	r->sign = 1;

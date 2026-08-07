@@ -13,7 +13,7 @@ int	load_font(const char *path, t_font	*out, int dot_count)
 	}
 	uint32_t	size = 4096;
 	uint32_t	total_read = 0;
-	out->data = malloc(size);
+	out->data = kmalloc(size);
 	out->dot_count = dot_count;
 	if (!out->data)
 	{
@@ -23,16 +23,16 @@ int	load_font(const char *path, t_font	*out, int dot_count)
 	while ((size = read(fd, (char *)(out->data + total_read), size)) > 0)
 	{
 		total_read += size;
-		uint8_t	*new_ptr = malloc(total_read + size);
+		uint8_t	*new_ptr = kmalloc(total_read + size);
 		if (!new_ptr)
 		{
-			free(out->data);
+			kfree(out->data);
 			close(fd);
 			log("Could not allocate memory for font\n", LOG_ERROR);
 			return 1;
 		}
 		ft_memcpy(new_ptr, out->data, total_read);
-		free(out->data);
+		kfree(out->data);
 		out->data = new_ptr;
 	}
 	log("Read %u bytes from %s!\n", LOG_SUCCESS, total_read, path);
@@ -42,5 +42,5 @@ int	load_font(const char *path, t_font	*out, int dot_count)
 
 void	free_font(t_font *font)
 {
-	free(font->data);
+	kfree(font->data);
 }

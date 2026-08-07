@@ -196,31 +196,27 @@ void	uart_putnbr_u(unsigned int nb)
 
 void	uart_putnbr_llu(unsigned long long nb)
 {
-	char	buf[2] = {0};
 	if (nb == 0)
-		uart_print("0");
+		uart_putc('0');
 	else if (nb > 0)
 	{
 		if (nb / 10 > 0)
 			uart_putnbr_llu(nb / 10);
-		buf[0] = '0' + (nb % 10);
-		uart_print(buf);
+		uart_putc('0' + (nb % 10));
 	}
 }
 
 void	uart_putnbr_llu_hex(unsigned long long nb)
 {
-	char	buf[2] = {0};
 	char	set[17] = "0123456789ABCDEF";
 	if (nb == 0)
 	{
-		uart_print("0");
+		uart_putc('0');
 	}
 	else if (nb > 0)
 	{
 		if (nb / 16 > 0)
 			uart_putnbr_llu_hex(nb / 16);
-		buf[0] = set[nb % 16];
-		uart_print(buf);
+		uart_putc(set[nb % 16]);
 	}
 }

@@ -95,24 +95,24 @@ char	*get_package_from_manifest_path(char *path)
 	if (!module_path || !provider_path)
 	{
 		if (module_path)
-			free(module_path);
+			kfree(module_path);
 		if (provider_path)
-			free(provider_path);
+			kfree(provider_path);
 	}
 	// check that the module is valid
 	if (!file_exists(provider_path))
 	{
 		log("Could not find provider path at %s\n", LOG_ERROR | LOG_INDENT, provider_path);
-		free(module_path);
-		free(provider_path);
+		kfree(module_path);
+		kfree(provider_path);
 		cleanup_splitted(splitted);
 		return 0;
 	}
 	int fd = open(provider_path, O_READ);
 	if (fd < 0)
 	{
-		free(module_path);
-		free(provider_path);
+		kfree(module_path);
+		kfree(provider_path);
 		cleanup_splitted(splitted);
 		log("GET_PKG_FROM_PATH: Could not find provider file at %s\n", LOG_ERROR | LOG_INDENT, provider_path);
 		return 0;
@@ -124,8 +124,8 @@ char	*get_package_from_manifest_path(char *path)
 	{
 		log("Could not read provider for module %s\n", LOG_ERROR | LOG_INDENT, module_path);
 		close(fd);
-		free(module_path);
-		free(provider_path);
+		kfree(module_path);
+		kfree(provider_path);
 		cleanup_splitted(splitted);
 		return 0;
 	}
@@ -136,8 +136,8 @@ char	*get_package_from_manifest_path(char *path)
 		if (!ft_isalnum(provider_name[i]))
 		{
 			log("Provider name need to contain only alphanumerical characters, got '%s'\n", LOG_ERROR | LOG_INDENT, provider_name);
-			free(module_path);
-			free(provider_path);
+			kfree(module_path);
+			kfree(provider_path);
 			cleanup_splitted(splitted);
 			return 0;
 		}
@@ -160,8 +160,8 @@ char	*get_package_from_manifest_path(char *path)
 		}
 	}
 
-	free(module_path);
-	free(provider_path);
+	kfree(module_path);
+	kfree(provider_path);
 	cleanup_splitted(splitted);
 	return package;
 }
@@ -180,11 +180,11 @@ int	load_app_list(void)
 	{
 		for (int i = 0; apps[i].name; i++)
 		{
-			free(apps[i].name);
-			free(apps[i].icon);
-			free(apps[i].package);
+			kfree(apps[i].name);
+			kfree(apps[i].icon);
+			kfree(apps[i].package);
 		}
-		free(apps);
+		kfree(apps);
 		apps = 0;
 	}
 
@@ -201,7 +201,7 @@ int	load_app_list(void)
 		char *package_lst = path_add(module_path, "packages.lst");
 		if (!package_lst)
 		{
-			free(module_path);
+			kfree(module_path);
 			continue;
 		}
 
@@ -209,17 +209,17 @@ int	load_app_list(void)
 		if (fd < 0)
 		{
 			log("Could not open package.lst for module %s\n", LOG_ERROR | LOG_INDENT, package_lst);
-			free(module_path);
+			kfree(module_path);
 			continue;
 		}
-		free(package_lst);
+		kfree(package_lst);
 
 		char *line;
 		while ((line = get_next_line(fd)))
 		{
 			if (line[0] != '#' && line[0] != '\n' && line[0] != '\0')
 				total_n_apps++;
-			free(line);
+			kfree(line);
 		}
 		close(fd);
 	}
@@ -246,7 +246,7 @@ int	load_app_list(void)
 		char *package_lst = path_add(module_path, "packages.lst");
 		if (!package_lst)
 		{
-			free(module_path);
+			kfree(module_path);
 			continue;
 		}
 
@@ -254,17 +254,17 @@ int	load_app_list(void)
 		if (fd < 0)
 		{
 			log("Could not open package.lst for module %s\n", LOG_ERROR | LOG_INDENT, package_lst);
-			free(module_path);
+			kfree(module_path);
 			continue;
 		}
-		free(package_lst);
+		kfree(package_lst);
 
 		char *line;
 		while ((line = get_next_line(fd)))
 		{
 			if (line[0] == '#' || line[0] == '\n' || line[0] == '\0')
 			{
-				free(line);
+				kfree(line);
 				continue;
 			}
 
@@ -302,29 +302,29 @@ int	load_app_list(void)
 									if (file_exists(relative_path))
 									{
 										apps[app_index].icon = relative_path;
-										free(mline);
-										free(app_path);
+										kfree(mline);
+										kfree(app_path);
 										continue;
 									}
-									free(relative_path);
+									kfree(relative_path);
 								}
-								free(app_path);
+								kfree(app_path);
 							}
 						}
 						apps[app_index].icon = ft_strdup(mline + 6);
 					}
 					else
 						log("Invalid line in package manifest: '%s' in %s\n", LOG_ERROR, mline, manifest);
-					free(mline);
+					kfree(mline);
 				}
 				close(mfd);
 			} else
 				log("Could not find manifest at %s\n", LOG_ERROR | LOG_INDENT, manifest);
-			free(manifest);
+			kfree(manifest);
 			app_index++;
-			free(line);
+			kfree(line);
 		}
-		free(module_path);
+		kfree(module_path);
 		close(fd);
 	}
 

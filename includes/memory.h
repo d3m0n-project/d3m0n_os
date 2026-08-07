@@ -15,8 +15,8 @@ extern uint8_t	__heap_end[];
 #define HEAP_END		    __heap_end
 #define HEAP_SIZE		    ((uint32_t)HEAP_END - (uint32_t)HEAP_START)
 
-void	*malloc(uint32_t size);
-int		free(void *ptr);
+void	*kmalloc(uint32_t size);
+int		kfree(void *ptr);
 int		heap_init(void);
 
 void	*memcpy(void *dst, void *src, uint32_t size);

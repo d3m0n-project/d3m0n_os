@@ -1,4 +1,4 @@
-OUT			= d3s
+OUT			= d3c
 CXX			= g++
 CPP_FLAGS	= -Wall -Wextra -Werror
 CPP_FILES	= app.cpp d3c.cpp utils.cpp

@@ -126,7 +126,7 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	stride = (row_size + 3) & ~3;
 	data_size = stride * out->height;
 
-	file_pixels = malloc(data_size);
+	file_pixels = kmalloc(data_size);
 	if (!file_pixels)
 	{
 		log("Could not allocate %lu bytes for pixels\n", LOG_ERROR | LOG_INDENT, data_size);
@@ -145,7 +145,7 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 		goto error;
 	}
 
-	out->pixels = malloc(out->width * out->height * sizeof(uint32_t));
+	out->pixels = kmalloc(out->width * out->height * sizeof(uint32_t));
 	if (!out->pixels)
 		goto error;
 
@@ -208,15 +208,15 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	log("total BMP loading time: %llums\n", LOG_INFO | LOG_INDENT, (time_us() / 1000) - start_time);
 	#endif
 
-	free(file_pixels);
+	kfree(file_pixels);
 	close(fd);
 	return (0);
 
 error:
 	if (file_pixels)
-		free(file_pixels);
+		kfree(file_pixels);
 	if (out->pixels)
-		free(out->pixels);
+		kfree(out->pixels);
 	close(fd);
 	return (1);
 }
@@ -224,8 +224,8 @@ error:
 int	free_bmp_texture(BmpTexture *texture)
 {
 	if (texture->pixels)
-		return (free(texture->pixels));
+		return (kfree(texture->pixels));
 	if ((uintptr_t)texture >= (uintptr_t)HEAP_START && (uintptr_t)texture <= (uintptr_t)HEAP_END)
-		free(texture);
+		kfree(texture);
 	return 1;
 }

@@ -16,6 +16,8 @@ typedef struct
 FAT32_File	fat32_open(const char *filename);
 FAT32_File	fat32_create(const char *filename);
 int			fat32_delete(const char *filename);
+FAT32_File	fat32_mkdir(const char *path);
+int			fat32_rmdir(const char *path);
 int			fat32_read(FAT32_File *file, uint8_t *buffer, uint32_t len);
 int			fat32_write(FAT32_File *file, const uint8_t *buffer, uint32_t len);
 void		fat32_close(FAT32_File *file);

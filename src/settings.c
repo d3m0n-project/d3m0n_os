@@ -46,7 +46,7 @@ int		parse_config(t_conf *config)
 			if (len > STRING_SIZE - 1)
 			{
 				log("CONFIG: Invalid config entry, max string length: %i\n", LOG_ERROR, STRING_SIZE);
-				free(value);
+				kfree(value);
 				return 1;
 			}
 			ft_strlcpy((char *)current->config_ptr, value, len + 1);
@@ -59,11 +59,11 @@ int		parse_config(t_conf *config)
 			else
 			{
 				log("CONFIG: Integer not in allowed range [%i, %i], got %i\n", LOG_ERROR, current->range.min, current->range.max, v);
-				free(value);
+				kfree(value);
 				return 1;
 			}
 		}
-		free(value);
+		kfree(value);
 		i++;
 	}
 	return 0;
@@ -86,7 +86,7 @@ char	*get_setting(const char *path, const char *key, int	*not_found)
 
 		if (line[0] == '#' || line[0] == '\r' || line[0] == '\n' || line[0] == ' ')
 		{
-			free(line);
+			kfree(line);
 			continue;
 		}
 
@@ -96,7 +96,7 @@ char	*get_setting(const char *path, const char *key, int	*not_found)
 
 		if (line[i] != ':')
 		{
-			free(line);
+			kfree(line);
 			close(fd);
 			return 0;
 		}
@@ -110,7 +110,7 @@ char	*get_setting(const char *path, const char *key, int	*not_found)
 
 			if (!line[i])
 			{
-				free(line);
+				kfree(line);
 				close(fd);
 				return 0;
 			}
@@ -124,7 +124,7 @@ char	*get_setting(const char *path, const char *key, int	*not_found)
 
 			if (value_len == 0)
 			{
-				free(line);
+				kfree(line);
 				close(fd);
 				*not_found = 1;
 				return 0;
@@ -133,7 +133,7 @@ char	*get_setting(const char *path, const char *key, int	*not_found)
 			output = ft_calloc(value_len + 1, sizeof(char));
 			if (!output)
 			{
-				free(line);
+				kfree(line);
 				close(fd);
 				return 0;
 			}
@@ -141,11 +141,11 @@ char	*get_setting(const char *path, const char *key, int	*not_found)
 			ft_memcpy(output, line + i, value_len);
 			output[value_len] = '\0';
 
-			free(line);
+			kfree(line);
 			close(fd);
 			return output;
 		}
-		free(line);
+		kfree(line);
 	}
 	close(fd);
 	return 0;
@@ -173,7 +173,7 @@ int	set_setting(const char *path, const char *key, const char *value)
 	while ((line = get_next_line(fd)))
 	{
 		line_count++;
-		free(line);
+		kfree(line);
 	}
 	close(fd);
 
@@ -188,7 +188,7 @@ int	set_setting(const char *path, const char *key, const char *value)
 	if (fd < 0)
 	{
 		log("SET_SETTING: Failed to open config file %s for reading\n", LOG_ERROR, path);
-		free(lines);
+		kfree(lines);
 		return 1;
 	}
 
@@ -206,7 +206,7 @@ int	set_setting(const char *path, const char *key, const char *value)
 			if (!new_line)
 			{
 				log("SET_SETTING: Failed to allocate new line for config %s\n", LOG_ERROR, path);
-				free(line);
+				kfree(line);
 				goto cleanup;
 			}
 			ft_strlcpy(new_line, key, new_len + 1);
@@ -214,7 +214,7 @@ int	set_setting(const char *path, const char *key, const char *value)
 			ft_strlcat(new_line, value, new_len + 1);
 			lines[i] = new_line;
 			found = 1;
-			free(line);
+			kfree(line);
 		}
 		else
 			lines[i] = line;
@@ -276,19 +276,19 @@ int	set_setting(const char *path, const char *key, const char *value)
 	i = 0;
 	while (lines[i])
 	{
-		free(lines[i]);
+		kfree(lines[i]);
 		i++;
 	}
-	free(lines);
+	kfree(lines);
 	return 0;
 
 cleanup:
 	i = 0;
 	while (lines[i])
 	{
-		free(lines[i]);
+		kfree(lines[i]);
 		i++;
 	}
-	free(lines);
+	kfree(lines);
 	return 1;
 }

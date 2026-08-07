@@ -14,17 +14,17 @@ int	parse_manifest(const char *path, t_window *win)
 	if (!package)
 	{
 		log("MANIFEST: Could not fetch package for manifest '%s'\n", LOG_ERROR | LOG_INDENT, path);
-		free(title);
+		kfree(title);
 		return 1;
 	}
 	if (create_window(win, (const char *)title, (const char *)package, SCREEN_WIDTH, SCREEN_HEIGHT)) // TODO: parse width and height from layout
 	{
-		free(title);
-		free(package);
+		kfree(title);
+		kfree(package);
 		log("MANIFEST: Could not create Window from manifest %s\n", LOG_ERROR, path);
 		return 1;
 	}
-	free(package);
-	free(title);
+	kfree(package);
+	kfree(title);
 	return 0;
 }

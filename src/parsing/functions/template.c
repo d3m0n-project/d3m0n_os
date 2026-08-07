@@ -27,20 +27,20 @@ static char	*get_template_source_path(const char *layout_path, t_window *current
 			base = path_add(package, "src/");
 			if (!base)
 			{
-				free(package);
+				kfree(package);
 				return (0);
 			}
 			tmp = path_add(base, (char *)(layout_path + 8));
-			free(base);
+			kfree(base);
 			base = tmp;
 		}
 		else
 			base = path_add(package, (char *)layout_path);
-		free(package);
+		kfree(package);
 		if (!base)
 			return (0);
 		tmp = path_add(base, ".src");
-		free(base);
+		kfree(base);
 		return (tmp);
 	}
 	layout_segment = ft_strnstr(layout_path, "/source/layouts/", ft_strlen(layout_path));
@@ -83,15 +83,15 @@ char*	template_load(void **args)
 		relative_path = path_add(package, path);
 		if (!relative_path)
 		{
-			free(package);
+			kfree(package);
 			log("TEMPLATE.LOAD: Could not allocate memory for relative app path\n", LOG_ERROR | LOG_INDENT);
 			return 0;
 		}
 		if (!file_exists(relative_path))
 		{
 			log("TEMPLATE.LOAD: Could not find template file: '%s'\n", LOG_ERROR | LOG_INDENT, path);
-			free(package);
-			free(relative_path);
+			kfree(package);
+			kfree(relative_path);
 			return 0;
 		}
 	}
@@ -139,10 +139,10 @@ char*	template_load(void **args)
 		}
 	}
 	if (source_path)
-		free(source_path);
+		kfree(source_path);
 	if (relative_path)
-		free(relative_path);
+		kfree(relative_path);
 	if (package)
-		free(package);
+		kfree(package);
 	return 0;
 }

@@ -44,7 +44,7 @@ static void	free_library(void)
 	for (size_t i = 0; i < library_count; i++)
 		free_bmp_texture(&library[i].texture);
 
-	free(library);
+	kfree(library);
 	library = 0;
 	library_count = 0;
 }
@@ -65,7 +65,7 @@ int	load_icon_pack(char *path)
 	fd = open(list_path, O_READ);
 	if (fd < 0)
 	{
-		free(list_path);
+		kfree(list_path);
 		log("ICONS: Could not find icons.lst in icon pack\n", LOG_ERROR);
 		return 1;
 	}
@@ -83,20 +83,20 @@ int	load_icon_pack(char *path)
 		if (!valid_icon_path(line))
 		{
 			log("ICONS: Invalid icon path at l.%i: '%s'\n", LOG_ERROR, max_icons+1, line);
-			free(line);
+			kfree(line);
 			close(fd);
-			free(list_path);
+			kfree(list_path);
 			return 1;
 		}	
 		max_icons++;
-		free(line);
+		kfree(line);
 	}
 	close(fd);
 	log("Found %lu icons in the icon pack!\n", LOG_SUCCESS, max_icons);
-	library = malloc(sizeof(t_icon) * (max_icons + 1));
+	library = kmalloc(sizeof(t_icon) * (max_icons + 1));
 	if (!library)
 	{
-		free(list_path);
+		kfree(list_path);
 		log("ICONS: Could not allocate library\n", LOG_ERROR);
 		return 1;
 	}
@@ -108,7 +108,7 @@ int	load_icon_pack(char *path)
 
 
 	fd = open(list_path, O_READ);
-	free(list_path);
+	kfree(list_path);
 	if (fd < 0)
 	{
 		
@@ -132,7 +132,7 @@ int	load_icon_pack(char *path)
 			
 		if (!valid_icon_path(line))
 		{
-			free(line);
+			kfree(line);
 			continue;
 		}
 
@@ -140,7 +140,7 @@ int	load_icon_pack(char *path)
 		parts = ft_split(line, '/');
 		if (!parts)
 		{
-			free(line);
+			kfree(line);
 			close(fd);
 			free_library();
 			log("ICONS: Could not allocate path folder parts\n", LOG_ERROR);
@@ -161,7 +161,7 @@ int	load_icon_pack(char *path)
 		{
 			log("ICONS: Could not allocate full path of icon\n", LOG_ERROR);
 			cleanup_splitted(parts);
-			free(line);
+			kfree(line);
 			close(fd);
 			free_library();
 			return 1;
@@ -170,17 +170,17 @@ int	load_icon_pack(char *path)
 		if (bmp_load_image(&library[library_count].texture, full_path))
 		{
 			log("ICONS: Could not load image at %s\n", LOG_ERROR, full_path);
-			free(full_path);
+			kfree(full_path);
 			cleanup_splitted(parts);
-			free(line);
+			kfree(line);
 			close(fd);
 			free_library();
 			return 1;
 		}
 		library_count++;
-		free(full_path);
+		kfree(full_path);
 		cleanup_splitted(parts);
-		free(line);
+		kfree(line);
 	}
 	close(fd);
 	return (0);
