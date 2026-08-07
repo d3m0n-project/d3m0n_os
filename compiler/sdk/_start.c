@@ -1,6 +1,7 @@
 #include "sys.h"
 
 /*
+	d3m0n os
 	Entry point of the application. Do not edit.
 */
 

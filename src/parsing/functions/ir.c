@@ -1,5 +1,6 @@
 #include "scripting.h"
 #include "ir.h"
+#include "log.h"
 
 char	*fn_ir_emit(void **args)
 {

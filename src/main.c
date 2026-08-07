@@ -87,7 +87,7 @@ void	kernel_main(void *dtb)
 
 	timer_init();
 	enable_irq();
-	if (!process_create(init_proc, "init"))
+	if (!process_create(init_proc, "init", 1))
 		panic("Could not launch init process!\n");
 
 	scheduler_start();

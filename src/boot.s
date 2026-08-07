@@ -156,139 +156,156 @@ reserved_handler:
 
 irq_handler:
 
-	/*
-	 * ARM IRQ lr points 4 bytes after instruction
-	 */
-	sub lr,lr,#4
+    /*
+     * IRQ return address correction
+     */
+    sub lr, lr, #4
+
+
+    /*
+     * Save interrupted context
+     *
+     * IRQ stack:
+     *
+     * sp ->
+     *   SPSR
+     *   r0-r12
+     *   lr
+     */
+    stmfd sp!, {r0-r12,lr}
+
+    mrs r0, spsr
+    stmfd sp!, {r0}
+
+
+    /*
+     * current_process
+     */
+    ldr r1, =current_process
+    ldr r1, [r1]
+
+
+    /*
+     * Save IRQ frame
+     */
+    str sp, [r1,#0]
 
 
 
-	/*
-	 * Save process registers
-	 *
-	 * IRQ stack
-	 */
-	stmfd sp!,{r0-r12,lr}
+    /*
+     * Save SYS stack only for USER processes
+     */
+    ldr r2, [r1,#16]       @ mode
+
+    cmp r2, #0             @ PROCESS_KERNEL
+    beq no_save_user_stack
 
 
 
-	/*
-	 * Save SPSR
-	 */
-	mrs r0,spsr
-	stmfd sp!,{r0}
+    /*
+     * Switch to SYS mode
+     */
+    mrs r2,cpsr
+    bic r2,r2,#0x1f
+    orr r2,r2,#0x1f        @ SYS
+    msr cpsr_c,r2
+
+
+    /*
+     * Save user stack
+     */
+    mov r3,sp
+    str r3,[r1,#4]
 
 
 
-	/*
-	 * current_process->sp = sp
-	 */
-	ldr r1,=current_process
-	ldr r1,[r1]
-
-	str sp,[r1]
-
-
-	/*
-	 * Save the outgoing process SYS stack pointer
-	 */
-	mrs r2,cpsr
-
-	bic r2,r2,#0x1f
-	orr r2,r2,#0x1f       @ SYS
-
-	msr cpsr_c,r2
-
-	mov r3,sp
-	str r3,[r1,#4]
-
-
-	/*
-	 * Back to IRQ mode
-	 */
-	mrs r2,cpsr
-
-	bic r2,r2,#0x1f
-	orr r2,r2,#0x12       @ IRQ
-
-	msr cpsr_c,r2
+    /*
+     * Return to IRQ mode
+     */
+    msr cpsr_c,#0xD2
 
 
 
-	/*
-	 * scheduler
-	 */
-	bl irq_dispatch
+no_save_user_stack:
 
 
 
-	/*
-	 * get new process
-	 */
-	ldr r1,=current_process
-	ldr r1,[r1]
+    /*
+     * scheduler
+     */
+    bl irq_dispatch
 
 
 
-	/*
-	 * Restore IRQ frame
-	 */
-	ldr sp,[r1]
+    /*
+     * Reload current process
+     */
+    ldr r1, =current_process
+    ldr r1, [r1]
 
 
 
-	/*
-	 * Restore SPSR
-	 */
-	ldmfd sp!,{r0}
-
-	msr spsr_cxsf,r0
+    /*
+     * Restore IRQ frame
+     */
+    ldr sp,[r1,#0]
 
 
 
-	/*
-	 * Switch to SYS mode
-	 * and install user SP
-	 */
-	mrs r2,cpsr
-
-	bic r2,r2,#0x1f
-	orr r2,r2,#0x1f       @ SYS
-
-	msr cpsr_c,r2
+    /*
+     * Restore SPSR
+     */
+    ldmfd sp!,{r0}
+    msr spsr_cxsf,r0
 
 
 
-	ldr r0,[r1,#4]
+    /*
+     * Restore SYS stack only for USER processes
+     */
+    ldr r2,[r1,#16]
 
-	mov sp,r0
-
-
-
-	/*
-	 * Back to IRQ mode
-	 */
-	mrs r2,cpsr
-
-	bic r2,r2,#0x1f
-	orr r2,r2,#0x12       @ IRQ
-
-	msr cpsr_c,r2
+    cmp r2,#0
+    beq no_restore_user_stack
 
 
 
-	/*
-	 * Restore registers
-	 */
-	ldmfd sp!,{r0-r12,lr}
+    /*
+     * Switch SYS mode
+     */
+    msr cpsr_c,#0xDF
+
+
+    /*
+     * Restore user stack
+     */
+    ldr r0,[r1,#4]
+    mov sp,r0
 
 
 
-	/*
-	 * Return to process
-	 */
-	subs pc,lr,#0
+    /*
+     * Back IRQ
+     */
+    msr cpsr_c,#0xD2
 
+
+
+no_restore_user_stack:
+
+
+
+    /*
+     * Restore registers
+     */
+    ldmfd sp!,{r0-r12,lr}
+
+
+
+    /*
+     * Return from IRQ
+     */
+    subs pc,lr,#0
 
 fiq_handler:
 	stmfd	sp!, {r0-r12, lr}

@@ -1,4 +1,5 @@
 #include "log.h"
+#include "proc.h"
 #include "libft.h"
 
 typedef struct
@@ -44,6 +45,8 @@ static inline	uint32_t read_dfar(void)
 
 void	kernel_panic(ExceptionFrame *frame, uint32_t exception_id)
 {
+	process_list();
+
 	log("=== KERNEL PANIC ===\n", LOG_ERROR);
 	log("PC:               0x%X\n", LOG_ERROR | LOG_INDENT, frame->pc);
 	log("TYPE:             %s\n", LOG_ERROR | LOG_INDENT, get_exception_name(exception_id));
@@ -52,6 +55,10 @@ void	kernel_panic(ExceptionFrame *frame, uint32_t exception_id)
 	{
 		uint32_t fault_addr = read_dfar();
 		log("FAULT ADDR:       0x%X\n", LOG_ERROR | LOG_INDENT, fault_addr);
+	}
+	if (exception_id == 0)
+	{
+		log("INSTRUCTION:      0x%X\n", LOG_ERROR | LOG_INDENT, *(uint32_t *)frame->pc);
 	}
 
 

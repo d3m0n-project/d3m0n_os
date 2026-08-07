@@ -112,7 +112,7 @@ int	sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 
 int	sys_open(uint32_t user_path, uint32_t flags, uint32_t a2, uint32_t a3)
 {
-	const char	*path;
+	const char	*path; // TODO: fd list for each process
 
 	(void)a2;
 	(void)a3;
@@ -231,38 +231,43 @@ int	sys_rmdir(uint32_t user_path, uint32_t a1, uint32_t a2, uint32_t a3)
 	return dir_delete(path);
 }
 
-void	*sys_sbrk(int32_t increment)
+int	sys_sbrk(uint32_t increment, uint32_t a1, uint32_t a2, uint32_t a3)
 {
-    t_process *proc = current_process;
-    uint32_t old_end;
-    uint32_t new_end;
+	t_process *proc = current_process;
+	uint32_t old_end;
+	uint32_t new_end;
+	int32_t signed_inc;
 
-    old_end = proc->heap_end;
+	(void)a1;
+	(void)a2;
+	(void)a3;
 
-    if (increment == 0)
-        return (void *)old_end;
+	if (!proc)
+		return (int)-1;
 
-    new_end = old_end + increment;
+	old_end = proc->heap_end;
 
-    if (new_end < proc->heap_start)
-        return (void *)-1;
+	if (proc->heap_start == 0)
+		return (int)-1;
 
-    if (new_end > USER_HEAP_MAX)
-        return (void *)-1;
+	signed_inc = (int32_t)increment;
 
-    if (increment > 0)
-    {
-        if (map_user_pages(
-                proc->address_space,
-                old_end,
-                new_end
-            ) != 0)
-            return (void *)-1;
-    }
+	/* sbrk(0) returns the heap base. This gives user-space the stable,
+	 * static-free anchor it needs to locate its allocator control block. */
+	if (signed_inc == 0)
+		return (int)proc->heap_start;
 
-    proc->heap_end = new_end;
+	new_end = (uint32_t)(old_end + signed_inc);
 
-    return (void *)old_end;
+	if (new_end < proc->heap_start)
+		return (int)-1;
+
+	if (new_end > USER_HEAP_MAX(proc))
+		return (int)-1;
+
+	proc->heap_end = new_end;
+
+	return (int)old_end;
 }
 
 int	sys_getfbaddr(uint32_t buff_ptr, uint32_t width_ptr, uint32_t height_ptr, uint32_t a3)

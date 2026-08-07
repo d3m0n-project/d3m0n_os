@@ -230,8 +230,7 @@ static int read_entire_file(int fd, char **out_buf, uint32_t *out_size)
 	return (0);
 }
 
-static int load_image_bounds(char *file_buf, uint32_t file_size, elf_header_32 *header,
-	char is_msb, uint32_t *out_min_vaddr, uint32_t *out_max_vaddr)
+static int load_image_bounds(char *file_buf, uint32_t file_size, elf_header_32 *header, char is_msb, uint32_t *out_min_vaddr, uint32_t *out_max_vaddr)
 {
 	uint16_t ph_count;
 	uint16_t ph_entry_size;
@@ -287,8 +286,7 @@ static int load_image_bounds(char *file_buf, uint32_t file_size, elf_header_32 *
 	return (0);
 }
 
-static void load_pt_segments(char *image, char *file_buf, elf_header_32 *header, char is_msb,
-	uint32_t min_vaddr)
+static void load_pt_segments(char *image, char *file_buf, elf_header_32 *header, char is_msb, uint32_t min_vaddr)
 {
 	uint16_t ph_count;
 	uint16_t ph_entry_size;
@@ -371,6 +369,7 @@ t_process	*elf_to_proc(char *elf_path)
 		return (0);
 	}
 	ft_memcpy(&header, file_buf, sizeof(elf_header_32));
+	print_elf_file_report(&header);
 	if (header.IDENTIFICATION.BITS_ARCH != 1)
 	{
 		kfree(file_buf);
@@ -398,7 +397,7 @@ t_process	*elf_to_proc(char *elf_path)
 		log("ELF: Invalid PT_LOAD layout '%s'\n", LOG_ERROR, elf_path);
 		return (0);
 	}
-	image = ft_calloc((size_t)(max_vaddr - min_vaddr), 1);
+	image = ft_calloc((size_t)(max_vaddr - min_vaddr) + USER_HEAP_RESERVED + 8, 1);
 	if (!image)
 	{
 		kfree(file_buf);
@@ -415,7 +414,7 @@ t_process	*elf_to_proc(char *elf_path)
 		return (0);
 	}
 	entry = (void (*)(void))(uintptr_t)(image + (entry_vaddr - min_vaddr));
-	proc = process_create(entry, proc_name_from_path(elf_path));
+	proc = process_create(entry, proc_name_from_path(elf_path), 0);
 	if (!proc)
 	{
 		kfree(file_buf);
@@ -425,6 +424,8 @@ t_process	*elf_to_proc(char *elf_path)
 	proc->address_space = image;
 	proc->image_vaddr_base = min_vaddr;
 	proc->image_size = max_vaddr - min_vaddr;
+	proc->heap_start = (uint32_t)(((uint8_t *)image + (max_vaddr - min_vaddr)) + 7) & ~7U;
+	proc->heap_end = proc->heap_start;
 	kfree(file_buf);
 	return (proc);
 }

@@ -1,5 +1,6 @@
 #include "crypto.h"
 #include "random.h"
+#include "log.h"
 
 #define MAX_RSA_GENERATION_LOOP	5000
 #define MAX_TRIES				5

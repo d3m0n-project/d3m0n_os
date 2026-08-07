@@ -77,13 +77,10 @@ void schedule(void)
 	t_process *old = current_process;
 
 	//log("switch %s -> ", 0, current_process->proc_name, 0);
-	if (old)
+	if (old && old->state == PROC_RUNNING)
 		old->state = PROC_READY;
 
 	t_process *next = scheduler_next();
-
-	//log("%s\n", 0, next->proc_name, 0);
-
 	if (!next)
 		return;
 		
@@ -122,6 +119,7 @@ void timer_handler(void)
 	if (--current_process->time_slice <= 0)
 	{
 		current_process->time_slice = TIME_SLICE_MS;
+		process_list();
 		schedule();
 	}
 }
@@ -133,7 +131,6 @@ void irq_dispatch(void)
 	if (pending & (1 << 1))
 	{
 		ST_CS = (1 << 1);
-
 		timer_handler();
 	}
 }

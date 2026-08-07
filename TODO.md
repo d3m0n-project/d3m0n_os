@@ -1,42 +1,14 @@
-# d3m0n OS TODO list
+# Task: sbrk + malloc for processes
 
-- [x] Add dynamic layout, with possiblity to change layout using script.
-	- [x] Could use small layout file as templates and load them dynamically using scripts
-	- [x] Add multiple windows per app
-	- [ ] Allow to pass variables to window.open and app.open (used from contact to phone and message)
-- [x] System config with clock preference
-- [x] Add system theme config (light/dark)
+## Steps
 
-- [x] Handle clicks
-	- [ ] Fix remove dragging = looped clicks
+- [x] Investigate memory model, syscall table, ELF loader, SDK
+- [x] Diagnose panic (user-space statics unusable in flat model)
+- [x] Kernel: `sys_sbrk(0)` returns heap base (`heap_start`)
+- [x] Kernel: `elf_to_proc` reserves `USER_HEAP_RESERVED` bytes after the image
+- [x] SDK: rewrite `compiler/sdk/malloc.c` as static-free allocator
+- [x] SDK: bump `USER_HEAP_RESERVED` to 1 MiB in `compiler/sdk/lib/memory.h`
+- [x] SDK: fill `compiler/sdk/lib/malloc.h` (shared guard with memory.h)
+- [x] Verify include chains (`-Isdk/lib`) and syscall index consistency
+- [ ] Build & test with `compiler/examples/simple_heap.c` (needs arm-none-eabi-gcc)
 
-- [ ] Fix & Improve ui system
-	- [x] Locations need to follow real control position
-	- [ ] Allow user to customize topbar
-	- [ ] Set default auto size if none set
-	- [ ] Allow calc(eval) inside of layouts like `calc(100% - 340px - 5px * 2)` + DO `p_client_size`
-	- [ ] Add `inherit` keyword for children
-
-- [ ] IR
-	- [ ] Use hardware PWM pin 12 to generate 38Khz carrier. (also change pin 5->12) 
-
-- [ ] Optimisations
-	- [x] Load all icons at startup for faster display (keep in memory)
-	- [x] Keep loaded images in app's memory to avoid reopen at each draw
-	- [ ] SPI use DMA for faster transfer
-
-- [ ] Fix fileystem to avoid bugs & critical vulnerabilities
-
-
-- [ ] Docs
-	- [ ] Usage docs
-		- [ ] Add a how to create an app, provide tools & examples
-		- [ ] Fix all docs & academy
-
-Docs:
-	window events array: `index 0 = close_window` if app is not launcher
-
-
-## Known bugs
-- [ ] Cant add a Vscroll inside of vscroll since p_scroll_offset is shared between children
-- [ ] Scripting: cant do `test = myfunc() + 1;` after `test = myfunc()` omitting the `+1`

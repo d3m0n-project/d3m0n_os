@@ -10,7 +10,6 @@
 #include "parsing.h"
 #include "settings.h"
 #include "usb.h"
-#include "../compiler/sdk/lib/sys.h"
 
 void	rsa_require_thread(void)
 {
@@ -67,15 +66,21 @@ void	init_proc(void)
 	t_window	main_window;
 
 	log("[init] started at %llums\n", LOG_SUCCESS, time_us() / 1000);
+	log("init_proc is at 0x%x\n", 0, (uint32_t)init_proc);
 
-	//elf_to_proc("test_app"); // TODO: change me
+	elf_to_proc("test_app"); // TODO: change me
 	process_list();
 
-	
-	process_create(rsa_require_thread, "[SECURITY]RSA");
+	while (1)
+	{
+		log("init...\n", 0);
+		usleep(1000000);
+	}
+
+	process_create(rsa_require_thread, "[SECURITY]RSA", 1);
 
 
-	process_create(app_and_icon_loader_thread, "[LOADER]app+icon");
+	process_create(app_and_icon_loader_thread, "[LOADER]app+icon", 1);
 	
 	
 	

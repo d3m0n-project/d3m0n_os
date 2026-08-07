@@ -111,5 +111,14 @@ static inline	int	sbrk(size_t increment)
 	return syscall(SYS_SBRK, increment, 0, 0, 0);
 }
 
+/*
+ *  Heap allocator — backed by sbrk().
+ *  These are safe to use in any user-space (app) code.
+ */
+void	*malloc(size_t size);
+void	free(void *ptr);
+void	*calloc(size_t nmemb, size_t size);
+void	*realloc(void *ptr, size_t size);
+
 
 #endif
