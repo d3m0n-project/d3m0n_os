@@ -27,7 +27,7 @@ start_kernel:
 
     ldr r1,[r0,#0x54] @ kernel_stack offset
 
-    add r1,r1,#(4*4096)
+    add r1,r1,#(16*4096)
     mov sp,r1
     msr cpsr_c,#0xD2
 

@@ -353,7 +353,6 @@ parse_error:
 
 int	rsa_private_key_require(char *filename, t_RSA_private_key *prv, t_RSA_public_key *pub)
 {
-	log("'%s' 0x%x\n", 0, filename, filename);
 	if (file_exists(filename))
 		return (rsa_private_key_read_der(filename, prv, pub) >= 0);
 	else
@@ -365,6 +364,7 @@ int	rsa_private_key_require(char *filename, t_RSA_private_key *prv, t_RSA_public
 		}
 		else
 		{
+			log("generated!\n", 0);
 			if (rsa_private_key_write_der(filename, prv) != 0)
 			{
 				log("RSA: DER: Could not save your private key to '%s'\n", LOG_ERROR, filename);

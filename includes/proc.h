@@ -11,6 +11,7 @@
 
 #define USER_HEAP_RESERVED			0x100000	/* 1 MiB of heap per process */
 #define USER_HEAP_MAX(proc)			((proc)->heap_start + USER_HEAP_RESERVED)
+#define KERNEL_STACK_PAGES			16
 
 typedef enum {
 	PROC_READY,

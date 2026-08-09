@@ -17,7 +17,7 @@ void prepare_initial_stack(t_process *p, void (*entry)(void))
 {
 	uint32_t *stack;
 
-    stack = (uint32_t *)p->kernel_stack + (4 * PAGE_SIZE) / sizeof(uint32_t);
+    stack = (uint32_t *)p->kernel_stack + (KERNEL_STACK_PAGES * PAGE_SIZE) / sizeof(uint32_t);
 
     *(--stack) = (uint32_t)entry;
 
@@ -66,7 +66,7 @@ t_process	*process_create(void (*entry)(void), char *name, int kernel_mode)
 
 	p->pid = allocate_pid();
 	p->state = PROC_READY; // TODO: priorities and state scheduling system
-	p->kernel_stack = alloc_pages(4);
+	p->kernel_stack = alloc_pages(KERNEL_STACK_PAGES);
 	if (kernel_mode)
 		p->mode = PROCESS_KERNEL;
 	else

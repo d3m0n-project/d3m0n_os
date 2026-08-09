@@ -1,8 +1,11 @@
 #include "log.h"
 #include "random.h"
+#include "mutex.h"
 #include <stdarg.h>
 
 const char *UART_COLORS[17] = {"\e[0;38;5;0;49m", "\e[0;38;5;0;49m", "\e[0;31m", "\e[1;31m", "\e[38;5;208m", "\e[1;33m", "\e[0;32m", "\e[1;32m", "\e[0;34m", "\e[1;34m", "\e[0;36m", "\e[1;36m", "\e[0;35m", "\e[1;35m", "\e[0;30m", "\e[1;30m", "\e[1;37m"};
+
+static t_mutex	log_mutex = MUTEX_INITIALIZER;
 
 void	log(const char *fmt, e_logtype type, ...)
 {
@@ -12,6 +15,7 @@ void	log(const char *fmt, e_logtype type, ...)
 	const char *message = "      ";
 	int indent = 0;
 
+	mutex_lock(&log_mutex);
 	rng_add_entropy(time_us() ^ type);
 	
 	if ((type & 16) == 16)
@@ -78,4 +82,6 @@ void	log(const char *fmt, e_logtype type, ...)
 	}
 	uart_print("\033[0m"); // reset color
 	va_end(args);
+
+	mutex_unlock(&log_mutex);
 }
