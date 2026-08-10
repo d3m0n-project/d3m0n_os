@@ -43,7 +43,7 @@ void		process_list(void)
 	log("Process List:\n", 0);
 	while (curr)
 	{
-		log("  %s [%lu] %s [state:0x%x, sp:0x%x, priority=%lu]\n", 0, curr->mode?"U":"K", curr->pid, curr->proc_name, curr->state, curr->sp, curr->priority);
+		log("  %s [%-7lu] %-15s [state:0x%x, sp:0x%x, priority=%lu]\n", 0, curr->mode?"U":"K", curr->pid, curr->proc_name, curr->state, curr->sp, curr->priority);
 		curr = curr->next;
 	}
 }
@@ -72,7 +72,6 @@ t_process	*process_create(void (*entry)(void), char *name, int kernel_mode)
 	else
 	{
 		p->mode = PROCESS_USER;
-
 		p->user_stack = alloc_pages(USER_STACK_PAGES);
 		if (!p->user_stack)
 		{

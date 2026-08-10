@@ -30,7 +30,6 @@ void	show_kernel_status()
 void	panic(const char *message)
 {
 	log(message, LOG_ERROR);
-	uart_flush_log_buffer();
 	while (1)
 		asm volatile("wfi");
 }
@@ -56,11 +55,7 @@ void	kernel_main(void *dtb)
 	// load partition number 2 as rootfs
 	if (fat32_mount(1) < 0)		panic("FAT32 mount failed\n");
 	else
-	{
-		log_cleanup(); // cleanup the log file to remove old boots logs
-		uart_enable_file_logging();
 		log("FAT32 mounted!\n", LOG_SUCCESS);
-	}
 
 	list_dir("/");
 

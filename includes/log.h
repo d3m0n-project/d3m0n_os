@@ -18,6 +18,5 @@ typedef enum
 extern const char *UART_COLORS[17];
 
 void	log(const char *fmt, e_logtype type, ...);
-void	log_cleanup(void);
 
 #endif

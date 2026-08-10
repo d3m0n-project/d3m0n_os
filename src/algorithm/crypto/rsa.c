@@ -116,7 +116,7 @@ BigInt	*rsa_encrypt(uint8_t *bytes, size_t len, t_RSA_public_key *pub)
 
 static int	small_prime_filter(BigInt *n)
 {
-	static uint32_t primes[] = {
+	static short primes[] = {
 		3, 5, 7, 11, 13, 17, 19, 23, 29,
 		31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
 		73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
@@ -220,15 +220,18 @@ static int	small_prime_filter(BigInt *n)
 		7817, 7823, 7829, 7841, 7853, 7867, 7873, 7877, 7879, 7883,
 		7901, 7907, 7919
 	};
-
+	BigInt	*bp = 0;
+	long	res = 0;
 	for (size_t i = 0; i < sizeof(primes)/sizeof(primes[0]); i++)
 	{
-		uint32_t p = primes[i];
-
-		if (big_int_mod_small(n,p)==0)
+		if (big_int_mod_small(n, (uint32_t)primes[i])==0)
 		{
-			BigInt bp = {.sign=1, .length=1, .digits={p}};
-			if (big_int_cmp(n, &bp) != 0)
+			bp = big_int_from_uint((uint32_t)primes[i]);
+			if (!bp)
+				return 0;
+			res = big_int_cmp(n, bp);
+			kfree(bp);
+			if (res != 0)
 				return 0;
 		}
 	}
@@ -288,10 +291,10 @@ static int	rsa_generate_prime_number(size_t size, BigInt *out)
 
 int	rsa_generate_keypair(size_t size, t_RSA_private_key *prv, t_RSA_public_key *pub)
 {
-	int			tries = 0;
-	BigInt		e = {.length=1, .digits={65537}, .sign=1};
-	BigInt		p = {.length=1, .digits={0}, .sign=1}; // random prime
-	BigInt		q = {.length=1, .digits={0}, .sign=1}; // random prime
+	int					tries = 0;
+	static BigInt		e = {.length=1, .digits={65537}, .sign=1};
+	static BigInt		p = {.length=1, .digits={0}, .sign=1}; // random prime
+	static BigInt		q = {.length=1, .digits={0}, .sign=1}; // random prime
 
 	log("RSA: Generating keypair...\n", LOG_INFO);
 	
