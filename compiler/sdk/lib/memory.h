@@ -1,7 +1,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include "../../../includes/types.h"
+#include "types.h"
 
 #define USER_HEAP_RESERVED		0x100000
 

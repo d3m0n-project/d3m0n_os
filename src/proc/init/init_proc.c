@@ -74,7 +74,7 @@ void	init_proc(void)
 	//elf_to_proc("test_app"); // TODO: change me
 	
 
-	process_create(rsa_require_thread,          "SECURITY.RSA", 1);
+	//process_create(rsa_require_thread,          "SECURITY.RSA", 1);
 	//process_create(app_and_icon_loader_thread,  "LOADER.app+icon", 1);
 	
 	process_list();

@@ -252,8 +252,6 @@ int	sys_sbrk(uint32_t increment, uint32_t a1, uint32_t a2, uint32_t a3)
 
 	signed_inc = (int32_t)increment;
 
-	/* sbrk(0) returns the heap base. This gives user-space the stable,
-	 * static-free anchor it needs to locate its allocator control block. */
 	if (signed_inc == 0)
 		return (int)proc->heap_start;
 
@@ -266,14 +264,13 @@ int	sys_sbrk(uint32_t increment, uint32_t a1, uint32_t a2, uint32_t a3)
 		return (int)-1;
 
 	proc->heap_end = new_end;
-
 	return (int)old_end;
 }
 
 int	sys_getfbaddr(uint32_t buff_ptr, uint32_t width_ptr, uint32_t height_ptr, uint32_t a3)
 {
 	(void)a3;
-	uint8_t	**fb = (uint8_t **)resolve_user_ptr(buff_ptr, 1);
+	volatile uint32_t	**fb = (volatile uint32_t **)resolve_user_ptr(buff_ptr, 1);
 	int	*width = (int *)resolve_user_ptr(width_ptr, 1);
 	int	*height =  (int *)resolve_user_ptr(height_ptr, 1);
 	if (!fb || !width || !height)
@@ -281,7 +278,7 @@ int	sys_getfbaddr(uint32_t buff_ptr, uint32_t width_ptr, uint32_t height_ptr, ui
 
 	*width = SCREEN_WIDTH;
 	*height = SCREEN_HEIGHT;
-	//*fb = // TODO: fb
+	*fb = get_fb_addr();
 
 	return 0;
 }

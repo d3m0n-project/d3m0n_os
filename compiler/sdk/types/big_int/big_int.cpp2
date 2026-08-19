@@ -1,8 +1,7 @@
-#include "algorithm.h"
-#include "log.h"
-#include "random.h"
+#include "big_int.hpp"
 
-BigInt	*big_int_from_uint(uint32_t n)
+
+BigInt	*from_uint(uint32_t n)
 {
 	BigInt *out = ft_calloc(1, sizeof(BigInt));
 
@@ -14,22 +13,22 @@ BigInt	*big_int_from_uint(uint32_t n)
 	out->digits[0] = n;
 	return out;
 }
-int	big_int_is_odd(BigInt *n)
+int	is_odd(BigInt *n)
 {
 	return n->digits[0] & 1;
 }
 
-int	big_int_is_even(BigInt *n)
+int	is_even(BigInt *n)
 {
-	return !big_int_is_odd(n);
+	return !is_odd(n);
 }
 
-int	big_int_is_zero(BigInt *n)
+int	is_zero(BigInt *n)
 {
 	return n->length == 1 && n->digits[0] == 0;
 }
 
-void	big_int_display(BigInt *n, int decimal)
+void	display(BigInt *n, int decimal)
 {
 	if (n->sign == -1)
 		log("-", 0);
@@ -45,7 +44,7 @@ void	big_int_display(BigInt *n, int decimal)
 	log("\n", 0);
 }
 
-uint8_t	*big_int_to_fixed_bytes(BigInt *a, size_t len)
+uint8_t	*to_fixed_bytes(BigInt *a, size_t len)
 {
 	uint8_t *out = ft_calloc(len, 1);
 	if (!out)
@@ -67,7 +66,7 @@ uint8_t	*big_int_to_fixed_bytes(BigInt *a, size_t len)
 	return out;
 }
 
-uint8_t	*big_int_get_bytes(BigInt *n, size_t *byte_len)
+uint8_t	*get_bytes(BigInt *n, size_t *byte_len)
 {
 	size_t full_len = n->length * sizeof(uint32_t);
 	uint8_t *tmp = ft_calloc(full_len, sizeof(uint8_t));
@@ -103,7 +102,7 @@ uint8_t	*big_int_get_bytes(BigInt *n, size_t *byte_len)
 	return out;
 }
 
-BigInt	*big_int_copy(BigInt *src)
+BigInt	*copy(BigInt *src)
 {
 	BigInt *out = ft_calloc(1, sizeof(BigInt));
 	if (!out)
@@ -116,10 +115,10 @@ BigInt	*big_int_copy(BigInt *src)
 	return out;
 }
 
-BigInt *big_int_from_bytes(const uint8_t *bytes, size_t len)
+BigInt *from_bytes(const uint8_t *bytes, size_t len)
 {
 	if (!bytes || len == 0)
-		return big_int_from_uint(0);
+		return from_uint(0);
 
 	BigInt *out = ft_calloc(1, sizeof(BigInt));
 	if (!out)
@@ -139,7 +138,7 @@ BigInt *big_int_from_bytes(const uint8_t *bytes, size_t len)
 		size_t shift = (i % 4) * 8;
 		out->digits[limb] |= ((uint32_t)bytes[src]) << shift;
 	}
-	big_int_normalize(out);
+	normalize(out);
 	return out;
 }
 
@@ -165,19 +164,19 @@ static uint32_t base_adder(uint32_t a, uint32_t b, uint32_t *carry)
 	return (uint32_t)sum;
 }
 
-BigInt *big_int_add(BigInt *n1, BigInt *n2)
+BigInt *add(BigInt *n1, BigInt *n2)
 {
 	if (n1->sign == 0)
-		return big_int_copy(n2);
+		return copy(n2);
 
 	if (n2->sign == 0)
-		return big_int_copy(n1);
+		return copy(n1);
 
 	if (n1->sign != n2->sign)
 	{
 		BigInt tmp = *n2;
 		tmp.sign *= -1;
-		return big_int_sub(n1, &tmp);
+		return sub(n1, &tmp);
 	}
 
 	BigInt *out = ft_calloc(1, sizeof(BigInt));
@@ -202,7 +201,7 @@ BigInt *big_int_add(BigInt *n1, BigInt *n2)
 	return out;
 }
 
-BigInt	*big_int_sub(BigInt *n1, BigInt *n2)
+BigInt	*sub(BigInt *n1, BigInt *n2)
 {
 	BigInt *out;
 
@@ -211,7 +210,7 @@ BigInt	*big_int_sub(BigInt *n1, BigInt *n2)
 	{
 		BigInt tmp = *n2;
 		tmp.sign = 1;
-		return big_int_add(n1, &tmp);
+		return add(n1, &tmp);
 	}
 
 	// (-n1) - n2 => -(abs(n1)+abs(n2))
@@ -220,19 +219,19 @@ BigInt	*big_int_sub(BigInt *n1, BigInt *n2)
 		BigInt a = *n1;
 		a.sign = 1;
 
-		out = big_int_add(&a, n2);
+		out = add(&a, n2);
 		if (out)
 			out->sign = -1;
 		return out;
 	}
 
 	// both positive
-	long cmp = big_int_cmp(n1, n2);
+	long cmp = cmp(n1, n2);
 
 	// result is negative
 	if (cmp < 0)
 	{
-		out = big_int_sub(n2, n1);
+		out = sub(n2, n1);
 		if (out)
 			out->sign = -1;
 		return out;
@@ -264,7 +263,7 @@ BigInt	*big_int_sub(BigInt *n1, BigInt *n2)
 	return out;
 }
 
-void	big_int_normalize(BigInt *n)
+void	normalize(BigInt *n)
 {
 	while (n->length > 1 && n->digits[n->length - 1] == 0)
 		n->length--;
@@ -275,7 +274,7 @@ void	big_int_normalize(BigInt *n)
 		n->sign = 1;
 }
 
-void big_int_shl1(BigInt *a)
+void shl1(BigInt *a)
 {
 	uint32_t carry = 0;
 
@@ -292,11 +291,11 @@ void big_int_shl1(BigInt *a)
 		a->digits[a->length] = carry;
 		a->length++;
 	}
-	big_int_normalize(a);
+	normalize(a);
 }
 
 
-void	big_int_shr1(BigInt *a)
+void	shr1(BigInt *a)
 {
 	uint32_t carry = 0;
 	for (size_t i = a->length; i-- > 0;)
@@ -306,10 +305,10 @@ void	big_int_shr1(BigInt *a)
 		a->digits[i] |= carry << 31;
 		carry = newcarry;
 	}
-	big_int_normalize(a);
+	normalize(a);
 }
 
-static void	big_int_set_bit(BigInt *a, size_t bit)
+static void	set_bit(BigInt *a, size_t bit)
 {
 	size_t limb = bit / 32;
 	size_t offset = bit % 32;
@@ -323,7 +322,7 @@ static void	big_int_set_bit(BigInt *a, size_t bit)
 		a->length = limb + 1;
 }
 
-long	big_int_cmp(BigInt *n1, BigInt *n2)
+long	cmp(BigInt *n1, BigInt *n2)
 {
 	if (n1->sign != n2->sign)
 		return (n1->sign > n2->sign) ? 1 : -1;
@@ -348,7 +347,7 @@ long	big_int_cmp(BigInt *n1, BigInt *n2)
 	return n1->sign * mag;
 }
 
-long	big_int_cmp_abs(BigInt *a, BigInt *b)
+long	cmp_abs(BigInt *a, BigInt *b)
 {
 	if (a->length != b->length)
 		return a->length > b->length ? 1 : -1;
@@ -360,7 +359,7 @@ long	big_int_cmp_abs(BigInt *a, BigInt *b)
 	return 0;
 }
 
-BigIntDiv	*big_int_div(BigInt *num, BigInt *den)
+BigIntDiv	*div(BigInt *num, BigInt *den)
 {
 	if (!num || !den)
 		return 0;
@@ -385,12 +384,12 @@ BigIntDiv	*big_int_div(BigInt *num, BigInt *den)
 
 	out->quotient->length = 1;
 	out->remainder->length = 1;
-	if (big_int_cmp_abs(num, den) < 0)
+	if (cmp_abs(num, den) < 0)
 	{
 		kfree(out->remainder);
-		out->remainder = big_int_copy(num);
+		out->remainder = copy(num);
 		out->quotient->sign = 0;
-		big_int_normalize(out->remainder);
+		normalize(out->remainder);
 		return out;
 	}
 
@@ -404,19 +403,19 @@ BigIntDiv	*big_int_div(BigInt *num, BigInt *den)
 		uint32_t word = num->digits[limb];
 		for (int bit = 31; bit >= 0; bit--)
 		{
-			big_int_shl1(out->remainder);
+			shl1(out->remainder);
 			out->remainder->digits[0] |= (word >> bit) & 1;
-			if (big_int_cmp_abs(out->remainder, den) >= 0)
+			if (cmp_abs(out->remainder, den) >= 0)
 			{
-				BigInt *tmp = big_int_sub(out->remainder, den);
+				BigInt *tmp = sub(out->remainder, den);
 				kfree(out->remainder);
 				out->remainder = tmp;
-				big_int_set_bit(out->quotient, limb * 32 + bit);
+				set_bit(out->quotient, limb * 32 + bit);
 			}
 		}
 	}
-	big_int_normalize(out->quotient);
-	big_int_normalize(out->remainder);
+	normalize(out->quotient);
+	normalize(out->remainder);
 
 	out->quotient->sign = out->quotient->sign == 0 ? 0 : num->sign * den->sign;
 	out->remainder->sign = out->remainder->sign == 0 ? 0 : num->sign;
@@ -424,7 +423,7 @@ BigIntDiv	*big_int_div(BigInt *num, BigInt *den)
 }
 
 
-BigInt	*big_int_mul(BigInt *a, BigInt *b)
+BigInt	*mul(BigInt *a, BigInt *b)
 {
 	BigInt *out = ft_calloc(1, sizeof(BigInt));
 	if (!out)
@@ -462,10 +461,10 @@ BigInt	*big_int_mul(BigInt *a, BigInt *b)
 	return out;
 }
 
-BigInt *big_int_gcd(BigInt *a, BigInt *b)
+BigInt *gcd(BigInt *a, BigInt *b)
 {
-	BigInt *x = big_int_copy(a);
-	BigInt *y = big_int_copy(b);
+	BigInt *x = copy(a);
+	BigInt *y = copy(b);
 
 	if (!x || !y)
 	{
@@ -478,7 +477,7 @@ BigInt *big_int_gcd(BigInt *a, BigInt *b)
 	y->sign = 1;
 	while (!(y->length == 1 && y->digits[0] == 0))
 	{
-		BigIntDiv *div = big_int_div(x, y);
+		BigIntDiv *div = div(x, y);
 		if (!div)
 		{
 			kfree(x);
@@ -498,9 +497,9 @@ BigInt *big_int_gcd(BigInt *a, BigInt *b)
 	return x;
 }
 
-BigInt	*big_int_mod_inverse(BigInt *e, BigInt *phi)
+BigInt	*mod_inverse(BigInt *e, BigInt *phi)
 {
-	ExtendedGCD *res = big_int_extended_gcd(e, phi);
+	ExtendedGCD *res = extended_gcd(e, phi);
 	if (!res)
 		return 0;
 
@@ -522,10 +521,10 @@ BigInt	*big_int_mod_inverse(BigInt *e, BigInt *phi)
 		// negative x: d = phi - |x|
 		BigInt abs_x = *res->x;
 		abs_x.sign = 1;
-		d = big_int_sub(phi, &abs_x);
+		d = sub(phi, &abs_x);
 	}
 	else
-		d = big_int_copy(res->x);
+		d = copy(res->x);
 
 
 	// cleanup
@@ -536,20 +535,20 @@ BigInt	*big_int_mod_inverse(BigInt *e, BigInt *phi)
 	return d;
 }
 
-BigInt	*big_int_mod(BigInt *div, BigInt *den)
+BigInt	*mod(BigInt *div, BigInt *den)
 {
-	BigIntDiv	*division_output = big_int_div(div, den);
+	BigIntDiv	*division_output = div(div, den);
 	if (!division_output)
 		return 0;
 	
-	BigInt	*output = big_int_copy(division_output->remainder);
+	BigInt	*output = copy(division_output->remainder);
 	kfree(division_output->remainder);
 	kfree(division_output->quotient);
 	kfree(division_output);
 	return output;
 }
 
-BigInt	*big_int_modular_pow(BigInt *base, BigInt *exp, BigInt *mod)
+BigInt	*modular_pow(BigInt *base, BigInt *exp, BigInt *mod)
 {
 	t_mont_ctx	ctx;
 
@@ -558,14 +557,14 @@ BigInt	*big_int_modular_pow(BigInt *base, BigInt *exp, BigInt *mod)
 
 	BigInt *result = montgomery_to(&ctx.one, &ctx);
 	BigInt *b	  = montgomery_to(base, &ctx);
-	BigInt *e	  = big_int_copy(exp);
+	BigInt *e	  = copy(exp);
 
 	if (!result || !b || !e)
 		goto error;
 
-	while (!big_int_is_zero(e))
+	while (!is_zero(e))
 	{
-		if (big_int_is_odd(e))
+		if (is_odd(e))
 		{
 			BigInt *tmp = montgomery_mul(result, b, &ctx.n, ctx.n0_inv);
 			kfree(result);
@@ -579,7 +578,7 @@ BigInt	*big_int_modular_pow(BigInt *base, BigInt *exp, BigInt *mod)
 		b = tmp;
 		if (!b)
 			goto error;
-		big_int_shr1(e);
+		shr1(e);
 	}
 
 	BigInt *out = montgomery_from(result, &ctx);
@@ -595,7 +594,7 @@ error:
 	return 0;
 }
 
-size_t big_int_bit_length(BigInt *n)
+size_t bit_length(BigInt *n)
 {
 	if (n->length == 0)
 		return 0;
@@ -613,10 +612,10 @@ size_t big_int_bit_length(BigInt *n)
 	return bits;
 }
 
-BigInt	*big_int_random_bits(size_t bits)
+BigInt	*random_bits(size_t bits)
 {
 	if (bits == 0)
-		return big_int_from_uint(0);
+		return from_uint(0);
 
 	size_t byte_count = (bits + 7) / 8;
 	uint8_t *buf = kmalloc(byte_count);
@@ -631,34 +630,34 @@ BigInt	*big_int_random_bits(size_t bits)
 		buf[byte_count - 1] &= mask;
 	}
 
-	BigInt *x = big_int_from_bytes(buf, byte_count);
+	BigInt *x = from_bytes(buf, byte_count);
 	kfree(buf);
 	return x;
 }
 
-BigInt	*big_int_rng(BigInt *min, BigInt *max)
+BigInt	*rng(BigInt *min, BigInt *max)
 {
-	if (big_int_cmp(min, max) > 0)
+	if (cmp(min, max) > 0)
 		return 0;
 
-	BigInt *range = big_int_sub(max, min);	  // range = max - min
-	size_t bits = big_int_bit_length(range);
+	BigInt *range = sub(max, min);	  // range = max - min
+	size_t bits = bit_length(range);
 	BigInt *candidate = 0;
 	while (1)
 	{
-		candidate = big_int_random_bits(bits);
-		if (big_int_cmp(candidate, range) <= 0)
+		candidate = random_bits(bits);
+		if (cmp(candidate, range) <= 0)
 			break;
 		kfree(candidate);
 	}
 
-	BigInt *result = big_int_add(min, candidate);
+	BigInt *result = add(min, candidate);
 	kfree(candidate);
 	kfree(range);
 	return result;
 }
 
-uint32_t	big_int_mod_small(BigInt *n, uint32_t p)
+uint32_t	mod_small(BigInt *n, uint32_t p)
 {
 	if (p == 0)
 		return 0;

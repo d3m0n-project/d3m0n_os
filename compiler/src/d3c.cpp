@@ -1,44 +1,143 @@
-#include "utils.hpp"
-#include "app.hpp"
+#include <sys/mman.h>
+#include <unistd.h>
+
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <vector>
 
 using namespace std;
 
-int	main(int argc, char **argv)
-{
-	cout << "--------------------------------" << endl;
-	cout << "      d3m0n os - C Compiler      " << endl;
-	cout << "              v1.0              " << endl;
-	cout << "--------------------------------" << endl;
-	//if (argc == 1)
-	//{
-	//	cerr << "\033[31mERROR\033[0m: Usage: " << argv[0] << " path/to/app_dir/" << endl;
-	//	return 1;
-	//}
+#ifndef INCLUDE_SDK
+	#define INCLUDE_SDK	1
+#endif
 
-	string base_command = "arm-none-eabi-gcc -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 -Isdk/lib -mcpu=arm1176jzf-s -lgcc -Wl,-e,_start sdk/*.c ";
-	for (int i=1; i<argc; i++)
+#ifndef VERSION
+	#define VERSION "None"
+#endif
+
+#if INCLUDE_SDK == 1
+extern "C"
+{
+	extern const unsigned char _binary_obj_sdk_a_start[];
+	extern const unsigned char _binary_obj_sdk_a_end[];
+}
+
+static int	create_embedded_archive()
+{
+	const unsigned char *begin = _binary_obj_sdk_a_start;
+	const unsigned char *end   = _binary_obj_sdk_a_end;
+
+	const size_t size = static_cast<size_t>(end - begin);
+	int fd = memfd_create("d3m0n_sdk.a", 0);
+	if (fd == -1)
 	{
-		base_command += argv[i];
-		base_command += " ";
+		perror("memfd_create");
+		return -1;
 	}
-	int ret = system(base_command.c_str());
-	if (ret != 0)
+
+	const unsigned char *ptr = begin;
+	size_t remaining = size;
+	while (remaining > 0)
 	{
-		cerr << "\033[31mERROR\033[0m: Could not compile d3m0n C code" << endl;
+		ssize_t written = write(fd, ptr, remaining);
+		if (written == -1)
+		{
+			if (errno == EINTR)
+				continue;
+
+			perror("write");
+			close(fd);
+			return -1;
+		}
+
+		ptr += written;
+		remaining -= static_cast<size_t>(written);
+	}
+
+	return fd;
+}
+#endif
+
+int main(int argc, char **argv)
+{
+	if (argc == 1)
+	{
+		cerr << "\033[31mERROR\033[0m: Usage: " << argv[0] << " [options] file..." << endl;
 		return 1;
 	}
 
-	cout << "\033[32mSUCCESS\033[0m: Successfully compiled d3m0n C code!" << endl;
-	//char	*path = argv[1];
-	//if (!file_exists((const string)path))
-	//{
-	//	cerr << "\033[31mERROR\033[0m: Could not find app directory to build: " << path << endl;
-	//	return 1;
-	//}
+	bool compile_only = false;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0)
+		{
+			cout << "d3c: the official d3m0n os compiler" << endl;
+			cout << "\033[30m" << "	SDK LOADED:     " << "\033[0m" << (INCLUDE_SDK?"\033[32mYes":"\033[31mNo") << "\033[0m" << endl;
+			cout << "\033[30m" << "	SDK VERSION:    " << "\033[0m" << VERSION << endl;
+			cout << "\033[30m" << "	AUTHOR:         " << "\033[0m" << "4re5 group" << "\033[0m" << endl;
+			return 0;
+		}
+		if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "-E") == 0 || strcmp(argv[i], "-S") == 0)
+		{
+			compile_only = true;
+			break;
+		}
+	}
 
-	//App new_app();
-	//new_app
-	//new_app::parse_
+	#if INCLUDE_SDK == 1
+	int fd = -1;
+	if (!compile_only)
+	{
+		fd = create_embedded_archive();
+		if (fd == -1)
+		{
+			cerr << "\033[31mERROR\033[0m: Could not allocate d3m0n OS SDK" << endl;
+			return 1;
+		}
+	}
+	#endif
 
-	return 0;
+	vector<string> arguments;
+	arguments.emplace_back("arm-none-eabi-gcc");
+	arguments.emplace_back("-ffreestanding");
+	arguments.emplace_back("-nostdlib");
+	arguments.emplace_back("-Isdk/lib");
+	arguments.emplace_back("-mcpu=arm1176jzf-s");
+	if (!compile_only)
+	{
+		arguments.emplace_back("-Wl,-e,_start");
+
+		#if INCLUDE_SDK == 1
+		const string archive = "/proc/self/fd/" + to_string(fd);
+		//arguments.emplace_back("-Wl,--whole-archive");
+		arguments.emplace_back(archive);
+		//arguments.emplace_back("-Wl,--no-whole-archive");
+		#endif
+		arguments.emplace_back("-lgcc");
+	}
+
+	for (int i = 1; i < argc; ++i)
+		arguments.emplace_back(argv[i]);
+
+	vector<char *> exec_args;
+	for (string &arg : arguments)
+		exec_args.push_back(arg.data());
+	exec_args.push_back(nullptr);
+
+	//for (char **p = exec_args.data(); *p; ++p)
+	//	std::cout << *p << ' ';
+	//std::cout << '\n';
+	execvp("arm-none-eabi-gcc", exec_args.data());
+	perror("execvp");
+
+	#if INCLUDE_SDK == 1
+	if (fd != -1)
+		close(fd);
+	#endif
+
+	return 1;
 }

@@ -1,0 +1,5 @@
+test_app
+obj/
+*.o
+*.d
+a.out
