@@ -1,5 +1,7 @@
 # d3m0n os - d3c
 
+[![d3c & sdk compilation](https://github.com/d3m0n-project/d3m0n_os/actions/workflows/compiler_compilation.yml/badge.svg)](https://github.com/d3m0n-project/d3m0n_os/actions/workflows/compiler_compilation.yml)
+
 This folder provides the official platform `[SDK](./sdk/)` and compiler: `d3c`.
 
 
