@@ -40,7 +40,7 @@ t_format	parse_format(char *str, size_t *i)
 {
 	t_format	f;
 
-	ft_memset(&f.flags, 0, 6);
+	ft_bzero(&f, sizeof(f));
 	f.width = WIDTH_UNRESTRICTED;
 	f.precision = WIDTH_UNRESTRICTED;
 	while (str[*i] && ft_strchr("-0# +", str[*i]))

@@ -62,7 +62,7 @@ ExtendedGCD	*big_int_extended_gcd(BigInt *a, BigInt *b)
 		y = big_int_from_uint(0);
 
 
-	ExtendedGCD *out = ft_calloc(1, sizeof(ExtendedGCD));
+	ExtendedGCD *out = calloc(1, sizeof(ExtendedGCD));
 	if (!out)
 		return 0;
 

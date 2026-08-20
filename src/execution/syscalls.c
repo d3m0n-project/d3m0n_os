@@ -267,18 +267,18 @@ int	sys_sbrk(uint32_t increment, uint32_t a1, uint32_t a2, uint32_t a3)
 	return (int)old_end;
 }
 
-int	sys_getfbaddr(uint32_t buff_ptr, uint32_t width_ptr, uint32_t height_ptr, uint32_t a3)
+int	sys_getfbaddr(uint32_t buff_ptr, uint32_t width_ptr, uint32_t height_ptr, uint32_t pitch_addr)
 {
-	(void)a3;
 	volatile uint32_t	**fb = (volatile uint32_t **)resolve_user_ptr(buff_ptr, 1);
 	int	*width = (int *)resolve_user_ptr(width_ptr, 1);
 	int	*height =  (int *)resolve_user_ptr(height_ptr, 1);
+	int *pitch = (int *)resolve_user_ptr(pitch_addr, 1);
 	if (!fb || !width || !height)
 		return -1;
 
 	*width = SCREEN_WIDTH;
 	*height = SCREEN_HEIGHT;
-	*fb = get_fb_addr();
+	*fb = (volatile uint32_t *)get_fb_addr(pitch);
 
 	return 0;
 }

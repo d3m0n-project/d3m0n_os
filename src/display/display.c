@@ -12,10 +12,12 @@ static t_font				main_font;
 
 uint32_t	DISPLAY_COLORS[17] = { 0x00000000, 0xff000000, 0xff0000bf, 0xff0000ff, 0xff007fff, 0xff00ffff, 0xff00bf00, 0xff00ff00, 0xffbf5f00, 0xffff0000, 0xffbfbf00, 0xffffff00, 0xffbf00bf, 0xffff00ff, 0xff191919, 0xff7f7f7f, 0xffffffff};
 
-volatile uint32_t	*get_fb_addr(void)
+uintptr_t	get_fb_addr(int *pitch)
 {
+	*pitch = 0;
 #if DEBUG == 1
-	return g_framebuffer_mbox;
+	*pitch = fb_req.pitch;
+	return fb_req.fb_addr;
 #else
 	return 0;
 #endif

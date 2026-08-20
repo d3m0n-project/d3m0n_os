@@ -46,7 +46,7 @@ static inline void	exit(int ret_code)
 	syscall(SYS_EXIT, (uint32_t)ret_code, 0, 0, 0);
 }
 
-static inline void	print(char *text)
+static inline void	print(const char *text)
 {
 	syscall(SYS_PRINT, (uint32_t)text, 0, 0, 0);
 }
@@ -96,9 +96,9 @@ static inline int	rmdir(const char *path)
 	return syscall(SYS_RMDIR, (uint32_t)path, 0, 0, 0);
 }
 
-static inline int	getfbaddr(uint8_t	**fb_addr, int *width, int *height)
+static inline int	getfbaddr(uint8_t	**fb_addr, int *width, int *height, int *pitch)
 {
-	return syscall(SYS_GETFBADDR, (uint32_t)fb_addr, (uint32_t)width, (uint32_t)height, 0);
+	return syscall(SYS_GETFBADDR, (uint32_t)fb_addr, (uint32_t)width, (uint32_t)height, (uint32_t)pitch);
 }
 
 static inline int	flushfb(void)

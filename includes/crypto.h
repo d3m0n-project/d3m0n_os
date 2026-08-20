@@ -2,26 +2,27 @@
 #define CRYPTO_H
 
 #include "types.h"
-#include "algorithm.h"
+#include "memory.h"
+#include "libft.h"
 
 // rsa
-typedef struct
-{
-	BigInt	n;
-	BigInt	e;
-}	t_RSA_public_key;
+//typedef struct
+//{
+//	BigInt	n;
+//	BigInt	e;
+//}	t_RSA_public_key;
 
-typedef struct
-{
-	BigInt	n;
-	BigInt	e;
-	BigInt	d;
-	BigInt	p;
-	BigInt	q;
-	BigInt	dp;
-	BigInt	dq;
-	BigInt	qInv;
-}	t_RSA_private_key;
+//typedef struct
+//{
+//	BigInt	n;
+//	BigInt	e;
+//	BigInt	d;
+//	BigInt	p;
+//	BigInt	q;
+//	BigInt	dp;
+//	BigInt	dq;
+//	BigInt	qInv;
+//}	t_RSA_private_key;
 
 // sha256
 typedef struct {
@@ -36,19 +37,19 @@ void		sha256_init(sha256_ctx *ctx);
 void		sha256_update(sha256_ctx *ctx, const uint8_t *data, size_t len);
 void		sha256_final(sha256_ctx *ctx, uint8_t hash[32]);
 
-// rsa
-int			rsa_generate_keypair(size_t size, t_RSA_private_key *prv, t_RSA_public_key *pub);
-BigInt		*rsa_encrypt(uint8_t *bytes, size_t len, t_RSA_public_key *pub);
-uint8_t		*rsa_decrypt(BigInt	*c, size_t *out_len, t_RSA_private_key *prv);
+//// rsa
+//int			rsa_generate_keypair(size_t size, t_RSA_private_key *prv, t_RSA_public_key *pub);
+//BigInt		*rsa_encrypt(uint8_t *bytes, size_t len, t_RSA_public_key *pub);
+//uint8_t		*rsa_decrypt(BigInt	*c, size_t *out_len, t_RSA_private_key *prv);
 
-// DER ASN.1 Certificates
-int			rsa_private_key_write_der(char *filename, t_RSA_private_key *key);
-int			rsa_private_key_read_der(char *filename, t_RSA_private_key *prv, t_RSA_public_key *pub);
-int			rsa_private_key_require(char *filename, t_RSA_private_key *prv, t_RSA_public_key *pub);
+//// DER ASN.1 Certificates
+//int			rsa_private_key_write_der(char *filename, t_RSA_private_key *key);
+//int			rsa_private_key_read_der(char *filename, t_RSA_private_key *prv, t_RSA_public_key *pub);
+//int			rsa_private_key_require(char *filename, t_RSA_private_key *prv, t_RSA_public_key *pub);
 
-// RSAES-pkcs#1 v1.5
-uint8_t		*pkcs1_v1_5_generate_em(t_RSA_public_key *pub, uint8_t *message, size_t len, size_t *out_len);
-uint8_t		*pkcs1_v1_5_decode_em(uint8_t *em, size_t len, size_t *out_len);
+//// RSAES-pkcs#1 v1.5
+//uint8_t		*pkcs1_v1_5_generate_em(t_RSA_public_key *pub, uint8_t *message, size_t len, size_t *out_len);
+//uint8_t		*pkcs1_v1_5_decode_em(uint8_t *em, size_t len, size_t *out_len);
 
 
 

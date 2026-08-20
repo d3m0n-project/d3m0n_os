@@ -62,13 +62,13 @@ int	montgomery_ctx_init(t_mont_ctx *ctx, BigInt *n)
 		return 0;
 
 	// n
-	ft_memcpy(&ctx->n, n, sizeof(BigInt));
+	memcpy(&ctx->n, n, sizeof(BigInt));
 	
 	// R2
 	BigInt *r2 = mont_compute_r2(n);
 	if (!r2)
 		return 0;
-	ft_memcpy(&ctx->r2, r2, sizeof(BigInt));
+	memcpy(&ctx->r2, r2, sizeof(BigInt));
 	kfree(r2);
 
 	// one
@@ -85,7 +85,7 @@ BigInt *montgomery_mul(BigInt *a, BigInt *b, BigInt *n, uint32_t n0_inv)
 	size_t k = n->length;
 
 	uint32_t t[MAX_BIGINT_LIMB * 2 + 3];
-	ft_bzero(t, sizeof(t));
+	bzero(t, sizeof(t));
 
 	// T = a*b
 	for (size_t i = 0; i < a->length; i++)
@@ -132,7 +132,7 @@ BigInt *montgomery_mul(BigInt *a, BigInt *b, BigInt *n, uint32_t n0_inv)
 	}
 
 	// r = T / R
-	BigInt *r = ft_calloc(1, sizeof(BigInt));
+	BigInt *r = calloc(1, sizeof(BigInt));
 	if (!r)
 		return 0;
 

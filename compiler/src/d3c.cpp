@@ -15,8 +15,8 @@ using namespace std;
 	#define INCLUDE_SDK	1
 #endif
 
-#ifndef VERSION
-	#define VERSION "None"
+#ifndef LIB_PATH
+	#define LIB_PATH "None"
 #endif
 
 #if INCLUDE_SDK == 1
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 		{
 			cout << "d3c: the official d3m0n os compiler" << endl;
 			cout << "\033[30m" << "	SDK LOADED:     " << "\033[0m" << (INCLUDE_SDK?"\033[32mYes":"\033[31mNo") << "\033[0m" << endl;
-			cout << "\033[30m" << "	SDK VERSION:    " << "\033[0m" << VERSION << endl;
+			cout << "\033[30m" << "	SDK PATH:       " << "\033[0m" << LIB_PATH << endl;
 			cout << "\033[30m" << "	AUTHOR:         " << "\033[0m" << "4re5 group" << "\033[0m" << endl;
 			return 0;
 		}
@@ -107,15 +107,16 @@ int main(int argc, char **argv)
 	arguments.emplace_back("-nostdlib");
 	arguments.emplace_back("-Isdk/lib");
 	arguments.emplace_back("-mcpu=arm1176jzf-s");
+	#if INCLUDE_SDK == 1
+	arguments.emplace_back("-I" + (string)LIB_PATH);
+	#endif
 	if (!compile_only)
 	{
 		arguments.emplace_back("-Wl,-e,_start");
 
 		#if INCLUDE_SDK == 1
 		const string archive = "/proc/self/fd/" + to_string(fd);
-		//arguments.emplace_back("-Wl,--whole-archive");
 		arguments.emplace_back(archive);
-		//arguments.emplace_back("-Wl,--no-whole-archive");
 		#endif
 		arguments.emplace_back("-lgcc");
 	}
@@ -128,9 +129,9 @@ int main(int argc, char **argv)
 		exec_args.push_back(arg.data());
 	exec_args.push_back(nullptr);
 
-	//for (char **p = exec_args.data(); *p; ++p)
-	//	std::cout << *p << ' ';
-	//std::cout << '\n';
+	for (char **p = exec_args.data(); *p; ++p)
+		std::cout << *p << ' ';
+	std::cout << '\n';
 	execvp("arm-none-eabi-gcc", exec_args.data());
 	perror("execvp");
 

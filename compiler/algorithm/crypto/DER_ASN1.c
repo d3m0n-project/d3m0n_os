@@ -22,13 +22,13 @@ static void	der_append(DERBuffer *b, const void *src, size_t n)
 		uint8_t	*new_data = kmalloc(newCap);
 		if (!new_data)
 			return;
-		ft_memcpy(new_data, b->data, b->len);
+		memcpy(new_data, b->data, b->len);
 		kfree(b->data);
 		b->data = new_data;
 		b->cap = newCap;
 	}
 
-	ft_memcpy(b->data + b->len, src, n);
+	memcpy(b->data + b->len, src, n);
 	b->len += n;
 }
 
@@ -135,7 +135,7 @@ static int	der_read_integer(const uint8_t *buf, size_t buf_len, size_t *off, Big
 	if (!tmp)
 		return -1;
 
-	ft_memcpy(dst, tmp, sizeof(BigInt));
+	memcpy(dst, tmp, sizeof(BigInt));
 	kfree(tmp);
 	*off = start + len;
 	return 0;
@@ -187,7 +187,7 @@ int	rsa_private_key_write_der(char *filename, t_RSA_private_key *key)
 		kfree(out.data);
 		return -1;
 	}
-	size_t	b64_len = ft_strlen(b64_buf);
+	size_t	b64_len = strlen(b64_buf);
 	size_t	line_count = b64_len / 64;
 
 	write(fd, "-----BEGIN RSA PRIVATE KEY-----\n", 32);
@@ -227,14 +227,14 @@ int	rsa_private_key_read_der(char *filename, t_RSA_private_key *key, t_RSA_publi
 	}
 	while ((line = get_next_line(fd)) && line_i < MAX_PRIVATE_KEY_LINE_LEN)
 	{
-		size_t len = ft_strlen(line);
+		size_t len = strlen(line);
 		while (line[len - 1] == '\n' || line[len - 1] == '\r')
 		{
 			line[len - 1] = '\0';
 			len--;
 		}
 
-		if (line_i == 0 && ft_strncmp(line, "-----BEGIN RSA PRIVATE KEY-----", len) != 0)
+		if (line_i == 0 && strncmp(line, "-----BEGIN RSA PRIVATE KEY-----", len) != 0)
 		{
 			kfree(line);
 			goto invalid_key;
@@ -246,7 +246,7 @@ int	rsa_private_key_read_der(char *filename, t_RSA_private_key *key, t_RSA_publi
 			kfree(line);
 			continue;
 		}
-		else if (line_i > 0 && ft_strcmp(line, "-----END RSA PRIVATE KEY-----") == 0)
+		else if (line_i > 0 && strcmp(line, "-----END RSA PRIVATE KEY-----") == 0)
 		{
 			kfree(line);
 			if (valid_header_and_footer != 1)
@@ -276,13 +276,13 @@ int	rsa_private_key_read_der(char *filename, t_RSA_private_key *key, t_RSA_publi
 				kfree(line);
 				return -1;
 			}
-			ft_strlcpy(b64_buff, line, 65);
+			strlcpy(b64_buff, line, 65);
 			b64_buff[64] = '\0';
 		}
 		else
 		{
 			b64_buff_size += len;
-			char *tmp_buff = ft_strjoin(b64_buff, line);
+			char *tmp_buff = strjoin(b64_buff, line);
 			if (!tmp_buff)
 			{
 				kfree(line);
@@ -334,8 +334,8 @@ int	rsa_private_key_read_der(char *filename, t_RSA_private_key *key, t_RSA_publi
 	}
 
 	// public key
-	ft_memcpy(&pub->n, &key->n, sizeof(BigInt));
-	ft_memcpy(&pub->e, &key->e, sizeof(BigInt));
+	memcpy(&pub->n, &key->n, sizeof(BigInt));
+	memcpy(&pub->e, &key->e, sizeof(BigInt));
 
 	kfree(b64_decoded);
 	return (0);

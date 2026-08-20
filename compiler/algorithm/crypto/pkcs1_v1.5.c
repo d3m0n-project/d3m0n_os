@@ -30,7 +30,7 @@ uint8_t	*pkcs1_v1_5_generate_em(t_RSA_public_key *pub, uint8_t *message, size_t 
 	buff[2 + padding_length] = 0x00;
 
 	if (len > 0)
-		ft_memcpy(&buff[3 + padding_length], message, len);
+		memcpy(&buff[3 + padding_length], message, len);
 
 	*out_len = k;
 	return buff;

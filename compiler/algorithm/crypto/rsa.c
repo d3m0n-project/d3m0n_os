@@ -258,7 +258,7 @@ static int	rsa_generate_prime_number(size_t size, BigInt *out)
 	int count=0;
 	while (!is_prime && count < MAX_RSA_GENERATION_LOOP)
 	{
-		ft_memset(out->digits, 0, MAX_BIGINT_LIMB*sizeof(uint32_t));
+		memset(out->digits, 0, MAX_BIGINT_LIMB*sizeof(uint32_t));
 		random_bytes(out->digits, out->length*sizeof(uint32_t));
 
 		uint32_t top_bits = prime_bits % 32;
@@ -389,19 +389,19 @@ retry_generation:
 
 	// copy keys
 	// public
-	ft_memcpy(&pub->e, &e, sizeof(BigInt));
-	ft_memcpy(&pub->n, n, sizeof(BigInt));
+	memcpy(&pub->e, &e, sizeof(BigInt));
+	memcpy(&pub->n, n, sizeof(BigInt));
 
 	// private
-	ft_memcpy(&prv->n, n, sizeof(BigInt));
-	ft_memcpy(&prv->e, &e, sizeof(BigInt));
-	ft_memcpy(&prv->d, d, sizeof(BigInt));
+	memcpy(&prv->n, n, sizeof(BigInt));
+	memcpy(&prv->e, &e, sizeof(BigInt));
+	memcpy(&prv->d, d, sizeof(BigInt));
 	// CRT PARAMS
-	ft_memcpy(&prv->p, &p, sizeof(BigInt));
-	ft_memcpy(&prv->q, &q, sizeof(BigInt));
-	ft_memcpy(&prv->dp, dp, sizeof(BigInt));
-	ft_memcpy(&prv->dq, dq, sizeof(BigInt));
-	ft_memcpy(&prv->qInv, qInv, sizeof(BigInt));
+	memcpy(&prv->p, &p, sizeof(BigInt));
+	memcpy(&prv->q, &q, sizeof(BigInt));
+	memcpy(&prv->dp, dp, sizeof(BigInt));
+	memcpy(&prv->dq, dq, sizeof(BigInt));
+	memcpy(&prv->qInv, qInv, sizeof(BigInt));
 
 	kfree(n);
 	kfree(phi_n);

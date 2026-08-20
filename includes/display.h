@@ -41,7 +41,7 @@ void				draw_rect(int x, int y, int w, int h, uint32_t color);
 void				draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int filled);
 void				draw_rect_outline(int x, int y, int w, int h, uint32_t color);
 void				draw_bmp(int x, int y, int w, int h, BmpTexture *texture, uint32_t override_color);
-volatile uint32_t	*get_fb_addr(void);
+uintptr_t			get_fb_addr(int *pitch);
 
 void				draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);
 int					load_font(const char *path, t_font	*out, int dot_count);

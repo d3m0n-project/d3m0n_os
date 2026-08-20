@@ -37,6 +37,8 @@ int	ft_putstr_count(char *str, t_format f)
 	int	pad_len;
 	int	is_null;
 
+	//uart_print(str);
+
 	is_null = (!str);
 	if (is_null)
 		str = "(null)";

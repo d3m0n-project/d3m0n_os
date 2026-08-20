@@ -12,4 +12,4 @@ void	_start(void)
 	int ret = app_main();
 	exit(ret);
 	while (1);
-}
+} 
