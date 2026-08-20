@@ -28,8 +28,8 @@ $(OBJ_DIR)/%.o: %.c
 	@echo "\033[35m  => $<\033[0m"
 
 copy_headers:
+	rm -rf "$(COPY_DEST)" >/dev/null || true
 	@mkdir -p $(COPY_DEST)
-	@rm -rf "$(COPY_DEST)/*"
 	cp -r ./lib/* $(COPY_DEST)
 
 clean:

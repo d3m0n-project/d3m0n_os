@@ -10,6 +10,9 @@ typedef struct s_list
 	struct s_list	*next;
 }	t_list;
 
+#define max(a, b)		((a > b)?a:b)
+#define min(a, b)		((a < b)?a:b)
+
 int				isalpha(int c);
 int				isdigit(int c);
 int				isalnum(int c);

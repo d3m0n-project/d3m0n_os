@@ -105,7 +105,6 @@ int main(int argc, char **argv)
 	arguments.emplace_back("arm-none-eabi-gcc");
 	arguments.emplace_back("-ffreestanding");
 	arguments.emplace_back("-nostdlib");
-	arguments.emplace_back("-Isdk/lib");
 	arguments.emplace_back("-mcpu=arm1176jzf-s");
 	#if INCLUDE_SDK == 1
 	arguments.emplace_back("-I" + (string)LIB_PATH);
@@ -113,25 +112,30 @@ int main(int argc, char **argv)
 	if (!compile_only)
 	{
 		arguments.emplace_back("-Wl,-e,_start");
-
-		#if INCLUDE_SDK == 1
-		const string archive = "/proc/self/fd/" + to_string(fd);
-		arguments.emplace_back(archive);
-		#endif
 		arguments.emplace_back("-lgcc");
 	}
 
 	for (int i = 1; i < argc; ++i)
 		arguments.emplace_back(argv[i]);
 
+	#if INCLUDE_SDK == 1
+	if (!compile_only)
+	{
+		const string archive = "/proc/self/fd/" + to_string(fd);
+		arguments.emplace_back(archive);
+	}
+	#endif
+
 	vector<char *> exec_args;
 	for (string &arg : arguments)
 		exec_args.push_back(arg.data());
 	exec_args.push_back(nullptr);
 
+
+	cout << "\033[36m";
 	for (char **p = exec_args.data(); *p; ++p)
-		std::cout << *p << ' ';
-	std::cout << '\n';
+		cout << *p << ' ';
+	cout << "\033[0m\n";
 	execvp("arm-none-eabi-gcc", exec_args.data());
 	perror("execvp");
 

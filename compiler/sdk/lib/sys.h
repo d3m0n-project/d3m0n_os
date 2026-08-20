@@ -6,7 +6,6 @@
 typedef enum
 {
 	SYS_EXIT,
-	SYS_PRINT,
 	SYS_READ,
 	SYS_WRITE,
 	SYS_OPEN,
@@ -44,11 +43,6 @@ static inline int	syscall(uint32_t number, uint32_t a0, uint32_t a1, uint32_t a2
 static inline void	exit(int ret_code)
 {
 	syscall(SYS_EXIT, (uint32_t)ret_code, 0, 0, 0);
-}
-
-static inline void	print(const char *text)
-{
-	syscall(SYS_PRINT, (uint32_t)text, 0, 0, 0);
 }
 
 static inline int	read(int fd, char *buffer, uint32_t count)

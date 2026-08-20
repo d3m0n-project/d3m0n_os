@@ -8,7 +8,7 @@
 
 
 #define HEX_CHARSET			"0123456789ABCDEF"
-#define INDEX_OF(c, str)	(int)(str - (strchr(c, str) || (str + 1)))
+#define INDEX_OF(c, str)	(int)(str - (strchr(str, c) || (str + 1)))
 
 class ColorValueException : public exception
 {

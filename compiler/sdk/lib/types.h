@@ -19,7 +19,7 @@ typedef signed int				int32_t;
 typedef signed long long		int64_t;
 typedef unsigned int			uintptr_t;
 
-typedef unsigned long			size_t;
+typedef unsigned int			size_t;
 
 #define SIZE_MAX				(size_t)-1
 

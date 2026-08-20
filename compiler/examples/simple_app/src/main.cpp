@@ -1,4 +1,6 @@
 #include "sys.h"
+#include "stdlib.h"
+#include "stdio.hpp"
 
 class Display
 {
@@ -11,6 +13,7 @@ public:
 	Display()
 	{
 		getfbaddr(&this->fb, &this->w, &this->h, &this->pitch);
+		printf("created a w=%i h=%i pitch=%i\n", this->w, this->h, this->pitch);
 	}
 
 	void	putpixel(int x, int y, uint32_t color)
@@ -28,12 +31,13 @@ extern "C" int	app_main(void)
 	Display	d = Display();
 	if (d.w == 0 || d.h == 0)
 	{
-		print("Could not aquire framebuffer address!\n");
+		printf("Could not aquire framebuffer address!\n");
 		return 1;
 	}
-	for (int i=0; i<55; i++)
+	for (int y=0; y<=d.h; y++)
 	{
-		d.putpixel(i, 5, 0xffffffff);
+		for (int x=0; x<=d.w; x++)
+			d.putpixel(x, y, 0xffffffff);
 	}
 	return 0;
 }
