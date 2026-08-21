@@ -5,6 +5,7 @@
 	Entry point of the application. Do not edit.
 */
 
+
 void	abort(void)
 {
 	for (;;)
@@ -18,4 +19,4 @@ void	_start(void)
 	int ret = app_main();
 	exit(ret);
 	while (1);
-} 
+}

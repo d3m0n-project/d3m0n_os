@@ -155,90 +155,59 @@ reserved_handler:
 
 
 irq_handler:
-    @ IRQ return address correction
     sub lr, lr, #4
-
-
-    @ Save interrupted context
     stmfd sp!, {r0-r12,lr}
 
     mrs r0, spsr
     stmfd sp!, {r0}
 
-
     ldr r1, =current_process
     ldr r1, [r1]
 
+    str sp, [r1,#0]            @ save irq_sp
 
-    @Save IRQ frame
-    str sp, [r1,#0]
+    @ pick target mode: SVC for kernel procs, SYS for user procs
+    ldr r2, [r1,#16]           @ mode
+    cmp r2, #0                 @ PROCESS_KERNEL
+    ldreq r3, =0x13            @ SVC
+    ldrne r3, =0x1F            @ SYS
 
+    mrs r2, cpsr
+    bic r2, r2, #0x1F
+    orr r2, r2, r3
+    msr cpsr_c, r2
 
+    mov r3, sp
+    str r3, [r1,#4]            @ save native-mode sp (works for kernel AND user)
 
-    @ USER processes
-    ldr r2, [r1,#16]       @ mode
+    msr cpsr_c, #0xD2          @ back to IRQ
 
-    cmp r2, #0             @ PROCESS_KERNEL
-    beq no_save_user_stack
-
-
-
-    @ switch to SYS mode
-    mrs r2,cpsr
-    bic r2,r2,#0x1f
-    orr r2,r2,#0x1f        @ SYS
-    msr cpsr_c,r2
-
-
-    @ Save user stack
-    mov r3,sp
-    str r3,[r1,#4]
-
-
-    @ return to IRQ mode
-    msr cpsr_c,#0xD2
-
-
-no_save_user_stack:
     bl irq_dispatch
 
     ldr r1, =current_process
     ldr r1, [r1]
 
-	@ restore IRQ frame
-    ldr sp,[r1,#0]
+    ldr sp, [r1,#0]
+    ldmfd sp!, {r0}
+    msr spsr_cxsf, r0
 
-	@ restore SPSR
-    ldmfd sp!,{r0}
-    msr spsr_cxsf,r0
+    ldr r2, [r1,#16]
+    cmp r2, #0
+    ldreq r3, =0x13
+    ldrne r3, =0x1F
 
+    mrs r0, cpsr
+    bic r0, r0, #0x1F
+    orr r0, r0, r3
+    msr cpsr_c, r0
 
+    ldr r0, [r1,#4]
+    mov sp, r0
 
-    @ USER processes
-    ldr r2,[r1,#16]
+    msr cpsr_c, #0xD2
 
-    cmp r2,#0
-    beq no_restore_user_stack
-
-
-    @ switch SYS mode
-    msr cpsr_c,#0xDF
-
-
-    @ restore user stack
-    ldr r0,[r1,#4]
-    mov sp,r0
-
-
-
-    @ back IRQ
-    msr cpsr_c,#0xD2
-
-
-no_restore_user_stack:
-    @ restore regs
-    ldmfd sp!,{r0-r12,lr}
-    subs pc,lr,#0
+    ldmfd sp!, {r0-r12,lr}
+    subs pc, lr, #0
 
 fiq_handler:
 	stmfd	sp!, {r0-r12, lr}

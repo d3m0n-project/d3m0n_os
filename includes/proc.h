@@ -7,6 +7,7 @@
 #include "libft.h"
 #include "elf.h"
 #include "d3m0n.h"
+#include "interrupts.h"
 
 #define kernel_user_stack_offset	OFFSETOF(t_process, user_stack)
 

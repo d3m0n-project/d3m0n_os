@@ -3,9 +3,10 @@
 
 #include "types.h"
 #include "string.hpp"
-#include "error.hpp"
 #include "stdlib.h"
+#include <exception>
 
+using namespace std;
 
 #define HEX_CHARSET			"0123456789ABCDEF"
 #define INDEX_OF(c, str)	(int)(str - (strchr(str, c) || (str + 1)))
@@ -17,7 +18,7 @@ private:
 public:
     ColorValueException(string val) : value(val) {}
 
-    const char* what() const noexcept override {
+    const char* what() {
         return "Invalid color value";
     }
 };
@@ -27,6 +28,11 @@ class Color
 private:
 	uint32_t	value;
 public:
+	Color(void)
+	{
+		this->value = 0;
+	}
+
 	Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	{
 		this->value = (a << 24) | (r << 16) | (g << 8) | b;

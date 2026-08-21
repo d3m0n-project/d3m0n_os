@@ -3,7 +3,9 @@
 #include "math.h"
 #include "d3m0n.h"
 #include "time.h"
+#include "proc.h"
 #include "filesystem.h"
+#include "random.h"
 
 #define UART0_BASE			0x20201000
 
@@ -24,13 +26,17 @@ void	uart_putc(char c)
 
 void	uart_print(const char* str)
 {
-	size_t  i = 0;
+	uint32_t cpsr = disable_interrupts();
 
+	rng_add_entropy(time_us() / 3);
+
+	size_t  i = 0;
 	while(str[i])
 	{
 		uart_putc(str[i]);
 		i++;
 	}
+	restore_interrupts(cpsr);
 }
 
 void	uart_putnbr_i(int nb)

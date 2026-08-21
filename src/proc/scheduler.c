@@ -1,5 +1,5 @@
 #include "proc.h"
-#include "IRQ.h"
+#include "interrupts.h"
 #include "d3m0n.h"
 
 t_process				*scheduled_processes = 0;
@@ -87,6 +87,8 @@ void	schedule(void)
 
 	if (old && old->state == PROC_RUNNING)
 		old->state = PROC_READY;
+
+	log("schedule to %s\n", 0, next->proc_name);
 
 	next->state = PROC_RUNNING;
 	next->time_slice = TIME_SLICE_MS;

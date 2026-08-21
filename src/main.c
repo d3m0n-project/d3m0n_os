@@ -4,12 +4,11 @@
 #include "display.h"
 #include "filesystem.h"
 #include "memory.h"
-
+#include "interrupts.h"
 
 #include "time.h"
 #include "peripheral.h"
 #include "proc.h"
-#include "IRQ.h"
 
 
 

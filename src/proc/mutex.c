@@ -1,5 +1,5 @@
 #include "mutex.h"
-#include "IRQ.h"
+#include "interrupts.h"
 
 void	mutex_init(t_mutex *mutex)
 {

@@ -24,15 +24,15 @@ extern "C"
 {
 	extern const unsigned char _binary_obj_sdk_a_start[];
 	extern const unsigned char _binary_obj_sdk_a_end[];
+
+	extern const unsigned char _binary_linker_ld_start[];
+	extern const unsigned char _binary_linker_ld_end[];
 }
 
-static int	create_embedded_archive()
+static int	create_embedded_archive(const char *name, const unsigned char *begin, const unsigned char *end)
 {
-	const unsigned char *begin = _binary_obj_sdk_a_start;
-	const unsigned char *end   = _binary_obj_sdk_a_end;
-
 	const size_t size = static_cast<size_t>(end - begin);
-	int fd = memfd_create("d3m0n_sdk.a", 0);
+	int fd = memfd_create(name, 0);
 	if (fd == -1)
 	{
 		perror("memfd_create");
@@ -57,7 +57,6 @@ static int	create_embedded_archive()
 		ptr += written;
 		remaining -= static_cast<size_t>(written);
 	}
-
 	return fd;
 }
 #endif
@@ -89,13 +88,21 @@ int main(int argc, char **argv)
 	}
 
 	#if INCLUDE_SDK == 1
-	int fd = -1;
+	int fd_sdk_a = -1;
+	int fd_linker = -1;
 	if (!compile_only)
 	{
-		fd = create_embedded_archive();
-		if (fd == -1)
+		fd_sdk_a = create_embedded_archive("d3m0n_sdk.a", _binary_obj_sdk_a_start, _binary_obj_sdk_a_end);
+		if (fd_sdk_a == -1)
 		{
 			cerr << "\033[31mERROR\033[0m: Could not allocate d3m0n OS SDK" << endl;
+			return 1;
+		}
+		fd_linker = create_embedded_archive("linker.ld", _binary_linker_ld_start, _binary_linker_ld_end);
+		if (fd_linker == -1)
+		{
+			close(fd_sdk_a);
+			cerr << "\033[31mERROR\033[0m: Could not allocate d3m0n OS linker script" << endl;
 			return 1;
 		}
 	}
@@ -122,15 +129,20 @@ int main(int argc, char **argv)
 		
 		#if INCLUDE_SDK == 1
 		arguments.emplace_back("-Wl,--start-group");
-		const string archive = "/proc/self/fd/" + to_string(fd);
-
-		arguments.emplace_back(archive);
+		const string sdk_archive = "/proc/self/fd/" + to_string(fd_sdk_a);
+		arguments.emplace_back(sdk_archive);
 		use_group = 1;
 		#endif
 		
 		arguments.emplace_back("-lgcc");
 		if (use_group)
 			arguments.emplace_back("-Wl,--end-group");
+		
+		#if INCLUDE_SDK == 1
+		const string linker_archive = "/proc/self/fd/" + to_string(fd_linker);
+		arguments.emplace_back("-T");
+		arguments.emplace_back(linker_archive);
+		#endif
 	}
 	
 
@@ -148,8 +160,10 @@ int main(int argc, char **argv)
 	perror("execvp");
 
 	#if INCLUDE_SDK == 1
-	if (fd != -1)
-		close(fd);
+	if (fd_linker != -1)
+		close(fd_linker);
+	if (fd_sdk_a)
+		close(fd_sdk_a);
 	#endif
 
 	return 1;

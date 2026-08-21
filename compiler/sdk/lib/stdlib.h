@@ -40,7 +40,6 @@ char			*strncat(char *dst, const char *src, size_t n);
 char			*strcat(char *dst, const char *src);
 
 char			*strdup(const char *src);
-void			*calloc(size_t nmemb, size_t size);
 
 int				isspace(char c);
 char			*substr(char const *str, unsigned int start, size_t len);

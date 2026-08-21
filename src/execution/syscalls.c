@@ -67,27 +67,6 @@ int	sys_exit(uint32_t mode, uint32_t a1, uint32_t a2, uint32_t a3)
 	return (int)mode;
 }
 
-int	sys_print(uint32_t str, uint32_t a1, uint32_t a2, uint32_t a3)
-{
-	(void)a1;
-	(void)a2;
-	(void)a3;
-	char			buffer[SYS_PRINT_MAX_LEN + 1];
-	const char	*src = resolve_user_string_ptr(str);
-	size_t			index = 0;
-
-	if (!src)
-		return -1;
-	while (index < SYS_PRINT_MAX_LEN && src[index])
-	{
-		buffer[index] = src[index];
-		index++;
-	}
-	buffer[index] = '\0';
-	uart_print(buffer);
-	return 0;
-}
-
 int	sys_read(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 {
 	char	*buffer;
@@ -103,11 +82,32 @@ int	sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 {
 	const char	*buffer;
 
+	if (fd == 0)
+	{
+		log("SYS_WRITE: TODO: stdin\n", LOG_WARNING);
+		return -1;
+	}
 	(void)a3;
 	buffer = (const char *)resolve_user_ptr(user_buf, count);
 	if (!buffer)
-		return (-1);
-	return write((int)fd, buffer, count);
+		return -1;
+	if (fd == 1 || fd == 2)
+	{
+		char			print_buffer[SYS_PRINT_MAX_LEN + 1];
+		size_t			index = 0;
+		while (index < SYS_PRINT_MAX_LEN && buffer[index] && index < count)
+		{
+			print_buffer[index] = buffer[index];
+			index++;
+		}
+		print_buffer[index] = '\0';
+		uart_print(print_buffer);
+		return index;
+	} else {
+		if (!buffer)
+			return -1;
+		return write((int)fd, buffer, count);
+	}
 }
 
 int	sys_open(uint32_t user_path, uint32_t flags, uint32_t a2, uint32_t a3)
@@ -298,7 +298,6 @@ int	sys_flushfb(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 
 syscall_t	syscall_table[] = {
 	sys_exit,
-	sys_print,
 	sys_read,
 	sys_write,
 	sys_open,
@@ -322,13 +321,15 @@ int	syscall_dispatch(uint32_t number, uint32_t a0, uint32_t a1, uint32_t a2, uin
 
 int	syscall_handler(syscall_frame_t *frame)
 {
+	uint32_t cpsr = disable_interrupts();
 	int ret = syscall_dispatch(frame->r7, frame->r0, frame->r1, frame->r2, frame->r3);
-	/* SYS_EXIT terminates the calling process.
-	 * Always return the exit flag so the assembly stub performs a context
-	 * switch to the next scheduled process (which sys_exit already selected). */
 	if (frame->r7 == SYSCALL_EXIT_INDEX)
+	{
+		restore_interrupts(cpsr);
 		return 1;
+	}
 
 	frame->r0 = ret;
+	restore_interrupts(cpsr);
 	return 0;
 }

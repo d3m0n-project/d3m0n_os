@@ -56,8 +56,9 @@ build: $(OUT)
 $(OUT): $(O_FILES)
 	@mkdir -p $(OBJ_DIR)
 ifneq ($(INCLUDE_SDK),0)
+	ld -r -b binary -o "$(OBJ_DIR)/linker.o" "linker.ld"
 	ld -r -b binary -o "$(OBJ_DIR)/sdk.o" "$(SDK_BUILD)"
-	$(CXX) "$(OBJ_DIR)/sdk.o" $(O_FILES) -o $@ $(CPP_FLAGS)
+	$(CXX) "$(OBJ_DIR)/sdk.o" "$(OBJ_DIR)/linker.o" $(O_FILES) -o $@ $(CPP_FLAGS)
 else
 	$(CXX) $(O_FILES) -o $@ $(CPP_FLAGS)
 endif

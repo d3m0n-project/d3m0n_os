@@ -29,12 +29,25 @@
 #define TIMER_TICK_US			1000
 
 
-void timer_init(void);
-void timer_ack(void);
+void 		timer_init(void);
+void		timer_ack(void);
 
-void irq_dispatch(void);
+void		irq_dispatch(void);
 
-extern void enable_irq(void);
-extern void disable_irq(void);
+extern void	enable_irq(void);
+extern void	disable_irq(void);
+
+static inline uint32_t	disable_interrupts(void)
+{
+	uint32_t cpsr;
+	__asm__ volatile("mrs %0, cpsr" : "=r"(cpsr));
+	__asm__ volatile("msr cpsr_c, %0" :: "r"(cpsr | 0xC0));
+	return cpsr;
+}
+
+static inline void	restore_interrupts(uint32_t cpsr)
+{
+	__asm__ volatile("msr cpsr_c, %0" :: "r"(cpsr));
+}
 
 #endif

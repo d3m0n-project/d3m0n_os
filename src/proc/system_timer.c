@@ -1,4 +1,4 @@
-#include "IRQ.h"
+#include "interrupts.h"
 
 
 void timer_init(void)
@@ -9,7 +9,6 @@ void timer_init(void)
 
 	// program first timer event
 	ST_C1 = ST_CLO + TIMER_TICK_US;
-
 	IRQ_ENABLE_1 = SYSTEM_TIMER_1_IRQ;
 }
 

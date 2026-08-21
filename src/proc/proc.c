@@ -49,27 +49,29 @@ void		process_list(void)
 	}
 }
 
-t_process	*process_create(void (*entry)(void), char *name, int kernel_mode)
+t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 {
 	t_process *p = ft_calloc(sizeof(t_process), 1);
-	if (!p)
-	{
+	if (!p) {
 		log("PROC: Could not allocate new process\n", LOG_ERROR);
 		return 0;
 	}
-	if (current_pid == (uint32_t)-1)
-	{
+	if (current_pid == (uint32_t)-1) {
 		log("PROC: Maximum PID reached, kill some processes!\n", LOG_ERROR);
+		kfree(p);
 		return 0;
 	}
 
-	ft_strlcpy(p->proc_name, name, 64); // copy proc name
-
+	ft_strlcpy(p->proc_name, name, 64);
 	p->pid = allocate_pid();
-	p->state = PROC_READY; // TODO: priorities and state scheduling system
+	p->state = PROC_READY;
 	p->kernel_stack = alloc_pages(KERNEL_STACK_PAGES);
+
 	if (kernel_mode)
+	{
 		p->mode = PROCESS_KERNEL;
+		p->user_sp = ((uint32_t)p->kernel_stack + (KERNEL_STACK_PAGES * PAGE_SIZE) / 2) & ~7;
+	}
 	else
 	{
 		p->mode = PROCESS_USER;
@@ -77,75 +79,51 @@ t_process	*process_create(void (*entry)(void), char *name, int kernel_mode)
 		if (!p->user_stack)
 		{
 			kfree(p->kernel_stack);
+			kfree(p);
 			return 0;
 		}
 		p->user_sp = ((uint32_t)p->user_stack + USER_STACK_PAGES * PAGE_SIZE) & ~7;
 	}
-	if (!p->kernel_stack || (!p->user_stack && p->mode == PROCESS_USER))
+	
+	if (!p->kernel_stack)
 	{
 		if (p->user_stack)
 			kfree(p->user_stack);
-		if (p->kernel_stack)
-			kfree(p->kernel_stack);
+		kfree(p->kernel_stack);
 		kfree(p);
 		return 0;
 	}
 
 	prepare_initial_stack(p, entry);
-
-	uint32_t *f = (uint32_t *)p->irq_sp;
-	log("frame=%p\n", 0, f);
-	log("SPSR=%x\n", 0, f[0]);
-	log("r0=%x\n", 0, f[1]);
-	log("r1=%x\n", 0, f[2]);
-	log("lr=%x\n", 0, f[14]);
-
 	scheduler_add(p);
 	return p;
 }
 
 void process_exit_current(uint32_t status_code)
 {
-	t_process *exiting;
-	t_process *next;
+	log("Exited with status code: %lu\n", LOG_WARNING, status_code);
 
-	log("Exited with status code: %llu\n", LOG_WARNING, status_code);
+	uint32_t cpsr = disable_interrupts();
 
-	exiting = current_process;
-
+	t_process *exiting = current_process;
 	if (!exiting)
+	{
+		restore_interrupts(cpsr);
 		return;
+	}
 
 	exiting->state = PROC_ZOMBIE;
-
-	/*
-	 * Find next BEFORE destroying the current relationship.
-	 */
-	next = exiting->next;
-
-	if (!next)
-		next = scheduled_processes;
-
 	scheduler_remove(exiting);
-
-	if (!next || next == exiting)
+	if (!scheduled_processes)
 	{
 		current_process = 0;
-
 		log("No other process to resume\n", LOG_WARNING);
-
 		while (1)
-			;
+			__asm__ volatile("wfe");
 	}
-	
-	current_process = next;
-	log("SCHEDULE DEBUG current=%p sp=%x user_sp=%x mode=%x time=%llu\n",
-		0,
-		current_process,
-		current_process->irq_sp,
-		current_process->user_sp,
-		current_process->mode,
-		current_process->time_slice);
-	current_process->state = PROC_RUNNING;
-	current_process->time_slice = TIME_SLICE_MS;
+
+	exiting->time_slice = 0;
+	restore_interrupts(cpsr);
+	while (1)
+		__asm__ volatile("wfe");
 }
