@@ -5,6 +5,12 @@
 	Entry point of the application. Do not edit.
 */
 
+void	abort(void)
+{
+	for (;;)
+		;
+}
+
 extern int	app_main(void);
 
 void	_start(void)

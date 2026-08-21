@@ -12,12 +12,6 @@
 
 #define MAX_WINDOW_VARS			128
 
-typedef struct s_point
-{
-	int	x;
-	int	y;
-}	t_point;
-
 typedef enum
 {
 	ANCHOR_CENTER_X=1,

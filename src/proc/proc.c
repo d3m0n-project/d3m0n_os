@@ -13,23 +13,24 @@ void	*alloc_pages(size_t pages)
 	return ft_calloc(pages, PAGE_SIZE);
 }
 
-void prepare_initial_stack(t_process *p, void (*entry)(void))
+void	prepare_initial_stack(t_process *p, void (*entry)(void))
 {
 	uint32_t *stack;
 
-    stack = (uint32_t *)p->kernel_stack + (KERNEL_STACK_PAGES * PAGE_SIZE) / sizeof(uint32_t);
+	stack = (uint32_t *)p->kernel_stack + (KERNEL_STACK_PAGES * PAGE_SIZE / sizeof(uint32_t));
+	stack -= 15;
 
-    *(--stack) = (uint32_t)entry;
+	if (p->mode == PROCESS_USER)
+		stack[0] = 0x10;
+	else
+		stack[0] = 0x53;
 
-    for (int i = 0; i < 13; i++)
-        *(--stack) = 0;
+	for (int i = 1; i <= 13; i++)
+		stack[i] = 0;
 
-    if (p->mode == PROCESS_USER)
-        *(--stack) = 0x60000010;
-    else
-        *(--stack) = 0x60000013;
+	stack[14] = (uint32_t)entry;
 
-    p->sp = (uint32_t)stack;
+	p->irq_sp = (uint32_t)stack;
 }
 
 uint32_t	allocate_pid()
@@ -43,7 +44,7 @@ void		process_list(void)
 	log("Process List:\n", 0);
 	while (curr)
 	{
-		log("  %s [%-7lu] %-15s [state:0x%x, sp:0x%x, priority=%lu]\n", 0, curr->mode?"U":"K", curr->pid, curr->proc_name, curr->state, curr->sp, curr->priority);
+		log("  %s [%-7lu] %-15s [state:0x%x, irq sp:0x%x, priority=%lu]\n", 0, curr->mode?"U":"K", curr->pid, curr->proc_name, curr->state, curr->irq_sp, curr->priority);
 		curr = curr->next;
 	}
 }
@@ -89,32 +90,62 @@ t_process	*process_create(void (*entry)(void), char *name, int kernel_mode)
 		kfree(p);
 		return 0;
 	}
-	p->user_sp = (uint32_t)p->user_stack + (USER_STACK_PAGES * PAGE_SIZE);
-	p->user_sp &= ~7;
 
 	prepare_initial_stack(p, entry);
+
+	uint32_t *f = (uint32_t *)p->irq_sp;
+	log("frame=%p\n", 0, f);
+	log("SPSR=%x\n", 0, f[0]);
+	log("r0=%x\n", 0, f[1]);
+	log("r1=%x\n", 0, f[2]);
+	log("lr=%x\n", 0, f[14]);
 
 	scheduler_add(p);
 	return p;
 }
 
-void	process_exit_current(uint32_t status_code)
+void process_exit_current(uint32_t status_code)
 {
-    t_process *exiting;
+	t_process *exiting;
+	t_process *next;
 
-    log("Exited with status code: %llu\n", LOG_WARNING, status_code);
-    exiting = current_process;
-    if (!exiting)
-        return;
+	log("Exited with status code: %llu\n", LOG_WARNING, status_code);
 
-    exiting->state = PROC_ZOMBIE;
-    scheduler_remove(exiting);
-    current_process = scheduler_next();
-    if (!current_process)
-    {
+	exiting = current_process;
+
+	if (!exiting)
+		return;
+
+	exiting->state = PROC_ZOMBIE;
+
+	/*
+	 * Find next BEFORE destroying the current relationship.
+	 */
+	next = exiting->next;
+
+	if (!next)
+		next = scheduled_processes;
+
+	scheduler_remove(exiting);
+
+	if (!next || next == exiting)
+	{
+		current_process = 0;
+
 		log("No other process to resume\n", LOG_WARNING);
-        while (1)
-            ;
-    }
-    current_process->state = PROC_RUNNING;
+
+		while (1)
+			;
+	}
+	
+	current_process = next;
+	log("SCHEDULE DEBUG current=%p sp=%x user_sp=%x mode=%x time=%llu\n",
+		0,
+		current_process,
+		current_process->irq_sp,
+		current_process->user_sp,
+		current_process->mode,
+		current_process->time_slice);
+	current_process->state = PROC_RUNNING;
+	current_process->time_slice = TIME_SLICE_MS;
 }

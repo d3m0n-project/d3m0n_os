@@ -50,7 +50,7 @@ static int	display_num(int num_len, long nb, int n)
 		if (nb == -2147483648)
 			uart_print("2147483648");
 		else
-			uart_putc(n);
+			uart_putnbr_i(n);
 		return (num_len);
 	}
 	return (0);

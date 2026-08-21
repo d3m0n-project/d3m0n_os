@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 	#endif
 
 	vector<string> arguments;
-	arguments.emplace_back("arm-none-eabi-gcc");
+	arguments.emplace_back("arm-none-eabi-g++");
 	arguments.emplace_back("-ffreestanding");
 	arguments.emplace_back("-nostdlib");
 	arguments.emplace_back("-mcpu=arm1176jzf-s");
@@ -110,21 +110,29 @@ int main(int argc, char **argv)
 	arguments.emplace_back("-I" + (string)LIB_PATH);
 	#endif
 	if (!compile_only)
-	{
 		arguments.emplace_back("-Wl,-e,_start");
-		arguments.emplace_back("-lgcc");
-	}
 
 	for (int i = 1; i < argc; ++i)
 		arguments.emplace_back(argv[i]);
 
-	#if INCLUDE_SDK == 1
+	
 	if (!compile_only)
 	{
+		int use_group = 0;
+		
+		#if INCLUDE_SDK == 1
+		arguments.emplace_back("-Wl,--start-group");
 		const string archive = "/proc/self/fd/" + to_string(fd);
+
 		arguments.emplace_back(archive);
+		use_group = 1;
+		#endif
+		
+		arguments.emplace_back("-lgcc");
+		if (use_group)
+			arguments.emplace_back("-Wl,--end-group");
 	}
-	#endif
+	
 
 	vector<char *> exec_args;
 	for (string &arg : arguments)

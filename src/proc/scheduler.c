@@ -3,9 +3,8 @@
 #include "d3m0n.h"
 
 t_process				*scheduled_processes = 0;
-static t_process		*scheduled_processes_tail = 0;
+t_process				*scheduled_processes_tail = 0;
 t_process				*current_process = 0;
-#define TIME_SLICE_MS	1
 
 extern void	start_first_process(t_process *proc);
 
@@ -16,35 +15,40 @@ void	scheduler_add(t_process *p)
 
 	p->next = 0;
 	p->time_slice = TIME_SLICE_MS;
+	p->state = PROC_READY;
 	if (!scheduled_processes)
 	{
 		scheduled_processes = p;
 		scheduled_processes_tail = p;
 		return;
 	}
+
 	scheduled_processes_tail->next = p;
 	scheduled_processes_tail = p;
 }
 
-t_process	*scheduler_next()
+t_process	*scheduler_next(void)
 {
-	t_process *curr = scheduled_processes;
+	t_process	*next;
 
-	if (!curr)
+	if (!scheduled_processes)
 		return 0;
 
-	if (!curr->next)
-		return curr;
+	if (!current_process)
+		return scheduled_processes;
 
-	scheduled_processes = curr->next;
-	curr->next = 0;
-	scheduled_processes_tail->next = curr;
-	scheduled_processes_tail = curr;
-	return scheduled_processes;
+	next = current_process->next;
+	if (!next)
+		next = scheduled_processes;
+
+	return next;
 }
+
 
 void	scheduler_remove(t_process *p)
 {
+	t_process	*curr;
+
 	if (!p || !scheduled_processes)
 		return;
 
@@ -56,8 +60,7 @@ void	scheduler_remove(t_process *p)
 			scheduled_processes_tail = 0;
 		return;
 	}
-
-	t_process *curr = scheduled_processes;
+	curr = scheduled_processes;
 	while (curr->next)
 	{
 		if (curr->next == p)
@@ -72,19 +75,21 @@ void	scheduler_remove(t_process *p)
 	}
 }
 
-void schedule(void)
+void	schedule(void)
 {
-	t_process *old = current_process;
+	t_process	*old;
+	t_process	*next;
+
+	old = current_process;
+	next = scheduler_next();
+	if (!next || next == old)
+		return;
 
 	if (old && old->state == PROC_RUNNING)
 		old->state = PROC_READY;
 
-	t_process *next = scheduler_next();
-	if (!next)
-		return;
-		
-	next->time_slice = TIME_SLICE_MS;
 	next->state = PROC_RUNNING;
+	next->time_slice = TIME_SLICE_MS;
 	current_process = next;
 }
 
@@ -111,8 +116,10 @@ void timer_handler(void)
 	if (!current_process)
 		return;
 
+	if (current_process->time_slice > 0)
+		current_process->time_slice--;
 
-	if (--current_process->time_slice <= 0)
+	if (current_process->time_slice == 0)
 	{
 		current_process->time_slice = TIME_SLICE_MS;
 		schedule();
@@ -122,7 +129,6 @@ void timer_handler(void)
 void irq_dispatch(void)
 {
 	uint32_t pending = IRQ_PENDING_1;
-
 	if (pending & (1 << 1))
 	{
 		ST_CS = (1 << 1);
