@@ -9,31 +9,30 @@
 
 
 extern "C" {
-	typedef struct AppMetadata
-	{
-		uint32_t		magic;
-		uint32_t		version;
-
-		const char		*name;
-		const char		*author;
-		const char		*description;
-
-		uint32_t		icon_size;
-		const uint8_t	*icon;
-		uint32_t		end_magic;
-	}	AppMetadata;
+	#include "app/app_manifest.h"
 
 	#define APP_METADATA	__attribute__((section(".appmeta"), used))
-	#define APP_INFO(NAME, AUTHOR, DESCRIPTION, ICON, ICON_SIZE) \
-		extern "C" const AppMetadata app_metadata APP_METADATA = { \
-			0x35455234, \
-			1, \
+	#define APP_INFO(NAME, VERSION, AUTHOR, DESCRIPTION, ICON) \
+		asm( \
+			".section .appicon, \"a\", %progbits\n" \
+			".align 4\n" \
+			".global __appicon_start\n" \
+			".global __appicon_end\n" \
+			"__appicon_start:\n" \
+			".incbin \"" ICON "\"\n" \
+			"__appicon_end:\n" \
+		); \
+		extern const unsigned char			__appicon_start[]; \
+		extern const unsigned char			__appicon_size[]; \
+		const AppMetadata app_metadata	APP_METADATA = { \
+			APP_MANIFEST_MAGIC, \
+			VERSION, \
 			NAME, \
 			AUTHOR, \
 			DESCRIPTION, \
-			ICON_SIZE, \
-			ICON, \
-			0x35455234 \
+			(uint32_t)(uintptr_t)__appicon_size, \
+			__appicon_start, \
+			APP_MANIFEST_MAGIC \
 		};
 }
 

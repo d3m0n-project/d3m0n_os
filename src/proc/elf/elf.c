@@ -1,6 +1,7 @@
 #include "elf.h"
 #include "time.h"
 #include "proc.h"
+#include "app_info.h"
 #include "uart.h"
 
 static const char *get_file_type(char file_type[2])
@@ -131,7 +132,6 @@ void	print_elf_file_report(elf_header_32 *header)
 	log("\tHEADER VERSION:		%i\n", 0, header->IDENTIFICATION.VERSION);
 	log("\tABI:			%s\n", 0, get_abi_name(header->IDENTIFICATION.ABI));
 	log("\tABI VERSION:		%i\n", 0, header->IDENTIFICATION.ABI_VERSION);
-
 	log("\tFILE TYPE:		%s\n", 0, get_file_type(header->FILE_TYPE));
 	log("\tINSTRUCTION SET:	%s\n", 0, get_instruction_set_name(header->TARGET_SYSTEM));
 	log("=================================================\n\n", 0);
@@ -331,17 +331,17 @@ static char *proc_name_from_path(char *path)
 
 t_process	*elf_to_proc(char *elf_path)
 {
-	int fd;
-	char *file_buf;
-	char *image;
-	char is_msb;
-	uint32_t file_size;
-	uint32_t min_vaddr;
-	uint32_t max_vaddr;
-	uint32_t entry_vaddr;
-	void (*entry)(void);
-	elf_header_32 header;
-	t_process *proc;
+	int				fd;
+	char			*file_buf;
+	char			*image;
+	char			is_msb;
+	uint32_t		file_size;
+	uint32_t		min_vaddr;
+	uint32_t		max_vaddr;
+	uint32_t		entry_vaddr;
+	void			(*entry)(void);
+	elf_header_32	header;
+	t_process		*proc;
 
 	fd = open(elf_path, O_READ);
 	if (fd < 0)
@@ -397,6 +397,14 @@ t_process	*elf_to_proc(char *elf_path)
 		log("ELF: Invalid PT_LOAD layout '%s'\n", LOG_ERROR, elf_path);
 		return (0);
 	}
+	// ensure app validity
+	if (parse_app_info(&header, file_buf))
+	{
+		kfree(file_buf);
+		log("ELF: Invalid App, please recompile using d3c: '%s'\n", LOG_ERROR, elf_path);
+		return 0;
+	}
+
 	image = ft_calloc((size_t)(max_vaddr - min_vaddr) + USER_HEAP_RESERVED + 8, 1);
 	if (!image)
 	{

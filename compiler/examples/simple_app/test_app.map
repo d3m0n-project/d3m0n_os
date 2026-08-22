@@ -1,0 +1,481 @@
+Archive member included to satisfy reference by file (symbol)
+
+/proc/self/fd/3(count_functions.o)
+                              obj/main.o (ft_putstr_count)
+/proc/self/fd/3(ft_putchar_count.o)
+                              obj/main.o (ft_putchar_count)
+/proc/self/fd/3(ft_puthex_count.o)
+                              obj/main.o (ft_puthex_count)
+/proc/self/fd/3(ft_putnbr_count.o)
+                              obj/main.o (ft_putnbr_count)
+/proc/self/fd/3(ft_putptr_count.o)
+                              obj/main.o (ft_putptr_count)
+/proc/self/fd/3(ft_uint_putnbr_count.o)
+                              obj/main.o (ft_uint_putnbr_count)
+/proc/self/fd/3(ft_ull_putnbr_count.o)
+                              obj/main.o (ft_ull_putnbr_count)
+/proc/self/fd/3(parser.o)     obj/main.o (parse_format)
+/proc/self/fd/3(types_display.o)
+                              /proc/self/fd/3(ft_puthex_count.o) (display_hex)
+/proc/self/fd/3(atoi.o)       /proc/self/fd/3(parser.o) (atoi)
+/proc/self/fd/3(bzero.o)      /proc/self/fd/3(parser.o) (bzero)
+/proc/self/fd/3(isdigit.o)    /proc/self/fd/3(parser.o) (isdigit)
+/proc/self/fd/3(itoa.o)       /proc/self/fd/3(ft_putnbr_count.o) (itoa)
+/proc/self/fd/3(memset.o)     /proc/self/fd/3(bzero.o) (memset)
+/proc/self/fd/3(strchr.o)     /proc/self/fd/3(parser.o) (strchr)
+/proc/self/fd/3(strlcpy.o)    /proc/self/fd/3(itoa.o) (strlcpy)
+/proc/self/fd/3(strlen.o)     /proc/self/fd/3(count_functions.o) (strlen)
+/proc/self/fd/3(_start.o)     (_start)
+/proc/self/fd/3(malloc.o)     /proc/self/fd/3(ft_putnbr_count.o) (free)
+/usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o)
+                              /proc/self/fd/3(malloc.o) (__aeabi_uidiv)
+/usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_dvmd_tls.o)
+                              /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o) (__aeabi_idiv0)
+/usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o)
+                              /proc/self/fd/3(ft_ull_putnbr_count.o) (__aeabi_uldivmod)
+/usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+                              /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o) (__udivmoddi4)
+/usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+                              obj/main.o (__aeabi_unwind_cpp_pr1)
+/usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(libunwind.o)
+                              /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o) (restore_core_regs)
+/usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+                              /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o) (__gnu_unwind_execute)
+/usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzdi2.o)
+                              /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o) (__clzdi2)
+/usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzsi2.o)
+                              /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzdi2.o) (__clzsi2)
+/proc/self/fd/3(memcpy.o)     /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o) (memcpy)
+
+Discarded input sections
+
+ .comment       0x0000000000000000       0x34 obj/main.o
+ .ARM.attributes
+                0x0000000000000000       0x2f obj/main.o
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(count_functions.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(count_functions.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(ft_putchar_count.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(ft_putchar_count.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(ft_puthex_count.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(ft_puthex_count.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(ft_putnbr_count.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(ft_putnbr_count.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(ft_putptr_count.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(ft_putptr_count.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(ft_uint_putnbr_count.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(ft_uint_putnbr_count.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(ft_ull_putnbr_count.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(ft_ull_putnbr_count.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(parser.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(parser.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(types_display.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(types_display.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(atoi.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(atoi.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(bzero.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(bzero.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(isdigit.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(isdigit.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(itoa.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(itoa.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(memset.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(memset.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(strchr.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(strchr.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(strlcpy.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(strlcpy.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(strlen.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(strlen.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(_start.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(_start.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(malloc.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(malloc.o)
+ .debug_frame   0x0000000000000000       0x20 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o)
+ .debug_line    0x0000000000000000       0x74 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o)
+ .debug_info    0x0000000000000000       0x26 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o)
+ .debug_abbrev  0x0000000000000000       0x14 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o)
+ .debug_aranges
+                0x0000000000000000       0x20 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o)
+ .debug_str     0x0000000000000000       0x8d /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o)
+ .ARM.attributes
+                0x0000000000000000       0x1c /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o)
+ .debug_line    0x0000000000000000       0x57 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_dvmd_tls.o)
+ .debug_info    0x0000000000000000       0x26 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_dvmd_tls.o)
+ .debug_abbrev  0x0000000000000000       0x14 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_dvmd_tls.o)
+ .debug_aranges
+                0x0000000000000000       0x20 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_dvmd_tls.o)
+ .debug_str     0x0000000000000000       0x8d /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_dvmd_tls.o)
+ .ARM.attributes
+                0x0000000000000000       0x1c /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_dvmd_tls.o)
+ .debug_line    0x0000000000000000       0x57 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o)
+ .debug_info    0x0000000000000000       0x26 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o)
+ .debug_abbrev  0x0000000000000000       0x14 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o)
+ .debug_aranges
+                0x0000000000000000       0x20 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o)
+ .debug_str     0x0000000000000000       0x89 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o)
+ .debug_frame   0x0000000000000000       0x2c /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o)
+ .ARM.attributes
+                0x0000000000000000       0x1c /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o)
+ .debug_info    0x0000000000000000      0x39f /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .debug_abbrev  0x0000000000000000      0x11b /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .debug_loc     0x0000000000000000      0x1e7 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .debug_aranges
+                0x0000000000000000       0x20 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .debug_line    0x0000000000000000      0x171 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .debug_str     0x0000000000000000      0x5f4 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .comment       0x0000000000000000       0x34 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .debug_frame   0x0000000000000000       0x40 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .ARM.attributes
+                0x0000000000000000       0x2a /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .debug_info    0x0000000000000000     0x1e44 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .debug_abbrev  0x0000000000000000      0x47b /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .debug_loc     0x0000000000000000     0x209a /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .debug_aranges
+                0x0000000000000000       0x20 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .debug_ranges  0x0000000000000000       0xf8 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .debug_line    0x0000000000000000     0x1064 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .debug_str     0x0000000000000000      0xc2f /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .comment       0x0000000000000000       0x34 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .debug_frame   0x0000000000000000      0x36c /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .ARM.attributes
+                0x0000000000000000       0x2a /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .debug_line    0x0000000000000000       0xa4 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(libunwind.o)
+ .debug_info    0x0000000000000000       0x26 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(libunwind.o)
+ .debug_abbrev  0x0000000000000000       0x14 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(libunwind.o)
+ .debug_aranges
+                0x0000000000000000       0x20 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(libunwind.o)
+ .debug_str     0x0000000000000000       0x8d /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(libunwind.o)
+ .ARM.attributes
+                0x0000000000000000       0x1c /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(libunwind.o)
+ .debug_info    0x0000000000000000      0x9d1 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .debug_abbrev  0x0000000000000000      0x2d3 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .debug_loc     0x0000000000000000      0x564 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .debug_aranges
+                0x0000000000000000       0x28 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .debug_ranges  0x0000000000000000       0x18 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .debug_line    0x0000000000000000      0x532 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .debug_str     0x0000000000000000      0x551 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .comment       0x0000000000000000       0x34 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .debug_frame   0x0000000000000000      0x110 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .ARM.attributes
+                0x0000000000000000       0x2a /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .debug_line    0x0000000000000000       0x61 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzdi2.o)
+ .debug_info    0x0000000000000000       0x26 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzdi2.o)
+ .debug_abbrev  0x0000000000000000       0x14 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzdi2.o)
+ .debug_aranges
+                0x0000000000000000       0x20 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzdi2.o)
+ .debug_str     0x0000000000000000       0x8d /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzdi2.o)
+ .ARM.attributes
+                0x0000000000000000       0x1c /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzdi2.o)
+ .debug_line    0x0000000000000000       0x64 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzsi2.o)
+ .debug_info    0x0000000000000000       0x26 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzsi2.o)
+ .debug_abbrev  0x0000000000000000       0x14 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzsi2.o)
+ .debug_aranges
+                0x0000000000000000       0x20 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzsi2.o)
+ .debug_str     0x0000000000000000       0x8d /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzsi2.o)
+ .ARM.attributes
+                0x0000000000000000       0x1c /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzsi2.o)
+ .comment       0x0000000000000000       0x34 /proc/self/fd/3(memcpy.o)
+ .ARM.attributes
+                0x0000000000000000       0x2f /proc/self/fd/3(memcpy.o)
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD obj/main.o
+START GROUP
+LOAD /proc/self/fd/3
+LOAD /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a
+END GROUP
+                0x0000000000000000                . = 0x0
+
+.text           0x0000000000000000     0x4768
+ *(.text*)
+ .text          0x0000000000000000      0x4c4 obj/main.o
+                0x000000000000008c                print_format
+                0x00000000000004a4                app_main
+ .text          0x00000000000004c4      0x2bc /proc/self/fd/3(count_functions.o)
+                0x0000000000000550                ft_put_padding_rep
+                0x00000000000005bc                ft_put_precision_rep
+                0x00000000000005e8                ft_putstr_count
+ .text          0x0000000000000780      0x154 /proc/self/fd/3(ft_putchar_count.o)
+                0x000000000000080c                ft_putchar_count
+ .text          0x00000000000008d4      0x3fc /proc/self/fd/3(ft_puthex_count.o)
+                0x0000000000000aa4                ft_puthex_count
+ .text          0x0000000000000cd0      0x508 /proc/self/fd/3(ft_putnbr_count.o)
+                0x0000000000000f30                ft_putnbr_count
+ .text          0x00000000000011d8      0x274 /proc/self/fd/3(ft_putptr_count.o)
+                0x00000000000012d0                ft_putptr_count
+ .text          0x000000000000144c       0xf0 /proc/self/fd/3(ft_uint_putnbr_count.o)
+                0x000000000000144c                ft_uint_putnbr_count
+                0x00000000000014c4                ft_ul_putnbr_count
+ .text          0x000000000000153c      0x31c /proc/self/fd/3(ft_ull_putnbr_count.o)
+                0x0000000000001640                ft_ull_putnbr_count
+ .text          0x0000000000001858      0x348 /proc/self/fd/3(parser.o)
+                0x0000000000001990                parse_format
+ .text          0x0000000000001ba0      0x2d4 /proc/self/fd/3(types_display.o)
+                0x0000000000001c2c                display_hex
+                0x0000000000001d00                display_uint
+                0x0000000000001dc0                display_ull
+ .text          0x0000000000001e74      0x160 /proc/self/fd/3(atoi.o)
+                0x0000000000001e74                atoi
+ .text          0x0000000000001fd4       0x30 /proc/self/fd/3(bzero.o)
+                0x0000000000001fd4                bzero
+ .text          0x0000000000002004       0x44 /proc/self/fd/3(isdigit.o)
+                0x0000000000002004                isdigit
+ .text          0x0000000000002048      0x238 /proc/self/fd/3(itoa.o)
+                0x000000000000214c                itoa
+ .text          0x0000000000002280       0x6c /proc/self/fd/3(memset.o)
+                0x0000000000002280                memset
+ .text          0x00000000000022ec       0xb8 /proc/self/fd/3(strchr.o)
+                0x00000000000022ec                strchr
+ .text          0x00000000000023a4      0x114 /proc/self/fd/3(strlcpy.o)
+                0x00000000000023a4                strlcpy
+ .text          0x00000000000024b8       0x54 /proc/self/fd/3(strlen.o)
+                0x00000000000024b8                strlen
+ .text          0x000000000000250c       0xac /proc/self/fd/3(_start.o)
+                0x000000000000258c                abort
+                0x0000000000002598                _start
+ .text          0x00000000000025b8      0x718 /proc/self/fd/3(malloc.o)
+                0x0000000000002734                malloc
+                0x000000000000292c                free
+                0x0000000000002b00                calloc
+                0x0000000000002bbc                realloc
+ .text          0x0000000000002cd0      0x114 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o)
+                0x0000000000002cd0                __udivsi3
+                0x0000000000002cd0                __aeabi_uidiv
+                0x0000000000002dc4                __aeabi_uidivmod
+ .text          0x0000000000002de4        0x4 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_dvmd_tls.o)
+                0x0000000000002de4                __aeabi_ldiv0
+                0x0000000000002de4                __aeabi_idiv0
+ .text          0x0000000000002de8       0x3c /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o)
+                0x0000000000002de8                __aeabi_uldivmod
+ .text          0x0000000000002e24      0x128 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+                0x0000000000002e24                __udivmoddi4
+ .text          0x0000000000002f4c     0x102c /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+                0x00000000000033c0                _Unwind_GetCFA
+                0x00000000000033c8                __gnu_Unwind_RaiseException
+                0x0000000000003474                __gnu_Unwind_ForcedUnwind
+                0x000000000000349c                __gnu_Unwind_Resume
+                0x0000000000003514                __gnu_Unwind_Resume_or_Rethrow
+                0x0000000000003530                _Unwind_Complete
+                0x0000000000003534                _Unwind_DeleteException
+                0x000000000000354c                _Unwind_VRS_Get
+                0x00000000000035d8                _Unwind_VRS_Set
+                0x0000000000003664                __gnu_Unwind_Backtrace
+                0x0000000000003b6c                __aeabi_unwind_cpp_pr0
+                0x0000000000003b74                __aeabi_unwind_cpp_pr1
+                0x0000000000003b7c                __aeabi_unwind_cpp_pr2
+                0x0000000000003b84                _Unwind_VRS_Pop
+ .text          0x0000000000003f78      0x1b0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(libunwind.o)
+                0x0000000000003f78                __restore_core_regs
+                0x0000000000003f78                restore_core_regs
+                0x0000000000003f94                __gnu_Unwind_Restore_VFP
+                0x0000000000003f9c                __gnu_Unwind_Save_VFP
+                0x0000000000003fa4                __gnu_Unwind_Restore_VFP_D
+                0x0000000000003fac                __gnu_Unwind_Save_VFP_D
+                0x0000000000003fb4                __gnu_Unwind_Restore_VFP_D_16_to_31
+                0x0000000000003fbc                __gnu_Unwind_Save_VFP_D_16_to_31
+                0x0000000000003fc4                __gnu_Unwind_Restore_WMMXD
+                0x0000000000004008                __gnu_Unwind_Save_WMMXD
+                0x000000000000404c                __gnu_Unwind_Restore_WMMXC
+                0x0000000000004060                __gnu_Unwind_Save_WMMXC
+                0x0000000000004074                ___Unwind_RaiseException
+                0x0000000000004074                _Unwind_RaiseException
+                0x0000000000004098                ___Unwind_Resume
+                0x0000000000004098                _Unwind_Resume
+                0x00000000000040bc                _Unwind_Resume_or_Rethrow
+                0x00000000000040bc                ___Unwind_Resume_or_Rethrow
+                0x00000000000040e0                ___Unwind_ForcedUnwind
+                0x00000000000040e0                _Unwind_ForcedUnwind
+                0x0000000000004104                _Unwind_Backtrace
+                0x0000000000004104                ___Unwind_Backtrace
+ .text          0x0000000000004128      0x530 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+                0x00000000000041bc                __gnu_unwind_execute
+                0x00000000000045d8                __gnu_unwind_frame
+                0x0000000000004624                _Unwind_GetRegionStart
+                0x0000000000004638                _Unwind_GetLanguageSpecificData
+ .text.unlikely
+                0x0000000000004658       0x10 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+                0x0000000000004658                _Unwind_GetDataRelBase
+                0x0000000000004660                _Unwind_GetTextRelBase
+ .text          0x0000000000004668       0x28 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzdi2.o)
+                0x0000000000004668                __clzdi2
+ .text          0x0000000000004690       0x48 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzsi2.o)
+                0x0000000000004690                __clzsi2
+ .text          0x00000000000046d8       0x90 /proc/self/fd/3(memcpy.o)
+                0x00000000000046d8                memcpy
+
+.glue_7         0x0000000000004768        0x0
+ .glue_7        0x0000000000004768        0x0 linker stubs
+
+.glue_7t        0x0000000000004768        0x0
+ .glue_7t       0x0000000000004768        0x0 linker stubs
+
+.vfp11_veneer   0x0000000000004768        0x0
+ .vfp11_veneer  0x0000000000004768        0x0 linker stubs
+
+.v4_bx          0x0000000000004768        0x0
+ .v4_bx         0x0000000000004768        0x0 linker stubs
+
+.iplt           0x0000000000004768        0x0
+ .iplt          0x0000000000004768        0x0 obj/main.o
+
+.rodata         0x0000000000004768       0x7e
+ *(.rodata*)
+ .rodata        0x0000000000004768       0x46 obj/main.o
+ *fill*         0x00000000000047ae        0x2 
+ .rodata        0x00000000000047b0        0x7 /proc/self/fd/3(count_functions.o)
+ *fill*         0x00000000000047b7        0x1 
+ .rodata        0x00000000000047b8        0xb /proc/self/fd/3(ft_putnbr_count.o)
+ *fill*         0x00000000000047c3        0x1 
+ .rodata        0x00000000000047c4        0xb /proc/self/fd/3(ft_putptr_count.o)
+ *fill*         0x00000000000047cf        0x1 
+ .rodata        0x00000000000047d0        0x6 /proc/self/fd/3(parser.o)
+ *fill*         0x00000000000047d6        0x2 
+ .rodata        0x00000000000047d8        0xe /proc/self/fd/3(itoa.o)
+
+.ARM.extab      0x00000000000047e8       0x24
+                0x00000000000047e8                . = ALIGN (0x4)
+ *(.ARM.extab*)
+ .ARM.extab     0x00000000000047e8       0x24 obj/main.o
+ .ARM.extab     0x000000000000480c        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .ARM.extab     0x000000000000480c        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .ARM.extab     0x000000000000480c        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .ARM.extab.text.unlikely
+                0x000000000000480c        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+
+.ARM.exidx      0x000000000000480c       0xd0
+                0x000000000000480c                . = ALIGN (0x4)
+                0x000000000000480c                __exidx_start = .
+ *(.ARM.exidx*)
+ .ARM.exidx     0x000000000000480c       0x28 obj/main.o
+ .ARM.exidx     0x0000000000004834        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+                                          0x8 (size before relaxing)
+ .ARM.exidx     0x0000000000004834       0x78 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+                                         0xd8 (size before relaxing)
+ .ARM.exidx     0x00000000000048ac       0x28 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+                                         0x38 (size before relaxing)
+ .ARM.exidx.text.unlikely
+                0x00000000000048d4        0x8 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+                                         0x10 (size before relaxing)
+                0x00000000000048dc                . = ALIGN (0x4)
+                0x00000000000048dc                __exidx_end = .
+
+.appicon        0x00000000000048e0    0x2871e
+                0x00000000000048e0                . = ALIGN (0x4)
+                0x00000000000048e0                __appicon_start = .
+ *(.appicon)
+ .appicon       0x00000000000048e0    0x2871e obj/main.o
+                0x000000000002cffe                __appicon_end = .
+                0x000000000002871e                __appicon_size = (__appicon_end - __appicon_start)
+
+.appmeta        0x000000000002d000       0x20
+                0x000000000002d000                . = ALIGN (0x4)
+                0x000000000002d000                __appmeta_start = .
+ *(.appmeta)
+ .appmeta       0x000000000002d000       0x20 obj/main.o
+                0x000000000002d020                __appmeta_end = .
+
+.rel.dyn        0x000000000002d020        0x0
+ .rel.iplt      0x000000000002d020        0x0 obj/main.o
+
+.data           0x000000000002d020        0x0
+ *(.data*)
+ .data          0x000000000002d020        0x0 obj/main.o
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(count_functions.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(ft_putchar_count.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(ft_puthex_count.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(ft_putnbr_count.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(ft_putptr_count.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(ft_uint_putnbr_count.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(ft_ull_putnbr_count.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(parser.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(types_display.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(atoi.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(bzero.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(isdigit.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(itoa.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(memset.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(strchr.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(strlcpy.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(strlen.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(_start.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(malloc.o)
+ .data          0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o)
+ .data          0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_dvmd_tls.o)
+ .data          0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o)
+ .data          0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .data          0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .data          0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(libunwind.o)
+ .data          0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .data          0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzdi2.o)
+ .data          0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzsi2.o)
+ .data          0x000000000002d020        0x0 /proc/self/fd/3(memcpy.o)
+
+.igot.plt       0x000000000002d020        0x0
+ .igot.plt      0x000000000002d020        0x0 obj/main.o
+
+.bss            0x000000000002d020        0x0
+ *(.bss*)
+ .bss           0x000000000002d020        0x0 obj/main.o
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(count_functions.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(ft_putchar_count.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(ft_puthex_count.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(ft_putnbr_count.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(ft_putptr_count.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(ft_uint_putnbr_count.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(ft_ull_putnbr_count.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(parser.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(types_display.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(atoi.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(bzero.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(isdigit.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(itoa.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(memset.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(strchr.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(strlcpy.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(strlen.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(_start.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(malloc.o)
+ .bss           0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivsi3.o)
+ .bss           0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_dvmd_tls.o)
+ .bss           0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_aeabi_uldivmod.o)
+ .bss           0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_udivmoddi4.o)
+ .bss           0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(unwind-arm.o)
+ .bss           0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(libunwind.o)
+ .bss           0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(pr-support.o)
+ .bss           0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzdi2.o)
+ .bss           0x000000000002d020        0x0 /usr/lib/gcc/arm-none-eabi/10.3.1/libgcc.a(_clzsi2.o)
+ .bss           0x000000000002d020        0x0 /proc/self/fd/3(memcpy.o)
+ *(COMMON)
+
+/DISCARD/
+ *(.comment)
+ *(.debug*)
+ *(.ARM.attributes)
+OUTPUT(test_app elf32-littlearm)
+LOAD linker stubs

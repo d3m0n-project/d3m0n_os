@@ -142,6 +142,7 @@ int main(int argc, char **argv)
 		const string linker_archive = "/proc/self/fd/" + to_string(fd_linker);
 		arguments.emplace_back("-T");
 		arguments.emplace_back(linker_archive);
+		arguments.emplace_back("-Wl,-Map=test_app.map");
 		#endif
 	}
 	

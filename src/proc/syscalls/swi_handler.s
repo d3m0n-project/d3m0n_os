@@ -1,44 +1,8 @@
-.global enter_user
 .global swi_handler
-
-.data
-kernel_return:
-	.word 0
-kernel_cpsr:
-	.word 0
 
 .section .text
 .extern syscall_handler
 .extern current_process
-
-enter_user:
-	@ save kernel continuation
-	ldr r2, =kernel_return
-	str lr, [r2]
-
-	@ save kernel CPSR
-	ldr r2, =kernel_cpsr
-	mrs r3, cpsr
-	str r3, [r2]
-
-	@ user stack
-	cps #0x1f
-	mov sp, r1
-	cps #0x13
-
-
-	@ enter user mode
-	mrs r2, cpsr
-	bic r2, r2, #0x1f
-	orr r2, r2, #0x10
-	msr spsr_cxsf, r2
-
-	mov lr, r0
-	movs pc, lr
-
-
-kernel_resume:
-	bx lr
 
 
 swi_handler:
