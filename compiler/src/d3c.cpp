@@ -112,6 +112,8 @@ int main(int argc, char **argv)
 	arguments.emplace_back("arm-none-eabi-g++");
 	arguments.emplace_back("-ffreestanding");
 	arguments.emplace_back("-nostdlib");
+	arguments.emplace_back("-fpic");
+	arguments.emplace_back("-fpie");
 	arguments.emplace_back("-mcpu=arm1176jzf-s");
 	#if INCLUDE_SDK == 1
 	arguments.emplace_back("-I" + (string)LIB_PATH);
@@ -135,14 +137,17 @@ int main(int argc, char **argv)
 		#endif
 		
 		arguments.emplace_back("-lgcc");
+		arguments.emplace_back("-lsupc++");
 		if (use_group)
 			arguments.emplace_back("-Wl,--end-group");
+
+		arguments.emplace_back("-pie");
 		
 		#if INCLUDE_SDK == 1
 		const string linker_archive = "/proc/self/fd/" + to_string(fd_linker);
 		arguments.emplace_back("-T");
 		arguments.emplace_back(linker_archive);
-		arguments.emplace_back("-Wl,-Map=test_app.map");
+		//arguments.emplace_back("-Wl,-Map=test_app.map");
 		#endif
 	}
 	

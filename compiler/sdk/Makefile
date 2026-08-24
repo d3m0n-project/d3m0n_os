@@ -6,7 +6,8 @@ AR			= arm-none-eabi-ar
 C_FILES		= $(shell find . -name '*.c')
 CPP_FILES	= $(shell find . -name '*.cpp')
 O_FILES		= $(C_FILES:%.c=$(OBJ_DIR)/%.o) $(CPP_FILES:%.cpp=$(OBJ_DIR)/%.o)
-C_FLAGS		= -Wall -Wextra -Werror -DVERSION="$(VERSION)" -Ilib
+DEBUG		= 0
+C_FLAGS		= -Wall -Wextra -Werror -DVERSION="$(VERSION)" -DDEBUG=$(DEBUG) -Ilib
 
 # only used in copy_headers
 COPY_DEST	?= "/tmp"
@@ -20,12 +21,12 @@ $(OUT): $(O_FILES)
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p "$(@D)"
 	@"$(CXX)" -c "$<" -o "$@" $(C_FLAGS)
-	@echo "\033[35m  => $<\033[0m"
+	@printf "\033[35m  => $<\033[0m\n"
 
 $(OBJ_DIR)/%.o: %.c
 	@mkdir -p "$(@D)"
 	@"$(CXX)" -c "$<" -o "$@" $(C_FLAGS)
-	@echo "\033[35m  => $<\033[0m"
+	@printf "\033[35m  => $<\033[0m\n"
 
 copy_headers:
 	rm -rf "$(COPY_DEST)" >/dev/null || true

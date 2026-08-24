@@ -1,14 +1,19 @@
 #include "app.hpp"
 #include "stdio.hpp"
+#include "app/graphics.hpp"
 
-Window::Window(string title, Size &width, Size &height)
+Display		display;
+
+Window::Window(const char *title, const Size &width, const Size &height)
 {
-	this->title = title;
+	printf("creating window!\n");
+	this->title = string(title);
 	this->bg_color = Color(255, 255, 255);
 	this->width = width;
 	this->height = height;
 	this->top_bar = true;
 	this->controls = nullptr;
+	printf("window created!\n");
 }
 
 Window::~Window()
@@ -21,7 +26,7 @@ void	Window::draw(void)
 	Control	*current = this->controls;
 	while (current)
 	{
-		current->draw();
+		current->draw(display);
 		current = current->next;
 	}
 }
@@ -49,8 +54,9 @@ Control::Control(void)
 	this->next = nullptr;
 }
 
-void	Control::draw(void)
+void	Control::draw(Display &display)
 {
+	(void)display;
 	printf("draw() function is not yet defined.\n");
 	return;
 }

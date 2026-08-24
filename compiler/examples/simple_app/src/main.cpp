@@ -10,8 +10,15 @@ APP_INFO(
     "icon.ico"
 )
 
+#include "windows/main_window.hpp"
+
+
 extern "C" int	app_main(void)
 {
-	printf("Hello World!\n");
+    printf("app_main\n");
+	MainWindow window;
+    window.draw();
+
+    printf("finished\n");
 	return 0;
 }

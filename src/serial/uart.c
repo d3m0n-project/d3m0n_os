@@ -24,10 +24,20 @@ void	uart_putc(char c)
 	UART0_DR = c;
 }
 
+void	uart_print_n(const char* str, size_t n)
+{
+	rng_add_entropy(time_us() / 3);
+
+	size_t  i = 0;
+	while(i < n)
+	{
+		uart_putc(str[i]);
+		i++;
+	}
+}
+
 void	uart_print(const char* str)
 {
-	uint32_t cpsr = disable_interrupts();
-
 	rng_add_entropy(time_us() / 3);
 
 	size_t  i = 0;
@@ -36,7 +46,6 @@ void	uart_print(const char* str)
 		uart_putc(str[i]);
 		i++;
 	}
-	restore_interrupts(cpsr);
 }
 
 void	uart_putnbr_i(int nb)

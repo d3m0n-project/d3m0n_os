@@ -97,6 +97,11 @@ typedef enum
 	PT_HIPROC=0x7fffffff
 }	e_elf_program_header_type;
 
+#define SHT_REL				9
+#define SHT_RELA			4
+#define R_ARM_ABS32			2
+#define R_ARM_RELATIVE		23
+
 
 /* functions */
 int					parse_elf_headers(int fd);

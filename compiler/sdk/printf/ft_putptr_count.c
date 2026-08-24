@@ -19,7 +19,7 @@ static int	hex_ptr_len(unsigned long nb)
 	return (i);
 }
 
-int	ft_putptr_count(void *ptr, t_format f)
+int	ft_putptr_count(void *ptr, t_format f, t_buf *buffer)
 {
 	int		printed;
 	int		len;
@@ -31,18 +31,18 @@ int	ft_putptr_count(void *ptr, t_format f)
 	if (f.flags[FLAG_ZERO] && !(f.flags[FLAG_MINUS] || f.precision > -1))
 		pad_char = '0';
 	if (!ptr)
-		return (ft_putstr_count("(nil)", f));
+		return (ft_putstr_count("(nil)", f, buffer));
 	len = 2 + hex_ptr_len((unsigned long)ptr);
 	pad_len = f.width - len;
 	if (pad_len < 0)
 		pad_len = 0;
 	if (!f.flags[FLAG_MINUS])
-		printed += ft_put_padding_rep(pad_len, pad_char);
-	write(1, "0x", 2);
+		printed += ft_put_padding_rep(pad_len, pad_char, buffer);
+	buf_write(buffer, "0x", 2);
 	printed += 2;
-	printed += display_hex((unsigned long)ptr, 1);
+	printed += display_hex((unsigned long)ptr, 1, buffer);
 	if (f.flags[FLAG_MINUS])
-		printed += ft_put_padding_rep(pad_len, pad_char);
+		printed += ft_put_padding_rep(pad_len, pad_char, buffer);
 	return (printed);
 }
 

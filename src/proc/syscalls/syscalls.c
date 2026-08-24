@@ -6,56 +6,55 @@
 #include "filesystem.h"
 #include "d3m0n.h"
 #include "display.h"
+#include "proc.h"
 
-#define SYS_PRINT_MAX_LEN 512
-#define SYSCALL_EXIT_INDEX 0
-
-#define SYS_READ_INDEX 2
-#define SYS_WRITE_INDEX 3
-#define SYS_OPEN_INDEX 4
-#define SYS_CLOSE_INDEX 5
-#define SYS_UNAME_INDEX 6
-#define SYS_GETDENTS_INDEX 7
-#define SYS_RENAME_INDEX 8
-#define SYS_MKDIR_INDEX 9
-#define SYS_RMDIR_INDEX 10
+#define SYS_PRINT_MAX_LEN	512
+#define SYSCALL_EXIT_INDEX	0
 
 extern t_process	*current_process;
 
-static const char	*resolve_user_string_ptr(uint32_t user_ptr)
-{
-	uint32_t	base;
-	uint32_t	size;
-
-	if (!current_process || !current_process->address_space)
-		return ((const char *)user_ptr);
-	base = current_process->image_vaddr_base;
-	size = current_process->image_size;
-	if (size == 0)
-		return ((const char *)user_ptr);
-	if (user_ptr < base || user_ptr >= base + size)
-		return ((const char *)user_ptr);
-	return ((const char *)((char *)current_process->address_space + (user_ptr - base)));
-}
-
 static void	*resolve_user_ptr(uint32_t user_ptr, uint32_t len)
 {
-	uint32_t	base;
-	uint32_t	size;
-	uint64_t	end;
+    t_process *proc = current_process;
+    if (!proc)
+        return (void *)user_ptr;
 
-	if (!current_process || !current_process->address_space)
-		return ((void *)user_ptr);
-	base = current_process->image_vaddr_base;
-	size = current_process->image_size;
-	if (size == 0)
-		return ((void *)user_ptr);
-	if (user_ptr < base)
-		return ((void *)user_ptr);
-	end = (uint64_t)user_ptr + (uint64_t)len;
-	if (end > (uint64_t)base + (uint64_t)size)
-		return ((void *)user_ptr);
-	return ((void *)((char *)current_process->address_space + (user_ptr - base)));
+    // ELF image (physical range after relocation)
+    if (proc->image_size > 0 && user_ptr >= proc->image_vaddr_base && user_ptr < proc->image_vaddr_base + proc->image_size)
+    {
+        if ((uint64_t)user_ptr + len > (uint64_t)proc->image_vaddr_base + proc->image_size)
+            return 0;
+        return (void *)user_ptr;   // already physical
+    }
+
+    // user stack
+    if (proc->user_stack)
+    {
+        uint32_t lo = (uint32_t)proc->user_stack;
+        uint32_t hi = lo + USER_STACK_PAGES * PAGE_SIZE;
+        if (user_ptr >= lo && user_ptr < hi)
+        {
+            if ((uint64_t)user_ptr + len > hi)
+                return 0;
+            return (void *)user_ptr;
+        }
+    }
+
+    // user heap
+    if (proc->heap_start && user_ptr >= proc->heap_start && user_ptr < proc->heap_end)
+    {
+        if ((uint64_t)user_ptr + len > proc->heap_end)
+            return 0;
+        return (void *)user_ptr;
+    }
+
+    log("resolve_user_ptr: ptr 0x%x not in any valid region\n", LOG_WARNING, user_ptr);
+    return 0;
+}
+
+static const char *resolve_user_string_ptr(uint32_t user_ptr)
+{
+    return (const char *)resolve_user_ptr(user_ptr, 1);
 }
 
 int	sys_exit(uint32_t mode, uint32_t a1, uint32_t a2, uint32_t a3)
@@ -78,36 +77,38 @@ int	sys_read(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 	return (int)read((int)fd, buffer, count);
 }
 
-int	sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
+int sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 {
-	const char	*buffer;
+	(void)a3;
+	//log("\nwriting %p l=%lu\n", 0, resolve_user_ptr(user_buf, count), count);
 
 	if (fd == 0)
-	{
-		log("SYS_WRITE: TODO: stdin\n", LOG_WARNING);
 		return -1;
-	}
-	(void)a3;
-	buffer = (const char *)resolve_user_ptr(user_buf, count);
-	if (!buffer)
-		return -1;
+
 	if (fd == 1 || fd == 2)
 	{
-		char			print_buffer[SYS_PRINT_MAX_LEN + 1];
-		size_t			index = 0;
-		while (index < SYS_PRINT_MAX_LEN && buffer[index] && index < count)
-		{
-			print_buffer[index] = buffer[index];
-			index++;
-		}
-		print_buffer[index] = '\0';
-		uart_print(print_buffer);
-		return index;
-	} else {
+		const char *buffer = (const char *)resolve_user_ptr(user_buf, count);
 		if (!buffer)
 			return -1;
-		return write((int)fd, buffer, count);
+
+		uint32_t written = 0;
+		while (written < count)
+		{
+			uint32_t chunk = count - written;
+			if (chunk > SYS_PRINT_MAX_LEN)
+				chunk = SYS_PRINT_MAX_LEN;
+
+			uart_print_n(buffer + written, chunk);
+			written += chunk;
+		}
+		return (int)written;
 	}
+
+	const char *buffer = (const char *)resolve_user_ptr(user_buf, count);
+	if (!buffer)
+		return -1;
+
+	return write((int)fd, buffer, count);
 }
 
 int	sys_open(uint32_t user_path, uint32_t flags, uint32_t a2, uint32_t a3)

@@ -118,6 +118,8 @@ void timer_handler(void)
 	if (!current_process)
 		return;
 
+	check_stack_canary(current_process);
+
 	if (current_process->time_slice > 0)
 		current_process->time_slice--;
 

@@ -1,66 +1,73 @@
+ENTRY(_start)
+
 SECTIONS
 {
-	. = 0x00000000;
+    . = 0x02000000;
 
-	.text :
-	{
-		*(.text*)
-	}
+    /* cover ELF + program headers so PT_PHDR is inside PT_LOAD */
+    .text : ALIGN(4)
+    {
+        . = ALIGN(4);
+        *(.text*)
+    }
 
-	.rodata :
-	{
-		*(.rodata*)
-	}
+    .rodata : ALIGN(4)
+    {
+        *(.rodata*)
+    }
 
-	.ARM.extab :
-	{
-		. = ALIGN(4);
-		KEEP(*(.ARM.extab*))
-	}
+    .ARM.extab : ALIGN(4)
+    {
+        KEEP(*(.ARM.extab*))
+    }
 
-	.ARM.exidx :
-	{
-		. = ALIGN(4);
-		__exidx_start = .;
+    .ARM.exidx : ALIGN(4)
+    {
+        __exidx_start = .;
+        KEEP(*(.ARM.exidx*))
+        __exidx_end = .;
+    }
 
-		KEEP(*(.ARM.exidx*))
+    .appicon : ALIGN(4)
+    {
+        __appicon_start = .;
+        KEEP(*(.appicon))
+        __appicon_end = .;
+    }
+    __appicon_size = __appicon_end - __appicon_start;
 
-		. = ALIGN(4);
-		__exidx_end = .;
-	}
+    .appmeta : ALIGN(4)
+    {
+        __appmeta_start = .;
+        KEEP(*(.appmeta))
+        __appmeta_end = .;
+    }
 
-	.appicon :
-	{
-		. = ALIGN(4);
-		__appicon_start = .;
-		KEEP(*(.appicon))
-		__appicon_end = .;
-	}
-	__appicon_size = __appicon_end - __appicon_start;
+    .data : ALIGN(4)
+    {
+        *(.data*)
+        *(.got*)
+        *(.got.plt*)
+    }
 
-	.appmeta :
-	{
-		. = ALIGN(4);
-		__appmeta_start = .;
-		KEEP(*(.appmeta))
-		__appmeta_end = .;
-	}
+    .bss (NOLOAD) : ALIGN(8)
+    {
+        __bss_start = .;
+        *(.bss*)
+        *(COMMON)
+        __bss_end = .;
+    }
 
-	.data :
-	{
-		*(.data*)
-	}
-
-	.bss :
-	{
-		*(.bss*)
-		*(COMMON)
-	}
-
-	/DISCARD/ :
-	{
-		*(.comment)
-		*(.debug*)
-		*(.ARM.attributes)
-	}
+    /DISCARD/ :
+    {
+        *(.comment)
+        *(.debug*)
+        *(.ARM.attributes)
+        *(.dynamic)
+        *(.dynsym)
+        *(.dynstr)
+        *(.hash)
+        *(.gnu.hash)
+        *(.interp)
+    }
 }

@@ -14,8 +14,11 @@
 #define USER_HEAP_RESERVED			0x100000	/* 1 MiB of heap per process */
 #define USER_HEAP_MAX(proc)			((proc)->heap_start + USER_HEAP_RESERVED)
 #define KERNEL_STACK_PAGES			16
+#define USER_STACK_PAGES			4
+#define PAGE_SIZE					4096
+#define STACK_CANARY				0xDEADC0DE
 
-#define TIME_SLICE_MS				1
+#define TIME_SLICE_MS				100 // delta t before each scheduler call
 
 typedef enum {
 	PROC_READY,
@@ -72,5 +75,11 @@ extern t_process		*scheduled_processes;
 extern t_process		*scheduled_processes_tail;
 extern t_process		*current_process;
 void					init_proc(void);
+
+// debug
+void					process_dump_regs(t_process *p);
+
+// security
+void					check_stack_canary(t_process *p);
 
 #endif

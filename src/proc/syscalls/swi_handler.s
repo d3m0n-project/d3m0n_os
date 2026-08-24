@@ -19,27 +19,28 @@ swi_handler:
 
 
 exit_user_mode:
-	add sp, sp, #(14*4)
+	add sp, sp, #(14*4)          @ discard this SWI's own frame — we never return to it
 
-	msr cpsr_c,#0xD2                 @ switch to IRQ mode
+	bl process_exit_current       @ marks exiting proc ZOMBIE, removes it, sets NEW current_process
+
+	@ current_process is now a DIFFERENT, valid process — safe to restore from here
+	msr cpsr_c,#0xD2
 
 	ldr r1, =current_process
 	ldr r1, [r1]
 
-	ldr sp, [r1,#0]                  @ proc->sp (saved IRQ frame)
-
-	ldmfd sp!,{r0}                   @ SPSR
+	ldr sp, [r1,#0]
+	ldmfd sp!,{r0}
 	msr spsr_cxsf,r0
 
-	ldr r2,[r1,#16]                  @ proc->mode
-	cmp r2,#0                        @ PROCESS_KERNEL?
+	ldr r2,[r1,#16]
+	cmp r2,#0
 	beq 1f
 
-	@ user process
-	msr cpsr_c,#0xDF                 @ SYS mode
-	ldr r0,[r1,#4]                   @ proc->user_sp
+	msr cpsr_c,#0xDF
+	ldr r0,[r1,#4]
 	mov sp,r0
-	msr cpsr_c,#0xD2                 @ back to IRQ mode
+	msr cpsr_c,#0xD2
 
 1:
 	ldmfd sp!,{r0-r12,lr}

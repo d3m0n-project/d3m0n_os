@@ -22,6 +22,10 @@ static int	display_app_manifest(AppMetadata *metadata, char *buffer, uint32_t ro
 	log("\ticon_size:		%lu\n", 0, metadata->icon_size);
 	log("\ticon_offset:		%p\n", 0, metadata->icon);
 
+	return 0;
+
+	// skip icon for now
+
 	uint8_t		*icon = (uint8_t *)get_relative_ptr((const char *)metadata->icon, buffer, rodata_addr, rodata_offset);
 	ICO_icon	ico = {0};
 	if (load_ico_from_buff((char *)icon, metadata->icon_size, &ico))

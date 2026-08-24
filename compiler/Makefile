@@ -26,6 +26,8 @@ CPP_FLAGS				= -Wall -Wextra -Werror \
 							-DLIB_PATH="\"$(SDK_HEADER_PATH)\"" \
 							-MMD -MP
 CWD						= $(shell pwd)
+OBJCOPY					= $(shell $(CXX) -print-prog-name=objcopy)
+TARGET_BFD				= $(shell $(OBJCOPY) --info | awk '/^elf/ {print $$1; exit}')
 
 
 
@@ -38,18 +40,18 @@ $(SDK_BUILD):
 	@$(MAKE) build \
 		OUT="$(OBJ_DIR)/tmp_d3c" \
 		INCLUDE_SDK=0
-	@echo "\033[35mFinished compiling temp d3c!\033[0m"
+	@printf "\033[35mFinished compiling temp d3c!\033[0m\n"
 
 	@$(MAKE) -C sdk \
 		CXX="$(CWD)/$(OBJ_DIR)/tmp_d3c" \
 		OUT="$(CWD)/$(SDK_BUILD)"
-	@echo "\033[35mFinished compiling sdk!\033[0m"
+	@printf "\033[35mFinished compiling sdk!\033[0m\n"
 
 	@make -C sdk copy_headers COPY_DEST="$(SDK_HEADER_PATH)"
-	@echo "\033[35mCopied sdk headers!\033[0m"
+	@printf "\033[35mCopied sdk headers!\033[0m\n"
 
 	@rm -rf $(O_FILES)
-	@echo "\033[35mCleaned up temp d3c files!\033[0m"
+	@printf "\033[35mCleaned up temp d3c files!\033[0m\n"
 
 build: $(OUT)
 
@@ -57,12 +59,12 @@ $(OUT): $(O_FILES)
 	@mkdir -p $(OBJ_DIR)
 ifneq ($(INCLUDE_SDK),0)
 	ld -r -b binary -o "$(OBJ_DIR)/linker.o" "linker.ld"
-	ld -r -b binary -o "$(OBJ_DIR)/sdk.o" "$(SDK_BUILD)"
+	$(OBJCOPY) -I binary -O $(TARGET_BFD) "$(SDK_BUILD)" "$(OBJ_DIR)/sdk.o"
 	$(CXX) "$(OBJ_DIR)/sdk.o" "$(OBJ_DIR)/linker.o" $(O_FILES) -o $@ $(CPP_FLAGS)
 else
 	$(CXX) $(O_FILES) -o $@ $(CPP_FLAGS)
 endif
-	@echo "\033[35mLinked $(OUT)!\033[0m"
+	@printf "\033[35mLinked $(OUT)!\033[0m\n"
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
@@ -70,11 +72,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 install: build
 	@mkdir -p $(INSTALL_DIR)
-	@echo -n "Install $(OUT) to $(INSTALL_DIR)? [Y/n] "; \
+	@printf "Install $(OUT) to $(INSTALL_DIR)? [Y/n] "; \
 	read answer; \
 	case "$$answer" in \
 		[nN]|[nN][oO]) \
-			echo "\033[31mInstallation cancelled.\033[0m"; \
+			printf "\033[31mInstallation cancelled.\033[0m\n"; \
 			exit 1; \
 			;; \
 		*) \
@@ -90,10 +92,12 @@ else
 	@ln -s "$(INSTALL_DIR)/$(OUT)" $(HOME)/.local/bin/d3c   2>/dev/null || true
 endif
 
-	@echo
-	@echo "\033[32mSUCCESS\033[0m: $(OUT) installed to $(INSTALL_DIR)/$(OUT)"
-	@echo
-	@echo "Make sure $(INSTALL_DIR) is in your PATH."
+	@printf "\n"
+	@printf "=============================================================\n"
+	@printf "\033[32mSUCCESS\033[0m: $(OUT) installed to $(INSTALL_DIR)/$(OUT)\n"
+	@printf "Make sure $(INSTALL_DIR) is in your PATH!\n"
+	@printf "Put this command in your bashrc: \033[35mexport PATH=\"\$$PATH:$(INSTALL_DIR)\"\033[0m\n"
+	@printf "=============================================================\n\n"
 
 
 remove:
@@ -102,16 +106,16 @@ ifeq ($(INSTALL_FOR_EVERYONE),1)
 else
 	@rm -f "$(INSTALL_DIR)/$(OUT)"
 endif
-	@echo "\033[32mSUCCESS\033[0m: $(OUT) removed."
+	@printf "\033[32mSUCCESS\033[0m: $(OUT) removed.\n"
 
 clean:
 	rm -rf $(OBJ_DIR)
-	@echo "\033[35mCleaning SDK\033[0m"
+	@printf "\033[35mCleaning SDK\033[0m\n"
 	@$(MAKE) -C sdk clean
 
 fclean: clean
 	rm -rf $(OUT)
-	@echo "\033[35mFull Cleaning SDK\033[0m"
+	@printf "\033[35mFull Cleaning SDK\033[0m\n"
 	@$(MAKE) -C sdk fclean
 
 re: fclean all

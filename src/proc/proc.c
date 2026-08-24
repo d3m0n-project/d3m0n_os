@@ -1,8 +1,5 @@
 #include "proc.h"
 
-#define PAGE_SIZE			4096
-#define USER_STACK_PAGES	4
-
 uint32_t					current_pid = 0;
 
 extern void		start_first_process(t_process *proc);
@@ -13,12 +10,22 @@ void	*alloc_pages(size_t pages)
 	return ft_calloc(pages, PAGE_SIZE);
 }
 
+void	check_stack_canary(t_process *p)
+{
+	uint32_t *base = (uint32_t *)p->kernel_stack;
+	if (base[0] != STACK_CANARY)
+		log("!! STACK OVERFLOW on %s: canary=0x%x\n", LOG_ERROR, p->proc_name, base[0]);
+}
+
 void	prepare_initial_stack(t_process *p, void (*entry)(void))
 {
 	uint32_t *stack;
 
 	stack = (uint32_t *)p->kernel_stack + (KERNEL_STACK_PAGES * PAGE_SIZE / sizeof(uint32_t));
 	stack -= 15;
+	
+	((uint32_t *)p->kernel_stack)[0] = STACK_CANARY;
+	
 
 	if (p->mode == PROCESS_USER)
 		stack[0] = 0x10;
@@ -45,6 +52,9 @@ void		process_list(void)
 	while (curr)
 	{
 		log("  %s [%-7lu] %-15s [state:0x%x, irq sp:0x%x, priority=%lu]\n", 0, curr->mode?"U":"K", curr->pid, curr->proc_name, curr->state, curr->irq_sp, curr->priority);
+		process_dump_regs(curr);
+		log("\n", 0);
+		
 		curr = curr->next;
 	}
 }
@@ -66,11 +76,10 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 	p->pid = allocate_pid();
 	p->state = PROC_READY;
 	p->kernel_stack = alloc_pages(KERNEL_STACK_PAGES);
-
 	if (kernel_mode)
 	{
 		p->mode = PROCESS_KERNEL;
-		p->user_sp = ((uint32_t)p->kernel_stack + (KERNEL_STACK_PAGES * PAGE_SIZE) / 2) & ~7;
+		p->user_sp = ((uint32_t)p->kernel_stack + KERNEL_STACK_PAGES * PAGE_SIZE) & ~7;
 	}
 	else
 	{
@@ -104,7 +113,6 @@ void process_exit_current(uint32_t status_code)
 	log("Exited with status code: %lu\n", LOG_WARNING, status_code);
 
 	uint32_t cpsr = disable_interrupts();
-
 	t_process *exiting = current_process;
 	if (!exiting)
 	{

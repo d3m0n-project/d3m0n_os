@@ -37,11 +37,17 @@ void		irq_dispatch(void);
 extern void	enable_irq(void);
 extern void	disable_irq(void);
 
-static inline uint32_t	disable_interrupts(void)
+static inline uint32_t disable_interrupts(void)
 {
-	uint32_t cpsr;
-	__asm__ volatile("mrs %0, cpsr" : "=r"(cpsr));
-	__asm__ volatile("msr cpsr_c, %0" :: "r"(cpsr | 0xC0));
+	uint32_t cpsr, tmp;
+	__asm__ volatile(
+		"mrs %0, cpsr\n\t"
+		"orr %1, %0, #0xC0\n\t"
+		"msr cpsr_c, %1"
+		: "=r"(cpsr), "=r"(tmp)
+		:
+		: "memory"
+	);
 	return cpsr;
 }
 

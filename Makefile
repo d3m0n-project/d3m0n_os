@@ -81,23 +81,23 @@ VARS := DEBUG DEBUG_OUTLINE USE_ADMIN SHOW_IMAGE_STATUS TRACK_MEMORY_USAGE
 MSG_OUTLINE_COLOR=$(C1)
 MSG_COLOR=$(C3)
 show-config:
-	@echo "    $(MSG_OUTLINE_COLOR)╔═════════════════╣ CONFIG ╠══════╦══════════╗$(R)"
+	@printf "    $(MSG_OUTLINE_COLOR)╔═════════════════╣ CONFIG ╠══════╦══════════╗$(R)\n"
 	@$(foreach v,$(VARS), \
 		printf "    $(MSG_OUTLINE_COLOR)║$(R) $(MSG_COLOR)%-31s$(R) $(MSG_OUTLINE_COLOR)║$(R) %-17b $(MSG_OUTLINE_COLOR)║$(R)\n" \
 			"$(v)" \
 			"$(call onoff,$($(v)))"; \
 	)
-	@echo "    $(MSG_OUTLINE_COLOR)╚═════════════════════════════════╩══════════╝$(R)"
-	@echo ""
+	@printf "    $(MSG_OUTLINE_COLOR)╚═════════════════════════════════╩══════════╝$(R)\n"
+	@printf "\n"
 
 banner:
-	@echo "    $(C1)██████╗ ██████╗ $(C1)███╗   ███╗ $(C1)██████╗ $(C2)███╗   ██╗$(R)"
-	@echo "    $(C1)██╔══██╗╚════██╗$(C1)████╗ ████║$(C2)██╔═████╗$(C3)████╗  ██║$(R)"
-	@echo "    $(C2)██║  ██║ █████╔╝$(C2)██╔████╔██║$(C3)██║██╔██║$(C4)██╔██╗ ██║$(R)"
-	@echo "    $(C2)██║  ██║ ╚═══██╗$(C3)██║╚██╔╝██║$(C3)████╔╝██║$(C4)██║╚██╗██║$(R)"
-	@echo "    $(C3)██████╔╝██████╔╝$(C4)██║ ╚═╝ ██║$(C4)╚██████╔╝$(C5)██║ ╚████║$(R)"
-	@echo "    $(C5)╚═════╝ ╚═════╝ $(C5)╚═╝     ╚═╝ $(C5)╚═════╝ $(C5)╚═╝  ╚═══╝$(R)"
-	@echo ""
+	@printf "    $(C1)██████╗ ██████╗ $(C1)███╗   ███╗ $(C1)██████╗ $(C2)███╗   ██╗$(R)\n"
+	@printf "    $(C1)██╔══██╗╚════██╗$(C1)████╗ ████║$(C2)██╔═████╗$(C3)████╗  ██║$(R)\n"
+	@printf "    $(C2)██║  ██║ █████╔╝$(C2)██╔████╔██║$(C3)██║██╔██║$(C4)██╔██╗ ██║$(R)\n"
+	@printf "    $(C2)██║  ██║ ╚═══██╗$(C3)██║╚██╔╝██║$(C3)████╔╝██║$(C4)██║╚██╗██║$(R)\n"
+	@printf "    $(C3)██████╔╝██████╔╝$(C4)██║ ╚═╝ ██║$(C4)╚██████╔╝$(C5)██║ ╚████║$(R)\n"
+	@printf "    $(C5)╚═════╝ ╚═════╝ $(C5)╚═╝     ╚═╝ $(C5)╚═════╝ $(C5)╚═╝  ╚═══╝$(R)\n"
+	@printf "\n"
 
 
 CONFIG_FILE = $(OBJ_DIR)/.config
@@ -111,7 +111,7 @@ config:
 	@printf '%s\n' $(foreach v,$(VARS),$(v)=$($(v))) | sha1sum | awk '{print $$1}' > $(CONFIG_FILE).tmp
 	@if ! cmp -s $(CONFIG_FILE).tmp $(CONFIG_FILE) 2>/dev/null; then \
 		mv $(CONFIG_FILE).tmp $(CONFIG_FILE); \
-		echo "Config changed, recompiling..."; \
+		printf "Config changed, recompiling...\n"; \
 	else \
 		rm -f $(CONFIG_FILE).tmp; \
 	fi
@@ -122,26 +122,26 @@ $(NAME): $(O_FILES)
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(OBJ_DIR)
 
-	@echo "$(COLOR_INFO)[LD] Linking kernel...$(R)"
+	@printf "$(COLOR_INFO)[LD] Linking kernel...$(R)\n"
 	$(CC) $(C_FLAGS) $(O_FILES) $(LD_FLAGS) -o $(OBJ_DIR)/kernel.elf
 
-	@echo "$(COLOR_INFO)[OBJCOPY] Creating kernel.img...$(R)"
+	@printf "$(COLOR_INFO)[OBJCOPY] Creating kernel.img...$(R)\n"
 	@$(OBJCOPY) -O binary $(OBJ_DIR)/kernel.elf $(BUILD_DIR)/kernel.img
 
 	@cp $(BUILD_DIR)/kernel.img $(NAME)
 
-	@echo "$(COLOR_SUCCESS)[OK] Build done: $(NAME)$(R)"
+	@printf "$(COLOR_SUCCESS)[OK] Build done: $(NAME)$(R)\n"
 
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	@echo "$(COLOR_INFO)[CC] $<$(R)"
+	@printf "$(COLOR_INFO)[CC] $<$(R)\n"
 	@$(CC) $(C_FLAGS) -c $< -o $@
 
 
 $(OBJ_DIR)/asm/%.o: $(SRC_DIR)/%.s
 	@mkdir -p $(dir $@)
-	@echo "$(COLOR_INFO)[AS] $<$(R)"
+	@printf "$(COLOR_INFO)[AS] $<$(R)\n"
 	@$(CC) $(C_FLAGS) -c $< -o $@
 
 applications:
@@ -149,28 +149,28 @@ applications:
 	@mkdir -p rootfs/apps/
 	@mkdir -p rootfs/apps/d3m0n/
 	@cp -r applications/* rootfs/apps/d3m0n/
-	@echo "$(COLOR_SUCCESS)[OK] Copied applications list to disk!$(R)"
+	@printf "$(COLOR_SUCCESS)[OK] Copied applications list to disk!$(R)\n"
 
 	@chmod +x build_package_lst.sh
 	@bash build_package_lst.sh rootfs/apps/* # TODO: do for other modules
-	@echo "$(COLOR_SUCCESS)[OK] Generated package.lst!$(R)"
+	@printf "$(COLOR_SUCCESS)[OK] Generated package.lst!$(R)\n"
 
 
 disk: applications
-	@echo "$(COLOR_INFO)[IMG] Creating disk image...$(R)"
+	@printf "$(COLOR_INFO)[IMG] Creating disk image...$(R)\n"
 	@dd if=/dev/zero of=$(DISK) bs=1M count=$(IMG_SIZE)
 	@$(SUDO_EXECUTABLE) parted $(DISK) mklabel msdos
 	@$(SUDO_EXECUTABLE) parted $(DISK) mkpart primary fat32 1MiB 100%
 	@mkfs.vfat -F 32 -n D3M0NFS $(DISK)
 	@mcopy -i $(DISK) -s rootfs/* ::
 	@rm -rf rootfs/apps/ > /dev/null
-	@echo "$(COLOR_SUCCESS)[OK] Disk ready: $(DISK)$(R)"
+	@printf "$(COLOR_SUCCESS)[OK] Disk ready: $(DISK)$(R)\n"
 
 
 
 
 export: all applications
-	@echo "$(COLOR_INFO)[IMG] Creating SD image...$(R)"
+	@printf "$(COLOR_INFO)[IMG] Creating SD image...$(R)\n"
 
 	@mkdir -p $(EXPORT_DIR)
 	@mkdir -p $(BOOT_DIR)
@@ -202,12 +202,12 @@ export: all applications
 	$(SUDO_EXECUTABLE) umount $(MOUNT_DIR)/root; \
 	$(SUDO_EXECUTABLE) losetup -d $$LOOP
 
-	@echo "$(COLOR_SUCCESS)[OK] Bootable SD image created: $(EXPORT_IMG_NAME)$(R)"
+	@printf "$(COLOR_SUCCESS)[OK] Bootable SD image created: $(EXPORT_IMG_NAME)$(R)\n"
 
 
 run: all
-	@echo "$(COLOR_WARN)[QEMU] Starting emulator...$(R)"
-	@test -f "$(DISK)" || (echo "$(COLOR_ERROR)Disk image not found: $(DISK)$(R)" && exit 1)
+	@printf "$(COLOR_WARN)[QEMU] Starting emulator...$(R)\n"
+	@test -f "$(DISK)" || (printf "$(COLOR_ERROR)Disk image not found: $(DISK)$(R)\n" && exit 1)
 	@$(QEMU) \
 		-machine raspi1ap \
 		-cpu arm1176 \
@@ -215,15 +215,16 @@ run: all
 		-m 512M \
 		-sd $(DISK) \
 		-kernel $(OBJ_DIR)/kernel.elf \
-		-usb -device usb-mouse
+		-usb -device usb-mouse \
+		-display sdl
 
 
 clean:
-	@echo "$(COLOR_WARN)[CLEAN] Removing objects...$(R)"
+	@printf "$(COLOR_WARN)[CLEAN] Removing objects...$(R)\n"
 	@rm -rf $(OBJ_DIR) $(BUILD_DIR)
 
 fclean: clean
-	@echo "$(COLOR_WARN)[FCLEAN] Removing exports...$(R)"
+	@printf "$(COLOR_WARN)[FCLEAN] Removing exports...$(R)\n"
 	@rm -rf $(EXPORT_DIR) $(DISK)
 
 re: fclean all

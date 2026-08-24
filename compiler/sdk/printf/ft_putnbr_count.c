@@ -19,7 +19,7 @@ static int	number_len(int nb)
 	return (i);
 }
 
-static int	handle_plus_flag(t_format f, int is_negative)
+static int	handle_plus_flag(t_format f, int is_negative, t_buf *buffer)
 {
 	int	printed;
 
@@ -27,26 +27,26 @@ static int	handle_plus_flag(t_format f, int is_negative)
 	if ((f.flags[FLAG_PLUS] || f.flags[FLAG_SPACE]) && !is_negative)
 	{
 		if (f.flags[FLAG_PLUS])
-			putc('+');
+			buf_putc(buffer, '+');
 		else
-			putc(' ');
+			buf_putc(buffer, ' ');
 		printed++;
 	}
 	return (printed);
 }
 
-static int	display_num(int num_len, long nb, int n)
+static int	display_num(int num_len, long nb, int n, t_buf *buffer)
 {
 	if (num_len > 0)
 	{
 		if (nb == -2147483648)
-			write(1, "2147483648", 10);
+			buf_write(buffer, "2147483648", 10);
 		else
 		{
 			char	*buf = itoa(n);
 			if (!buf)
 				return 0;
-			write(1, buf, strlen(buf));
+			buf_write(buffer, buf, strlen(buf));
 			free(buf);
 			
 		}
@@ -55,7 +55,7 @@ static int	display_num(int num_len, long nb, int n)
 	return (0);
 }
 
-int	ft_putnbr_count(int nb, t_format f, int pad_len, int prec_len)
+int	ft_putnbr_count(int nb, t_format f, int pad_len, int prec_len, t_buf *buffer)
 {
 	long	n;
 	int		num_len;
@@ -74,13 +74,13 @@ int	ft_putnbr_count(int nb, t_format f, int pad_len, int prec_len)
 		pad_char = '0';
 	p = 0;
 	if ((nb < 0) && pad_char == '0')
-		putc('-');
-	p += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] == 0), pad_char);
-	p += handle_plus_flag(f, (nb < 0));
+		buf_putc(buffer, '-');
+	p += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] == 0), pad_char, buffer);
+	p += handle_plus_flag(f, (nb < 0), buffer);
 	if ((nb < 0) && pad_char == ' ')
-		putc('-');
-	p += ft_put_precision_rep(prec_len) + display_num(num_len, nb, n);
-	p += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] != 0), pad_char);
+		buf_putc(buffer, '-');
+	p += ft_put_precision_rep(prec_len, buffer) + display_num(num_len, nb, n, buffer);
+	p += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] != 0), pad_char, buffer);
 	return (p);
 }
 

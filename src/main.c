@@ -64,8 +64,10 @@ void	kernel_main(void *dtb)
 	else						log("Display initialized!\n", LOG_SUCCESS);
 
 	// init usb driver
-	usb_init(); // TODO: maybe make usb driver optional and enabled for testing
-	if (usb_enumerate() < 0)	log("USB enumeration did not find a configured root device\n", LOG_WARNING);
+
+	// disabled since it make crash qemu on arch
+	//usb_init(); // TODO: maybe make usb driver optional and enabled for testing
+	//if (usb_enumerate() < 0)	log("USB enumeration did not find a configured root device\n", LOG_WARNING);
 
 	// load spash
 	BmpTexture	splash;

@@ -6,8 +6,9 @@
 class Button : public Control
 {
 public:
-	void	draw(void)
+	void	draw(Display *drawing_function)
 	{
+		drawing_function->draw_rect(0, 0, 0, 0, 0x00000000);
 		//int	inner_x, inner_y, inner_w, inner_h;
 		//int	char_w, char_h, text_w, text_h;
 		//int	draw_x, draw_y;

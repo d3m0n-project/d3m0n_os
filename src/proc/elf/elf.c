@@ -17,7 +17,6 @@ static const char *get_file_type(char file_type[2])
 const char *get_instruction_set_name(char p[2])
 {
 	unsigned int v = u16(p);
-
 	switch (v)
 	{
 		case 0x00: return "No specific instruction set";
@@ -134,7 +133,7 @@ void	print_elf_file_report(elf_header_32 *header)
 	log("\tABI VERSION:		%i\n", 0, header->IDENTIFICATION.ABI_VERSION);
 	log("\tFILE TYPE:		%s\n", 0, get_file_type(header->FILE_TYPE));
 	log("\tINSTRUCTION SET:	%s\n", 0, get_instruction_set_name(header->TARGET_SYSTEM));
-	log("=================================================\n\n", 0);
+	log("=================================================\n", 0);
 }
 
 
@@ -286,6 +285,45 @@ static int load_image_bounds(char *file_buf, uint32_t file_size, elf_header_32 *
 	return (0);
 }
 
+static void	apply_relocations(char *image, char *file_buf, elf_header_32 *header, uint32_t min_vaddr)
+{
+	uint16_t sh_count = u16(header->SECTION_TABLE_ENTRY_COUNT);
+	uint16_t sh_ent_size = u16(header->SECTION_TABLE_ENTRY_SIZE);
+	uint32_t sh_off = u32(header->SECTIONS_TABLE_OFFSET);
+	int32_t  load_base = (int32_t)((uint32_t)image - min_vaddr);
+
+	log("ELF: applying relocations load_base=0x%x image=0x%x min_vaddr=0x%x\n", 0, (uint32_t)load_base, (uint32_t)image, min_vaddr);
+	
+	for (uint16_t i = 0; i < sh_count; i++)
+	{
+		elf_section_header_32 sh;
+		ft_memcpy(&sh, file_buf + sh_off + i * sh_ent_size, sizeof(sh));
+
+		uint32_t type = u32(sh.TYPE);
+		if (type != SHT_REL && type != SHT_RELA)
+			continue;
+
+		uint32_t rel_off  = u32(sh.OFFSET);
+		uint32_t rel_size = u32(sh.SIZE);
+		uint32_t ent_sz   = u32(sh.ENTSIZE);
+		if (ent_sz == 0)
+			continue;
+
+		uint32_t count = rel_size / ent_sz;
+		for (uint32_t j = 0; j < count; j++)
+		{
+			char	*entry	 = file_buf + rel_off + j * ent_sz;
+			uint32_t rel_vaddr = u32(entry + 0);
+			uint32_t info	  = u32(entry + 4);
+			uint8_t  rel_type  = (uint8_t)(info & 0xFF);
+
+			uint32_t *patch = (uint32_t *)(image + (rel_vaddr - min_vaddr));
+			if (rel_type == R_ARM_ABS32 || rel_type == R_ARM_RELATIVE)
+				*patch = (uint32_t)((int32_t)*patch + load_base);
+		}
+	}
+}
+
 static void load_pt_segments(char *image, char *file_buf, elf_header_32 *header, char is_msb, uint32_t min_vaddr)
 {
 	uint16_t ph_count;
@@ -413,6 +451,8 @@ t_process	*elf_to_proc(char *elf_path)
 		return (0);
 	}
 	load_pt_segments(image, file_buf, &header, is_msb, min_vaddr);
+	apply_relocations(image, file_buf, &header, min_vaddr);
+	log("ELF: min_vaddr=0x%x max_vaddr=0x%x image=0x%x\n", 0, min_vaddr, max_vaddr, (uint32_t)image);
 	entry_vaddr = u32(header.ENTRY_POINT);
 	if (entry_vaddr < min_vaddr || entry_vaddr >= max_vaddr)
 	{
@@ -430,7 +470,7 @@ t_process	*elf_to_proc(char *elf_path)
 		return (0);
 	}
 	proc->address_space = image;
-	proc->image_vaddr_base = min_vaddr;
+	proc->image_vaddr_base = (uint32_t)image	;
 	proc->image_size = max_vaddr - min_vaddr;
 	proc->heap_start = (uint32_t)(((uint8_t *)image + (max_vaddr - min_vaddr)) + 7) & ~7U;
 	proc->heap_end = proc->heap_start;

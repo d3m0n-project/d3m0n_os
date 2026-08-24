@@ -43,7 +43,6 @@ void dtb_init(void *dtb)
 void *dtb_find_prop(const char *node, const char *prop, uint32_t *len)
 {
     uint32_t *p = struct_block;
-    int depth = 0;
     int node_match = 0;
 
     while (1)
@@ -62,17 +61,13 @@ void *dtb_find_prop(const char *node, const char *prop, uint32_t *len)
                 name++;
             name++;
             p = (uint32_t *)(((uintptr_t)name + 3) & ~3);
-            depth++;
         }
         else if (token == FDT_END_NODE)
-        {
-            depth--;
             node_match = 0;
-        }
         else if (token == FDT_PROP)
         {
             uint32_t plen = be32(*p++);
-            uint32_t nameoff = be32(*p++);
+            uint32_t nameoff = be32(*p++);            
 
             char *pname = strings_block + nameoff;
             void *data = p;

@@ -6,6 +6,7 @@
 #include "app/color.hpp"
 #include "app/point.hpp"
 #include "app/size.hpp"
+#include "app/graphics.hpp"
 
 
 extern "C" {
@@ -41,7 +42,10 @@ class Control
 {
 public:
 	Control(void);
-	~Control(void);
+	~Control(void)
+	{
+		// TODO:
+	}
 
 	Size				margin_top;
 	Size				margin_left;
@@ -59,20 +63,38 @@ public:
 	Control				*controls;
 	Control				*next;
 
-	void				draw(void);
+	void				draw(Display &drawing_function);
 };
 
 class Window
 {
+public:
 	string				title;
 	Size				width;
 	Size				height;
 	Color				bg_color;
 	bool				top_bar;
 	Control				*controls;
-public:
-	Window(string title, Size &width, Size &height);
+
+	Window(const char *title, const Size &width, const Size &height);
 	~Window();
+	void	add_control(Control *control)
+	{
+		if (!control)
+			return;
+
+		if (!this->controls)
+		{
+			this->controls = control;
+			return;
+		}
+
+		Control *current = this->controls;
+		while (current->next)
+			current = current->next;
+
+		current->next = control;
+	}
 
 	void	draw(void);
 };

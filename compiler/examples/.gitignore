@@ -3,3 +3,4 @@ obj/
 *.o
 *.d
 a.out
+test_app.map
