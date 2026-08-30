@@ -63,15 +63,31 @@
 //	process_exit_current(0);
 //}
 
+void	test_func(void)
+{
+	while (1)
+	{
+		log("222\n", 0);
+		//usleep(100000);
+	}
+}
 
 void	init_proc(void)
 {
 	//t_conf		*config = get_config();
 	//t_window	main_window;
 
-	log("[init] started at %llums\n", LOG_SUCCESS, time_us() / 1000);
+	//log("[init] started at %llums\n", LOG_SUCCESS, time_us() / 1000);
+	process_create(test_func, "test", 1);
 
-	elf_to_proc("test_app"); // TODO: change me
+	while (1)
+	{
+		log("111\n", 0);
+		//usleep(100000);
+	}
+
+	//if (!elf_to_proc("test_app")) // TODO: change me
+	//	panic("Failed to start test_app\n");
 	
 
 	//process_create(rsa_require_thread,          "SECURITY.RSA", 1);

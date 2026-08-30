@@ -39,39 +39,44 @@ static void	coalesce_blocks(t_malloc_block *block)
 	}
 }
 
+t_heap_header	*g_heap;
+
 void	*malloc(size_t size)
 {
-	t_heap_header	*hdr;
-	t_malloc_block	*block;
-	t_malloc_block	*best;
-	t_malloc_block	*split;
-	uint32_t		aligned;
-	int				base;
+	t_heap_header		*hdr;
+	t_malloc_block		*block;
+	t_malloc_block		*best;
+	t_malloc_block		*split;
+	uint32_t			aligned;
 
 	aligned = (uint32_t)size;
 	if (aligned < MALLOC_MIN_SIZE)
 		aligned = MALLOC_MIN_SIZE;
 	aligned = align_up(aligned, MALLOC_ALIGN);
-
-	base = sbrk(0);
-	if (base == (int)-1)
-		return 0;
-
-	hdr = (t_heap_header *)base;
-
-	if (hdr->magic != MALLOC_MAGIC)
+	if (!g_heap)
 	{
+		g_heap = (t_heap_header *)sbrk(0);
+		if ((int)g_heap == -1)
+		{
+			g_heap = 0;
+			return (0);
+		}
+
 		if (sbrk(USER_HEAP_RESERVED) == (int)-1)
-			return 0;
+		{
+			g_heap = 0;
+			return (0);
+		}
 
-		hdr->magic = MALLOC_MAGIC;
-		hdr->free_list = (t_malloc_block *)((char *)hdr + sizeof(t_heap_header));
+		g_heap->magic = MALLOC_MAGIC;
+		g_heap->free_list = (t_malloc_block *)((char *)g_heap + sizeof(t_heap_header));
 
-		hdr->free_list->size = USER_HEAP_RESERVED - sizeof(t_heap_header) - sizeof(t_malloc_block);
-		hdr->free_list->free = 1;
-		hdr->free_list->next = 0;
+		g_heap->free_list->size = USER_HEAP_RESERVED - sizeof(t_heap_header) - sizeof(t_malloc_block);
+		g_heap->free_list->free = 1;
+		g_heap->free_list->next = 0;
 	}
 
+	hdr = g_heap;
 	block = hdr->free_list;
 	best = 0;
 	while (block)
@@ -85,7 +90,7 @@ void	*malloc(size_t size)
 	}
 
 	if (!best)
-		return 0;
+		return (0);
 
 	if (best->size >= aligned + sizeof(t_malloc_block) + MALLOC_MIN_SIZE)
 	{
@@ -93,43 +98,38 @@ void	*malloc(size_t size)
 		split->size = best->size - aligned - sizeof(t_malloc_block);
 		split->free = 1;
 		split->next = best->next;
+
 		best->next = split;
 		best->size = aligned;
 	}
 
 	best->free = 0;
-	return (void *)((char *)best + sizeof(t_malloc_block));
+	return ((char *)best + sizeof(t_malloc_block));
 }
 
 void	free(void *ptr)
 {
-	t_heap_header	*hdr;
-	t_malloc_block	*block;
-	t_malloc_block	*prev;
-	t_malloc_block	*cur;
-	int				base;
+	t_heap_header		*hdr;
+	t_malloc_block		*block;
+	t_malloc_block		*prev;
+	t_malloc_block		*cur;
 
-	if (!ptr)
+	if (!ptr || !g_heap)
 		return;
 
-	base = sbrk(0);
-	if (base == (int)-1)
-		return;
-
-	hdr = (t_heap_header *)base;
+	hdr = g_heap;
 	if (hdr->magic != MALLOC_MAGIC)
 		return;
 
 	block = (t_malloc_block *)((char *)ptr - sizeof(t_malloc_block));
-
-	if ((char *)block < (char *)base + sizeof(t_heap_header) ||
-		(char *)block + sizeof(t_malloc_block) > (char *)base + USER_HEAP_RESERVED)
+	if ((char *)block < (char *)hdr + sizeof(t_heap_header) || (char *)block + sizeof(t_malloc_block) > (char *)hdr + USER_HEAP_RESERVED)
 		return;
 
 	if (block->free)
 		return;
 
 	block->free = 1;
+
 	prev = 0;
 	cur = hdr->free_list;
 	while (cur && cur < block)
@@ -137,14 +137,14 @@ void	free(void *ptr)
 		prev = cur;
 		cur = cur->next;
 	}
+
 	block->next = cur;
 	if (prev)
 		prev->next = block;
 	else
 		hdr->free_list = block;
 
-	if (prev && prev->free &&
-		(char *)prev + sizeof(t_malloc_block) + prev->size == (char *)block)
+	if (prev && prev->free && (char *)prev + sizeof(t_malloc_block) + prev->size == (char *)block)
 	{
 		prev->size += sizeof(t_malloc_block) + block->size;
 		prev->next = block->next;

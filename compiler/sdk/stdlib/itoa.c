@@ -22,7 +22,7 @@ static int	handle_special_cases(char *output, int nb)
 {
 	if (nb == -2147483648)
 	{
-		strlcpy(output, "-2147483648", 13);
+		strlcpy(output, "-2147483648", 12);
 		return (1);
 	}
 	else if (nb == 0)

@@ -3,10 +3,10 @@
 
 #include "app.hpp"
 
-class VScroll : Control
-{
-	void	draw(void)
-	{
+//class VScroll : Control
+//{
+//	void	draw(Display &drawing_function)
+//	{
 		//t_control	*child;
 		//int			scroll_thumb_offset;
 		//int			thumb_height;
@@ -53,7 +53,7 @@ class VScroll : Control
 		//}
 
 		//draw_rect(control->p_client_location.x + control->p_client_size.x - SCROLLBAR_SIZE, control->p_client_location.y + scroll_thumb_offset, SCROLLBAR_SIZE, thumb_height, DISPLAY_COLORS[DARK_GREY]);
-	}
-};
+//	}
+//};
 
 #endif

@@ -80,7 +80,7 @@ int	sys_read(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 int sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 {
 	(void)a3;
-	//log("\nwriting %p l=%lu\n", 0, resolve_user_ptr(user_buf, count), count);
+	log("\nwriting '%s' l=%lu\n", 0, resolve_user_ptr(user_buf, count), count);
 
 	if (fd == 0)
 		return -1;
@@ -252,9 +252,8 @@ int	sys_sbrk(uint32_t increment, uint32_t a1, uint32_t a2, uint32_t a3)
 		return (int)-1;
 
 	signed_inc = (int32_t)increment;
-
 	if (signed_inc == 0)
-		return (int)proc->heap_start;
+		return (int)proc->heap_end;
 
 	new_end = (uint32_t)(old_end + signed_inc);
 

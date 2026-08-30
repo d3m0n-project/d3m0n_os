@@ -3,10 +3,10 @@
 
 #include "app.hpp"
 
-class ProgressBar : Control
-{
-	void	draw(void)
-	{
+//class ProgressBar : Control
+//{
+//	void	draw(Display &drawing_function) override
+//	{
 		//// background
 		//if (control->bg_color)
 		//	draw_rect(control->p_client_location.x, control->p_client_location.y, control->width, control->height, control->bg_color);
@@ -40,7 +40,7 @@ class ProgressBar : Control
 
 		//int thumb_x = x0 + (int)(w * thumb_percentage);
 		//draw_ellipse(thumb_x, y0 + r, h, h, control->color, 1);
-	}
-};
+//	}
+//};
 
 #endif

@@ -1,6 +1,7 @@
 #include "proc.h"
 #include "interrupts.h"
 #include "d3m0n.h"
+#include "watchdog.h"
 
 t_process				*scheduled_processes = 0;
 t_process				*scheduled_processes_tail = 0;
@@ -88,8 +89,6 @@ void	schedule(void)
 	if (old && old->state == PROC_RUNNING)
 		old->state = PROC_READY;
 
-	log("schedule to %s\n", 0, next->proc_name);
-
 	next->state = PROC_RUNNING;
 	next->time_slice = TIME_SLICE_MS;
 	current_process = next;
@@ -115,14 +114,14 @@ void scheduler_start()
 void timer_handler(void)
 {
 	timer_ack();
+	watchdog_feed();
 	if (!current_process)
 		return;
 
 	check_stack_canary(current_process);
-
 	if (current_process->time_slice > 0)
 		current_process->time_slice--;
-
+	
 	if (current_process->time_slice == 0)
 	{
 		current_process->time_slice = TIME_SLICE_MS;

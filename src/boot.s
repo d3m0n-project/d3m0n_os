@@ -153,60 +153,80 @@ reserved_handler:
 	bl	kernel_panic
 	b	.
 
+.macro UART_CHAR char
+    push {r0, r1}
+    ldr r0, =0x20201000
+    mov r1, #\char
+    str r1, [r0, #0]
+    pop {r0, r1}
+.endm
 
 irq_handler:
     sub lr, lr, #4
-    stmfd sp!, {r0-r12,lr}
+
+    @ save lr_irq (interrupted PC) and spsr into IRQ-mode registers temporarily
+    @ we have lr_irq and spsr available here
+
+    @ switch to SYS mode to access lr_usr
+    @ but first save the IRQ context on IRQ stack
+    stmfd sp!, {r0-r12, lr}    @ save interrupted regs + lr_irq onto sp_irq
 
     mrs r0, spsr
-    stmfd sp!, {r0}
+    stmfd sp!, {r0}             @ save SPSR onto sp_irq
 
     ldr r1, =current_process
     ldr r1, [r1]
 
-    str sp, [r1,#0]            @ save irq_sp
+    str sp, [r1, #0]            @ save irq_sp
 
-    @ pick target mode: SVC for kernel procs, SYS for user procs
-    ldr r2, [r1,#16]           @ mode
-    cmp r2, #0                 @ PROCESS_KERNEL
-    ldreq r3, =0x13            @ SVC
-    ldrne r3, =0x1F            @ SYS
+    @ save native sp and lr_usr (user) or sp_svc (kernel)
+    ldr r2, [r1, #16]           @ mode
+    cmp r2, #0
+    beq 1f
 
-    mrs r2, cpsr
-    bic r2, r2, #0x1F
-    orr r2, r2, r3
-    msr cpsr_c, r2
+    @ user process: save sp_usr and lr_usr via SYS mode
+    msr cpsr_c, #0xDF           @ SYS mode, IRQs disabled
+    str sp, [r1, #4]            @ save sp_usr
+    @ push lr_usr onto the user's own stack so it's preserved
+    stmfd sp!, {lr}
+    str sp, [r1, #4]            @ update user_sp to include saved lr_usr
+    msr cpsr_c, #0xD2           @ back to IRQ
+    b 2f
 
-    mov r3, sp
-    str r3, [r1,#4]            @ save native-mode sp (works for kernel AND user)
+1:  @ kernel process: save sp_svc
+    msr cpsr_c, #0xD3           @ SVC mode, IRQs disabled
+    str sp, [r1, #4]            @ save sp_svc
+    msr cpsr_c, #0xD2           @ back to IRQ
 
-    msr cpsr_c, #0xD2          @ back to IRQ
-
+2:
     bl irq_dispatch
 
     ldr r1, =current_process
     ldr r1, [r1]
 
-    ldr sp, [r1,#0]
-    ldmfd sp!, {r0}
-    msr spsr_cxsf, r0
-
-    ldr r2, [r1,#16]
+    @ restore native sp and lr_usr
+    ldr r2, [r1, #16]           @ mode
     cmp r2, #0
-    ldreq r3, =0x13
-    ldrne r3, =0x1F
+    beq 3f
 
-    mrs r0, cpsr
-    bic r0, r0, #0x1F
-    orr r0, r0, r3
-    msr cpsr_c, r0
+    @ user process: restore sp_usr and lr_usr
+    msr cpsr_c, #0xDF
+    ldr sp, [r1, #4]            @ restore sp_usr (points at saved lr_usr)
+    ldmfd sp!, {lr}             @ pop lr_usr
+    str sp, [r1, #4]            @ restore user_sp to pre-lr_usr-push value
+    msr cpsr_c, #0xD2
+    b 4f
 
-    ldr r0, [r1,#4]
-    mov sp, r0
-
+3:  @ kernel process: restore sp_svc
+    msr cpsr_c, #0xD3
+    ldr sp, [r1, #4]
     msr cpsr_c, #0xD2
 
-    ldmfd sp!, {r0-r12,lr}
+4:
+    ldr sp, [r1, #0]            @ restore irq_sp
+    ldmfd sp!, {r0}
+    msr spsr_cxsf, r0
+    ldmfd sp!, {r0-r12, lr}
     subs pc, lr, #0
 
 fiq_handler:

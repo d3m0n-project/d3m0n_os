@@ -39,7 +39,7 @@ int	ft_ull_putnbr_count(unsigned long long nb, t_format f, int pad_len, int prec
 	if (!(f.precision == 0 && nb == 0))
 	{
 		if (nb == 0)
-			putc('0');
+			buf_putc(buffer, '0');
 		printed += display_ull(nb, buffer);
 	}
 	printed += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] != 0), ' ', buffer);

@@ -3,10 +3,10 @@
 
 #include "app.hpp"
 
-class Image : Control
-{
-	void	draw(void)
-	{
+//class Image : Control
+//{
+//	void	draw(Display &drawing_function)
+//	{
 		//BmpTexture		*tmp_icon;
 		//t_window		*window;
 		//t_bmp_cache		*cache;
@@ -76,7 +76,7 @@ class Image : Control
 		//}
 
 		//draw_bmp(control->p_client_location.x, control->p_client_location.y, control->p_client_size.x, control->p_client_size.y, tmp_icon, control->color);
-	}
-};
+//	}
+//};
 
 #endif

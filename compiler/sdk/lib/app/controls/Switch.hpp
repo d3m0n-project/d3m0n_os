@@ -3,10 +3,10 @@
 
 #include "app.hpp"
 
-class Switch : Control
-{
-	void	draw(void)
-	{
+//class Switch : Control
+//{
+//	void	draw(Display &drawing_function)
+//	{
 		//int			x;
 		//int			y;
 		//int			w;
@@ -53,7 +53,7 @@ class Switch : Control
 
 		//if (control->content[0])
 		//	draw_text(x + w + 8, y, control->width, h, control->content, control->color, 0);
-	}
-};
+//	}
+//};
 
 #endif

@@ -4,7 +4,6 @@ SECTIONS
 {
     . = 0x02000000;
 
-    /* cover ELF + program headers so PT_PHDR is inside PT_LOAD */
     .text : ALIGN(4)
     {
         . = ALIGN(4);

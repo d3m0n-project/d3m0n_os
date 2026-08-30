@@ -6,7 +6,7 @@
 class Button : public Control
 {
 public:
-	void	draw(Display *drawing_function)
+	void	draw(Display *drawing_function) override
 	{
 		drawing_function->draw_rect(0, 0, 0, 0, 0x00000000);
 		//int	inner_x, inner_y, inner_w, inner_h;

@@ -2,10 +2,14 @@
 #include "stdio.hpp"
 #include "app/graphics.hpp"
 
-Display		display;
+Display		*display = 0;
 
 Window::Window(const char *title, const Size &width, const Size &height)
 {
+	write(1, "b\n", 2);
+	if (!display)
+		display = new Display();
+	write(1, "e\n", 2);
 	printf("creating window!\n");
 	this->title = string(title);
 	this->bg_color = Color(255, 255, 255);
@@ -23,6 +27,7 @@ Window::~Window()
 
 void	Window::draw(void)
 {
+	printf("drawn %s\n", this->title);
 	Control	*current = this->controls;
 	while (current)
 	{
@@ -52,11 +57,4 @@ Control::Control(void)
 	this->bg_color = Color(0, 0, 0);
 	this->controls = nullptr;
 	this->next = nullptr;
-}
-
-void	Control::draw(Display &display)
-{
-	(void)display;
-	printf("draw() function is not yet defined.\n");
-	return;
 }

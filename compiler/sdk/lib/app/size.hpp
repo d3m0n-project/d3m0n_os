@@ -6,14 +6,14 @@
 
 using namespace std;
 
-class SizeException : public exception {
-public:
-    SizeException() {}
+//class SizeException : public exception {
+//public:
+//	SizeException() {}
 
-    const char* what() const noexcept override {
-        return "Invalid size gived!";
-    }
-};
+//	const char* what() const noexcept override {
+//		return "Invalid size gived!";
+//	}
+//};
 
 class Size
 {
@@ -35,8 +35,8 @@ public:
 
 	Size(uint32_t percentage, uint32_t *relative)
 	{
-		if (!relative)
-			throw new SizeException();
+		//if (!relative)
+		//	throw new SizeException();
 		this->size = percentage;
 		this->relative = relative;
 	}

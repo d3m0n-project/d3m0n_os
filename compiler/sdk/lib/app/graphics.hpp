@@ -23,8 +23,10 @@ public:
 	int		h = 0;
 	Display()
 	{
+		write(1, "c\n", 2);
 		getfbaddr(&this->fb, &this->w, &this->h, &this->pitch);
-		printf("Created a w=%i h=%i pitch=%i display\n", this->w, this->h, this->pitch);
+		write(1, "d\n", 2);
+		//printf("Created a w=%i h=%i pitch=%i display\n", this->w, this->h, this->pitch);
 	}
 
 	void		put_pixel(int x, int y, uint32_t color);

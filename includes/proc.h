@@ -11,33 +11,33 @@
 
 #define kernel_user_stack_offset	OFFSETOF(t_process, user_stack)
 
-#define USER_HEAP_RESERVED			0x100000	/* 1 MiB of heap per process */
+#define USER_HEAP_RESERVED			0x100000
 #define USER_HEAP_MAX(proc)			((proc)->heap_start + USER_HEAP_RESERVED)
 #define KERNEL_STACK_PAGES			16
-#define USER_STACK_PAGES			4
+#define USER_STACK_PAGES			16
 #define PAGE_SIZE					4096
 #define STACK_CANARY				0xDEADC0DE
 
-#define TIME_SLICE_MS				100 // delta t before each scheduler call
+#define TIME_SLICE_MS				5 // delta t before each scheduler call
 
-typedef enum {
-	PROC_READY,
-	PROC_RUNNING,
-	PROC_BLOCKED,
-	PROC_SLEEPING,
-	PROC_ZOMBIE
-}	e_process_state;
+typedef uint32_t e_process_state;
+#define PROC_READY			0
+#define PROC_RUNNING		1
+#define PROC_BLOCKED		2
+#define PROC_SLEEPING		3
+#define PROC_ZOMBIE			4
 
-typedef enum e_process_mode
-{
-	PROCESS_KERNEL,
-	PROCESS_USER
-}	e_process_mode;
+typedef uint32_t e_process_mode;
+#define PROCESS_KERNEL		0
+#define PROCESS_USER		1
+
 
 typedef struct s_process
 {
 	uint32_t		irq_sp;
 	uint32_t		user_sp;
+	//uint32_t		user_lr;
+
 
 	uint32_t		pid;
 	e_process_state	state;
@@ -49,7 +49,7 @@ typedef struct s_process
 	void			*user_stack;
 
 	uint32_t		priority;
-	uint64_t		time_slice;
+	uint32_t		time_slice;
 
 	uint32_t		heap_start;
 	uint32_t		heap_end;
@@ -59,6 +59,18 @@ typedef struct s_process
 
 	struct s_process *next;
 }	t_process;
+
+//_Static_assert(OFFSETOF(t_process, irq_sp)      ==  0,  "irq_sp");
+//_Static_assert(OFFSETOF(t_process, user_sp)     ==  4,  "user_sp");
+//_Static_assert(OFFSETOF(t_process, user_lr)     ==  8,  "user_lr");
+//_Static_assert(OFFSETOF(t_process, pid)         == 12,  "pid");
+//_Static_assert(OFFSETOF(t_process, state)       == 16,  "state");
+//_Static_assert(OFFSETOF(t_process, mode)        == 20,  "mode");
+//_Static_assert(OFFSETOF(t_process, proc_name)   == 24,  "proc_name");
+//_Static_assert(OFFSETOF(t_process, kernel_stack)== 88,  "kernel_stack");
+//_Static_assert(OFFSETOF(t_process, user_stack)  == 92,  "user_stack");
+//_Static_assert(OFFSETOF(t_process, priority)    == 96,  "priority");
+//_Static_assert(OFFSETOF(t_process, time_slice)  == 104, "time_slice");
 
 void					scheduler_start();
 void					timer_handler();

@@ -5,7 +5,8 @@
 
 class Rect : public Control
 {
-	void	draw(Display *drawing_function)
+public:
+	void	draw(Display *drawing_function) override
 	{
 		printf("drawing rect\n");
 		drawing_function->draw_rect(this->location.x, this->location.y, this->width.get(), this->height.get(), this->bg_color);

@@ -63,7 +63,12 @@ public:
 	Control				*controls;
 	Control				*next;
 
-	void				draw(Display &drawing_function);
+	virtual void		draw(Display *drawing_function)
+	{
+		(void)drawing_function;
+		printf("draw() function is not yet defined.\n");
+		return;
+	}
 };
 
 class Window

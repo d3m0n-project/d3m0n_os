@@ -19,7 +19,7 @@ extern "C" int	buf_grow(t_buf *b, size_t extra)
 	return 1;
 }
 
-int	buf_putc(t_buf *b, char c)
+extern "C" int	buf_putc(t_buf *b, char c)
 {
 	if (!buf_grow(b, 1))
 		return (0);
@@ -28,7 +28,7 @@ int	buf_putc(t_buf *b, char c)
 	return (1);
 }
 
-int	buf_write(t_buf *b, const char *s, size_t n)
+extern "C" int	buf_write(t_buf *b, const char *s, size_t n)
 {
 	if (!buf_grow(b, n))
 		return (0);
@@ -38,7 +38,7 @@ int	buf_write(t_buf *b, const char *s, size_t n)
 	return (1);
 }
 
-int	buf_putstr(t_buf *b, const char *s)
+extern "C" int	buf_putstr(t_buf *b, const char *s)
 {
 	return (buf_write(b, s, strlen(s)));
 }

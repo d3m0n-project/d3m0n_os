@@ -27,7 +27,7 @@ void sleep(uint64_t seconds)
     uint64_t target = seconds * 1000000ULL;
 
     while ((time_us() - start) < target)
-        asm volatile("wfe");
+        asm volatile("nop");
 }
 
 void usleep(uint64_t microseconds)
@@ -35,5 +35,5 @@ void usleep(uint64_t microseconds)
     uint64_t start = time_us();
 
     while ((time_us() - start) < microseconds)
-        asm volatile("wfe");
+        asm volatile("nop");
 }

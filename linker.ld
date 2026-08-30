@@ -58,4 +58,5 @@ SECTIONS
 	. += 0x4000;
 
 	stack_top = .;
+	__irq_stack_top = stack_top - 0x1000;
 }

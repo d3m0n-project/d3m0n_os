@@ -40,13 +40,13 @@ static int	display_num(int num_len, long nb, int n, t_buf *buffer)
 	if (num_len > 0)
 	{
 		if (nb == -2147483648)
-			buf_write(buffer, "2147483648", 10);
+			buf_putstr(buffer, "-2147483648");
 		else
 		{
 			char	*buf = itoa(n);
 			if (!buf)
 				return 0;
-			buf_write(buffer, buf, strlen(buf));
+			buf_putstr(buffer, buf);
 			free(buf);
 			
 		}
@@ -79,7 +79,8 @@ int	ft_putnbr_count(int nb, t_format f, int pad_len, int prec_len, t_buf *buffer
 	p += handle_plus_flag(f, (nb < 0), buffer);
 	if ((nb < 0) && pad_char == ' ')
 		buf_putc(buffer, '-');
-	p += ft_put_precision_rep(prec_len, buffer) + display_num(num_len, nb, n, buffer);
+	p += ft_put_precision_rep(prec_len, buffer);
+	p += display_num(num_len, nb, n, buffer);
 	p += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] != 0), pad_char, buffer);
 	return (p);
 }

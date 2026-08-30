@@ -239,15 +239,21 @@ static int load_image_bounds(char *file_buf, uint32_t file_size, elf_header_32 *
 	uint16_t i;
 	elf_program_header_32 ph;
 
+
 	ph_count = u16(header->PROGRAM_HEADER_ENTRY_COUNT);
 	ph_entry_size = u16(header->PROGRAM_HEADER_ENTRY_SIZE);
 	ph_offset = u32(header->PROGRAM_HEADER_OFFSET);
+
+	log("ELF: file_size=%lu ph_count=%u ph_entry_size=%u ph_offset=%lu\n", 0,
+		file_size, ph_count, ph_entry_size, ph_offset);
+
 	if (ph_count == 0 || ph_entry_size < sizeof(elf_program_header_32))
 		return (1);
 	if (ph_offset >= file_size)
 		return (1);
 	if ((uint64_t)ph_offset + (uint64_t)ph_count * (uint64_t)ph_entry_size > (uint64_t)file_size)
 		return (1);
+	
 	min_vaddr = (uint32_t)-1;
 	max_vaddr = 0;
 	i = 0;
@@ -285,7 +291,7 @@ static int load_image_bounds(char *file_buf, uint32_t file_size, elf_header_32 *
 	return (0);
 }
 
-static void	apply_relocations(char *image, char *file_buf, elf_header_32 *header, uint32_t min_vaddr)
+static void	apply_relocations(char *image, char *file_buf, elf_header_32 *header, uint32_t min_vaddr, uint32_t max_vaddr)
 {
 	uint16_t sh_count = u16(header->SECTION_TABLE_ENTRY_COUNT);
 	uint16_t sh_ent_size = u16(header->SECTION_TABLE_ENTRY_SIZE);
@@ -317,9 +323,19 @@ static void	apply_relocations(char *image, char *file_buf, elf_header_32 *header
 			uint32_t info	  = u32(entry + 4);
 			uint8_t  rel_type  = (uint8_t)(info & 0xFF);
 
+			if (rel_type != R_ARM_ABS32 && rel_type != R_ARM_RELATIVE)
+				continue;
+
+			if (rel_vaddr < min_vaddr || rel_vaddr + 4 > max_vaddr)
+				continue;
+
 			uint32_t *patch = (uint32_t *)(image + (rel_vaddr - min_vaddr));
-			if (rel_type == R_ARM_ABS32 || rel_type == R_ARM_RELATIVE)
-				*patch = (uint32_t)((int32_t)*patch + load_base);
+			uint32_t  val   = *patch;
+
+			if (val < min_vaddr || val > max_vaddr)
+				continue;
+
+			*patch = (uint32_t)((int32_t)val + load_base);
 		}
 	}
 }
@@ -435,14 +451,6 @@ t_process	*elf_to_proc(char *elf_path)
 		log("ELF: Invalid PT_LOAD layout '%s'\n", LOG_ERROR, elf_path);
 		return (0);
 	}
-	// ensure app validity
-	if (parse_app_info(&header, file_buf))
-	{
-		kfree(file_buf);
-		log("ELF: Invalid App, please recompile using d3c: '%s'\n", LOG_ERROR, elf_path);
-		return 0;
-	}
-
 	image = ft_calloc((size_t)(max_vaddr - min_vaddr) + USER_HEAP_RESERVED + 8, 1);
 	if (!image)
 	{
@@ -451,7 +459,16 @@ t_process	*elf_to_proc(char *elf_path)
 		return (0);
 	}
 	load_pt_segments(image, file_buf, &header, is_msb, min_vaddr);
-	apply_relocations(image, file_buf, &header, min_vaddr);
+	// ensure app validity
+	if (parse_app_info(&header, file_buf, file_size))
+	{
+		kfree(file_buf);
+		kfree(image);
+		log("ELF: Invalid App, please recompile using d3c: '%s'\n", LOG_ERROR, elf_path);
+		return 0;
+	}
+
+	apply_relocations(image, file_buf, &header, min_vaddr, max_vaddr);
 	log("ELF: min_vaddr=0x%x max_vaddr=0x%x image=0x%x\n", 0, min_vaddr, max_vaddr, (uint32_t)image);
 	entry_vaddr = u32(header.ENTRY_POINT);
 	if (entry_vaddr < min_vaddr || entry_vaddr >= max_vaddr)

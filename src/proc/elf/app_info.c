@@ -2,6 +2,7 @@
 #include "../../../compiler/sdk/lib/app/app_manifest.h"
 #include "display.h"
 #include "ico.h"
+#include "proc.h"
 
 static char	*get_relative_ptr(const char *address, char *buffer, uint32_t rodata_addr, uint32_t rodata_offset)
 {
@@ -39,7 +40,7 @@ static int	display_app_manifest(AppMetadata *metadata, char *buffer, uint32_t ro
 	return 0;
 }
 
-int		parse_app_info(elf_header_32 *header, char *buffer)
+int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size)
 {
 	uint32_t shoff	 = u32(header->SECTIONS_TABLE_OFFSET);
 	uint16_t shentsize = u16(header->SECTION_TABLE_ENTRY_SIZE);
@@ -61,6 +62,23 @@ int		parse_app_info(elf_header_32 *header, char *buffer)
 	}
 
 	char *shstrtab = buffer + u32(shstr->OFFSET);
+	if (shoff >= file_size || shentsize < sizeof(elf_section_header_32))
+    {
+        log("ELF APP: invalid section header table\n", LOG_ERROR);
+        return 1;
+    }
+    if ((uint64_t)shoff + (uint64_t)shnum * shentsize > file_size)
+    {
+        log("ELF APP: section table out of bounds\n", LOG_ERROR);
+        return 1;
+    }
+    if (shstrndx >= shnum)
+    {
+        log("ELF APP: shstrndx out of bounds\n", LOG_ERROR);
+        return 1;
+    }
+
+
 	for (uint16_t i = 0; i < shnum; i++)
 	{
 		elf_section_header_32 *sh = (elf_section_header_32 *)((char *)sh_table + i * shentsize);
@@ -69,6 +87,10 @@ int		parse_app_info(elf_header_32 *header, char *buffer)
 
 		uint32_t name_offset = u32(sh->NAME);
 		char *name = shstrtab + name_offset;
+		log("shoff=%lu shentsize=%u shnum=%u shstrndx=%u\n", 0,
+			shoff, shentsize, shnum, shstrndx);
+		log("shstr offset=%lu shstrtab=%x\n", 0,
+			u32(shstr->OFFSET), (uint32_t)shstrtab);
 		if (ft_strcmp(name, ".appmeta") == 0)
 		{
 			// get app metadata

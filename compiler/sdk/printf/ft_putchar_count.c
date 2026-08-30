@@ -13,7 +13,7 @@ int	ft_putchar_count(char c, t_format f, t_buf *buffer)
 	pad_len = f.width - 1;
 	if (!f.flags[FLAG_MINUS])
 		printed += ft_put_padding_rep(pad_len, ' ', buffer);
-	putc(c);
+	buf_putc(buffer, c);
 	printed++;
 	if (f.flags[FLAG_MINUS])
 		printed += ft_put_padding_rep(pad_len, ' ', buffer);

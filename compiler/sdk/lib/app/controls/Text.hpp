@@ -3,10 +3,10 @@
 
 #include "app.hpp"
 
-class Text : Control
-{
-	void	draw(void)
-	{
+//class Text : Control
+//{
+//	void	draw(Display &drawing_function)
+//	{
 		//int inner_x, inner_y, inner_w, inner_h;
 		//int char_w, char_h, text_w, text_h;
 		//int draw_x, draw_y;
@@ -27,7 +27,7 @@ class Text : Control
 		
 		//compute_text_position(control->text_align, inner_x, inner_y, inner_w, inner_h, text_w, text_h, &draw_x, &draw_y);
 		//draw_text(draw_x, draw_y, char_w, char_h, control->content, control->color, 0);
-	}
-};
+//	}
+//};
 
 #endif

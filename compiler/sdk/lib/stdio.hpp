@@ -7,9 +7,13 @@
 #include "stdlib.h"
 #include "memory.h"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 	char	*sprintf(const char *format, ...);
 	size_t	printf(const char *format, ...);
+#ifdef __cplusplus
 }
+#endif
 
 #endif
