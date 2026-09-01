@@ -9,7 +9,9 @@
 #include "app/graphics.hpp"
 
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 	#include "app/app_manifest.h"
 
 	#define APP_METADATA	__attribute__((section(".appmeta"), used))
@@ -35,17 +37,18 @@ extern "C" {
 			__appicon_start, \
 			APP_MANIFEST_MAGIC \
 		};
+#ifdef __cplusplus
 }
+#endif
 
-
+#ifdef __cplusplus
 class Control
 {
 public:
 	Control(void);
-	~Control(void)
-	{
-		// TODO:
-	}
+	virtual ~Control(void) {}
+	void	add_control(Control *control);
+	void	layout(int parent_x, int parent_y, int parent_width, int parent_height);
 
 	Size				margin_top;
 	Size				margin_left;
@@ -57,17 +60,19 @@ public:
 	bool				visible;
 	bool				enabled;
 	Point				location;
+	Point				computed_location;
+	int					computed_width;
+	int					computed_height;
 	Color				color;
 	Color				bg_color;
 
 	Control				*controls;
 	Control				*next;
+	Control				*parent;
 
 	virtual void		draw(Display *drawing_function)
 	{
 		(void)drawing_function;
-		printf("draw() function is not yet defined.\n");
-		return;
 	}
 };
 
@@ -83,26 +88,11 @@ public:
 
 	Window(const char *title, const Size &width, const Size &height);
 	~Window();
-	void	add_control(Control *control)
-	{
-		if (!control)
-			return;
-
-		if (!this->controls)
-		{
-			this->controls = control;
-			return;
-		}
-
-		Control *current = this->controls;
-		while (current->next)
-			current = current->next;
-
-		current->next = control;
-	}
+	void	add_control(Control *control);
 
 	void	draw(void);
 };
+#endif
 
 
 

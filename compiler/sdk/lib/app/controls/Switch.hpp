@@ -1,59 +1,29 @@
 #ifndef SWITCH_HPP
 #define SWITCH_HPP
 
-#include "app.hpp"
+#include "helpers.hpp"
 
-//class Switch : Control
-//{
-//	void	draw(Display &drawing_function)
-//	{
-		//int			x;
-		//int			y;
-		//int			w;
-		//int			h;
-		//int			r;
-		//int			thumb_x;
-		//uint32_t	track_color;
-		//uint32_t	thumb_color;
+class Switch : public Control
+{
+public:
+	string		content;
+	int			font_size;
+	int			text_align;
+	bool		checked;
 
-		//x = control->p_client_location.x;
-		//y = control->p_client_location.y;
-		//w = control->width;
-		//h = control->height;
+	Switch() : content(), font_size(0), text_align(0), checked(false) {}
 
-		//if (w < h * 2)
-		//	w = h * 2;
-
-		//r = h / 2;
-
-
-		//if (control->checked)
-		//	track_color = control->color;
-		//else
-		//	track_color = control->bg_color;
-
-
-		//draw_ellipse(x + r, y + r, r, r, track_color, 1);
-		//draw_ellipse(x + w - r, y + r, r, r, track_color, 1);
-
-		//for (int py = y; py <= y + h; py++)
-		//{
-		//	for (int px = x + r; px < x + w - r; px++)
-		//		put_pixel(px, py, track_color);
-		//}
-
-
-		//if (control->checked)
-		//	thumb_x = x + w - r;
-		//else
-		//	thumb_x = x + r;
-		//thumb_color = 0xFFFFFFFF;
-		//draw_ellipse(thumb_x, y + r, r - 2, r - 2, thumb_color, 1);
-
-
-		//if (control->content[0])
-		//	draw_text(x + w + 8, y, control->width, h, control->content, control->color, 0);
-//	}
-//};
-
+	void	draw(Display *display) override
+	{
+		int x = computed_location.x, y = computed_location.y, h = computed_height;
+		int w = computed_width < h * 2 ? h * 2 : computed_width, r = h / 2;
+		uint32_t track = checked ? (uint32_t)color : (uint32_t)bg_color;
+		display->draw_ellipse(x + r, y + r, r, r, track, 1);
+		display->draw_ellipse(x + w - r - 1, y + r, r, r, track, 1);
+		display->draw_rect(x + r, y, w - r * 2, h, track);
+		display->draw_ellipse(checked ? x + w - r - 1 : x + r, y + r, r > 2 ? r - 2 : 1, r > 2 ? r - 2 : 1, 0xFFFFFFFF, 1);
+		if (content.length())
+			display->draw_text(x + w + 8, y, font_size, h, content.c_str(), color, 0);
+	}
+};
 #endif

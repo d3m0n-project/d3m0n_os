@@ -7,16 +7,17 @@
 
 typedef struct s_malloc_block
 {
-	uint32_t			size;
-	uint8_t				free;
-	uint8_t				pad[3];
+	uint32_t				size;
+	uint8_t					free;
+	uint8_t					pad[3];
+	uint32_t				reserved;
 	struct s_malloc_block	*next;
 }	t_malloc_block;
 
 typedef struct s_heap_header
 {
-	uint32_t			magic;
-	t_malloc_block		*free_list;
+	uint32_t				magic;
+	t_malloc_block			*free_list;
 }	t_heap_header;
 
 static uint32_t	align_up(uint32_t value, uint32_t align)
@@ -73,6 +74,7 @@ void	*malloc(size_t size)
 
 		g_heap->free_list->size = USER_HEAP_RESERVED - sizeof(t_heap_header) - sizeof(t_malloc_block);
 		g_heap->free_list->free = 1;
+		g_heap->free_list->reserved = 0;
 		g_heap->free_list->next = 0;
 	}
 
@@ -97,6 +99,7 @@ void	*malloc(size_t size)
 		split = (t_malloc_block *)((char *)best + sizeof(t_malloc_block) + aligned);
 		split->size = best->size - aligned - sizeof(t_malloc_block);
 		split->free = 1;
+		split->reserved = 0;
 		split->next = best->next;
 
 		best->next = split;
@@ -137,12 +140,6 @@ void	free(void *ptr)
 		prev = cur;
 		cur = cur->next;
 	}
-
-	block->next = cur;
-	if (prev)
-		prev->next = block;
-	else
-		hdr->free_list = block;
 
 	if (prev && prev->free && (char *)prev + sizeof(t_malloc_block) + prev->size == (char *)block)
 	{

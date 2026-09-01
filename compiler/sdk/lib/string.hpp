@@ -8,6 +8,7 @@ class string
 private:
 	char	*_data;
 	size_t	_length;
+
 public:
 	string(): _data(nullptr), _length(0)
 	{}
@@ -26,6 +27,64 @@ public:
 			_data[i] = str[i];
 
 		_data[_length] = '\0';
+	}
+
+	string(const string &other): _data(nullptr), _length(other._length)
+	{
+		if (!other._data)
+			return;
+
+		_data = new char[_length + 1];
+
+		for (size_t i = 0; i < _length; ++i)
+			_data[i] = other._data[i];
+
+		_data[_length] = '\0';
+	}
+
+	string &operator=(const string &other)
+	{
+		char *copy;
+
+		if (this == &other)
+			return *this;
+
+		copy = nullptr;
+
+		if (other._data)
+		{
+			copy = new char[other._length + 1];
+
+			for (size_t i = 0; i < other._length; ++i)
+				copy[i] = other._data[i];
+
+			copy[other._length] = '\0';
+		}
+
+		delete[] _data;
+		_data = copy;
+		_length = other._length;
+
+		return *this;
+	}
+
+	string operator+(const string &other) const
+	{
+		string result;
+		size_t i;
+
+		result._length = _length + other._length;
+		result._data = new char[result._length + 1];
+
+		for (i = 0; i < _length; ++i)
+			result._data[i] = _data[i];
+
+		for (i = 0; i < other._length; ++i)
+			result._data[_length + i] = other._data[i];
+
+		result._data[result._length] = '\0';
+
+		return result;
 	}
 
 	~string()
@@ -53,5 +112,6 @@ public:
 		return _data[index];
 	}
 };
+
 
 #endif

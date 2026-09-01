@@ -21,7 +21,7 @@
     .node { position:absolute; min-width:8px; min-height:8px; outline:1px solid transparent; cursor:move; user-select:none; } .node.selected { outline:2px solid var(--accent); } .node:hover { outline:1px dashed #685cf5; } .node > .preview { width:100%; height:100%; overflow:hidden; pointer-events:none; } .node > textarea.preview { min-height:0; resize:none; opacity:1; } .node-handle { position:absolute; width:8px; height:8px; background:#fff; border:2px solid var(--accent); z-index:10; } .node-handle[data-handle="nw"] { top:-5px; left:-5px; cursor:nw-resize; } .node-handle[data-handle="ne"] { top:-5px; right:-5px; cursor:ne-resize; } .node-handle[data-handle="sw"] { bottom:-5px; left:-5px; cursor:sw-resize; } .node-handle[data-handle="se"] { bottom:-5px; right:-5px; cursor:se-resize; }
     .empty { color:#767b8c; font-size:13px; text-align:center; line-height:1.5; }
     #inspector { display:flex; flex-direction:column; gap:12px; } .inspector-header { display:flex; align-items:center; justify-content:space-between; gap:10px; padding-bottom:12px; border-bottom:1px solid var(--line); } .inspector-header h2 { margin:0; color:#f4f5fa; } .inspector-header button { padding:5px 8px; } .inspector-section { padding:12px; border:1px solid var(--line); border-radius:8px; background:#171923; } .inspector-section h2 { margin-bottom:12px; } .inspector-section .hint { margin:10px 0 0; } .field { display:grid; grid-template-columns:minmax(76px,.8fr) minmax(0,1.2fr); align-items:center; gap:10px; margin:9px 0; color:var(--soft); font-size:12px; } .field > label { min-width:0; overflow:hidden; text-overflow:ellipsis; } input,select,textarea { min-width:0; width:100%; color:#f5f6fb; background:#11131a; border:1px solid #393d4c; border-radius:5px; padding:7px; } input[type=color] { padding:2px; height:31px; } input[type=checkbox] { width:20px; min-width:20px; margin:0; } .color-field { display:flex; align-items:center; gap:8px; } .color-field input[type=color] { width:42px; flex:0 0 42px; } .color-field label { display:flex; align-items:center; gap:4px; white-space:nowrap; font-size:11px; } textarea { min-height:58px; resize:vertical; } .two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } .two .field { grid-template-columns:24px minmax(0,1fr); margin:0; } .hint { color:#858b9d; font-size:11px; line-height:1.45; margin:8px 0 0; } #file { display:none; }
-    .code-modal { position:fixed; inset:0; display:none; place-items:center; background:#000a; z-index:9; } .code-modal.open { display:grid; } .modal-card { width:min(760px,90vw); background:#1b1e29; border:1px solid #41465a; border-radius:10px; padding:16px; } .modal-card textarea { height:55vh; font:12px ui-monospace,monospace; } .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:10px; }
+    .code-modal { position:fixed; inset:0; display:none; place-items:center; background:#000a; z-index:20; } .code-modal.open { display:grid; } .modal-card { width:min(760px,90vw); background:#1b1e29; border:1px solid #41465a; border-radius:10px; padding:16px; } .modal-card textarea { height:55vh; font:12px ui-monospace,monospace; } .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:10px; }
 
     input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
         -webkit-appearance: none;
@@ -90,10 +90,37 @@
       font-size:12px;
       color:var(--soft);
     }
+    .application .app-info { min-width:0; flex:1; }
+    .application .delete { flex:0 0 auto; padding:4px 8px; }
+    .app-tabs { display:flex; gap:6px; overflow:auto; padding:8px 18px 0; border-bottom:1px solid var(--line); background:#161820; }
+    .app-tab { display:flex; align-items:center; gap:5px; max-width:220px; padding:7px 9px; border:1px solid var(--line); border-bottom:0; border-radius:7px 7px 0 0; background:#20232e; color:var(--soft); white-space:nowrap; }
+    .app-tab.active { background:#30344a; color:#fff; border-color:#7166da; }
+    .app-tab .tab-name { overflow:hidden; text-overflow:ellipsis; }
+    .app-tab .tab-close { border:0; padding:0 3px; background:transparent; color:inherit; }
+    .file-tabs { display:flex; gap:3px; overflow:auto; padding:7px 18px 0; background:#12141b; border-bottom:1px solid var(--line); }
+    .file-tab { display:flex; align-items:center; gap:6px; max-width:240px; padding:7px 10px; border:1px solid var(--line); border-bottom:0; border-radius:6px 6px 0 0; background:#1b1e29; color:var(--soft); white-space:nowrap; }
+    .file-tab.active { background:#30344a; border-color:#7166da; color:#fff; }
+    .file-tab .tab-name { overflow:hidden; text-overflow:ellipsis; }
+    .file-tab .tab-dirty { width:7px; height:7px; flex:0 0 7px; border-radius:50%; background:#ffb454; box-shadow:0 0 7px #ffb454aa; }
+    .file-tab .tab-dirty[hidden] { display:none; }
+    .file-tab .tab-close { border:0; padding:0 2px; background:transparent; color:inherit; }
+    .editor-view { flex:1; min-height:0; display:none; flex-direction:column; }
+    .editor-view.active { display:flex; }
+    .editor-empty { flex:1; display:flex; align-items:center; justify-content:center; padding:30px; }
+    .code-editor { flex:1; min-height:440px; display:none; padding:18px; flex-direction: column; }
+    .code-editor.active { display:flex; }
+    .code-editor textarea { flex:1; min-height:0; resize:none; font:13px ui-monospace,SFMono-Regular,Consolas,monospace; line-height:1.5; tab-size:4; }
+    .image-editor { flex:1; min-height:440px; display:none; align-items:center; justify-content:center; padding:25px; overflow:auto; background:#12141b; }
+    .image-editor.active { display:flex; }
+    .image-editor img { max-width:100%; max-height:100%; object-fit:contain; image-rendering:auto; }
+    .code-editor-actions { display:flex; justify-content:flex-end; gap:8px; padding-top:10px; }
+    .file-menu { position:fixed; z-index:40; display:grid; min-width:150px; padding:5px; background:#1b1e29; border:1px solid #41465a; border-radius:7px; box-shadow:0 8px 25px #0009; }
+    .file-menu button { border:0; border-radius:4px; padding:7px 10px; text-align:left; background:transparent; }
+    .file-menu button:hover { background:#30344a; }
   </style>
 </head>
 <body>
-  <header><h1>d3m0n <span>App Studio</span></h1><div class="actions"><button id="new-layout">New</button><button id="import">Import</button><input id="file" type="file" accept=".layout,.txt"><input id="image-file" type="file" accept="image/*" multiple hidden><button id="view-code">View code</button><button id="build" class="primary">Download layout</button></div></header>
+  <header><h1>d3m0n <span>App Studio</span></h1><div class="actions"><button id="new-app">New app</button><button id="new-layout">New layout</button><button id="import">Import</button><button id="import-svg">Import SVG</button><input id="file" type="file" accept=".layout,.txt"><input id="image-file" type="file" accept="image/*" multiple hidden><button id="view-code">View code</button><button id="view-cpp">View C++</button><button id="build">Download layout</button><button id="build-cpp">Download C++</button><button id="compile" class="primary">Compile</button></div></header>
   <main>
     <aside class="left">
       <div class="section"><h2>Controls</h2><div class="palette" id="palette"></div><p class="hint">Add a control, then select its parent in the inspector. Containers such as Rect and Vscroll can hold full layouts.</p></div>
@@ -101,37 +128,32 @@
       <div class="section"><h2>Templates</h2><div style="display:flex;gap:6px"><button id="make-template" style="flex:1">Create from selected parent</button><button id="import-template">Import</button></div><input id="template-file" type="file" accept=".template,.layout,.txt" hidden><div id="templates" class="tree" style="margin-top:8px"></div><p class="hint">A template stores a parent and its child layout for use from scripts or repeated screens.</p></div>
     </aside>
     <section class="workspace">
+      <div id="app-tabs" class="app-tabs"></div>
       <div class="toolbar">
         <strong id="app-label">Untitled app</strong>
         <span>·</span>
         <label>Zoom <input id="zoom" type="number" value="2" min="1" max="3" step=".25">×</label>
         <span id="selection-label">No selection</span>
-        <button id="edit-src">Code</button>
-        <button id="save-app" class="primary">Save</button>
       </div>
-      <div class="canvas-area"><div id="canvas-shell"><div id="canvas" aria-label="app layout canvas"></div></div></div>
+      <div id="file-tabs" class="file-tabs"></div>
+      <div id="editor-empty" class="editor-empty empty">Open a window or source file from the project tree.</div>
+      <div id="visual-editor" class="editor-view"><div class="canvas-area"><div id="canvas-shell"><div id="canvas" aria-label="app layout canvas"></div></div></div></div>
+      <div id="code-editor" class="code-editor"><textarea id="src-editor" spellcheck="false" aria-label="C++ source editor"></textarea><span id="save-status" class="hint"></span></div>
+      <div id="image-editor" class="image-editor"><img id="file-preview" alt="Project file preview"></div>
     </section>
     <aside class="right"><div id="inspector"><div class="empty">Select a control to edit it.<br>Click a control on the canvas or in the layout tree.</div></div></aside>
   </main>
   <div id="startup-modal" class="code-modal open">
     <div class="modal-card" style="max-width:900px">
       <h2>Open Application</h2>
+      <button id="startup-new-app" class="primary">Create new application</button>
       <div id="application-list" class="application-list">
         <div class="empty">Loading applications...</div>
       </div>
     </div>
   </div>
-  <div id="src-modal" class="code-modal">
-    <div class="modal-card">
-      <h2 id="src-title">Source</h2>
-      <textarea id="src-editor" spellcheck="false"></textarea>
-      <div class="modal-actions">
-        <button id="save-src">Save</button>
-        <button id="close-src">Close</button>
-      </div>
-    </div>
-  </div>
-  <div id="code-modal" class="code-modal"><div class="modal-card"><h2>Generated layout</h2><textarea id="code-output" spellcheck="false"></textarea><div class="modal-actions"><button id="copy-code">Copy</button><button id="close-code">Close</button></div></div></div>
+  <div id="code-modal" class="code-modal"><div class="modal-card"><h2 id="code-title">Generated layout</h2><textarea id="code-output" spellcheck="false"></textarea><div class="modal-actions"><button id="copy-code">Copy</button><button id="close-code">Close</button></div></div></div>
+  <div id="svg-modal" class="code-modal"><div class="modal-card"><h2>Import SVG design</h2><p class="hint">Paste a 320×480 SVG containing the complete window design.</p><textarea id="svg-input" spellcheck="false" placeholder="&lt;svg width=&quot;320&quot; height=&quot;480&quot; ...&gt;"></textarea><div class="modal-actions"><button id="import-svg-confirm" class="primary">Import</button><button id="close-svg">Cancel</button></div></div></div>
   <script src="./app.js"></script>
   <script>loadApplications();</script>
 </body>

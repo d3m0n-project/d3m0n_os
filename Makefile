@@ -10,6 +10,7 @@ DEBUG_OUTLINE		= 0
 USE_ADMIN			= 1
 SHOW_IMAGE_STATUS	= 0
 TRACK_MEMORY_USAGE	= 0
+USE_GDB				= 0
 
 ifeq ($(USE_ADMIN), 1)
 	SUDO_EXECUTABLE	= sudo
@@ -46,7 +47,7 @@ ELF					= $(OBJ_DIR)/kernel.elf
 IMG_SIZE			= 128
 
 LD_FLAGS			= -T linker.ld -lgcc -Wl,-e,_start
-C_FLAGS				= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 -g3 \
+C_FLAGS				= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 \
 					  -Iincludes -mcpu=arm1176jzf-s -marm -fno-omit-frame-pointer -mno-apcs-frame \
 					  -MMD -MD \
 					  -D DEBUG=$(DEBUG) \
@@ -55,6 +56,22 @@ C_FLAGS				= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 -g3 \
 					  -D KERNEL_VERSION_NAME=\"$(VERSION_NAME)\" \
 					  -D SHOW_IMAGE_STATUS=$(SHOW_IMAGE_STATUS) \
 					  -D TRACK_MEMORY_USAGE=$(TRACK_MEMORY_USAGE)
+
+QEMU_OPTIONS		= -machine raspi1ap \
+					  -cpu arm1176 \
+					  -serial mon:stdio \
+					  -m 512M \
+					  -sd $(DISK) \
+					  -kernel $(OBJ_DIR)/kernel.elf \
+					  -usb -device usb-mouse \
+					  -display sdl
+
+ifneq ($(DEBUG),0)
+C_FLAGS				+= -g3
+endif
+ifneq ($(USE_GDB),0)
+QEMU_OPTIONS		+= -S -s
+endif
 
 
 C1=\033[0;38;5;69;49m
@@ -77,7 +94,7 @@ define onoff
 $(if $(filter 1,$(1)),$(COLOR_SUCCESS)ENABLED$(R),$(COLOR_ERROR)DISABLED$(R))
 endef
 
-VARS := DEBUG DEBUG_OUTLINE USE_ADMIN SHOW_IMAGE_STATUS TRACK_MEMORY_USAGE
+VARS := DEBUG DEBUG_OUTLINE USE_ADMIN SHOW_IMAGE_STATUS TRACK_MEMORY_USAGE USE_GDB
 MSG_OUTLINE_COLOR=$(C1)
 MSG_COLOR=$(C3)
 show-config:
@@ -208,15 +225,7 @@ export: all applications
 run: all
 	@printf "$(COLOR_WARN)[QEMU] Starting emulator...$(R)\n"
 	@test -f "$(DISK)" || (printf "$(COLOR_ERROR)Disk image not found: $(DISK)$(R)\n" && exit 1)
-	@$(QEMU) \
-		-machine raspi1ap \
-		-cpu arm1176 \
-		-serial mon:stdio \
-		-m 512M \
-		-sd $(DISK) \
-		-kernel $(OBJ_DIR)/kernel.elf \
-		-usb -device usb-mouse \
-		-display sdl
+	@$(QEMU) $(QEMU_OPTIONS)
 
 
 clean:

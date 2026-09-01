@@ -80,7 +80,7 @@ int	sys_read(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 int sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 {
 	(void)a3;
-	log("\nwriting '%s' l=%lu\n", 0, resolve_user_ptr(user_buf, count), count);
+	//log("\nwriting '%s' l=%lu to %lu\n", 0, resolve_user_ptr(user_buf, count), count, fd);
 
 	if (fd == 0)
 		return -1;

@@ -4,31 +4,29 @@
 extern "C" {
 #endif
 
-//static int	index_of(char c, char *str)
-//{
-//	int	i;
+static int	index_of(char c, char *str)
+{
+	int	i;
 
-//	i = 0;
-//	while (str[i])
-//	{
-//		if (str[i] == c)
-//			return (i);
-//		i++;
-//	}
-//	return (-1);
-//}
+	i = 0;
+	while (str[i])
+	{
+		if (str[i] == c)
+			return (i);
+		i++;
+	}
+	return (-1);
+}
 
-//static void	parse_number(char *str, size_t *i, int *output)
-//{
-//	if (!isdigit((unsigned char)str[*i]))
-//		return ;
-//	*output = 0;
-//	while (isdigit((unsigned char)str[*i]))
-//	{
-//		*output = (*output * 10) + (str[*i] - '0');
-//		(*i)++;
-//	}
-//}
+static void	parse_number(char *str, size_t *i, int *output)
+{
+	while (isdigit(str[*i]))
+	{
+		*output = atoi(&str[*i]);
+		while (isdigit(str[*i]))
+			(*i)++;
+	}
+}
 
 t_format	parse_format(char *str, size_t *i)
 {
@@ -37,15 +35,26 @@ t_format	parse_format(char *str, size_t *i)
 	bzero(&f, sizeof(f));
 	f.width = WIDTH_UNRESTRICTED;
 	f.precision = WIDTH_UNRESTRICTED;
-
-	/* Skip % */
-	/* *i already points after % */
-
-	f.type = str[*i];
-
-	if (str[*i])
+	while (str[*i] && strchr("-0# +", str[*i]))
+	{
+		f.flags[index_of(str[*i], "-0# +") % 5] = str[*i];
 		(*i)++;
+	}
+	parse_number(str, i, &f.width);
+	if (str[*i] == '.')
+	{
+		f.precision = 0;
+		(*i)++;
+		parse_number(str, i, &f.precision);
+	}
 
+	while (str[(*i)] == 'l' && f.length < LEN_LL)
+	{
+		f.length++;
+		(*i)++;
+	}
+
+	f.type = str[(*i)++];
 	return (f);
 }
 

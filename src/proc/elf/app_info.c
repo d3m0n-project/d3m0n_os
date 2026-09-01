@@ -87,10 +87,6 @@ int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size)
 
 		uint32_t name_offset = u32(sh->NAME);
 		char *name = shstrtab + name_offset;
-		log("shoff=%lu shentsize=%u shnum=%u shstrndx=%u\n", 0,
-			shoff, shentsize, shnum, shstrndx);
-		log("shstr offset=%lu shstrtab=%x\n", 0,
-			u32(shstr->OFFSET), (uint32_t)shstrtab);
 		if (ft_strcmp(name, ".appmeta") == 0)
 		{
 			// get app metadata

@@ -1,106 +1,104 @@
-//#include "controls_graphics.h"
+#ifndef APP_CONTROLS_HELPERS_HPP
+#define APP_CONTROLS_HELPERS_HPP
 
-//void	compute_text_position(int anchor, int box_x, int box_y, int box_w, int box_h, int text_w, int text_h, int *out_x, int *out_y)
-//{
-//	int tx = box_x;
-//	int ty = box_y;
-//	if (anchor & ANCHOR_LEFT)
-//		tx = box_x;
-//	else if (anchor & ANCHOR_RIGHT)
-//		tx = box_x + box_w - text_w;
-//	else
-//		tx = box_x + (box_w - text_w) / 2;
+#include "app.hpp"
 
-//	if (anchor & ANCHOR_TOP)
-//		ty = box_y;
-//	else if (anchor & ANCHOR_BOTTOM)
-//		ty = box_y + box_h - text_h;
-//	else
-//		ty = box_y + (box_h - text_h) / 2;
+#define ANCHOR_LEFT 1
+#define ANCHOR_RIGHT 2
+#define ANCHOR_TOP 4
+#define ANCHOR_BOTTOM 8
+#define ANCHOR_CENTER_X 16
+#define ANCHOR_CENTER_Y 32
 
-//	if (tx < box_x) tx = box_x;
-//	if (ty < box_y) ty = box_y;
-//	*out_x = tx;
-//	*out_y = ty;
-//}
+inline void control_inner(const Control &control, int &x, int &y, int &w, int &h)
+{
+	x = control.computed_location.x + control.margin_left.get();
+	y = control.computed_location.y + control.margin_top.get();
+	w = control.computed_width - control.margin_left.get() - control.margin_right.get();
+	h = control.computed_height - control.margin_top.get() - control.margin_bottom.get();
+	if (w < 0) w = 0;
+	if (h < 0) h = 0;
+}
 
-//void	compute_inner_rect(const t_control *control, int *out_x, int *out_y, int *out_w, int *out_h)
-//{
-//	int x = control->p_client_location.x + control->margin_left;
-//	int y = control->p_client_location.y + control->margin_top;
-//	int w = control->p_client_size.x - control->margin_left - control->margin_right;
-//	int h = control->p_client_size.y - control->margin_top - control->margin_bottom;
-//	if (w < 0) w = 0;
-//	if (h < 0) h = 0;
-//	*out_x = x;
-//	*out_y = y;
-//	*out_w = w;
-//	*out_h = h;
-//}
+inline void control_text_position(int anchor, int x, int y, int w, int h, int tw, int th, int &out_x, int &out_y)
+{
+	out_x = (anchor & ANCHOR_LEFT) ? x : (anchor & ANCHOR_RIGHT) ? x + w - tw : x + (w - tw) / 2;
+	out_y = (anchor & ANCHOR_TOP) ? y : (anchor & ANCHOR_BOTTOM) ? y + h - th : y + (h - th) / 2;
+	if (out_x < x) out_x = x;
+	if (out_y < y) out_y = y;
+}
 
-//void	control_text_metrics(const char *text, int *out_max_len, int *out_lines)
-//{
-//	int i = 0;
-//	int cur = 0;
-//	int max = 0;
-//	int lines = 1;
+inline int control_font_size(int requested, int width, int height, const char *text)
+{
+	if (requested > 0)
+		return requested;
+	int length = 0;
+	if (text)
+		while (text[length] && text[length] != '\n') ++length;
+	int from_width = length ? width / length : 0;
+	int from_height = height / 2;
+	int result = from_width && from_height ? (from_width < from_height ? from_width : from_height) : (from_width ? from_width : from_height);
+	return result > 0 ? result : 8;
+}
 
-//	if (!text)
-//	{
-//		if (out_max_len) *out_max_len = 0;
-//		if (out_lines) *out_lines = 0;
-//		return;
-//	}
-//	while (text[i])
-//	{
-//		if (text[i] == '\n')
-//		{
-//			if (cur > max) max = cur;
-//			cur = 0;
-//			lines++;
-//		}
-//		else
-//			cur++;
-//		i++;
-//	}
-//	if (cur > max)
-//		max = cur;
-//	if (out_max_len)
-//		*out_max_len = max;
-//	if (out_lines)
-//		*out_lines = lines;
-//}
+inline void control_text(Display *display, const Control &control, const char *text, int align, int requested_size)
+{
+	int x, y, w, h;
+	control_inner(control, x, y, w, h);
+	int size = control_font_size(requested_size, w, h, text);
+	int lines = 1;
+	int longest = 0;
+	int current = 0;
+	if (text)
+		for (int i = 0; text[i]; ++i)
+		{
+			if (text[i] == '\n')
+			{
+				if (current > longest)
+				{
+					longest = current;
+					current = 0;
+				}
+				++lines;
+			}
+			else
+				++current;
+		}
+	if (current > longest)
+		longest = current;
+	int tx, ty;
+	control_text_position(align, x, y, w, h, size * longest, size * 2 * lines, tx, ty);
+	display->draw_text(tx, ty, size, size * 2, text, control.color, 0);
+}
 
-//int	control_text_auto_font_size(const t_control *control)
-//{
-//	int	len;
-//	int	from_width;
-//	int	from_height;
-//	int	size;
-//	int	lines;
+inline void control_children(Control &control, Display *display)
+{
+	Control *child = control.controls;
+	while (child)
+	{
+		if (child->visible)
+			child->draw(display);
+		child = child->next;
+	}
+}
 
-//	if (!control)
-//		return (8);
-//	if (control->font_size > 0)
-//		return (control->font_size);
-//	len = 0;
-//	lines = 0;
-//	control_text_metrics(control->content, &len, &lines);
-//	from_width = 0;
-//	from_height = 0;
-//	if (control->p_client_size.x > 0 && len > 0)
-//		from_width = control->p_client_size.x / len;
-//	if (control->p_client_size.y > 0)
-//		from_height = control->p_client_size.y / 2;
-//	if (from_width > 0 && from_height > 0)
-//		size = (from_width < from_height) ? from_width : from_height;
-//	else if (from_width > 0)
-//		size = from_width;
-//	else if (from_height > 0)
-//		size = from_height;
-//	else
-//		size = 8;
-//	if (size < 1)
-//		size = 1;
-//	return (size);
-//}
+inline void control_round_rect(Display *display, int x, int y, int w, int h, int radius, uint32_t color)
+{
+	if (radius <= 0)
+	{
+		display->draw_rect(x, y, w, h, color);
+		return;
+	}
+	if (radius > w / 2)
+		radius = w / 2;
+	if (radius > h / 2)
+		radius = h / 2;
+	display->draw_rect(x + radius, y, w - radius * 2, h, color);
+	display->draw_rect(x, y + radius, w, h - radius * 2, color);
+	display->draw_ellipse(x + radius, y + radius, radius, radius, color, 1);
+	display->draw_ellipse(x + w - radius - 1, y + radius, radius, radius, color, 1);
+	display->draw_ellipse(x + radius, y + h - radius - 1, radius, radius, color, 1);
+	display->draw_ellipse(x + w - radius - 1, y + h - radius - 1, radius, radius, color, 1);
+}
+
+#endif

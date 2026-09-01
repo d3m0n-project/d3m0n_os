@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 
 	vector<char *> exec_args;
 	for (string &arg : arguments)
-		exec_args.push_back(arg.data());
+		exec_args.push_back(const_cast<char *>(arg.data()));
 	exec_args.push_back(nullptr);
 
 

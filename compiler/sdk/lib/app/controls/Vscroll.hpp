@@ -1,59 +1,29 @@
 #ifndef VSCROLL_HPP
 #define VSCROLL_HPP
 
-#include "app.hpp"
+#include "helpers.hpp"
 
-//class VScroll : Control
-//{
-//	void	draw(Display &drawing_function)
-//	{
-		//t_control	*child;
-		//int			scroll_thumb_offset;
-		//int			thumb_height;
+class VScroll : public Control
+{
+public:
+	bool	bar;
+	int		scroll;
+	int		content_height;
 
-		//draw_rect(control->p_client_location.x, control->p_client_location.y, control->p_client_size.x, control->p_client_size.y, control->bg_color);
+	VScroll() : bar(true), scroll(0), content_height(0) {}
 
-		//child = control->children;
-		//while (child)
-		//{
-		//	if (child == control)
-		//		break;
-
-		//	child->p_scroll_offset = control->p_scroll_offset;
-		//	compute_control_layout(child, control, (t_point){0, -child->p_scroll_offset.y});
-
-		//	// check if child is in area
-		//	if ((child->p_client_location.y >= control->p_client_location.y && child->p_client_location.y <= control->p_client_location.y + control->p_client_size.y)
-		//		&& (child->p_client_location.x >= control->p_client_location.x && child->p_client_location.x <= control->p_client_location.x + control->p_client_size.x))
-		//	{
-		//		draw_control(child);
-		//	}
-
-		//	child = child->p_next;
-		//}
-
-		//if (!control->bar)
-		//	return;
-
-		//draw_rect(control->p_client_location.x + control->p_client_size.x - SCROLLBAR_SIZE, control->p_client_location.y, SCROLLBAR_SIZE, control->p_client_size.y, DISPLAY_COLORS[GREY]);
-
-		//if (control->p_scroll_max_size.y > 0)
-		//{
-		//	thumb_height = (control->p_client_size.y * control->p_client_size.y) / (control->p_client_size.y + control->p_scroll_max_size.y);
-
-		//	if (thumb_height < SCROLLBAR_THUMB_MIN_HEIGHT)
-		//		thumb_height = SCROLLBAR_THUMB_MIN_HEIGHT;
-
-		//	scroll_thumb_offset = (control->p_scroll_offset.y * (control->p_client_size.y - thumb_height)) / control->p_scroll_max_size.y;
-		//}
-		//else
-		//{
-		//	thumb_height = control->p_client_size.y;
-		//	scroll_thumb_offset = 0;
-		//}
-
-		//draw_rect(control->p_client_location.x + control->p_client_size.x - SCROLLBAR_SIZE, control->p_client_location.y + scroll_thumb_offset, SCROLLBAR_SIZE, thumb_height, DISPLAY_COLORS[DARK_GREY]);
-//	}
-//};
-
+	void	draw(Display *display) override
+	{
+		display->draw_rect(computed_location.x, computed_location.y, computed_width, computed_height, bg_color);
+		control_children(*this, display);
+		if (!bar)
+			return;
+		int size = 8, thumb = content_height > computed_height ? computed_height * computed_height / content_height : computed_height;
+		if (thumb < 12)
+			thumb = 12;
+		int offset = content_height > computed_height ? scroll * (computed_height - thumb) / (content_height - computed_height) : 0;
+		display->draw_rect(computed_location.x + computed_width - size, computed_location.y, size, computed_height, bg_color);
+		display->draw_rect(computed_location.x + computed_width - size, computed_location.y + offset, size, thumb, color);
+	}
+};
 #endif

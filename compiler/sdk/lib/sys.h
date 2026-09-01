@@ -21,6 +21,22 @@ extern "C" {
 		(int)_r0;                                             \
 	})
 
+	typedef enum
+	{
+		O_READ=1,
+		O_WRITE=2,
+		O_CREATE=4,
+		O_APPEND=8,
+		O_TRUNC=16
+	}	file_open_mode;
+
+	typedef enum
+	{
+		SEEK_SET,
+		SEEK_CUR,
+		SEEK_END
+	}	e_seek_directive;
+
 
 
 	typedef enum
@@ -57,7 +73,7 @@ extern "C" {
 		return syscall(SYS_WRITE, (uint32_t)fd, (uint32_t)buffer, count, 0);
 	}
 
-	static inline int	open(const char *path, int flags)
+	static inline int	open(const char *path, file_open_mode flags)
 	{
 		return syscall(SYS_OPEN, (uint32_t)path, (uint32_t)flags, 0, 0);
 	}

@@ -2,14 +2,22 @@
 #define GRAPHICS_HPP
 
 #include "types.h"
-#include <sys.h>
+#include "sys.h"
 #include "stdio.hpp"
+#include "font.hpp"
+#include "string.hpp"
+#include "stdlib.h"
+#include <exception>
+
+using namespace std;
+
 
 class Display
 {
 private:
 	uint8_t	*fb;
 	int		pitch;
+	t_font	main_font;
 
 	void	draw_ellipse_points(int cx, int cy, int x, int y, uint32_t color)
 	{
@@ -23,10 +31,9 @@ public:
 	int		h = 0;
 	Display()
 	{
-		write(1, "c\n", 2);
 		getfbaddr(&this->fb, &this->w, &this->h, &this->pitch);
-		write(1, "d\n", 2);
-		//printf("Created a w=%i h=%i pitch=%i display\n", this->w, this->h, this->pitch);
+		if (load_font("/fonts/ILGH32XF.FNT", &this->main_font, 32))
+			throw AppException("Could not initialize main font!");
 	}
 
 	void		put_pixel(int x, int y, uint32_t color);
@@ -34,6 +41,8 @@ public:
 	void		draw_hline(int x, int y, int w, uint32_t color);
 	void		draw_rect(int x, int y, int w, int h, uint32_t color);
 	void		draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int filled);
+	void		draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);
+	void		draw_svg(int x, int y, int w, int h, const char *path, uint32_t override_color = 0);
 };
 
 #endif

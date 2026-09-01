@@ -2,6 +2,10 @@
 #define TYPES_H
 
 #ifdef __cplusplus
+#include "exception"
+
+using namespace std;
+
 extern "C" {
 #endif
 	typedef struct s_point
@@ -25,9 +29,6 @@ extern "C" {
 
 	#define SIZE_MAX				(size_t)-1
 
-
-	#define NULL ((void *)0)
-
 	#define	OFFSETOF(TYPE, ELEMENT)	((size_t)&(((TYPE *)0)->ELEMENT))
 
 	typedef __builtin_va_list		va_list;
@@ -37,6 +38,21 @@ extern "C" {
 	#define va_end(ap)				__builtin_va_end(ap)
 #ifdef __cplusplus
 }
+class AppException : public exception
+{
+private:
+	const char *value;
+public:
+	AppException(const char *val) {
+		this->value = val;
+	}
+
+	const char* what() {
+		return this->value;
+	}
+};
+#else
+#define NULL	((void *)0)
 #endif
 
 #endif

@@ -1,46 +1,41 @@
 #ifndef PROGRESSBAR_HPP
 #define PROGRESSBAR_HPP
 
-#include "app.hpp"
+#include "helpers.hpp"
 
-//class ProgressBar : Control
-//{
-//	void	draw(Display &drawing_function) override
-//	{
-		//// background
-		//if (control->bg_color)
-		//	draw_rect(control->p_client_location.x, control->p_client_location.y, control->width, control->height, control->bg_color);
+class ProgressBar : public Control
+{
+public:
+	int					min;
+	int					value;
+	int					max;
+	static const int	padding = 4;
+	static const int	bar_height = 8;
 
-		//// draw bar
-		//int two_padding = PROGRESSBAR_PADDING * 2;
-		//int x0 = control->p_client_location.x + two_padding;
-		//int w = control->width - two_padding - two_padding;
-		//int y0 = control->p_client_location.y + PROGRESSBAR_PADDING;
-		//int r = PROGRESSBAR_HEIGHT / 2;
-		//int h = r * 2;
+	ProgressBar()
+	{
+		this->min = 0;
+		this->value = 0;
+		this->max = 100;
+	}
 
-		//draw_rect(x0, y0, w, h + 1, PROGRESSBAR_OFF_COLOR);
-
-		//// round borders
-		//draw_ellipse(x0, y0 + r, r, r, PROGRESSBAR_OFF_COLOR, 1);
-		//draw_ellipse(x0 + w, y0 + r, r, r, PROGRESSBAR_OFF_COLOR, 1);
-
-		//// thumb
-		//float thumb_percentage = 0.0f;
-		//if (control->max != control->min)
-		//{
-		//	thumb_percentage = (float)(control->value - control->min) / (float)(control->max - control->min);
-
-		//	// clamp
-		//	if (thumb_percentage < 0.0f)
-		//		thumb_percentage = 0.0f;
-		//	else if (thumb_percentage > 1.0f)
-		//		thumb_percentage = 1.0f;
-		//}
-
-		//int thumb_x = x0 + (int)(w * thumb_percentage);
-		//draw_ellipse(thumb_x, y0 + r, h, h, control->color, 1);
-//	}
-//};
-
+	void draw(Display *display) override
+	{
+		int x = computed_location.x + padding;
+		int y = computed_location.y + padding;
+		int w = computed_width - padding * 2;
+		if (w < 1)
+			w = 1;
+		int r = bar_height / 2;
+		display->draw_rect(x + r, y, w - r * 2, bar_height, bg_color);
+		display->draw_ellipse(x + r, y + r, r, r, bg_color, 1);
+		display->draw_ellipse(x + w - r - 1, y + r, r, r, bg_color, 1);
+		int range = max - min, amount = range ? (value - min) * w / range : 0;
+		if (amount < 0)
+			amount = 0;
+		if (amount > w)
+			amount = w;
+		display->draw_rect(x, y, amount, bar_height, color);
+	}
+};
 #endif

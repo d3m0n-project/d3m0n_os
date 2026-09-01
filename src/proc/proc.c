@@ -12,9 +12,14 @@ void	*alloc_pages(size_t pages)
 
 void	check_stack_canary(t_process *p)
 {
+	if (!p || !p->kernel_stack)
+		return;
 	uint32_t *base = (uint32_t *)p->kernel_stack;
 	if (base[0] != STACK_CANARY)
+	{
 		log("!! STACK OVERFLOW on %s: canary=0x%x\n", LOG_ERROR, p->proc_name, base[0]);
+		panic("PROCESS: kernel stack corruption\n");
+	}
 }
 
 void	prepare_initial_stack(t_process *p, void (*entry)(void))
@@ -22,7 +27,7 @@ void	prepare_initial_stack(t_process *p, void (*entry)(void))
 	uint32_t *stack;
 
 	stack = (uint32_t *)p->kernel_stack + (KERNEL_STACK_PAGES * PAGE_SIZE / sizeof(uint32_t));
-	stack -= 15;
+	stack -= IRQ_FRAME_WORDS;
 	
 	((uint32_t *)p->kernel_stack)[0] = STACK_CANARY;
 	
@@ -38,6 +43,56 @@ void	prepare_initial_stack(t_process *p, void (*entry)(void))
 	stack[14] = (uint32_t)entry;
 
 	p->irq_sp = (uint32_t)stack;
+	p->user_lr = 0;
+}
+
+int	process_context_valid(t_process *p)
+{
+	uint32_t low;
+	uint32_t high;
+	uint32_t *f;
+	uint32_t mode;
+
+	if (!p || !p->kernel_stack || !p->irq_sp)
+		return 0;
+
+	low = (uint32_t)p->kernel_stack;
+	high = low + KERNEL_STACK_PAGES * PAGE_SIZE;
+	if (p->irq_sp < low || p->irq_sp > high - IRQ_FRAME_SIZE || (p->irq_sp & 3))
+		return 0;
+
+	if (p->user_sp & 3)
+		return 0;
+	if (p->mode != PROCESS_KERNEL && p->mode != PROCESS_USER) // check for process mode corruption
+		return 0;
+	if (p->mode == PROCESS_USER)
+	{
+		uint32_t user_low;
+		uint32_t user_high;
+
+		if (!p->user_stack)
+			return 0;
+		user_low = (uint32_t)p->user_stack;
+		user_high = user_low + USER_STACK_PAGES * PAGE_SIZE;
+		if (p->user_sp < user_low + 4 || p->user_sp > user_high)
+			return 0;
+	}
+	else if (p->user_sp < low + 4 || p->user_sp > high - IRQ_FRAME_SIZE - 8)
+		return 0;
+
+	f = (uint32_t *)p->irq_sp;
+
+	// check mode
+	mode = f[0] & 0x1f;
+	if (p->mode == PROCESS_KERNEL && mode != 0x13)
+		return 0;
+	if (p->mode == PROCESS_USER && mode != 0x1f && mode != 0x10)
+		return 0;
+
+	if (f[14] & 3)
+		return 0;
+
+	return 1;
 }
 
 uint32_t	allocate_pid()
@@ -93,6 +148,8 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 		}
 		p->user_sp = ((uint32_t)p->user_stack + USER_STACK_PAGES * PAGE_SIZE) & ~7;
 	}
+	if (kernel_mode)
+		p->user_sp -= IRQ_FRAME_SIZE + 12;
 	
 	if (!p->kernel_stack)
 	{

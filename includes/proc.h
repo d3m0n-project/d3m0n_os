@@ -17,6 +17,8 @@
 #define USER_STACK_PAGES			16
 #define PAGE_SIZE					4096
 #define STACK_CANARY				0xDEADC0DE
+#define IRQ_FRAME_WORDS			15
+#define IRQ_FRAME_SIZE			(IRQ_FRAME_WORDS * sizeof(uint32_t))
 
 #define TIME_SLICE_MS				5 // delta t before each scheduler call
 
@@ -36,7 +38,8 @@ typedef struct s_process
 {
 	uint32_t		irq_sp;
 	uint32_t		user_sp;
-	//uint32_t		user_lr;
+	/* Native-mode LR: SYS for user processes, SVC for kernel processes. */
+	uint32_t		user_lr;
 
 
 	uint32_t		pid;
@@ -60,17 +63,17 @@ typedef struct s_process
 	struct s_process *next;
 }	t_process;
 
-//_Static_assert(OFFSETOF(t_process, irq_sp)      ==  0,  "irq_sp");
-//_Static_assert(OFFSETOF(t_process, user_sp)     ==  4,  "user_sp");
-//_Static_assert(OFFSETOF(t_process, user_lr)     ==  8,  "user_lr");
-//_Static_assert(OFFSETOF(t_process, pid)         == 12,  "pid");
-//_Static_assert(OFFSETOF(t_process, state)       == 16,  "state");
-//_Static_assert(OFFSETOF(t_process, mode)        == 20,  "mode");
-//_Static_assert(OFFSETOF(t_process, proc_name)   == 24,  "proc_name");
-//_Static_assert(OFFSETOF(t_process, kernel_stack)== 88,  "kernel_stack");
-//_Static_assert(OFFSETOF(t_process, user_stack)  == 92,  "user_stack");
-//_Static_assert(OFFSETOF(t_process, priority)    == 96,  "priority");
-//_Static_assert(OFFSETOF(t_process, time_slice)  == 104, "time_slice");
+_Static_assert(OFFSETOF(t_process, irq_sp)       == 0,   "irq_sp");
+_Static_assert(OFFSETOF(t_process, user_sp)      == 4,   "user_sp");
+_Static_assert(OFFSETOF(t_process, user_lr)      == 8,   "user_lr");
+_Static_assert(OFFSETOF(t_process, pid)          == 12,  "pid");
+_Static_assert(OFFSETOF(t_process, state)        == 16,  "state");
+_Static_assert(OFFSETOF(t_process, mode)         == 20,  "mode");
+_Static_assert(OFFSETOF(t_process, proc_name)    == 24,  "proc_name");
+_Static_assert(OFFSETOF(t_process, kernel_stack) == 88,  "kernel_stack");
+_Static_assert(OFFSETOF(t_process, user_stack)   == 92,  "user_stack");
+_Static_assert(OFFSETOF(t_process, priority)     == 96,  "priority");
+_Static_assert(OFFSETOF(t_process, time_slice)   == 100, "time_slice");
 
 void					scheduler_start();
 void					timer_handler();
@@ -93,5 +96,6 @@ void					process_dump_regs(t_process *p);
 
 // security
 void					check_stack_canary(t_process *p);
+int					process_context_valid(t_process *p);
 
 #endif

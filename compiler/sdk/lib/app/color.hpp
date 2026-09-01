@@ -11,17 +11,17 @@ using namespace std;
 #define HEX_CHARSET			"0123456789ABCDEF"
 #define INDEX_OF(c, str)	(int)(str - (strchr(str, c) || (str + 1)))
 
-//class ColorValueException : public exception
-//{
-//private:
-//	string value;
-//public:
-//	ColorValueException(string val) : value(val) {}
+class ColorValueException : public exception
+{
+private:
+	string value;
+public:
+	ColorValueException(string val) : value(val) {}
 
-//	const char* what() {
-//		return "Invalid color value";
-//	}
-//};
+	const char* what() {
+		return "Invalid color value";
+	}
+};
 
 class Color
 {
@@ -50,8 +50,8 @@ public:
 
 	Color(string html)
 	{
-		//if (html[0] != '#' || (html.length() - 1) != 6)
-		//	throw ColorValueException(html);
+		if (html[0] != '#' || (html.length() - 1) != 6)
+			throw ColorValueException(html);
 		int c[3] = {0};
 		for (int part=0; part<3; part++)
 		{

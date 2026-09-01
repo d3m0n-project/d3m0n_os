@@ -5,6 +5,9 @@
 
 #define APP_MANIFEST_MAGIC	0x35455234
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 typedef struct AppMetadata
 {
 	uint32_t			magic;
@@ -18,5 +21,8 @@ typedef struct AppMetadata
 	const uint8_t		*icon;
 	uint32_t			end_magic;
 }		AppMetadata;
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -15,32 +15,18 @@ APP_INFO(
 
 extern "C" int	app_main(void)
 {
+	printf("MySimple app started\n");
+
 	try
 	{
-		printf("hello\n");
-		write(1, "A\n", 2);
-		printf("hello %d\n", 42);
-		write(1, "B\n", 2);
-		printf("hello %s\n", "world");
-		write(1, "C\n", 2);
-		printf("hello %c\n", 'X');
-		write(1, "D\n", 2);
-		printf("100%%\n");
-		write(1, "E\n", 2);
+		MainWindow	window;
+		window.draw();
 	}
-	catch (const exception& e)
+	catch (AppException& e)
 	{
-		write(1, "except\n", 7);
+		printf("\033[31mERROR\033[0m: %s\n", e.what());
 	}
-	return (0);
 
-
-	printf("app_main\n");
-	write(1, "printf finished\n", 17);
-	MainWindow window;
-	write(1, "printf finished\n", 17);
-	window.draw();
-
-	printf("finished\n");
+	printf("Finished...\n");
 	return 0;
 }

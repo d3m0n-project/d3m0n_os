@@ -3,7 +3,7 @@
 typedef struct s_irq_frame
 {
 	uint32_t	spsr;
-	uint32_t	r[13]; // r0..r12
+	uint32_t	r[13]; // r0->r12
 	uint32_t	lr;
 }	t_irq_frame;
 
@@ -44,12 +44,13 @@ void process_dump_regs(t_process *p)
 
 	uint32_t stack_lo = (uint32_t)p->kernel_stack;
 	uint32_t stack_hi = stack_lo + (KERNEL_STACK_PAGES * 4096);
-	if (p->irq_sp < stack_lo || p->irq_sp > stack_hi)
+	if (p->irq_sp < stack_lo || p->irq_sp > stack_hi - IRQ_FRAME_SIZE)
 		log("    !! irq_sp OUT OF BOUNDS for this process's kernel_stack [0x%x - 0x%x]\n", LOG_ERROR, stack_lo, stack_hi);
 
 	f = (t_irq_frame *)p->irq_sp;
 	log("    SPSR = 0x%x  (mode=%s)\n", 0, f->spsr, mode_name(f->spsr));
 	log("    LR   = 0x%x  (return addr, already -4 corrected)\n", 0, f->lr);
+	log("    native LR = 0x%x\n", 0, p->user_lr);
 
 	log("    r0 =0x%x  r1 =0x%x  r2 =0x%x  r3 =0x%x\n", 0, f->r[0], f->r[1], f->r[2], f->r[3]);
 	log("    r4 =0x%x  r5 =0x%x  r6 =0x%x  r7 =0x%x\n", 0, f->r[4], f->r[5], f->r[6], f->r[7]);
