@@ -4,10 +4,7 @@
 //#include "d3m0n.h"
 //#include "bmp.h"
 //#include "display.h"
-//#include "package_manager.h"
-//#include "controls.h"
-//#include "icons.h"
-//#include "parsing.h"
+#include "icons.h"
 #include "settings.h"
 //#include "usb.h"
 
@@ -44,24 +41,24 @@
 //	process_exit_current(0);
 //}
 
-//void	app_and_icon_loader_thread(void)
-//{
-//	if (load_app_list())		panic("Failed to load the apps list\n");
-//	else						log("Loaded apps successfully!\n", LOG_SUCCESS);
-
-//	t_conf	*config = get_config();
-
-//	uint64_t t = time_us();
-//	char		*icon_pack_path = path_add("/themes/", config->icon_pack);
-//	if (!icon_pack_path || load_icon_pack(icon_pack_path))
-//		log("Could not load icon pack: %s\n", LOG_ERROR, icon_pack_path);
-//	else
-//		log("Loaded icons in %ims\n", LOG_INFO, (time_us() - t) / 1000);
-//	if (icon_pack_path)
-//		kfree(icon_pack_path);	
+void	app_and_icon_loader_thread(void)
+{
+	t_conf		*config = get_config();
+	uint64_t	t = time_us();
+	int			success = 0;
+	char		*icon_pack_path = path_add("/themes/", config->icon_pack);
+	if (!icon_pack_path || load_icon_pack(icon_pack_path))
+		log("Could not load icon pack: %s\n", LOG_ERROR, icon_pack_path);
+	else
+	{
+		log("Loaded icons in %ims\n", LOG_INFO, (time_us() - t) / 1000);
+		success = 1;
+	}
+	if (icon_pack_path)
+		kfree(icon_pack_path);	
 	
-//	process_exit_current(0);
-//}
+	process_exit_current(success != 0);
+}
 
 void	init_proc(void)
 {
@@ -70,12 +67,17 @@ void	init_proc(void)
 
 	log("[init] started at %llums\n", LOG_SUCCESS, time_us() / 1000);
 
+	
+	//process_create(rsa_require_thread,          "SECURITY.RSA", 1);
+	t_process *icon_loader = process_create(app_and_icon_loader_thread,  "LOADER.app+icon", 1);
+	if (!icon_loader)
+		panic("INIT: Failed to start icon loader process\n");
+
+	while (icon_loader->state != PROC_ZOMBIE) // wait for processes completion
+		asm volatile("wfe");
+
 	if (!elf_to_proc("test_app")) // TODO: change me
 		panic("Failed to start test_app\n");
-	
-
-	//process_create(rsa_require_thread,          "SECURITY.RSA", 1);
-	//process_create(app_and_icon_loader_thread,  "LOADER.app+icon", 1);
 	
 	process_list();
 

@@ -38,7 +38,7 @@ typedef struct s_process
 {
 	uint32_t		irq_sp;
 	uint32_t		user_sp;
-	/* Native-mode LR: SYS for user processes, SVC for kernel processes. */
+
 	uint32_t		user_lr;
 
 
@@ -59,6 +59,10 @@ typedef struct s_process
 	void			*address_space;
 	uint32_t		image_vaddr_base;
 	uint32_t		image_size;
+	uint32_t		surface_addr;
+	uint32_t		surface_size;
+	uint32_t		surface_width;
+	uint32_t		surface_height;
 
 	struct s_process *next;
 }	t_process;

@@ -176,6 +176,11 @@ void process_exit_current(uint32_t status_code)
 		restore_interrupts(cpsr);
 		return;
 	}
+	if (exiting->surface_addr)
+	{
+		kfree((void *)(uintptr_t)exiting->surface_addr);
+		exiting->surface_addr = 0;
+	}
 
 	exiting->state = PROC_ZOMBIE;
 	scheduler_remove(exiting);

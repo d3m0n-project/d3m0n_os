@@ -1,10 +1,10 @@
-#include "controls.h"
 #include "log.h"
 #include "time.h"
-#include "scripting.h"
+#include "proc.h"
 #include "libft.h"
 #include "stats.h"
 #include "icons.h"
+#include "display.h"
 
 static void	draw_clock(t_conf *conf, int *current_pos, uint32_t theme_color)
 {
@@ -109,15 +109,16 @@ void	draw_connections(t_conf *conf, int *current_pos, uint32_t theme_color_fg)
 	*current_pos += TOPBAR_HEIGHT;
 }
 
-void	draw_topbar(t_window *window)
+void	draw_topbar(void)
 {
 	t_conf		*conf = get_config();
 	uint32_t	theme_color_fg = (conf->theme)?LIGHT_THEME_FG:DARK_THEME_FG;
 	uint32_t	theme_color_bg = (conf->theme)?LIGHT_THEME_BG:DARK_THEME_BG;
-	if (window->top_bar)
+
+	if (1)//window->top_bar)
 	{
 		int current_pos = 0;
-		draw_rect(0, 0, window->width, TOPBAR_HEIGHT, theme_color_bg);
+		draw_rect(0, 0, SCREEN_WIDTH, TOPBAR_HEIGHT, theme_color_bg);
 
 
 		// draw battery and connection status
@@ -127,35 +128,35 @@ void	draw_topbar(t_window *window)
 
 		draw_clock(conf, &current_pos, theme_color_fg);
 		
-		if (!window->is_launcher)
+		if (current_process)
 		{
 			int size = TOPBAR_HEIGHT - TOPBAR_PADDING * 2;
-			draw_text(current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size / 2, size, window->title, DISPLAY_COLORS[MAGENTA], 0);
-			current_pos += (size / 2) * ft_strlen(window->title) + TOPBAR_PADDING;
+			draw_text(current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size / 2, size, current_process->proc_name, DISPLAY_COLORS[MAGENTA], 0);
+			current_pos += (size / 2) * ft_strlen(current_process->proc_name) + TOPBAR_PADDING;
 		}
 	}
-	if (!window->is_launcher)
-	{
-		int cross_s = TOPBAR_HEIGHT - (2 * TOPBAR_PADDING);
-		int cross_x = SCREEN_WIDTH - (cross_s + TOPBAR_PADDING);
-		int cross_y = TOPBAR_PADDING;
-		
-		draw_text(cross_x, cross_y, cross_s, cross_s, "X", DISPLAY_COLORS[RED], 0); // draw exit icon
-		// add close event if not added yet
-		if (window->events[0].type == EVENT_UNDEFINED)
-		{
-			window->events[0].script = init_script(0);
-			if (!window->events[0].script)
-			{
-				panic("Could not allocate the app close cross script\n");
-				return;
-			}
-			window->events[0].type = EVENT_ON_CLICK;
-			window->events[0].script->func = (void *)fn_app_exit;
-			window->events[0].script->args = 0;
-			window->events[0].script->next = 0;
-			window->events[0].override_trigger_corners[0] = (t_point){.x=cross_x, .y=cross_y};
-			window->events[0].override_trigger_corners[1] = (t_point){.x=cross_x+cross_s, .y=cross_y+cross_s};
-		}
-	}
+	//if (!window->is_launcher)
+	//{
+	int cross_s = TOPBAR_HEIGHT - (2 * TOPBAR_PADDING);
+	int cross_x = SCREEN_WIDTH - (cross_s + TOPBAR_PADDING);
+	int cross_y = TOPBAR_PADDING;
+	
+	draw_text(cross_x, cross_y, cross_s, cross_s, "X", DISPLAY_COLORS[RED], 0); // draw exit icon
+	// add close event if not added yet
+	//if (window->events[0].type == EVENT_UNDEFINED)
+	//{
+	//	window->events[0].script = init_script(0);
+	//	if (!window->events[0].script)
+	//	{
+	//		panic("Could not allocate the app close cross script\n");
+	//		return;
+	//	}
+	//	window->events[0].type = EVENT_ON_CLICK;
+	//	window->events[0].script->func = (void *)fn_app_exit;
+	//	window->events[0].script->args = 0;
+	//	window->events[0].script->next = 0;
+	//	window->events[0].override_trigger_corners[0] = (t_point){.x=cross_x, .y=cross_y};
+	//	window->events[0].override_trigger_corners[1] = (t_point){.x=cross_x+cross_s, .y=cross_y+cross_s};
+	//}
+	//}
 }

@@ -8,7 +8,7 @@ static volatile uint32_t	g_framebuffer_mbox[35]  __attribute__((aligned(16)));
 #include "lcd.h"
 #endif
 
-static t_font				main_font;
+//static t_font				main_font;
 
 uint32_t	DISPLAY_COLORS[17] = { 0x00000000, 0xff000000, 0xff0000bf, 0xff0000ff, 0xff007fff, 0xff00ffff, 0xff00bf00, 0xff00ff00, 0xffbf5f00, 0xffff0000, 0xffbfbf00, 0xffffff00, 0xffbf00bf, 0xffff00ff, 0xff191919, 0xff7f7f7f, 0xffffffff};
 
@@ -386,7 +386,10 @@ void	draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_f
 	if (!text)
 		return;
 	if (!font)
-		font = &main_font;
+	{
+		log("DRAW TEXT: No font provided, could not write\n", LOG_ERROR);
+		return;
+	}
 	if (!font || !font->data || font->dot_count <= 0)
 		return;
 
@@ -440,8 +443,6 @@ void	draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_f
 
 int display_init()
 {
-	if (load_font("fonts/ILGH32XF.FNT", &main_font, 32)) // TODO: change font, maybe load vector one
-		return 1;
 	#if DEBUG == 1
 	if(!framebuffer_init(640, 480, 32))
 	{

@@ -2,7 +2,6 @@
 #include "time.h"
 #include "usb.h"
 #include "display.h"
-#include "controls.h"
 
 #define USB_BASE			(PERIPHERAL_BASE + 0x00980000)
 
@@ -561,7 +560,7 @@ int	usb_mouse_poll(void)
 		g_mouse.y = SCREEN_HEIGHT;
 	
 	g_mouse.buttons = g_mouse_report[0];
-	handle_click(g_mouse.x, g_mouse.y, (unsigned int)g_mouse.buttons, get_current_window());
+	//handle_click(g_mouse.x, g_mouse.y, (unsigned int)g_mouse.buttons, get_current_window());
 	
 	//draw_topbar(get_current_window()); // TODO:
 	// save last pixels

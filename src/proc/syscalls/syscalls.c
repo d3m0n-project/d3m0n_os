@@ -12,6 +12,7 @@
 #define SYSCALL_EXIT_INDEX	0
 
 extern t_process	*current_process;
+extern void			draw_topbar(void);
 
 static void	*resolve_user_ptr(uint32_t user_ptr, uint32_t len)
 {
@@ -267,30 +268,55 @@ int	sys_sbrk(uint32_t increment, uint32_t a1, uint32_t a2, uint32_t a3)
 	return (int)old_end;
 }
 
-int	sys_getfbaddr(uint32_t buff_ptr, uint32_t width_ptr, uint32_t height_ptr, uint32_t pitch_addr)
+int	sys_surface_create(uint32_t width, uint32_t height, uint32_t surface_ptr, uint32_t pitch_ptr)
 {
-	volatile uint32_t	**fb = (volatile uint32_t **)resolve_user_ptr(buff_ptr, 1);
-	int	*width = (int *)resolve_user_ptr(width_ptr, 1);
-	int	*height =  (int *)resolve_user_ptr(height_ptr, 1);
-	int *pitch = (int *)resolve_user_ptr(pitch_addr, 1);
-	if (!fb || !width || !height)
+	t_process *proc = current_process;
+	uint8_t **surface = (uint8_t **)resolve_user_ptr(surface_ptr, sizeof(*surface));
+	int *pitch = (int *)resolve_user_ptr(pitch_ptr, sizeof(*pitch));
+	uint32_t size;
+	uint8_t *address;
+
+	if (!proc || !surface || !pitch || width != SCREEN_WIDTH || height != SCREEN_HEIGHT - TOPBAR_HEIGHT || proc->surface_addr != 0)
 		return -1;
-
-	*width = SCREEN_WIDTH;
-	*height = SCREEN_HEIGHT;
-	*fb = (volatile uint32_t *)get_fb_addr(pitch);
-
+	if (height > (uint32_t)-1 / width / sizeof(uint32_t))
+		return -1;
+	size = width * height * sizeof(uint32_t);
+	address = (uint8_t *)kmalloc(size);
+	if (!address)
+		return -1;
+	ft_memset(address, 0, size);
+	proc->surface_addr = (uint32_t)address;
+	proc->surface_size = size;
+	proc->surface_width = width;
+	proc->surface_height = height;
+	*surface = address;
+	*pitch = (int)(width * sizeof(uint32_t));
 	return 0;
 }
-int	sys_flushfb(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+
+int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t a3)
 {
-	(void)a0;
+	t_process	*proc = current_process;
+	uint8_t		*surface;
+	uint8_t		*framebuffer;
+	int			pitch;
+	uint32_t	row;
+
 	(void)a1;
 	(void)a2;
 	(void)a3;
+	if (!proc || surface_addr != proc->surface_addr || !proc->surface_size)
+		return -1;
+	surface = (uint8_t *)(uintptr_t)surface_addr;
+	framebuffer = (uint8_t *)get_fb_addr(&pitch);
+	if (!framebuffer || pitch < (int)(proc->surface_width * sizeof(uint32_t)))
+		return -1;
 
-	// TODO: flush
-
+	draw_topbar();
+	for (row = 0; row < proc->surface_height; row++)
+		ft_memcpy(framebuffer + (row + TOPBAR_HEIGHT) * pitch,
+			surface + row * proc->surface_width * sizeof(uint32_t),
+			proc->surface_width * sizeof(uint32_t));
 	return 0;
 }
 
@@ -308,8 +334,8 @@ syscall_t	syscall_table[] = {
 	sys_mkdir,
 	sys_rmdir,
 	sys_sbrk,
-	sys_getfbaddr,
-	sys_flushfb
+	sys_surface_create,
+	sys_surface_update
 };
 
 int	syscall_dispatch(uint32_t number, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)

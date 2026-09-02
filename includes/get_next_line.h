@@ -5,14 +5,8 @@
 # include "memory.h"
 # include "libft.h"
 
-# ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 4096
-# endif
-
-# if BUFFER_SIZE < 0
-#  undef BUFFER_SIZE
-#  define BUFFER_SIZE 0
-# endif
+#define TMP_BUFFER_SIZE	4096
+#define BUFFER_SIZE		(((TMP_BUFFER_SIZE + 1U) + 3U) & ~3U)
 
 char		*get_next_line(int fd);
 void		clear_fd_buffer(int fd);

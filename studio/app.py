@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, send_from_directory, Response, request
 from pathlib import Path
 import os
+import sys
 import re
 import shutil
 import subprocess
@@ -19,7 +20,7 @@ app = Flask(__name__)
 BASE_DIR = Path(__file__).resolve().parent
 ROOTFS_CONFIG = (BASE_DIR / "../rootfs/config").resolve()
 APPS_DIR = (BASE_DIR / "../rootfs/apps").resolve()
-TEMPLATE_DIR = (BASE_DIR / "../compiler/examples/simple_app").resolve()
+TEMPLATE_DIR = (BASE_DIR / "./template_app").resolve()
 icon_pack = None
 
 
@@ -58,6 +59,8 @@ def build_tree(path: Path):
     result = [path.name]
 
     for item in sorted(path.iterdir(), key=lambda p: (p.is_file(), p.name)):
+        if item.is_dir() and item.name == "obj":
+            continue
         if item.is_dir():
             result.append(build_tree(item))
         else:
@@ -114,8 +117,14 @@ def project_path(project_id):
 def project_files(path: Path):
     result = {}
     for item in sorted(path.rglob("*")):
+        relative = item.relative_to(path)
+        if "obj" in relative.parts:
+            continue
+        if item.is_dir():
+            result[str(relative)] = {"type": "folder"}
+            continue
         if item.is_file() and item.name != "app":
-            result[str(item.relative_to(path))] = read_file(item)
+            result[str(relative)] = read_file(item)
     return result
 
 
@@ -158,7 +167,9 @@ def applications():
         hierarchy = []
         for item in sorted(app_dir.iterdir(), key=lambda p: (p.is_file(), p.name)):
             if item.is_dir():
-                hierarchy.append(build_tree(item))
+                l = build_tree(item)
+                if l:
+                    hierarchy.append(l)
             else:
                 hierarchy.append((
                     item.name,
@@ -207,7 +218,7 @@ def project_target(path, relative):
     if not isinstance(relative, str) or not relative.strip():
         return None
     target = (path / relative).resolve()
-    if target == path or path not in target.parents or target.name == "app":
+    if target == path or path not in target.parents or target.name == "app" or "obj" in target.relative_to(path).parts:
         return None
     return target
 
@@ -283,7 +294,7 @@ def save_application_file(project_id):
     if not path or not isinstance(relative, str) or not isinstance(content, str):
         return jsonify({"error": "Invalid application file."}), 400
     target = (path / relative).resolve()
-    if target.parent == path / "app" or path not in target.parents or target.name == "app":
+    if target.parent == path / "app" or path not in target.parents or target.name == "app" or "obj" in target.relative_to(path).parts:
         return jsonify({"error": "Invalid application file path."}), 400
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
@@ -308,8 +319,37 @@ def compile_application(project_id):
     except subprocess.TimeoutExpired as error:
         return jsonify({"ok": False, "output": f"Compilation timed out after 180 seconds.\n{error.stdout or ''}"}), 504
     output = (result.stdout or "") + (result.stderr or "")
-    return jsonify({"ok": result.returncode == 0, "returncode": result.returncode, "output": output})
+    return jsonify({"ok": result.returncode == 0, "returncode": result.returncode, "output": output+"\nCompilation finished successfully!"})
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8000, debug=True)
+    cli = sys.modules['flask.cli']
+    cli.show_server_banner = lambda *x: None
+
+    addr = "127.0.0.1"
+    port = 8000
+    print(
+        "\033[35m ________  ________  ________        ________  _________  ___  ___  ________  ___  ________     \n"
+        "|\\   __  \\|\\   __  \\|\\   __  \\      |\\   ____\\|\\___   ___\\\\  \\|\\  \\|\\   ___ \\|\\  \\|\\   __  \\    \n"
+        "\\ \\  \\|\\  \\ \\  \\|\\  \\ \\  \\|\\  \\     \\ \\  \\___|\\|___ \\  \\_\\ \\  \\\\\\  \\ \\  \\_|\\ \\ \\  \\ \\  \\|\\  \\   \n"
+        " \\ \\   __  \\ \\   ____\\ \\   ____\\     \\ \\_____  \\   \\ \\  \\ \\ \\  \\\\\\  \\ \\  \\ \\\\ \\ \\  \\ \\  \\\\\\  \\  \n"
+        "  \\ \\  \\ \\  \\ \\  \\___|\\ \\  \\___|      \\|____|\\  \\   \\ \\  \\ \\ \\  \\\\\\  \\ \\  \\_\\\\ \\ \\  \\ \\  \\\\\\  \\ \n"
+        "   \\ \\__\\ \\__\\ \\__\\    \\ \\__\\           ____\\_\\  \\   \\ \\__\\ \\ \\_______\\ \\_______\\ \\__\\ \\_______\\\n"
+        "    \\|__|\\|__|\\|__|     \\|__|          |\\_________\\   \\|__|  \\|_______|\\|_______|\\|__|\\|_______|\n"
+        "                                       \\|_________|                                             \n"
+        "                                                                                                \n"
+        "                                        d3m0n App Studio                    \033[0m"
+    )
+    print(f"studio running on http://{addr}:{port}")
+    print(
+        "\033[31m"
+        "\n==================================================\n"
+        "\033[1;31m"
+        "     USE FOR LOCAL DEVELOPEMENT PURPOSE ONLY!\n"
+        "   THIS TOOL MAY LEAD TO REMOTE CODE EXECUTION!\n"
+        "  WE RECOMMAND YOU TO NEVER EXPOSE THE APPS PORT"
+        "\033[0;31m"
+        "\n==================================================\n"
+        "\033[0m"
+    )
+    app.run(host=addr, port=port, debug=False)

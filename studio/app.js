@@ -793,12 +793,22 @@ function drawAppFilesystem()
     const tree = document.createElement("div");
     tree.className = "tree file-tree";
     const files = Object.keys(currentAppFS).filter(path => typeof currentAppFS[path] === 'string' || currentAppFS[path]?.type === 'image');
+    const folderPaths = Object.keys(currentAppFS).filter(path => currentAppFS[path]?.type === 'folder');
     const windowFiles = files.filter(path => /(^|\/)windows\/[^/]+\.hpp$/i.test(path));
     const folders = new Map();
     const addFolder = (path, depth = 0) => {
         if (!folders.has(path)) folders.set(path, {path, name: path.split('/').pop() || '', depth, children: []});
         return folders.get(path);
     };
+    folderPaths.forEach(folderPath => {
+        let parent = addFolder('');
+        folderPath.split('/').forEach((part, index, parts) => {
+            const currentPath = parts.slice(0, index + 1).join('/');
+            const folder = addFolder(currentPath, index + 1);
+            if (!parent.children.includes(folder)) parent.children.push(folder);
+            parent = folder;
+        });
+    });
     const treeFiles = files.filter(file => !windowFiles.includes(file));
     windowFiles.forEach(file => treeFiles.push({path: file, name: file.split('/').pop().replace(/\.hpp$/i, ''), window: true, children: [file]}));
     treeFiles.forEach(file => {
@@ -920,7 +930,7 @@ async function pasteProjectEntry(path, kind) {
     if (!currentProjectId) return;
     try {
         const source = clipboardPath || await navigator.clipboard.readText();
-        const isFolder = source && currentAppFS[source] === undefined && Object.keys(currentAppFS).some(file => file.startsWith(`${source}/`));
+        const isFolder = source && (currentAppFS[source]?.type === 'folder' || Object.keys(currentAppFS).some(file => file.startsWith(`${source}/`)));
         if (!source || (!currentAppFS[source] && !isFolder)) throw new Error('Copy a project file or folder first.');
         const base = kind === 'folder' ? path : path.split('/').slice(0, -1).join('/');
         const name = source.split('/').pop();

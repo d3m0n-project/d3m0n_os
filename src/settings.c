@@ -1,4 +1,3 @@
-#include "parsing.h"
 #include "memory.h"
 #include "get_next_line.h"
 #include "libft.h"
@@ -156,7 +155,7 @@ int	set_setting(const char *path, const char *key, const char *value)
 	char	*line;
 	int		fd;
 	int		found = 0;
-	char	**lines = NULL;
+	char	**lines = 0;
 	int		line_count = 0;
 	int		i;
 
