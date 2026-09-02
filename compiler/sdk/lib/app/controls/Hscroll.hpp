@@ -3,14 +3,14 @@
 
 #include "helpers.hpp"
 
-class HScroll : public Control
+class Hscroll : public Control
 {
 public:
 	bool		bar;
 	int			scroll;
 	int			content_width;
 
-	HScroll() : bar(true), scroll(0), content_width(0) {}
+	Hscroll() : bar(true), scroll(0), content_width(0) {}
 
 	void	draw(Display *display) override
 	{

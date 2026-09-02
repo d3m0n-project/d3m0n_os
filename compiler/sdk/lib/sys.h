@@ -52,8 +52,8 @@ extern "C" {
 		SYS_MKDIR,
 		SYS_RMDIR,
 		SYS_SBRK,
-		SYS_GETFBADDR,
-		SYS_FLUSHFB
+		SYS_SURFACE_CREATE,
+		SYS_SURFACE_UPDATE
 	}   e_syscall_indexes;
 
 	static inline void __attribute__((noreturn)) exit(int ret_code)
@@ -108,14 +108,14 @@ extern "C" {
 		return syscall(SYS_RMDIR, (uint32_t)path, 0, 0, 0);
 	}
 
-	static inline int	getfbaddr(uint8_t	**fb_addr, int *width, int *height, int *pitch)
+	static inline int	surface_create(uint32_t width, uint32_t height, uint8_t **surface, int *pitch)
 	{
-		return syscall(SYS_GETFBADDR, (uint32_t)fb_addr, (uint32_t)width, (uint32_t)height, (uint32_t)pitch);
+		return syscall(SYS_SURFACE_CREATE, width, height, (uint32_t)surface, (uint32_t)pitch);
 	}
 
-	static inline int	flushfb(void)
+	static inline int	surface_update(uint8_t *surface)
 	{
-		return syscall(SYS_FLUSHFB, 0, 0, 0, 0);
+		return syscall(SYS_SURFACE_UPDATE, (uint32_t)surface, 0, 0, 0);
 	}
 
 	static inline	int	sbrk(size_t increment)

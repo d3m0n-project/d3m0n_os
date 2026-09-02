@@ -17,15 +17,8 @@ extern "C" int	app_main(void)
 {
 	printf("MySimple app started\n");
 
-	try
-	{
-		MainWindow	window;
-		window.draw();
-	}
-	catch (AppException& e)
-	{
-		printf("\033[31mERROR\033[0m: %s\n", e.what());
-	}
+	MainWindow	window;
+	window.draw();
 
 	printf("Finished...\n");
 	return 0;

@@ -48,6 +48,7 @@ void Window::draw(void)
 			current->draw(display);
 		current = current->next;
 	}
+	display->present();
 }
 
 Control::Control(void)

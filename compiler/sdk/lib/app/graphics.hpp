@@ -31,10 +31,15 @@ public:
 	int		h = 0;
 	Display()
 	{
-		getfbaddr(&this->fb, &this->w, &this->h, &this->pitch);
 		if (load_font("/fonts/ILGH32XF.FNT", &this->main_font, 32))
 			throw AppException("Could not initialize main font!");
+		this->w = 320;
+		this->h = 480 - 20; // change according to topbar height
+		if (surface_create(this->w, this->h, &this->fb, &this->pitch))
+			throw AppException("Could not initialize display surface!");
 	}
+
+	void		present(void) { surface_update(this->fb); }
 
 	void		put_pixel(int x, int y, uint32_t color);
 	uint32_t	get_pixel(int x, int y);
