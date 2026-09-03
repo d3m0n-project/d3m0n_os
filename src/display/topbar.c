@@ -6,7 +6,9 @@
 #include "icons.h"
 #include "display.h"
 
-static void	draw_clock(t_conf *conf, int *current_pos, uint32_t theme_color)
+static t_font	topbar_font = {0};
+
+static void	draw_clock(t_conf *conf, uint32_t theme_color)
 {
 	size_t	time = (time_us() % (1000 * 60 * 24 * 1000)) / (1000*1000*60); // minute of the day
 	int		hours = time / 60;
@@ -27,17 +29,16 @@ static void	draw_clock(t_conf *conf, int *current_pos, uint32_t theme_color)
 	clock[3] = '0' + (minutes / 10);
 	clock[4] = '0' + minutes % 10;
 
-	int size = TOPBAR_HEIGHT - TOPBAR_PADDING * 2;
-	draw_text(*current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size / 2, size, clock, theme_color, 0); 
-	*current_pos += (size / 2) * ft_strlen(clock) + TOPBAR_PADDING * 2;
+	int text_y = TOPBAR_PADDING + (16 - TOPBAR_FONT_SIZE) / 2;
+	draw_text_at(16, text_y, TOPBAR_FONT_SIZE, clock, theme_color, &topbar_font);
 }
 
-static void	draw_battery(t_conf *conf, int *current_pos, uint32_t theme_color_fg)
+static void	draw_battery(t_conf *conf, uint32_t theme_color_fg)
 {
 	char		battery_percentage[5] = "100%";
 	int			charging = get_stat(STATIDX_battery_charging, 1);
 	int			battery_level = get_stat(STATIDX_battery_percentage, 1);
-	int			size = TOPBAR_HEIGHT - (2*TOPBAR_PADDING);
+	int			size = TOPBAR_HEIGHT - (2 * (TOPBAR_PADDING - 1));
 
 	char		*battery_levels[] = {conf->icon_battery_alert, conf->icon_battery_20, conf->icon_battery_30, conf->icon_battery_50, conf->icon_battery_60, conf->icon_battery_80, conf->icon_battery_90, conf->icon_battery_100};
 	char		*battery_levels_charging[] = {conf->icon_battery_alert, conf->icon_battery_charging_20, conf->icon_battery_charging_30, conf->icon_battery_charging_50, conf->icon_battery_charging_60, conf->icon_battery_charging_80, conf->icon_battery_charging_90, conf->icon_battery_charging_100};
@@ -79,14 +80,13 @@ static void	draw_battery(t_conf *conf, int *current_pos, uint32_t theme_color_fg
 	if (!battery_icon)
 		return;
 
-	draw_text(*current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size/2, size, battery_percentage, theme_color_fg, 0);
-	*current_pos += (size/2) * 4 + TOPBAR_PADDING + TOPBAR_PADDING;
+	int text_y = TOPBAR_PADDING + (32 - TOPBAR_FONT_SIZE) / 2;
+	draw_text_at(100, text_y, TOPBAR_FONT_SIZE, battery_percentage, theme_color_fg, &topbar_font);
 	
-	draw_bmp(*current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size, size, battery_icon, theme_color_fg);
-	*current_pos += TOPBAR_HEIGHT;
+	draw_bmp(130 + TOPBAR_PADDING, TOPBAR_PADDING, size, size, battery_icon, theme_color_fg);
 }
 
-void	draw_connections(t_conf *conf, int *current_pos, uint32_t theme_color_fg)
+void	draw_connections(t_conf *conf, uint32_t theme_color_fg)
 {
 	char		*wifi_states[] = {
 		conf->icon_wifi_off,
@@ -104,9 +104,17 @@ void	draw_connections(t_conf *conf, int *current_pos, uint32_t theme_color_fg)
 	BmpTexture	*wifi_icon = get_icon(wifi_states[wifi_level], conf);
 	if (!wifi_icon)
 		return;
+
+	BmpTexture	*network_icon = get_icon("device.signal_cellular_4_bar", conf);
+	if (!network_icon)
+	{
+		kfree(wifi_icon);
+		return;
+	}
 		
-	draw_bmp(*current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size, size, wifi_icon, theme_color_fg);
-	*current_pos += TOPBAR_HEIGHT;
+	draw_bmp(150, TOPBAR_PADDING, size, size, wifi_icon, theme_color_fg);
+
+	draw_bmp(170, TOPBAR_PADDING, size, size, network_icon, theme_color_fg);
 }
 
 void	draw_topbar(void)
@@ -114,34 +122,42 @@ void	draw_topbar(void)
 	t_conf		*conf = get_config();
 	uint32_t	theme_color_fg = (conf->theme)?LIGHT_THEME_FG:DARK_THEME_FG;
 	uint32_t	theme_color_bg = (conf->theme)?LIGHT_THEME_BG:DARK_THEME_BG;
+	if (!topbar_font.data)
+	{
+		if (load_font("/fonts/Inter.ttf", &topbar_font))
+		{
+			log("TOPBAR: Could not load topbar font!\n", LOG_ERROR);
+			return;
+		}
+	}
 
 	if (1)//window->top_bar)
 	{
-		int current_pos = 0;
 		draw_rect(0, 0, SCREEN_WIDTH, TOPBAR_HEIGHT, theme_color_bg);
 
+		draw_clock(conf, theme_color_fg);
 
 		// draw battery and connection status
-		draw_battery(conf, &current_pos, theme_color_fg);
+		draw_battery(conf, theme_color_fg);
 
-		draw_connections(conf, &current_pos, theme_color_fg);
+		draw_connections(conf, theme_color_fg);
 
-		draw_clock(conf, &current_pos, theme_color_fg);
 		
-		if (current_process)
-		{
-			int size = TOPBAR_HEIGHT - TOPBAR_PADDING * 2;
-			draw_text(current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size / 2, size, current_process->proc_name, DISPLAY_COLORS[MAGENTA], 0);
-			current_pos += (size / 2) * ft_strlen(current_process->proc_name) + TOPBAR_PADDING;
-		}
+		
+		//if (current_process)
+		//{
+		//	int size = TOPBAR_HEIGHT - TOPBAR_PADDING * 2;
+		//	draw_text(current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size / 2, size, current_process->proc_name, DISPLAY_COLORS[MAGENTA], &topbar_font);
+		//	current_pos += (size / 2) * ft_strlen(current_process->proc_name) + TOPBAR_PADDING;
+		//}
 	}
 	//if (!window->is_launcher)
 	//{
-	int cross_s = TOPBAR_HEIGHT - (2 * TOPBAR_PADDING);
-	int cross_x = SCREEN_WIDTH - (cross_s + TOPBAR_PADDING);
-	int cross_y = TOPBAR_PADDING;
+	//int cross_s = TOPBAR_HEIGHT - (2 * TOPBAR_PADDING);
+	//int cross_x = SCREEN_WIDTH - (cross_s + TOPBAR_PADDING);
+	//int cross_y = TOPBAR_PADDING;
 	
-	draw_text(cross_x, cross_y, cross_s, cross_s, "X", DISPLAY_COLORS[RED], 0); // draw exit icon
+	//draw_text(cross_x, cross_y, cross_s, cross_s, "X", DISPLAY_COLORS[RED], &topbar_font); // draw exit icon
 	// add close event if not added yet
 	//if (window->events[0].type == EVENT_UNDEFINED)
 	//{

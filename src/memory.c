@@ -62,6 +62,9 @@ void	*kmalloc(uint32_t size)
 
 int kfree(void *ptr)
 {
+	block_t	*block;
+	block_t	*current;
+
 	if (!ptr)
 		return 1;
 
@@ -71,13 +74,26 @@ int kfree(void *ptr)
 		return 1;
 	}
 
-	block_t *block = (block_t *)((uint8_t *)ptr - sizeof(block_t));
+	block = (block_t *)((uint8_t *)ptr - sizeof(block_t));
 	if (block->free)
 	{
 		log("DOUBLE FREE 0x%p\n", LOG_WARNING, ptr);
 		return 1;
 	}
 	block->free = 1;
+	if (block->next && block->next->free)
+	{
+		block->size += sizeof(block_t) + block->next->size;
+		block->next = block->next->next;
+	}
+	current = heap;
+	while (current && current->next != block)
+		current = current->next;
+	if (current && current->free)
+	{
+		current->size += sizeof(block_t) + block->size;
+		current->next = block->next;
+	}
 	return 0;
 }
 

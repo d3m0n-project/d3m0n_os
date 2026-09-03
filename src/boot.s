@@ -162,17 +162,32 @@ irq_handler:
     mrs r0, spsr
     stmfd sp!, {r0}
 
-    ldr r1, =current_process
-    ldr r1, [r1]
+	    ldr r1, =current_process
+	    ldr r1, [r1]
+	    cmp r1, #0
+	    beq bad_irq_context
 
 
-    mov r3, sp
-    ldr r2, [r1,#0]
-    mov r4, r2
-    mov r5, #15
-1:
-    ldr r6, [r3], #4
-    str r6, [r4], #4
+	    mov r3, sp
+	    ldr r2, [r1,#0]
+	    cmp r2, #0
+	    beq bad_irq_context
+	    ldr r7, [r1,#88]           @ kernel_stack
+	    cmp r7, #0
+	    beq bad_irq_context
+	    cmp r2, r7
+	    blo bad_irq_context
+	    ldr r6, =(16 * 4096 - 60)
+	    add r7, r7, r6
+	    cmp r2, r7
+	    bhi bad_irq_context
+	    tst r2, #3
+	    bne bad_irq_context
+	    mov r4, r2
+	    mov r5, #15
+	1:
+	    ldr r6, [r3], #4
+	    str r6, [r4], #4
     subs r5, r5, #1
     bne 1b
     add sp, sp, #60
@@ -202,9 +217,13 @@ irq_handler:
     bl process_context_valid
     cmp r0, #0
     bne 2f
-    ldr r0, =bad_process_context
-    bl panic
-    b .
+	    ldr r0, =bad_process_context
+	    bl panic
+	    b .
+bad_irq_context:
+	    ldr r0, =bad_process_context
+	    bl panic
+	    b .
 
 2:
     ldr r1, =current_process

@@ -4,12 +4,14 @@
 #include "types.h"
 #include "bmp.h"
 #include "color.h"
+#include "ttf.h"
 
 #define SCREEN_WIDTH		320
 #define SCREEN_HEIGHT		480
 
-#define TOPBAR_HEIGHT		20
-#define TOPBAR_PADDING		2
+#define TOPBAR_HEIGHT		32
+#define TOPBAR_PADDING		7
+#define TOPBAR_FONT_SIZE	14
 
 #define OUTLINE_COLOR		0xFFFF00FF
 
@@ -28,13 +30,6 @@
 
 #define CURSOR_SIZE			4
 
-typedef struct s_font
-{
-	int		dot_count;
-	char	name[25];
-	uint8_t	*data;
-}	t_font;
-
 extern uint32_t			DISPLAY_COLORS[17];
 
 int					display_init();
@@ -47,7 +42,8 @@ void				draw_bmp(int x, int y, int w, int h, BmpTexture *texture, uint32_t overr
 uintptr_t			get_fb_addr(int *pitch);
 
 void				draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);
-int					load_font(const char *path, t_font	*out, int dot_count);
+void				draw_text_at(int x, int y, int font_size, const char *text, uint32_t color, t_font *font);
+int					load_font(const char *path, t_font	*out);
 void				free_font(t_font *font);
 
 #endif

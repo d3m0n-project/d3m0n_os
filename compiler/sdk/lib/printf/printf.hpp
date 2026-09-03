@@ -1,5 +1,5 @@
-#ifndef PRINTF_H
-#define PRINTF_H
+#ifndef PRINTF_HPP
+#define PRINTF_HPP
 
 #include "types.h"
 #include "sys.h"

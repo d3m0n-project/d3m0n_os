@@ -57,7 +57,7 @@ void	app_and_icon_loader_thread(void)
 	if (icon_pack_path)
 		kfree(icon_pack_path);	
 	
-	process_exit_current(success != 0);
+	process_exit_current(success == 0);
 }
 
 void	init_proc(void)

@@ -317,6 +317,9 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 		ft_memcpy(framebuffer + (row + TOPBAR_HEIGHT) * pitch,
 			surface + row * proc->surface_width * sizeof(uint32_t),
 			proc->surface_width * sizeof(uint32_t));
+	#if DEBUG_OUTLINE == 1
+	draw_rect_outline(0, TOPBAR_HEIGHT, proc->surface_width, proc->surface_height, OUTLINE_COLOR);
+	#endif
 	return 0;
 }
 

@@ -34,5 +34,11 @@ extern "C" void	_start(void)
 	catch (AppException& e)
 	{
 		printf("\033[31mERROR\033[0m: %s\n", e.what());
+		exit(1);
+	}
+	catch (...)
+	{
+		printf("\033[31mERROR\033[0m: Unhandled exception\n");
+		exit(1);
 	}
 }

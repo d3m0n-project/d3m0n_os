@@ -107,8 +107,8 @@ void		process_list(void)
 	while (curr)
 	{
 		log("  %s [%-7lu] %-15s [state:0x%x, irq sp:0x%x, priority=%lu]\n", 0, curr->mode?"U":"K", curr->pid, curr->proc_name, curr->state, curr->irq_sp, curr->priority);
-		process_dump_regs(curr);
-		log("\n", 0);
+		//process_dump_regs(curr);
+		//log("\n", 0);
 		
 		curr = curr->next;
 	}
@@ -167,7 +167,7 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 
 void process_exit_current(uint32_t status_code)
 {
-	log("Exited with status code: %lu\n", LOG_WARNING, status_code);
+	log("Exited %s with status code: %lu\n", LOG_WARNING, current_process->proc_name, status_code);
 
 	uint32_t cpsr = disable_interrupts();
 	t_process *exiting = current_process;

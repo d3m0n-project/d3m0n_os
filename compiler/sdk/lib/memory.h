@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define USER_HEAP_RESERVED		0x100000
+#define USER_HEAP_RESERVED		0x200000
 
 #ifdef __cplusplus
 extern "C" {

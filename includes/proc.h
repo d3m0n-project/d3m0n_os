@@ -11,7 +11,7 @@
 
 #define kernel_user_stack_offset	OFFSETOF(t_process, user_stack)
 
-#define USER_HEAP_RESERVED			0x100000
+#define USER_HEAP_RESERVED			0x200000
 #define USER_HEAP_MAX(proc)			((proc)->heap_start + USER_HEAP_RESERVED)
 #define KERNEL_STACK_PAGES			16
 #define USER_STACK_PAGES			16

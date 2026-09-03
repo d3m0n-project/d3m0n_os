@@ -1,5 +1,10 @@
 ## Creating a d3m0n application
 
+
+> ⚠️ App system has been totally reworked and the following documentation will be released soon
+
+
+<!--
 > ⚠️ A no code application builder is available [here](https://d3m0n-project.github.io/studio/)
 
 First create a folder in the app directory that follows [this package convention](./package_convention.md), then add a main file inside named `app` and type these lines
@@ -87,4 +92,4 @@ Your system design can be changed to be fancier.
 Your d3m0n os apparence can be modified by using a theme.
 These ones are located in 
 
-> /themes/
+> /themes/-->

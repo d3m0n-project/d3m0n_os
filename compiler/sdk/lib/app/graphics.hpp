@@ -31,10 +31,10 @@ public:
 	int		h = 0;
 	Display()
 	{
-		if (load_font("/fonts/ILGH32XF.FNT", &this->main_font, 32))
+		if (load_font("/fonts/Inter.ttf", &this->main_font))
 			throw AppException("Could not initialize main font!");
 		this->w = 320;
-		this->h = 480 - 20; // change according to topbar height
+		this->h = 480 - 32; // change according to topbar height
 		if (surface_create(this->w, this->h, &this->fb, &this->pitch))
 			throw AppException("Could not initialize display surface!");
 	}
@@ -47,6 +47,7 @@ public:
 	void		draw_rect(int x, int y, int w, int h, uint32_t color);
 	void		draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int filled);
 	void		draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);
+	void		draw_text_at(int x, int y, int font_size, const char *text, uint32_t color, t_font *font = 0);
 	void		draw_svg(int x, int y, int w, int h, const char *path, uint32_t override_color = 0);
 };
 

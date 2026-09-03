@@ -173,7 +173,6 @@ void	draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int filled)
 
 	// region 1
 	d1 = ry2 - (rx2 * ry) + (rx2 / 4);
-
 	while (dx < dy)
 	{
 		if (filled)
@@ -208,7 +207,6 @@ void	draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int filled)
 
 	// region 2
 	d2 = ry2 * (x * x + x) + rx2 * (y - 1) * (y - 1) - rx2 * ry2;
-
 	while (y >= 0)
 	{
 		if (filled)
@@ -365,24 +363,14 @@ int framebuffer_init(uint32_t width, uint32_t height, uint32_t bpp)
 }
 #endif
 
+static void	font_pixel(void *context, int x, int y, uint8_t coverage)
+{
+	(void)coverage;
+	put_pixel(x, y, (uint32_t)(uintptr_t)context);
+}
+
 void	draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font)
 {
-	uint32_t	i;
-	int		bytes_per_line;
-	int		src_w;
-	int		src_h;
-	int		dst_w;
-	int		dst_h;
-	int		cursor_x;
-	int		cursor_y;
-	int		dx;
-	int		dy;
-	int		src_x;
-	int		src_y;
-	int		row_offset;
-	uint16_t	data;
-	char		c;
-
 	if (!text)
 		return;
 	if (!font)
@@ -390,55 +378,68 @@ void	draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_f
 		log("DRAW TEXT: No font provided, could not write\n", LOG_ERROR);
 		return;
 	}
-	if (!font || !font->data || font->dot_count <= 0)
+	if (!font->data || !font->units_per_em || h <= 0)
 		return;
-
-	bytes_per_line = (int)(font->dot_count / 16);
-	if (bytes_per_line <= 0)
-		return;
-
-	src_w = 8 * bytes_per_line;
-	src_h = font->dot_count;
-	dst_w = (w > 0) ? w : src_w;
-	dst_h = (h > 0) ? h : src_h;
-	if (dst_w <= 0 || dst_h <= 0)
-		return;
-
-	cursor_x = x;
-	cursor_y = y;
-	i = 0;
-	while (text[i])
+	int cursor_x = x;
+	int cursor_y = y;
+	int line_height = h;
+	int baseline = y + ((int)font->ascender * h) /
+		(font->ascender - font->descender);
+	(void)w;
+	for (uint32_t i = 0; text[i]; i++)
 	{
-		c = text[i];
-		if (c == '\n')
+		if (text[i] == '\n')
 		{
 			cursor_x = x;
-			cursor_y += dst_h;
-			i++;
+			cursor_y += line_height;
+			baseline = cursor_y + ((int)font->ascender * h) /
+				(font->ascender - font->descender);
 			continue;
 		}
-
-		for (dy = 0; dy < dst_h; dy++)
-		{
-			src_y = (dy * src_h) / dst_h;
-			row_offset = 17 + ((int)(uint8_t)c * src_h + src_y) * bytes_per_line;
-			data = font->data[row_offset];
-			if (bytes_per_line == 2)
-			{
-				data <<= 8;
-				data |= font->data[row_offset + 1];
-			}
-
-			for (dx = 0; dx < dst_w; dx++)
-			{
-				src_x = (dx * src_w) / dst_w;
-				if (data & (1U << ((8 * bytes_per_line - 1) - src_x)))
-					put_pixel(cursor_x + dx, cursor_y + dy, color);
-			}
-		}
-		cursor_x += dst_w;
-		i++;
+		uint16_t glyph = ttf_glyph_for_codepoint(font, (uint8_t)text[i]);
+		ttf_render_glyph(font, glyph, cursor_x, baseline, h, h, font_pixel,
+			(void *)(uintptr_t)color);
+		cursor_x += (ttf_glyph_advance(font, glyph) * h) /
+			font->units_per_em;
 	}
+}
+
+static int	text_width_for_size(const char *text, int font_size, t_font *font)
+{
+	int			line_width;
+	int			max_width;
+	uint16_t	glyph;
+
+	if (!text || !font || !font->data || !font->units_per_em || font_size <= 0)
+		return 0;
+	line_width = 0;
+	max_width = 0;
+	for (uint32_t i = 0; text[i]; i++)
+	{
+		if (text[i] == '\n')
+		{
+			if (line_width > max_width)
+				max_width = line_width;
+			line_width = 0;
+			continue;
+		}
+		glyph = ttf_glyph_for_codepoint(font, (uint8_t)text[i]);
+		line_width += (ttf_glyph_advance(font, glyph) * font_size)
+			/ font->units_per_em;
+	}
+	if (line_width > max_width)
+		max_width = line_width;
+	return max_width;
+}
+
+void	draw_text_at(int x, int y, int font_size, const char *text, uint32_t color, t_font *font)
+{
+	int	width;
+
+	width = text_width_for_size(text, font_size, font);
+	if (width <= 0)
+		return;
+	draw_text(x, y, width, font_size, text, color, font);
 }
 
 int display_init()
