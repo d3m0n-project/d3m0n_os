@@ -80,10 +80,9 @@ static void	draw_battery(t_conf *conf, uint32_t theme_color_fg)
 	if (!battery_icon)
 		return;
 
-	int text_y = TOPBAR_PADDING + (32 - TOPBAR_FONT_SIZE) / 2;
-	draw_text_at(100, text_y, TOPBAR_FONT_SIZE, battery_percentage, theme_color_fg, &topbar_font);
-	
-	draw_bmp(130 + TOPBAR_PADDING, TOPBAR_PADDING, size, size, battery_icon, theme_color_fg);
+	int text_y = TOPBAR_PADDING + (16 - TOPBAR_FONT_SIZE) / 2;
+	draw_text_at(181 + 52, text_y, TOPBAR_FONT_SIZE, battery_percentage, theme_color_fg, &topbar_font);
+	draw_bmp(181 + 95, TOPBAR_PADDING - 1, size, size, battery_icon, theme_color_fg);
 }
 
 void	draw_connections(t_conf *conf, uint32_t theme_color_fg)
@@ -111,10 +110,9 @@ void	draw_connections(t_conf *conf, uint32_t theme_color_fg)
 		kfree(wifi_icon);
 		return;
 	}
-		
-	draw_bmp(150, TOPBAR_PADDING, size, size, wifi_icon, theme_color_fg);
-
-	draw_bmp(170, TOPBAR_PADDING, size, size, network_icon, theme_color_fg);
+	
+	draw_bmp(181, TOPBAR_PADDING - 1, size, size, network_icon, theme_color_fg);
+	draw_bmp(181 + 26, TOPBAR_PADDING - 1, size, size, wifi_icon, theme_color_fg);
 }
 
 void	draw_topbar(void)
