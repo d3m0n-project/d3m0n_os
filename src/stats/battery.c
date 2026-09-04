@@ -1,5 +1,5 @@
 #include "stats.h"
-#include "gpio.h"
+#include "peripheral/gpio.h"
 
 #define PIN_CHARGING	22
 

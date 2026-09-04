@@ -1,4 +1,4 @@
-#include "proc.h"
+#include "proc/proc.h"
 
 typedef struct s_irq_frame
 {

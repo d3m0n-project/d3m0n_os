@@ -1,10 +1,10 @@
-#include "proc.h"
+#include "proc/proc.h"
 #include "time.h"
 //#include "crypto.h"
 //#include "d3m0n.h"
 //#include "bmp.h"
 //#include "display.h"
-#include "icons.h"
+#include "image/icons.h"
 #include "settings.h"
 //#include "usb.h"
 

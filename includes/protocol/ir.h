@@ -2,7 +2,7 @@
 #define IR_H
 
 #include "types.h"
-#include "gpio.h"
+#include "peripheral/gpio.h"
 #include "time.h"
 #include "frequency_generator.h"
 

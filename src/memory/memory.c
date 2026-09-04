@@ -1,6 +1,6 @@
 #include "types.h"
 #include "log.h"
-#include "memory.h"
+#include "memory/memory.h"
 
 typedef struct block
 {

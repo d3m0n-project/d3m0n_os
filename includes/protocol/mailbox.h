@@ -1,16 +1,16 @@
 #ifndef MAILBOX_H
 #define MAILBOX_H
 
-#include "peripheral.h"
+#include "peripheral/peripheral.h"
 #include "types.h"
 
-#define MAILBOX_BASE	(PERIPHERAL_BASE + 0xB880)
-#define MAILBOX_READ	0x0
-#define MAILBOX_STATUS	0x18
-#define MAILBOX_WRITE	0x20
+#define MAILBOX_BASE					(PERIPHERAL_BASE + 0xB880)
+#define MAILBOX_READ					0x0
+#define MAILBOX_STATUS					0x18
+#define MAILBOX_WRITE					0x20
 
-#define MAILBOX_FULL  0x80000000
-#define MAILBOX_EMPTY 0x40000000
+#define MAILBOX_FULL					0x80000000
+#define MAILBOX_EMPTY					0x40000000
 
 #define MAILBOX_REQUEST					0x00000000
 #define MAILBOX_RESPONSE_SUCCESS		0x80000000

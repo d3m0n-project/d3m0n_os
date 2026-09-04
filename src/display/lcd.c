@@ -1,11 +1,11 @@
-#include "lcd.h"
-#include "gpio.h"
+#include "display/lcd.h"
+#include "peripheral/gpio.h"
 #ifndef GPIO_OUT
 #define GPIO_OUT 1
 #endif
 
-#include "spi.h"
-#include "display.h"
+#include "protocol/spi.h"
+#include "display/display.h"
 #include "time.h"
 
 static uint8_t		setxcmd = 0x2A;

@@ -1,4 +1,4 @@
-#include "ir.h"
+#include "protocol/ir.h"
 
 void	ir_transmit(uint8_t address, uint8_t command, e_ir_protocol protocol)
 {

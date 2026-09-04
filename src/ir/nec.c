@@ -1,4 +1,4 @@
-#include "ir.h"
+#include "protocol/ir.h"
 #include "log.h"
 
 #define BURST_LENGTH	562

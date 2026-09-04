@@ -1,5 +1,5 @@
-#include "gpu.h"
-#include "mailbox.h"
+#include "display/gpu.h"
+#include "protocol/mailbox.h"
 
 #define TAG_ALLOCATE_MEMORY			0x0003000C
 #define TAG_LOCK_MEMORY				0x0003000D
@@ -10,10 +10,10 @@
 #define MEM_FLAG_COHERENT			0x00000008
 #define MEM_FLAG_L1_NONALLOCATING	0x00000004
 
-static uint32_t gpu_handle;
-static uint32_t gpu_bus_addr;
+static uint32_t		gpu_handle;
+//static uint32_t	gpu_bus_addr;
 
-int gpu_alloc(uint32_t size, uint32_t align)
+int	gpu_alloc(uint32_t size, uint32_t align)
 {
 	volatile uint32_t msg[32] __attribute__((aligned(16)));
 	int i = 0;

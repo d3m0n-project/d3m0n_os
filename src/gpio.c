@@ -1,6 +1,6 @@
-#include "gpio.h"
+#include "peripheral/gpio.h"
 #include "types.h"
-#include "peripheral.h"
+#include "peripheral/peripheral.h"
 
 #define GPFSEL0 ((volatile uint32_t*)(GPIO_BASE + 0x00))
 #define GPFSEL1 ((volatile uint32_t*)(GPIO_BASE + 0x04))

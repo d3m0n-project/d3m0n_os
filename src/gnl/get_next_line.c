@@ -1,5 +1,5 @@
-#include "get_next_line.h"
-#include "filesystem.h"
+#include "filesystem/get_next_line.h"
+#include "filesystem/filesystem.h"
 
 static char		buffer[FS_MAX_FDS][BUFFER_SIZE] __attribute__((aligned(4)));
 

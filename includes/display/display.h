@@ -2,9 +2,9 @@
 #define DISPLAY_H
 
 #include "types.h"
-#include "bmp.h"
-#include "color.h"
-#include "ttf.h"
+#include "image/bmp.h"
+#include "display/color.h"
+#include "display/ttf.h"
 
 #define SCREEN_WIDTH		320
 #define SCREEN_HEIGHT		480

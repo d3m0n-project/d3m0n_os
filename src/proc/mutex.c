@@ -1,5 +1,5 @@
 #include "mutex.h"
-#include "interrupts.h"
+#include "proc/interrupts.h"
 
 void	mutex_init(t_mutex *mutex)
 {

@@ -2,8 +2,8 @@
 #define LOG_H
 
 #include "types.h"
-#include "uart.h"
-#include "color.h"
+#include "protocol/uart.h"
+#include "display/color.h"
 
 typedef enum
 {

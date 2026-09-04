@@ -1,4 +1,4 @@
-#include "watchdog.h"
+#include "proc/watchdog.h"
 
 #define PM_BASE     0x20100000
 #define PM_WDOG     (*(volatile uint32_t*)(PM_BASE + 0x24))

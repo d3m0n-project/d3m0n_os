@@ -1,7 +1,7 @@
-#include "peripheral.h"
+#include "peripheral/peripheral.h"
 #include "time.h"
-#include "usb.h"
-#include "display.h"
+#include "peripheral/usb.h"
+#include "display/display.h"
 
 #define USB_BASE			(PERIPHERAL_BASE + 0x00980000)
 

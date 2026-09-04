@@ -1,4 +1,4 @@
-#include "ir.h"
+#include "protocol/ir.h"
 
 #define HALF_BIT		889
 #define CARRIER_FREQ	36000

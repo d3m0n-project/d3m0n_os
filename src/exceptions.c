@@ -1,5 +1,5 @@
 #include "log.h"
-#include "proc.h"
+#include "proc/proc.h"
 #include "libft.h"
 
 typedef struct

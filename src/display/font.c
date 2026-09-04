@@ -1,6 +1,6 @@
-#include "display.h"
-#include "filesystem.h"
-#include "memory.h"
+#include "display/display.h"
+#include "filesystem/filesystem.h"
+#include "memory/memory.h"
 #include "libft.h"
 
 int	load_font(const char *path, t_font	*out)

@@ -3,11 +3,11 @@
 
 #include "types.h"
 #include "log.h"
-#include "memory.h"
+#include "memory/memory.h"
 #include "libft.h"
-#include "elf.h"
+#include "proc/elf.h"
 #include "d3m0n.h"
-#include "interrupts.h"
+#include "proc/interrupts.h"
 
 #define kernel_user_stack_offset	OFFSETOF(t_process, user_stack)
 

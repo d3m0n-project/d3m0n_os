@@ -1,7 +1,7 @@
-#include "proc.h"
-#include "interrupts.h"
+#include "proc/proc.h"
+#include "proc/interrupts.h"
 #include "d3m0n.h"
-#include "watchdog.h"
+#include "proc/watchdog.h"
 
 t_process				*scheduled_processes = 0;
 t_process				*scheduled_processes_tail = 0;

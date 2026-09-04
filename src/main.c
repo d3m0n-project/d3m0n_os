@@ -1,14 +1,15 @@
 #include "d3m0n.h"
 #include "log.h"
-#include "dtb.h"
-#include "display.h"
-#include "filesystem.h"
-#include "memory.h"
-#include "interrupts.h"
+#include "peripheral/dtb.h"
+#include "display/display.h"
+#include "filesystem/filesystem.h"
+#include "memory/memory.h"
+#include "proc/interrupts.h"
 
 #include "time.h"
-#include "peripheral.h"
-#include "proc.h"
+#include "peripheral/peripheral.h"
+#include "proc/proc.h"
+#include "memory/mmu.h"
 
 
 
@@ -40,6 +41,10 @@ void	kernel_main(void *dtb)
 
 	// load DTB
 	dtb_init(dtb);
+
+	// init MMU
+	mmu_setup();
+	log("MMU initialized!\n", LOG_SUCCESS);
 
 	// init heap memory
 	if (heap_init() != 0)		panic("Heap memory init failed\n");

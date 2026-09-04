@@ -1,8 +1,8 @@
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
 
-# include "filesystem.h"
-# include "memory.h"
+# include "filesystem/filesystem.h"
+# include "memory/memory.h"
 # include "libft.h"
 
 #define TMP_BUFFER_SIZE	4096

@@ -1,6 +1,6 @@
-#include "spi.h"
-#include "peripheral.h"
-#include "gpio.h"
+#include "protocol/spi.h"
+#include "peripheral/peripheral.h"
+#include "peripheral/gpio.h"
 
 #define SPI0_BASE		(PERIPHERAL_BASE + 0x204000)
 

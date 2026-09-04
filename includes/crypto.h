@@ -2,7 +2,7 @@
 #define CRYPTO_H
 
 #include "types.h"
-#include "memory.h"
+#include "memory/memory.h"
 #include "libft.h"
 
 // rsa

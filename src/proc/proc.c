@@ -1,4 +1,4 @@
-#include "proc.h"
+#include "proc/proc.h"
 
 uint32_t					current_pid = 0;
 

@@ -1,12 +1,12 @@
 #include "types.h"
 #include "log.h"
-#include "uart.h"
-#include "usermode.h"
-#include "proc.h"
-#include "filesystem.h"
+#include "protocol/uart.h"
+#include "proc/usermode.h"
+#include "proc/proc.h"
+#include "filesystem/filesystem.h"
 #include "d3m0n.h"
-#include "display.h"
-#include "proc.h"
+#include "display/display.h"
+#include "proc/proc.h"
 
 #define SYS_PRINT_MAX_LEN	512
 #define SYSCALL_EXIT_INDEX	0

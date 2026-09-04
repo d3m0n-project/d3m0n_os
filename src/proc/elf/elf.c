@@ -1,8 +1,8 @@
-#include "elf.h"
+#include "proc/elf.h"
 #include "time.h"
-#include "proc.h"
+#include "proc/proc.h"
 #include "app_info.h"
-#include "uart.h"
+#include "protocol/uart.h"
 
 static const char *get_file_type(char file_type[2])
 {

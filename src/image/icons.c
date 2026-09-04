@@ -1,5 +1,5 @@
-#include "icons.h"
-#include "get_next_line.h"
+#include "image/icons.h"
+#include "filesystem/get_next_line.h"
 #include "settings.h"
 #include "libft.h"
 

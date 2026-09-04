@@ -16,7 +16,7 @@
 # include "libft.h"
 # include "types.h"
 # include "math.h"
-#include "uart.h"
+# include "protocol/uart.h"
 
 # define FLAG_MINUS 0
 # define FLAG_ZERO 1

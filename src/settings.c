@@ -1,5 +1,5 @@
-#include "memory.h"
-#include "get_next_line.h"
+#include "memory/memory.h"
+#include "filesystem/get_next_line.h"
 #include "libft.h"
 #include "settings.h"
 

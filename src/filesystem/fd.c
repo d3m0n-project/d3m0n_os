@@ -1,6 +1,6 @@
-#include "filesystem.h"
-#include "fat32.h"
-#include "get_next_line.h"
+#include "filesystem/filesystem.h"
+#include "filesystem/fat32.h"
+#include "filesystem/get_next_line.h"
 #include "random.h"
 
 typedef struct fs_fd

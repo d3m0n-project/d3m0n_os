@@ -1,4 +1,4 @@
-#include "ico.h"
+#include "image/ico.h"
 
 typedef struct
 {

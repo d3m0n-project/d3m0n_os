@@ -1,4 +1,4 @@
-#include "mailbox.h"
+#include "protocol/mailbox.h"
 
 framebuffer_req_t	fb_req = {0};
 volatile uint32_t *mailbox = (volatile uint32_t *)MAILBOX_BASE;

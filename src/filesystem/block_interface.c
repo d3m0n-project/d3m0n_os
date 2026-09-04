@@ -1,5 +1,5 @@
-#include "filesystem.h"
-#include "peripheral.h"
+#include "filesystem/filesystem.h"
+#include "peripheral/peripheral.h"
 #include "time.h"
 
 #define EMMC_BASE		(PERIPHERAL_BASE + 0x300000)

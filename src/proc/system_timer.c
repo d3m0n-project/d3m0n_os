@@ -1,4 +1,4 @@
-#include "interrupts.h"
+#include "proc/interrupts.h"
 
 
 void timer_init(void)

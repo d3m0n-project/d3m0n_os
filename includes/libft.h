@@ -13,7 +13,7 @@
 #ifndef LIBFT_H
 # define LIBFT_H
 
-# include "memory.h"
+# include "memory/memory.h"
 # include "types.h"
 
 

@@ -1,10 +1,10 @@
-#include "uart.h"
+#include "protocol/uart.h"
 #include "types.h"
 #include "math.h"
 #include "d3m0n.h"
 #include "time.h"
-#include "proc.h"
-#include "filesystem.h"
+#include "proc/proc.h"
+#include "filesystem/filesystem.h"
 #include "random.h"
 
 #define UART0_BASE			0x20201000

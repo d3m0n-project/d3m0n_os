@@ -1,11 +1,11 @@
-#include "display.h"
+#include "display/display.h"
 #include "log.h"
 
 #if DEBUG == 1
-#include "mailbox.h"
+#include "protocol/mailbox.h"
 static volatile uint32_t	g_framebuffer_mbox[35]  __attribute__((aligned(16)));
 #else
-#include "lcd.h"
+#include "display/lcd.h"
 #endif
 
 //static t_font				main_font;

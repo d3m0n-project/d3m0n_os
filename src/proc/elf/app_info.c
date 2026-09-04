@@ -1,8 +1,8 @@
 #include "app_info.h"
 #include "../../../compiler/sdk/lib/app/app_manifest.h"
-#include "display.h"
-#include "ico.h"
-#include "proc.h"
+#include "display/display.h"
+#include "image/ico.h"
+#include "proc/proc.h"
 
 static char	*get_relative_ptr(const char *address, char *buffer, uint32_t rodata_addr, uint32_t rodata_offset)
 {

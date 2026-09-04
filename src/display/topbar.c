@@ -1,10 +1,10 @@
 #include "log.h"
 #include "time.h"
-#include "proc.h"
+#include "proc/proc.h"
 #include "libft.h"
 #include "stats.h"
-#include "icons.h"
-#include "display.h"
+#include "image/icons.h"
+#include "display/display.h"
 
 static t_font	topbar_font = {0};
 

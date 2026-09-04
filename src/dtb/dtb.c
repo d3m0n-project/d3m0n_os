@@ -1,5 +1,5 @@
-#include "dtb.h"
-#include "uart.h"
+#include "peripheral/dtb.h"
+#include "protocol/uart.h"
 
 static uint8_t *dtb_base;
 static uint32_t *struct_block;

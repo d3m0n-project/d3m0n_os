@@ -1,6 +1,6 @@
-#include "filesystem.h"
-#include "memory.h"
-#include "fat32.h"
+#include "filesystem/filesystem.h"
+#include "memory/memory.h"
+#include "filesystem/fat32.h"
 #include "libft.h"
 
 typedef struct s_file_list

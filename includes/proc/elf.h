@@ -2,12 +2,12 @@
 #define ELF_H
 
 #include "log.h"
-#include "memory.h"
+#include "memory/memory.h"
 #include "types.h"
-#include "filesystem.h"
-#include "proc.h"
+#include "filesystem/filesystem.h"
+#include "proc/proc.h"
 
-#define ELF_SIG "\x7F""ELF"
+#define ELF_SIG	"\x7F""ELF"
 
 #pragma pack(push, 1)
 typedef struct elf_header_identification
