@@ -48,7 +48,6 @@ void	kernel_main(void *dtb)
 	mmu_setup();
 	log("MMU initialized!\n", LOG_SUCCESS);
 
-
 	// init heap memory
 	if (heap_init() != 0)		panic("Heap memory init failed\n");
 	else						log("Heap memory initialized!\n", LOG_SUCCESS);

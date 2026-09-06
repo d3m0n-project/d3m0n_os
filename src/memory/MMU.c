@@ -1,6 +1,7 @@
 #include "types.h"
 #include "memory/mmu.h"
 #include  "memory/memory.h"
+#include "proc/elf.h"
 
 #define L1_ENTRIES				4096
 #define L1_ALIGNMENT			0x4000
@@ -31,12 +32,16 @@
 
 #define XN						(1u << 4)
 
+#define MMU_PAGE_SIZE		0x1000u
+#define L1_INDEX(address)	((address) >> 20)
+#define L2_INDEX(address)	(((address) >> 12) & 0xFFu)
+
 
 
 static uint32_t	mmu_table[L1_ENTRIES] __attribute__((aligned(L1_ALIGNMENT), section(".mmu_table")));
 
 
-static inline void	mmu_write_ttbr0(uint32_t value)
+void	mmu_write_ttbr0(uint32_t value)
 {
 	asm volatile(
 		"mcr p15, 0, %0, c2, c0, 0"
@@ -82,7 +87,7 @@ static inline void	mmu_write_sctlr(uint32_t value)
 }
 
 
-static inline void	mmu_invalidate_tlb(void)
+void	mmu_invalidate_tlb(void)
 {
 	uint32_t zero = 0;
 	asm volatile(
@@ -94,7 +99,7 @@ static inline void	mmu_invalidate_tlb(void)
 }
 
 
-static inline void	mmu_barrier(void)
+void	mmu_barrier(void)
 {
 	uint32_t zero = 0;
 	asm volatile(
@@ -153,6 +158,61 @@ static inline uint32_t	small_page_descriptor(uint32_t physical_address, uint32_t
 	return descriptor;
 }
 
+static uint32_t	*alloc_l2_table(void)
+{
+	uintptr_t	allocation;
+
+	allocation = (uintptr_t)ft_calloc(L2_ENTRIES + (L2_ALIGNMENT / sizeof(uint32_t)), sizeof(uint32_t));
+	if (!allocation)
+		return 0;
+	allocation = (allocation + L2_ALIGNMENT - 1) & ~(uintptr_t)(L2_ALIGNMENT - 1);
+	return (uint32_t *)allocation;
+}
+
+static uint32_t	*alloc_l1_table(void)
+{
+	uintptr_t	allocation;
+
+	allocation = (uintptr_t)ft_calloc(L1_ENTRIES + (L1_ALIGNMENT / sizeof(uint32_t)), sizeof(uint32_t));
+	if (!allocation)
+		return 0;
+	allocation = (allocation + L1_ALIGNMENT - 1) & ~(uintptr_t)(L1_ALIGNMENT - 1);
+	return (uint32_t *)allocation;
+}
+
+static uint32_t	*ensure_l2(uint32_t *l1, uint32_t address)
+{
+	uint32_t	*table;
+	uint32_t	index = L1_INDEX(address);
+
+	if ((l1[index] & 3u) == COARSE_PAGE_TABLE)
+		return (uint32_t *)(uintptr_t)(l1[index] & 0xFFFFFC00u);
+	table = alloc_l2_table();
+	if (!table)
+		return 0;
+	for (unsigned i = 0; i < L2_ENTRIES; ++i)
+		table[i] = small_page_descriptor((index << 20) | (i << 12), AP_PRIV_RW_USER_NONE, 1, 1, 1);
+	l1[index] = coarse_descriptor((uint32_t)(uintptr_t)table);
+	return table;
+}
+
+static int	map_range(uint32_t *l1, uintptr_t start, size_t size, uint32_t ap, uint32_t xn)
+{
+	uintptr_t	end = start + size;
+
+	if (end < start)
+		return 1;
+	for (uintptr_t address = start & ~((uintptr_t)MMU_PAGE_SIZE - 1); address < end; address += MMU_PAGE_SIZE)
+	{
+		uint32_t *l2 = ensure_l2(l1, (uint32_t)address);
+		if (!l2)
+			return 1;
+		l2[L2_INDEX((uint32_t)address)] = small_page_descriptor(
+			(uint32_t)address, ap, 1, 1, xn);
+	}
+	return 0;
+}
+
 
 void	mmu_setup(void)
 {
@@ -167,7 +227,7 @@ void	mmu_setup(void)
 		uint32_t address = i << 20;
 		mmu_table[i] = section_descriptor(
 			address,
-			AP_FULL_ACCESS,
+			AP_PRIV_RW_USER_NONE,
 			1,	  // cacheable
 			1,	  // bufferable
 			0	  // executable
@@ -181,7 +241,7 @@ void	mmu_setup(void)
 		uint32_t address = i << 20;
 		mmu_table[i] = section_descriptor(
 			address,
-			AP_FULL_ACCESS,
+			AP_PRIV_RW_USER_NONE,
 			0,	  // not cacheable
 			0,	  // not bufferable
 			1	  // no execute
@@ -200,12 +260,35 @@ void	mmu_setup(void)
 
 	uint32_t sctlr = mmu_read_sctlr();
 	sctlr |= (1u << 0);	   // MMU enabled
+	sctlr |= (1u << 23);	  // extended page table format (APX/XN)
 
 	sctlr &= ~(1u << 2);   // data cache disabled
 	sctlr &= ~(1u << 12);  // instruction cache disabled
 
 	mmu_write_sctlr(sctlr);
 	mmu_barrier();
+}
+
+void	mmu_switch_table(uint32_t *table)
+{
+	if (!table)
+		return;
+	mmu_barrier();
+	mmu_invalidate_tlb();
+	mmu_barrier();
+	mmu_write_ttbr0((uint32_t)(uintptr_t)table);
+	mmu_barrier();
+	mmu_invalidate_tlb();
+	mmu_barrier();
+}
+
+int	mmu_map_user_range(t_address_space *space, void *address, size_t size, int writable, int executable)
+{
+	uint32_t ap = writable ? L2_AP_PRIV_RW_USER_RW : L2_AP_PRIV_RO_USER_RO;
+
+	if (!space || !space->l1)
+		return 1;
+	return map_range(space->l1, (uintptr_t)address, size, ap, executable ? 0 : 1);
 }
 
 uint32_t	*mmu_kernel_table(void)
@@ -215,45 +298,22 @@ uint32_t	*mmu_kernel_table(void)
 
 t_address_space	address_space_create(void *image_ptr, size_t size, t_section_info *sections)
 {
-	uint32_t	*proc_mmu_table = ft_calloc(L1_ENTRIES, sizeof(uint32_t));
+	uint32_t	*proc_mmu_table = alloc_l1_table();
+	uintptr_t	image = (uintptr_t)image_ptr;
 	if (!proc_mmu_table)
 		return (t_address_space){0};
-
-	uintptr_t	start;
-	uintptr_t	end;
-
-	uintptr_t	first;
-	uintptr_t	last;
+	for (unsigned i = 0; i < 528; ++i)
+		proc_mmu_table[i] = mmu_table[i];
+	if (map_range(proc_mmu_table, image, size, L2_AP_PRIV_RW_USER_RW, 1))
+		return (t_address_space){0};
 	for (t_section_info *s = sections; s->size != 0; ++s)
 	{
-		// ignore because not loaded
 		if (!(s->flags & SHF_ALLOC))
 			continue;
-
-		start = image_ptr + s->start_offset;
-		end = start + s->size;
-		first = start >> 20;
-		last = (end - 1) >> 20;
-		for (unsigned i = first; i <= last; ++i)
-		{
-			uint32_t physical = i << 20;
-
-			uint32_t ap = AP_PRIV_RO_USER_RO;
-			uint32_t xn = 1;
-			if (s->flags & SHF_WRITE)
-				ap = AP_PRIV_RW_USER_RW;
-
-			if (s->flags & SHF_EXECINSTR)
-				xn = 0;
-
-			proc_mmu_table[i] = section_descriptor(
-				physical,
-				ap,
-				1,	  // cacheable
-				1,	  // bufferable
-				xn
-			);
-		}
+		uint32_t ap = (s->flags & SHF_WRITE) ? L2_AP_PRIV_RW_USER_RW : L2_AP_PRIV_RO_USER_RO;
+		uint32_t xn = (s->flags & SHF_EXECINSTR) ? 0 : 1;
+		if (map_range(proc_mmu_table, image + s->start_offset, s->size, ap, xn))
+			return (t_address_space){0};
 	}
 
 	return (t_address_space){.l1 = proc_mmu_table};

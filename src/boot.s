@@ -117,33 +117,41 @@ hang:
 
 # exception handlers
 undefined_handler:
-	stmfd	sp!, {r0-r12, lr}
-	mov	r1, #0
-	mov	r0, sp
-	bl	kernel_panic
-	b	.
+    stmfd sp!, {r0-r12, lr}
 
+    mrs r0, spsr
+    stmfd sp!, {r0}
+
+    mov r1, #0
+    mov r0, sp
+    bl kernel_panic
+    b .
 
 
 prefetch_abort_handler:
-	sub	lr, lr, #4
+    sub lr, lr, #4
+    stmfd sp!, {r0-r12, lr}
 
-	stmfd	sp!, {r0-r12, lr}
-	mov	r1, #2
-	mov	r0, sp
-	bl	kernel_panic
-	b	.
+    mrs r0, spsr
+    stmfd sp!, {r0}
 
+    mov r1, #2
+    mov r0, sp
+    bl kernel_panic
+    b .
 
 
 data_abort_handler:
-	sub	lr, lr, #8
+    sub lr, lr, #8
+    stmfd sp!, {r0-r12, lr}
 
-	stmfd	sp!, {r0-r12, lr}
-	mov	r1, #3
-	mov	r0, sp
-	bl	kernel_panic
-	b	.
+    mrs r0, spsr
+    stmfd sp!, {r0}
+
+    mov r1, #3
+    mov r0, sp
+    bl kernel_panic
+    b .
 
 
 

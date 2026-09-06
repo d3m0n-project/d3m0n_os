@@ -92,6 +92,15 @@ void	schedule(void)
 	next->state = PROC_RUNNING;
 	next->time_slice = TIME_SLICE_MS;
 	current_process = next;
+	mmu_switch_table((next->mode == PROCESS_USER)?next->address_space.l1:mmu_kernel_table());
+}
+
+void	mmu_switch_current(void)
+{
+	if (current_process && current_process->mode == PROCESS_USER)
+		mmu_switch_table(current_process->address_space.l1);
+	else
+		mmu_switch_table(mmu_kernel_table());
 }
 
 
@@ -106,6 +115,7 @@ void scheduler_start()
 	}
 
 	current_process->state = PROC_RUNNING;
+	mmu_switch_current();
 
 	// jump to first process
 	start_first_process(current_process);

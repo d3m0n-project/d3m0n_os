@@ -6,6 +6,7 @@
 .extern process_exit_current
 .extern process_context_valid
 .extern panic
+.extern mmu_switch_current
 .extern stack_top
 
 
@@ -25,6 +26,7 @@ swi_handler:
 exit_user_mode:
 	add sp, sp, #(14*4)          @ discard SWI's frame
 	bl process_exit_current
+	bl mmu_switch_current
 
 	msr cpsr_c,#0xD2
 

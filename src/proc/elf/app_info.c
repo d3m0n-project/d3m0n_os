@@ -52,6 +52,7 @@ int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size, t_s
 	int							appmeta_found = 0;
 	uint32_t					rodata_offset = 0;
 	uint32_t					rodata_addr = 0;
+	uint16_t					detail_count = 0;
 
 	elf_section_header_32 *sh_table = (elf_section_header_32 *)(buffer + shoff);	
 	elf_section_header_32 *shstr = (elf_section_header_32 *)((char *)sh_table + shstrndx * shentsize);
@@ -63,20 +64,20 @@ int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size, t_s
 
 	char *shstrtab = buffer + u32(shstr->OFFSET);
 	if (shoff >= file_size || shentsize < sizeof(elf_section_header_32))
-    {
-        log("ELF APP: invalid section header table\n", LOG_ERROR);
-        return 1;
-    }
-    if ((uint64_t)shoff + (uint64_t)shnum * shentsize > file_size)
-    {
-        log("ELF APP: section table out of bounds\n", LOG_ERROR);
-        return 1;
-    }
-    if (shstrndx >= shnum)
-    {
-        log("ELF APP: shstrndx out of bounds\n", LOG_ERROR);
-        return 1;
-    }
+	{
+		log("ELF APP: invalid section header table\n", LOG_ERROR);
+		return 1;
+	}
+	if ((uint64_t)shoff + (uint64_t)shnum * shentsize > file_size)
+	{
+		log("ELF APP: section table out of bounds\n", LOG_ERROR);
+		return 1;
+	}
+	if (shstrndx >= shnum)
+	{
+		log("ELF APP: shstrndx out of bounds\n", LOG_ERROR);
+		return 1;
+	}
 
 	*section_detail = ft_calloc(shnum + 1, sizeof(t_section_info));
 	if (!section_detail)
@@ -93,13 +94,16 @@ int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size, t_s
 
 		uint32_t name_offset = u32(sh->NAME);
 		char *name = shstrtab + name_offset;
+		if (u32(sh->SIZE) == 0)
+			continue;
 
 		// store sections detail for process address space permissions
-		(*section_detail)[i].name = name;
-		(*section_detail)[i].start_offset = u32(sh->OFFSET);
-		(*section_detail)[i].size = u32(sh->SIZE);
-		(*section_detail)[i].type = u32(sh->TYPE);
-		(*section_detail)[i].flags = u32(sh->FLAGS);
+		(*section_detail)[detail_count].name = name;
+		(*section_detail)[detail_count].start_offset = u32(sh->ADDR);
+		(*section_detail)[detail_count].size = u32(sh->SIZE);
+		(*section_detail)[detail_count].type = u32(sh->TYPE);
+		(*section_detail)[detail_count].flags = u32(sh->FLAGS);
+		detail_count++;
 
 		if (ft_strcmp(name, ".appmeta") == 0)
 		{

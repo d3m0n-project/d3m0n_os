@@ -29,6 +29,7 @@ typedef uint32_t e_process_state;
 #define PROC_BLOCKED		2
 #define PROC_SLEEPING		3
 #define PROC_ZOMBIE			4
+#define PROC_CRASHED		5
 
 typedef uint32_t e_process_mode;
 #define PROCESS_KERNEL		0
@@ -68,17 +69,17 @@ typedef struct s_process
 	struct s_process *next;
 }	t_process;
 
-_Static_assert(OFFSETOF(t_process, irq_sp)       == 0,   "irq_sp");
-_Static_assert(OFFSETOF(t_process, user_sp)      == 4,   "user_sp");
-_Static_assert(OFFSETOF(t_process, user_lr)      == 8,   "user_lr");
-_Static_assert(OFFSETOF(t_process, pid)          == 12,  "pid");
-_Static_assert(OFFSETOF(t_process, state)        == 16,  "state");
-_Static_assert(OFFSETOF(t_process, mode)         == 20,  "mode");
-_Static_assert(OFFSETOF(t_process, proc_name)    == 24,  "proc_name");
-_Static_assert(OFFSETOF(t_process, kernel_stack) == 88,  "kernel_stack");
-_Static_assert(OFFSETOF(t_process, user_stack)   == 92,  "user_stack");
-_Static_assert(OFFSETOF(t_process, priority)     == 96,  "priority");
-_Static_assert(OFFSETOF(t_process, time_slice)   == 100, "time_slice");
+_Static_assert(OFFSETOF(t_process, irq_sp)			== 0,   "irq_sp");
+_Static_assert(OFFSETOF(t_process, user_sp)			== 4,   "user_sp");
+_Static_assert(OFFSETOF(t_process, user_lr)			== 8,   "user_lr");
+_Static_assert(OFFSETOF(t_process, pid)				== 12,  "pid");
+_Static_assert(OFFSETOF(t_process, state)			== 16,  "state");
+_Static_assert(OFFSETOF(t_process, mode)			== 20,  "mode");
+_Static_assert(OFFSETOF(t_process, proc_name)		== 24,  "proc_name");
+_Static_assert(OFFSETOF(t_process, kernel_stack)	== 88,  "kernel_stack");
+_Static_assert(OFFSETOF(t_process, user_stack)		== 92,  "user_stack");
+_Static_assert(OFFSETOF(t_process, priority)		== 96,  "priority");
+_Static_assert(OFFSETOF(t_process, time_slice)		== 100, "time_slice");
 
 void					scheduler_start();
 void					timer_handler();
@@ -88,6 +89,7 @@ void					scheduler_add(t_process *p);
 t_process				*scheduler_next();
 void					scheduler_remove(t_process *p);
 void					process_exit_current(uint32_t status_code);
+void					mmu_switch_current(void);
 
 void					process_list(void);
 

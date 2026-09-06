@@ -5,7 +5,6 @@
 #include "memory/memory.h"
 #include "types.h"
 #include "filesystem/filesystem.h"
-#include "proc/proc.h"
 
 #define ELF_SIG	"\x7F""ELF"
 

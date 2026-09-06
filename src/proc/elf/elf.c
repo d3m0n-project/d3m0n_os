@@ -396,6 +396,7 @@ t_process	*elf_to_proc(char *elf_path)
 	elf_header_32	header;
 	t_process		*proc;
 	t_section_info	*section_detail;
+	uint32_t		interrupt_state;
 
 	fd = open(elf_path, O_READ);
 	if (fd < 0)
@@ -468,6 +469,21 @@ t_process	*elf_to_proc(char *elf_path)
 		log("ELF: Invalid App, please recompile using d3c: '%s'\n", LOG_ERROR, elf_path);
 		return 0;
 	}
+	for (t_section_info *section = section_detail; section->size != 0; ++section)
+	{
+		if (!(section->flags & SHF_ALLOC))
+			continue;
+		if (section->start_offset < min_vaddr
+			|| (uint64_t)section->start_offset + section->size > max_vaddr)
+		{
+			kfree(section_detail);
+			kfree(file_buf);
+			kfree(image);
+			log("ELF: Section is outside loaded image '%s'\n", LOG_ERROR, elf_path);
+			return 0;
+		}
+		section->start_offset -= min_vaddr;
+	}
 
 	apply_relocations(image, file_buf, &header, min_vaddr, max_vaddr);
 	log("ELF: min_vaddr=0x%x max_vaddr=0x%x image=0x%x\n", 0, min_vaddr, max_vaddr, (uint32_t)image);
@@ -480,18 +496,32 @@ t_process	*elf_to_proc(char *elf_path)
 		return (0);
 	}
 	entry = (void (*)(void))(uintptr_t)(image + (entry_vaddr - min_vaddr));
+	interrupt_state = disable_interrupts();
 	proc = process_create(entry, proc_name_from_path(elf_path), 0);
 	if (!proc)
 	{
+		restore_interrupts(interrupt_state);
 		kfree(file_buf);
 		kfree(image);
 		return (0);
 	}
 	proc->address_space = address_space_create(image, image_size, section_detail);
+	if (!proc->address_space.l1 || mmu_map_user_range(&proc->address_space, proc->user_stack,
+			USER_STACK_PAGES * PAGE_SIZE, 1, 0))
+	{
+		scheduler_remove(proc);
+		restore_interrupts(interrupt_state);
+		kfree(section_detail);
+		kfree(file_buf);
+		kfree(image);
+		log("ELF: Could not create process address space '%s'\n", LOG_ERROR, elf_path);
+		return 0;
+	}
 	proc->image_vaddr_base = (uint32_t)image;
 	proc->image_size = max_vaddr - min_vaddr;
 	proc->heap_start = (uint32_t)(((uint8_t *)image + (max_vaddr - min_vaddr)) + 7) & ~7U;
 	proc->heap_end = proc->heap_start;
+	restore_interrupts(interrupt_state);
 	kfree(file_buf);
 	return (proc);
 }

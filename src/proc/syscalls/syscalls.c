@@ -284,6 +284,11 @@ int	sys_surface_create(uint32_t width, uint32_t height, uint32_t surface_ptr, ui
 	address = (uint8_t *)kmalloc(size);
 	if (!address)
 		return -1;
+	if (mmu_map_user_range(&proc->address_space, address, size, 1, 0))
+	{
+		kfree(address);
+		return -1;
+	}
 	ft_memset(address, 0, size);
 	proc->surface_addr = (uint32_t)address;
 	proc->surface_size = size;
@@ -351,6 +356,7 @@ int	syscall_dispatch(uint32_t number, uint32_t a0, uint32_t a1, uint32_t a2, uin
 int	syscall_handler(syscall_frame_t *frame)
 {
 	uint32_t cpsr = disable_interrupts();
+	mmu_switch_table(mmu_kernel_table());
 	int ret = syscall_dispatch(frame->r7, frame->r0, frame->r1, frame->r2, frame->r3);
 	if (frame->r7 == SYSCALL_EXIT_INDEX)
 	{
@@ -359,6 +365,7 @@ int	syscall_handler(syscall_frame_t *frame)
 	}
 
 	frame->r0 = ret;
+	mmu_switch_current();
 	restore_interrupts(cpsr);
 	return 0;
 }

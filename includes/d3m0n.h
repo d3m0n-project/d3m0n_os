@@ -15,6 +15,7 @@
 	#define DEBUG 0
 #endif
 
-void	panic(const char *message);
+void		panic(const char *message);
+const char	*get_exception_name(uint32_t id);
 
 #endif

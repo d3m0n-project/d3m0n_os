@@ -167,8 +167,6 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 
 void process_exit_current(uint32_t status_code)
 {
-	log("Exited %s with status code: %lu\n", LOG_WARNING, current_process->proc_name, status_code);
-
 	uint32_t cpsr = disable_interrupts();
 	t_process *exiting = current_process;
 	if (!exiting)
@@ -182,7 +180,17 @@ void process_exit_current(uint32_t status_code)
 		exiting->surface_addr = 0;
 	}
 
-	exiting->state = PROC_ZOMBIE;
+	if (status_code >= (uint32_t)-6)
+	{
+		log("Crashed '%s' due to a %s\n", LOG_ERROR, current_process->proc_name, get_exception_name(-status_code));
+		exiting->state = PROC_CRASHED;
+	}
+	else
+	{
+		log("Exited '%s' with status code: %lu\n", LOG_WARNING, current_process->proc_name, status_code);
+		exiting->state = PROC_ZOMBIE;
+	}
+
 	scheduler_remove(exiting);
 	if (!scheduled_processes)
 	{
@@ -193,7 +201,7 @@ void process_exit_current(uint32_t status_code)
 	}
 
 	exiting->time_slice = 0;
-	restore_interrupts(cpsr);
+	restore_interrupts(cpsr & ~(1u << 7));
 	while (1)
 		__asm__ volatile("wfe");
 }
