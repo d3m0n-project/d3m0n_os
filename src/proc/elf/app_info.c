@@ -40,12 +40,12 @@ static int	display_app_manifest(AppMetadata *metadata, char *buffer, uint32_t ro
 	return 0;
 }
 
-int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size)
+int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size, t_section_info **section_detail)
 {
-	uint32_t shoff	 = u32(header->SECTIONS_TABLE_OFFSET);
+	uint32_t shoff = u32(header->SECTIONS_TABLE_OFFSET);
 	uint16_t shentsize = u16(header->SECTION_TABLE_ENTRY_SIZE);
-	uint16_t shnum	 = u16(header->SECTION_TABLE_ENTRY_COUNT);
-	uint16_t shstrndx  = u16(header->SECTION_TABLE_INDEX);
+	uint16_t shnum = u16(header->SECTION_TABLE_ENTRY_COUNT);
+	uint16_t shstrndx = u16(header->SECTION_TABLE_INDEX);
 
 	elf_header_identification	*identification_header = &header->IDENTIFICATION;
 	AppMetadata					metadata = {0};
@@ -78,6 +78,12 @@ int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size)
         return 1;
     }
 
+	*section_detail = ft_calloc(shnum + 1, sizeof(t_section_info));
+	if (!section_detail)
+	{
+		log("ELF APP: Could not allocate sector list\n", LOG_ERROR);
+		return 1;
+	}
 
 	for (uint16_t i = 0; i < shnum; i++)
 	{
@@ -87,6 +93,14 @@ int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size)
 
 		uint32_t name_offset = u32(sh->NAME);
 		char *name = shstrtab + name_offset;
+
+		// store sections detail for process address space permissions
+		(*section_detail)[i].name = name;
+		(*section_detail)[i].start_offset = u32(sh->OFFSET);
+		(*section_detail)[i].size = u32(sh->SIZE);
+		(*section_detail)[i].type = u32(sh->TYPE);
+		(*section_detail)[i].flags = u32(sh->FLAGS);
+
 		if (ft_strcmp(name, ".appmeta") == 0)
 		{
 			// get app metadata

@@ -3,6 +3,6 @@
 
 #include "proc/elf.h"
 
-int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size);
+int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size, t_section_info	**section_detail);
 
 #endif

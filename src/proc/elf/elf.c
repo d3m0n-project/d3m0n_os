@@ -278,7 +278,7 @@ static int load_image_bounds(char *file_buf, uint32_t file_size, elf_header_32 *
 				min_vaddr = vaddr;
 			end_vaddr = (uint64_t)vaddr + (uint64_t)memsz;
 			if (end_vaddr > (uint64_t)0xFFFFFFFFU)
-				return (1);
+				return 1;
 			if (end_vaddr > (uint64_t)max_vaddr)
 				max_vaddr = (uint32_t)end_vaddr;
 		}
@@ -342,11 +342,11 @@ static void	apply_relocations(char *image, char *file_buf, elf_header_32 *header
 
 static void load_pt_segments(char *image, char *file_buf, elf_header_32 *header, char is_msb, uint32_t min_vaddr)
 {
-	uint16_t ph_count;
-	uint16_t ph_entry_size;
-	uint32_t ph_offset;
-	uint16_t i;
-	elf_program_header_32 ph;
+	uint16_t				ph_count;
+	uint16_t				ph_entry_size;
+	uint32_t				ph_offset;
+	uint16_t				i;
+	elf_program_header_32	ph;
 
 	ph_count = u16(header->PROGRAM_HEADER_ENTRY_COUNT);
 	ph_entry_size = u16(header->PROGRAM_HEADER_ENTRY_SIZE);
@@ -362,7 +362,6 @@ static void load_pt_segments(char *image, char *file_buf, elf_header_32 *header,
 			uint32_t vaddr = u32(ph.VIRT_ADDR);
 			uint32_t offset = u32(ph.OFFSET);
 			uint32_t filesz = u32(ph.FILESIZE);
-
 			ft_memcpy(image + (vaddr - min_vaddr), file_buf + offset, filesz);
 		}
 		i++;
@@ -396,6 +395,7 @@ t_process	*elf_to_proc(char *elf_path)
 	void			(*entry)(void);
 	elf_header_32	header;
 	t_process		*proc;
+	t_section_info	*section_detail;
 
 	fd = open(elf_path, O_READ);
 	if (fd < 0)
@@ -451,7 +451,8 @@ t_process	*elf_to_proc(char *elf_path)
 		log("ELF: Invalid PT_LOAD layout '%s'\n", LOG_ERROR, elf_path);
 		return (0);
 	}
-	image = ft_calloc((size_t)(max_vaddr - min_vaddr) + USER_HEAP_RESERVED + 8, 1);
+	size_t	image_size = (size_t)(max_vaddr - min_vaddr) + USER_HEAP_RESERVED + 8;
+	image = ft_calloc(image_size, 1);
 	if (!image)
 	{
 		kfree(file_buf);
@@ -460,7 +461,7 @@ t_process	*elf_to_proc(char *elf_path)
 	}
 	load_pt_segments(image, file_buf, &header, is_msb, min_vaddr);
 	// ensure app validity
-	if (parse_app_info(&header, file_buf, file_size))
+	if (parse_app_info(&header, file_buf, file_size, &section_detail))
 	{
 		kfree(file_buf);
 		kfree(image);
@@ -486,11 +487,26 @@ t_process	*elf_to_proc(char *elf_path)
 		kfree(image);
 		return (0);
 	}
-	proc->address_space = image;
-	proc->image_vaddr_base = (uint32_t)image	;
+	proc->address_space = address_space_create(image, image_size, section_detail);
+	proc->image_vaddr_base = (uint32_t)image;
 	proc->image_size = max_vaddr - min_vaddr;
 	proc->heap_start = (uint32_t)(((uint8_t *)image + (max_vaddr - min_vaddr)) + 7) & ~7U;
 	proc->heap_end = proc->heap_start;
 	kfree(file_buf);
 	return (proc);
+}
+
+int	section_is_executable(const t_section_info *section)
+{
+	return (section->flags & SHF_EXECINSTR) != 0;
+}
+
+int	section_is_writable(const t_section_info *section)
+{
+	return (section->flags & SHF_WRITE) != 0;
+}
+
+int	section_is_allocated(const t_section_info *section)
+{
+	return (section->flags & SHF_ALLOC) != 0;
 }

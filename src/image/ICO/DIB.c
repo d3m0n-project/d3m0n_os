@@ -23,7 +23,6 @@ int	load_dib_from_buff(char *raw, size_t size, ICO_icon *out)
 		return 1;
 
 	ft_memcpy(&header, raw, sizeof(header));
-
 	if (header.size != 40 || header.planes != 1 || header.bit_count != 32 || header.compression != 0)
 		return 1;
 
@@ -31,7 +30,6 @@ int	load_dib_from_buff(char *raw, size_t size, ICO_icon *out)
 	uint32_t height = header.height / 2;
 	size_t row_size = width * 4;
 	size_t pixel_size = row_size * height;
-
 	if (!width || !height || sizeof(uint32_t) * (size_t)width * height > SIZE_MAX)
 		return 1;
 
@@ -43,7 +41,6 @@ int	load_dib_from_buff(char *raw, size_t size, ICO_icon *out)
 		return 1;
 
 	const uint8_t *src = (const uint8_t *)raw + header.size;
-
 	for (uint32_t y = 0; y < height; y++)
 	{
 		const uint8_t *row = src + (height - 1 - y) * row_size;

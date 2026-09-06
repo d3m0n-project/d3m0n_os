@@ -45,7 +45,6 @@ int	load_ico_from_buff(char *raw, size_t size, ICO_icon *out)
 	ICO_icon best = {0};
 	uint32_t best_area = 0;
 	int found = 0;
-
 	for (uint16_t i = 0; i < dir.count; i++)
 	{
 		ICONDIRENTRY entry = {0};
@@ -53,7 +52,6 @@ int	load_ico_from_buff(char *raw, size_t size, ICO_icon *out)
 
 		uint32_t width = entry.width ? entry.width : 256;
 		uint32_t height = entry.height ? entry.height : 256;
-
 		if (entry.reserved != 0)
 			continue;
 
@@ -75,10 +73,7 @@ int	load_ico_from_buff(char *raw, size_t size, ICO_icon *out)
 			best_area = area;
 			found = 1;
 
-			if (load_dib_from_buff(
-				raw + entry.image_offset,
-				entry.bytes_in_resource,
-				&best) != 0)
+			if (load_dib_from_buff(raw + entry.image_offset, entry.bytes_in_resource, &best) != 0)
 				goto invalid_ico;
 		}
 	}

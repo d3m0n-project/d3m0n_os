@@ -102,6 +102,20 @@ typedef enum
 #define R_ARM_ABS32			2
 #define R_ARM_RELATIVE		23
 
+#define SHF_WRITE			(1u << 0)
+#define SHF_ALLOC			(1u << 1)
+#define SHF_EXECINSTR		(1u << 2)
+
+
+typedef struct s_section_info
+{
+	uint32_t	start_offset;
+	uint32_t	size;
+	uint32_t	flags;
+	uint32_t	type;
+	char		*name;
+}	t_section_info;
+
 
 /* functions */
 int					parse_elf_headers(int fd);
@@ -109,6 +123,9 @@ struct s_process	*elf_to_proc(char *elf_path);
 void				print_elf_file_report(elf_header_32 *header);
 void				parse_elf_to_lsb(elf_header_32 *header, elf_program_header_32 *prog_h, elf_section_header_32 *section_h);
 
+int					section_is_executable(const t_section_info *section);
+int					section_is_writable(const t_section_info *section);
+int					section_is_allocated(const t_section_info *section);
 
 /* utils */
 uint16_t			u16(const char b[2]);

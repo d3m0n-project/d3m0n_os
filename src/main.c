@@ -40,11 +40,14 @@ void	kernel_main(void *dtb)
 	show_kernel_status();
 
 	// load DTB
-	dtb_init(dtb);
+	(void)dtb;
+	//dtb_init(dtb); // DTB parsing removed since not used anymore
 
+	
 	// init MMU
 	mmu_setup();
 	log("MMU initialized!\n", LOG_SUCCESS);
+
 
 	// init heap memory
 	if (heap_init() != 0)		panic("Heap memory init failed\n");

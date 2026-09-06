@@ -7,6 +7,7 @@
 #include "libft.h"
 #include "proc/elf.h"
 #include "d3m0n.h"
+#include "memory/mmu.h"
 #include "proc/interrupts.h"
 
 #define kernel_user_stack_offset	OFFSETOF(t_process, user_stack)
@@ -56,7 +57,7 @@ typedef struct s_process
 
 	uint32_t		heap_start;
 	uint32_t		heap_end;
-	void			*address_space;
+	t_address_space	address_space;
 	uint32_t		image_vaddr_base;
 	uint32_t		image_size;
 	uint32_t		surface_addr;
