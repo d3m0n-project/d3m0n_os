@@ -160,6 +160,10 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 		return 0;
 	}
 
+	// clear fds
+	for (int i=0; i<FS_MAX_FDS; i++)
+		p->fds[i] = (fs_fd){0};
+
 	prepare_initial_stack(p, entry);
 	scheduler_add(p);
 	return p;
@@ -189,6 +193,13 @@ void process_exit_current(uint32_t status_code)
 	{
 		log("Exited '%s' with status code: %lu\n", LOG_WARNING, current_process->proc_name, status_code);
 		exiting->state = PROC_ZOMBIE;
+	}
+
+	// close all opened fds
+	for (int i=0; i<FS_MAX_FDS; i++)
+	{
+		if (exiting->fds[i].file.first_cluster)
+			fat32_close(&exiting->fds[i].file);
 	}
 
 	scheduler_remove(exiting);

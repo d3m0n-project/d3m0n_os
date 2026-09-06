@@ -20,12 +20,12 @@ static void	*resolve_user_ptr(uint32_t user_ptr, uint32_t len)
     if (!proc)
         return (void *)user_ptr;
 
-    // ELF image (physical range after relocation)
+    // ELF image
     if (proc->image_size > 0 && user_ptr >= proc->image_vaddr_base && user_ptr < proc->image_vaddr_base + proc->image_size)
     {
         if ((uint64_t)user_ptr + len > (uint64_t)proc->image_vaddr_base + proc->image_size)
             return 0;
-        return (void *)user_ptr;   // already physical
+        return (void *)user_ptr; // already physical
     }
 
     // user stack
@@ -75,7 +75,11 @@ int	sys_read(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 	buffer = (char *)resolve_user_ptr(user_buf, count);
 	if (!buffer)
 		return (-1);
-	return (int)read((int)fd, buffer, count);
+
+	if (fd < 3)  // TODO: stdin, stdout and stderr
+		return -1;
+
+	return (int)pread((int)fd - 3, buffer, count, current_process->fds);
 }
 
 int sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
@@ -83,8 +87,8 @@ int sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 	(void)a3;
 	//log("\nwriting '%s' l=%lu to %lu\n", 0, resolve_user_ptr(user_buf, count), count, fd);
 
-	if (fd == 0)
-		return -1;
+	if (fd == 0) // TODO: stdin
+		return 0;
 
 	if (fd == 1 || fd == 2)
 	{
@@ -109,7 +113,7 @@ int sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 	if (!buffer)
 		return -1;
 
-	return write((int)fd, buffer, count);
+	return pwrite((int)fd - 3, buffer, count, current_process->fds);
 }
 
 int	sys_open(uint32_t user_path, uint32_t flags, uint32_t a2, uint32_t a3)
@@ -121,7 +125,11 @@ int	sys_open(uint32_t user_path, uint32_t flags, uint32_t a2, uint32_t a3)
 	path = resolve_user_string_ptr(user_path);
 	if (!path)
 		return (-1);
-	return open(path, (int)flags);
+
+	int fd = popen(path, (int)flags, current_process->fds);
+	if (fd == -1)
+		return -1;
+	return (fd + 3);
 }
 
 int	sys_close(uint32_t fd, uint32_t a1, uint32_t a2, uint32_t a3)
@@ -129,7 +137,10 @@ int	sys_close(uint32_t fd, uint32_t a1, uint32_t a2, uint32_t a3)
 	(void)a1;
 	(void)a2;
 	(void)a3;
-	return close((int)fd);
+	if (fd < 3) // TODO: stdin, stdout and stderr
+		return -1;
+
+	return pclose((int)fd - 3, current_process->fds);
 }
 
 int	sys_uname(uint32_t user_buf, uint32_t buf_len, uint32_t a2, uint32_t a3)

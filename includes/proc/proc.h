@@ -9,6 +9,7 @@
 #include "d3m0n.h"
 #include "memory/mmu.h"
 #include "proc/interrupts.h"
+#include "filesystem/filesystem.h"
 
 #define kernel_user_stack_offset	OFFSETOF(t_process, user_stack)
 
@@ -65,6 +66,8 @@ typedef struct s_process
 	uint32_t		surface_size;
 	uint32_t		surface_width;
 	uint32_t		surface_height;
+
+	fs_fd			fds[FS_MAX_FDS];
 
 	struct s_process *next;
 }	t_process;

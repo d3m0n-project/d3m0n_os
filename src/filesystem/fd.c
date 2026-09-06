@@ -2,12 +2,7 @@
 #include "filesystem/fat32.h"
 #include "filesystem/get_next_line.h"
 #include "random.h"
-
-typedef struct fs_fd
-{
-	FAT32_File		file;
-	file_open_mode	mode;
-}	fs_fd;
+#include "proc/proc.h"
 
 
 static fs_fd	g_fds[FS_MAX_FDS] = {0};
@@ -28,7 +23,7 @@ static int	is_valid_open_flags(int flags)
 	return (1);
 }
 
-int		open(const char *path, int flags)
+int		popen(const char *path, int flags, fs_fd *fds)
 {
 	int			fd;
 	int			i;
@@ -41,7 +36,7 @@ int		open(const char *path, int flags)
 	fd = -1;
 	for (i = 0; i < FS_MAX_FDS; i++)
 	{
-		if (g_fds[i].mode == FILE_NOT_CREATED)
+		if (fds[i].mode == FILE_NOT_CREATED)
 		{
 			fd = i;
 			break;
@@ -66,12 +61,17 @@ int		open(const char *path, int flags)
 			return -1;
 	}
 	
-	g_fds[fd].file = file;
-	g_fds[fd].mode = (file_open_mode)(flags & (O_READ | O_WRITE | O_CREATE | O_APPEND | O_TRUNC));
-	if (g_fds[fd].mode & O_APPEND)
-		g_fds[fd].file.pos = g_fds[fd].file.size;
+	fds[fd].file = file;
+	fds[fd].mode = (file_open_mode)(flags & (O_READ | O_WRITE | O_CREATE | O_APPEND | O_TRUNC));
+	if (fds[fd].mode & O_APPEND)
+		fds[fd].file.pos = fds[fd].file.size;
 	
 	return (fd);
+}
+
+int		open(const char *path, int flags)
+{
+	return popen(path, flags, g_fds);
 }
 
 int		file_exists(const char *path)
@@ -207,42 +207,56 @@ int		file_rename(const char *old_path, const char *new_path)
 	return (0);
 }
 
-uint32_t	read(int fd, char *buffer, uint32_t count)
+uint32_t	pread(int fd, char *buffer, uint32_t count, fs_fd *fds)
 {
-	if (fd >= FS_MAX_FDS || fd < 0 || g_fds[fd].mode == FILE_NOT_CREATED)
+	if (fd >= FS_MAX_FDS || fd < 0 || fds[fd].mode == FILE_NOT_CREATED)
 		return (-1);
-	if (!(g_fds[fd].mode & O_READ))
+	if (!(fds[fd].mode & O_READ))
 		return (-1);
 	
-	return (fat32_read(&(g_fds[fd].file), (uint8_t *)buffer, count));
+	return (fat32_read(&(fds[fd].file), (uint8_t *)buffer, count));
 }
 
+uint32_t	read(int fd, char *buffer, uint32_t count)
+{
+	return pread(fd, buffer, count, g_fds);
+}
+
+
+int		pwrite(int fd, const char *buffer, uint32_t count, fs_fd *fds)
+{
+	if (fd >= FS_MAX_FDS || fd < 0 || fds[fd].mode == FILE_NOT_CREATED)
+		return (-1);
+
+	if (!(fds)) // not in write mode
+		return (-1);
+	if (fds[fd].mode & O_APPEND)
+		fds[fd].file.pos = fds[fd].file.size;
+	
+	return (fat32_write(&(fds[fd].file), (const uint8_t *)buffer, count));
+}
 
 int		write(int fd, const char *buffer, uint32_t count)
 {
-	if (fd >= FS_MAX_FDS || fd < 0 || g_fds[fd].mode == FILE_NOT_CREATED)
-		return (-1);
-
-	if (!(g_fds[fd].mode & O_WRITE)) // not in write mode
-		return (-1);
-	if (g_fds[fd].mode & O_APPEND)
-		g_fds[fd].file.pos = g_fds[fd].file.size;
-	
-	return (fat32_write(&(g_fds[fd].file), (const uint8_t *)buffer, count));
+	return pwrite(fd, buffer, count, g_fds);
 }
 
-
-int		close(int fd)
+int		pclose(int fd, fs_fd *fds)
 {
-	if (fd >= FS_MAX_FDS || fd < 0 || g_fds[fd].mode == FILE_NOT_CREATED)
+	if (fd >= FS_MAX_FDS || fd < 0 || fds[fd].mode == FILE_NOT_CREATED)
 		return (-1);
 
 	rng_add_entropy(time_us()); // add entropy
 
-	g_fds[fd].mode = FILE_NOT_CREATED;
-	fat32_close(&(g_fds[fd].file));
+	fds[fd].mode = FILE_NOT_CREATED;
+	fat32_close(&(fds[fd].file));
 	clear_fd_buffer(fd); // used for GNL buffer clearing
 	return 0;
+}
+
+int		close(int fd)
+{
+	return pclose(fd, g_fds);
 }
 
 uint32_t	lseek(int fd, int32_t offset, e_seek_directive whence)

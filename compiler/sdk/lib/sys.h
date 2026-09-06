@@ -73,7 +73,7 @@ extern "C" {
 		return syscall(SYS_WRITE, (uint32_t)fd, (uint32_t)buffer, count, 0);
 	}
 
-	static inline int	open(const char *path, file_open_mode flags)
+	static inline int	open(const char *path, uint32_t flags)
 	{
 		return syscall(SYS_OPEN, (uint32_t)path, (uint32_t)flags, 0, 0);
 	}
