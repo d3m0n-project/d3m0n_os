@@ -25,6 +25,7 @@ static void	draw_clock(t_conf *conf, uint32_t theme_color)
 	}
 	clock[0] = '0' + (hours / 10);
 	clock[1] = '0' + hours % 10;
+	clock[2] = ':';
 
 	clock[3] = '0' + (minutes / 10);
 	clock[4] = '0' + minutes % 10;

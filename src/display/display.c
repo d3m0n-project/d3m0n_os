@@ -365,8 +365,16 @@ int framebuffer_init(uint32_t width, uint32_t height, uint32_t bpp)
 
 static void	font_pixel(void *context, int x, int y, uint8_t coverage)
 {
-	(void)coverage;
-	put_pixel(x, y, (uint32_t)(uintptr_t)context);
+	uint32_t bg = get_pixel(x, y);
+	uint32_t fg = (uint32_t)(uintptr_t)context;
+	uint32_t r = (((fg >> 16) & 0xff) * coverage
+		+ ((bg >> 16) & 0xff) * (255 - coverage)) / 255;
+	uint32_t g = (((fg >> 8) & 0xff) * coverage
+		+ ((bg >> 8) & 0xff) * (255 - coverage)) / 255;
+	uint32_t b = ((fg & 0xff) * coverage
+		+ (bg & 0xff) * (255 - coverage)) / 255;
+
+	put_pixel(x, y, 0xFF000000 | (r << 16) | (g << 8) | b);
 }
 
 void	draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font)

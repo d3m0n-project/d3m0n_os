@@ -1,9 +1,7 @@
 #include "proc/proc.h"
 
-uint32_t					current_pid = 0;
-
 extern void		start_first_process(t_process *proc);
-
+uint32_t	current_pid = 0;
 
 void	*alloc_pages(size_t pages)
 {

@@ -138,41 +138,63 @@ typedef struct s_font_context
 
 static void	font_pixel(void *context, int x, int y, uint8_t coverage)
 {
-	(void)coverage;
 	t_font_context *font_context = (t_font_context *)context;
-	font_context->display->put_pixel(x, y, font_context->color);
+	uint32_t	bg = font_context->display->get_pixel(x, y);
+	uint32_t	fg = font_context->color;
+
+
+	uint32_t r = (((fg >> 16) & 0xff) * coverage + ((bg >> 16) & 0xff) * (255 - coverage)) / 255;
+	uint32_t g = (((fg >> 8) & 0xff) * coverage + ((bg >> 8) & 0xff) * (255 - coverage)) / 255;
+	uint32_t b = ((fg & 0xff) * coverage + (bg & 0xff) * (255 - coverage)) / 255;
+
+	uint32_t dst_color = 0xFF000000 | (r << 16) | (g << 8) | b;
+
+	
+	font_context->display->put_pixel(x, y, dst_color);
 }
 
-void	Display::draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font)
+void	Display::draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font *font)
 {
+	t_font_context	font_context;
+	int				cursor_x;
+	int				cursor_y;
+	int				line_height;
+	int				baseline;
+
 	if (!text)
 		return;
 	if (!font)
 		font = &main_font;
 	if (!font || !font->data || !font->units_per_em || h <= 0)
 		return;
-	int cursor_x = x;
-	int cursor_y = y;
-	int line_height = h;
-	int baseline = y + ((int)font->ascender * h) /
-		(font->ascender - font->descender);
+
+	cursor_x = x;
+	cursor_y = y;
+	line_height = h;
+	baseline = y + ((int)font->ascender * h) / (font->ascender - font->descender);
 	(void)w;
-	t_font_context font_context = {this, color};
+
+	font_context.display = this;
+	font_context.color = color;
 	for (uint32_t i = 0; text[i]; i++)
 	{
 		if (text[i] == '\n')
 		{
 			cursor_x = x;
 			cursor_y += line_height;
-			baseline = cursor_y + ((int)font->ascender * h) /
-				(font->ascender - font->descender);
-			continue;
+			baseline = cursor_y + ((int)font->ascender * h) / (font->ascender - font->descender);
+			continue ;
 		}
-		uint16_t glyph = ttf_glyph_for_codepoint(font, (uint8_t)text[i]);
-		ttf_render_glyph(font, glyph, cursor_x, baseline, h, h, font_pixel,
-			&font_context);
-		cursor_x += (ttf_glyph_advance(font, glyph) * h) /
-			font->units_per_em;
+
+		uint16_t glyph;
+		glyph = ttf_glyph_for_codepoint(font, (uint8_t)text[i]);
+		//printf("char='%c' cp=%u glyph=%u advance=%d\n",
+		//	text[i],
+		//	(uint8_t)text[i],
+		//	glyph,
+		//	ttf_glyph_advance(font, glyph));
+		ttf_render_glyph(font, glyph, cursor_x, baseline, h, h, font_pixel, &font_context);
+		cursor_x += (ttf_glyph_advance(font, glyph) * h) / font->units_per_em;
 	}
 }
 
