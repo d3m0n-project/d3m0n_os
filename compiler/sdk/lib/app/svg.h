@@ -29,74 +29,217 @@
 
 #endif
 
-static int	svg_attr_int(const char *tag, int length, const char *name, int fallback)
+static int svg_attr_int(const char *tag, int length, const char *name, int fallback)
 {
-	const char *found = strnstr(tag, name, length);
-	if (!found)
-		return fallback;
+	const char *p = tag;
+	const char *end = tag + length;
+	int name_len = (int)strlen(name);
 
-	found += strlen(name);
-	while (found < tag + length && (*found == ' ' || *found == '\t' || *found == '=' || *found == '"' || *found == '\''))
-		++found;
-
-	int sign = 1;
-	if (*found == '-')
+	while (p < end)
 	{
-		sign = -1;
-		++found;
+		while (p < end && (ft_isspace(*p) || *p == '<' || *p == '/'))
+			++p;
+
+		if (p + name_len <= end)
+		{
+			int match = 1;
+
+			for (int i = 0; i < name_len; ++i)
+			{
+				if (p[i] != name[i])
+				{
+					match = 0;
+					break;
+				}
+			}
+
+			if (match && (p + name_len == end || ft_isspace(p[name_len]) || p[name_len] == '='))
+			{
+				const char *v = p + name_len;
+
+				while (v < end && ft_isspace(*v))
+					++v;
+
+				if (v >= end || *v != '=')
+					return fallback;
+
+				++v;
+
+				while (v < end && ft_isspace(*v))
+					++v;
+
+				if (v < end && (*v == '"' || *v == '\''))
+					++v;
+
+				int sign = 1;
+
+				if (v < end && *v == '-')
+				{
+					sign = -1;
+					++v;
+				}
+				else if (v < end && *v == '+')
+					++v;
+
+				int value = 0;
+				int digits = 0;
+				while (v < end && *v >= '0' && *v <= '9')
+				{
+					value = value * 10 + (*v - '0');
+					++v;
+					++digits;
+				}
+				return digits ? sign * value : fallback;
+			}
+		}
+
+		// skip current attribute
+		while (p < end && !ft_isspace(*p) && *p != '=')
+			++p;
+
+		while (p < end && ft_isspace(*p))
+			++p;
+
+		if (p < end && *p == '=')
+		{
+			++p;
+
+			while (p < end && ft_isspace(*p))
+				++p;
+
+			if (p < end && (*p == '"' || *p == '\''))
+			{
+				char quote = *p++;
+				while (p < end && *p != quote)
+					++p;
+				if (p < end)
+					++p;
+			}
+			else
+			{
+				while (p < end && !ft_isspace(*p))
+					++p;
+			}
+		}
 	}
 
-	int value = 0;
-	int digits = 0;
-	while (found < tag + length && *found >= '0' && *found <= '9')
-	{
-		value = value * 10 + (*found - '0');
-		digits++;
-		++found;
-	}
-	return digits ? sign * value : fallback;
+	return fallback;
 }
-
-static uint32_t	svg_color(const char *tag, int length, const char *attribute, uint32_t fallback)
+static uint32_t svg_color(const char *tag, int length, const char *attribute, uint32_t fallback)
 {
-	const char *found = strnstr(tag, attribute, length);
-	if (!found)
-		return fallback;
-
-	found += strlen(attribute);
-	const char *attribute_end = strchr(found, '"');
-	if (!attribute_end || attribute_end > tag + length)
-		attribute_end = strchr(found, '\'');
-
-	if (attribute_end && attribute_end <= tag + length)
+	const char *p = tag;
+	const char *end = tag + length;
+	int attr_len = (int)strlen(attribute);
+	while (p < end)
 	{
-		if (strnstr(found, "none", (int)(attribute_end - found)) || strnstr(found, "transparent", (int)(attribute_end - found)))
-			return 0;
-	}
+		while (p < end && (ft_isspace(*p) || *p == '<' || *p == '/'))
+			++p;
 
-	while (found < tag + length && *found != '#')
-	{
-		if (*found == '"' || *found == '\'')
-			return fallback;
-		++found;
-	}
+		if (p + attr_len <= end)
+		{
+			int match = 1;
 
-	if (found >= tag + length)
-		return fallback;
-	++found;
+			for (int i = 0; i < attr_len; ++i)
+			{
+				if (p[i] != attribute[i])
+				{
+					match = 0;
+					break;
+				}
+			}
 
-	uint32_t value = 0;
-	int digits = 0;
-	while (found < tag + length && digits < 6)
-	{
-		char c = *found++;
-		int part = c >= '0' && c <= '9' ? c - '0' : c >= 'a' && c <= 'f' ? c - 'a' + 10 : c >= 'A' && c <= 'F' ? c - 'A' + 10 : -1;
-		if (part < 0)
-			break;
-		value = (value << 4) | part;
-		digits++;
+			if (match && (p + attr_len == end || ft_isspace(p[attr_len]) || p[attr_len] == '='))
+			{
+				const char *v = p + attr_len;
+				while (v < end && ft_isspace(*v))
+					++v;
+
+				if (v >= end || *v != '=')
+					return fallback;
+
+				++v;
+
+				while (v < end && ft_isspace(*v))
+					++v;
+
+				char quote = 0;
+				if (v < end && (*v == '"' || *v == '\''))
+					quote = *v++;
+
+				const char *value_start = v;
+				while (v < end)
+				{
+					if (quote)
+					{
+						if (*v == quote)
+							break;
+					}
+					else if (ft_isspace(*v) || *v == '>')
+						break;
+
+					++v;
+				}
+
+				int value_len = (int)(v - value_start);
+				if (strnstr(value_start, "none", value_len) || strnstr(value_start, "transparent", value_len))
+					return 0;
+
+				if (value_len == 7 && value_start[0] == '#')
+				{
+					uint32_t value = 0;
+
+					for (int i = 1; i < 7; ++i)
+					{
+						char c = value_start[i];
+						int n;
+
+						if (c >= '0' && c <= '9')
+							n = c - '0';
+						else if (c >= 'a' && c <= 'f')
+							n = c - 'a' + 10;
+						else if (c >= 'A' && c <= 'F')
+							n = c - 'A' + 10;
+						else
+							return fallback;
+
+						value = (value << 4) | (uint32_t)n;
+					}
+					return 0xFF000000 | value;
+				}
+
+				if (value_len == 5 && (value_start[0] == 'b' || value_start[0] == 'B'))
+					return 0xFF0000FF;
+
+				if (value_len == 5 && (value_start[0] == 'b' || value_start[0] == 'B'))
+					return 0xFF000000;
+
+				return fallback;
+			}
+		}
+
+		while (p < end && !ft_isspace(*p) && *p != '=')
+			++p;
+
+		while (p < end && ft_isspace(*p))
+			++p;
+
+		if (p < end && *p == '=')
+		{
+			++p;
+			while (p < end && ft_isspace(*p))
+				++p;
+			if (p < end && (*p == '"' || *p == '\''))
+			{
+				char quote = *p++;
+				while (p < end && *p != quote)
+					++p;
+
+				if (p < end)
+					++p;
+			}
+		}
 	}
-	return digits == 6 ? 0xFF000000 | value : fallback;
+	return fallback;
 }
 
 static void svg_line(Display *display, int x0, int y0, int x1, int y1, uint32_t color)
@@ -112,13 +255,15 @@ static void svg_line(Display *display, int x0, int y0, int x1, int y1, uint32_t 
 		DISPLAY(put_pixel)(x0, y0, color);
 		if (x0 == x1 && y0 == y1)
 			break;
-		int twice = 2 * error;
-		if (twice >= dy)
+
+		int e2 = error * 2;
+		if (e2 >= dy)
 		{
 			error += dy;
 			x0 += sx;
 		}
-		if (twice <= dx)
+
+		if (e2 <= dx)
 		{
 			error += dx;
 			y0 += sy;
@@ -168,150 +313,424 @@ static void svg_points(Display *display, const char *tag, int length, int ox, in
 	if (close && have)
 		svg_line(display, px, py, first_x, first_y, color);
 }
-
 static int svg_next_number(const char **cursor, const char *end, int *value)
 {
 	const char *p = *cursor;
+	int sign = 1;
+	int integer = 0;
+	int fraction = 0;
+	int fraction_digits = 0;
+
 	while (p < end && (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n' || *p == ','))
 		++p;
 
 	if (p >= end || ((*p < '0' || *p > '9') && *p != '-' && *p != '+'))
 		return 0;
-	
-	int sign = 1;
-	if (*p == '-' || *p == '+')
+
+	if (*p == '-')
 	{
-		if (*p == '-') sign = -1;
+		sign = -1;
+		++p;
+	}
+	else if (*p == '+')
+		++p;
+
+	while (p < end && *p >= '0' && *p <= '9')
+	{
+		integer = integer * 10 + (*p - '0');
 		++p;
 	}
 
-	int result = 0;
-	while (p < end && *p >= '0' && *p <= '9')
-	{
-		result = result * 10 + (*p - '0');
-		++p;
-	}
 	if (p < end && *p == '.')
 	{
 		++p;
-		int divisor = 10;
 		while (p < end && *p >= '0' && *p <= '9')
 		{
-			result += (*p - '0') / divisor;
-			divisor *= 10;
+			if (fraction_digits < 2)
+			{
+				fraction = fraction * 10 + (*p - '0');
+				++fraction_digits;
+			}
 			++p;
 		}
 	}
+
+	// round
+	if (fraction_digits == 1)
+		fraction *= 10;
+
+	if (fraction >= 50)
+		++integer;
+
+	*value = sign * integer;
 	*cursor = p;
-	*value = sign * result;
 	return 1;
 }
 
-static void svg_path(Display *display, const char *tag, int length, int ox, int oy, int sx, int sy, uint32_t color, int filled)
+static void svg_fill_polygon(Display *display, int *points_x, int *points_y, int count, uint32_t color)
+{
+	(void)display;
+	#ifdef __cplusplus
+	for (int y = 0; y < display->h; ++y)
+	#else
+	for (int y = 0; y < SCREEN_HEIGHT; ++y)
+	#endif
+	{
+		int intersections[256];
+		int hits = 0;
+		for (int i = 0, j = count - 1; i < count; j = i++)
+		{
+			if ((points_y[i] > y) != (points_y[j] > y) && hits < 256)
+				intersections[hits++] = points_x[i] + (y - points_y[i]) * (points_x[j] - points_x[i]) / (points_y[j] - points_y[i]);
+		}
+		for (int i = 0; i + 1 < hits; i += 2)
+			DISPLAY(draw_hline)(intersections[i], y, intersections[i + 1] - intersections[i] + 1, color);
+	}
+}
+
+static void svg_stroke_line(Display *display, int x0, int y0, int x1, int y1, uint32_t color, int width)
+{
+	if (!color)
+		return;
+	if (width < 1)
+		width = 1;
+	for (int offset = -(width / 2); offset <= width / 2; ++offset)
+	{
+		svg_line(display, x0 + offset, y0, x1 + offset, y1, color);
+		svg_line(display, x0, y0 + offset, x1, y1 + offset, color);
+	}
+}
+
+static void svg_path(Display *display, const char *tag, int length, int ox, int oy, int sx, int sy, uint32_t fill_color, uint32_t stroke_color, int stroke_width)
 {
 	(void)display;
 	const char *cursor = strnstr(tag, "d", length);
+	const char *end = tag + length;
 	if (!cursor)
 		return;
-	const char *end = tag + length;
-	while (cursor < end && *cursor != '=') ++cursor;
+
+	while (cursor < end && *cursor != '=')
+		++cursor;
+
 	if (cursor >= end)
 		return;
+
 	++cursor;
-	while (cursor < end && *cursor != '"' && *cursor != '\'') ++cursor;
+
+	while (cursor < end &&
+		*cursor != '"' &&
+		*cursor != '\'')
+		++cursor;
+
 	if (cursor >= end)
 		return;
-	++cursor;
+
+	char quote = *cursor++;
+	const char *path_end = cursor;
+
+	while (path_end < end && *path_end != quote)
+		++path_end;
+
+	end = path_end;
+
 	int points_x[256];
 	int points_y[256];
 	int count = 0;
-	int current_x = 0, current_y = 0, start_x = 0, start_y = 0;
+
+	int current_x = 0;
+	int current_y = 0;
+
+	int start_x = 0;
+	int start_y = 0;
+
 	char command = 0;
-	while (cursor < end && *cursor != '"' && *cursor != '\'')
+
+	while (cursor < end)
 	{
-		if ((*cursor >= 'A' && *cursor <= 'Z') || (*cursor >= 'a' && *cursor <= 'z'))
+		if ((*cursor >= 'A' && *cursor <= 'Z') ||
+			(*cursor >= 'a' && *cursor <= 'z'))
 		{
 			command = *cursor++;
+
 			if (command == 'Z' || command == 'z')
 			{
 				if (count > 1)
-					svg_line(display, points_x[count - 1], points_y[count - 1], points_x[0], points_y[0], color);
+				{
+					uint32_t color = stroke_color ? stroke_color : fill_color;
+
+					if (color)
+						svg_stroke_line(display, points_x[count - 1], points_y[count - 1], points_x[0], points_y[0], color, stroke_width);
+				}
+
+				if (fill_color && count >= 3)
+					svg_fill_polygon(display, points_x, points_y, count, fill_color);
+
 				current_x = start_x;
 				current_y = start_y;
+				count = 0;
+				command = 0;
+				continue;
 			}
+
 			continue;
 		}
+
+		if (!command)
+		{
+			++cursor;
+			continue;
+		}
+
+		// characters needed per command
+		int needed;
+		switch (command)
+		{
+			case 'H':
+			case 'h':
+			case 'V':
+			case 'v':
+				needed = 1;
+				break;
+
+			case 'C':
+			case 'c':
+				needed = 6;
+				break;
+
+			case 'Q':
+			case 'q':
+				needed = 4;
+				break;
+
+			case 'M':
+			case 'm':
+			case 'L':
+			case 'l':
+			default:
+				needed = 2;
+				break;
+		}
+
 		int values[6];
-		int needed = command == 'H' || command == 'h' || command == 'V' || command == 'v' ? 1 : command == 'C' || command == 'c' ? 6 : command == 'S' || command == 's' || command == 'Q' || command == 'q' ? 4 : 2;
 		int found = 0;
-		while (found < needed && svg_next_number(&cursor, end, &values[found]))
+		while (found < needed)
+		{
+			const char *before = cursor;
+			if (!svg_next_number(&cursor, end, &values[found]))
+				break;
+
+			if (cursor == before)
+				break;
+
 			++found;
+		}
+
 		if (found != needed)
 		{
 			++cursor;
 			continue;
 		}
-		int next_x = current_x, next_y = current_y;
-		if (command == 'H' || command == 'h')
-			next_x = command == 'h'?current_x + values[0] : values[0];
-		else if (command == 'V' || command == 'v')
-			next_y = command == 'v' ? current_y + values[0] : values[0];
-		else if (command == 'C' || command == 'c')
+
+		// cubic Bezier
+		if (command == 'C' || command == 'c')
 		{
-			next_x = command == 'c' ? current_x + values[4] : values[4];
-			next_y = command == 'c' ? current_y + values[5] : values[5];
+			int x0 = current_x;
+			int y0 = current_y;
+
+			int x1 = values[0];
+			int y1 = values[1];
+
+			int x2 = values[2];
+			int y2 = values[3];
+
+			int x3 = values[4];
+			int y3 = values[5];
+
+			if (command == 'c')
+			{
+				x1 += current_x;
+				y1 += current_y;
+				x2 += current_x;
+				y2 += current_y;
+				x3 += current_x;
+				y3 += current_y;
+			}
+
+			for (int step = 1; step <= 16; ++step)
+			{
+				int t = step;
+				int nt = 16 - t;
+				int px = (nt * nt * nt * x0 + 3 * nt * nt * t * x1 + 3 * nt * t * t * x2 + t * t * t * x3) / 4096;
+				int py = (nt * nt * nt * y0 + 3 * nt * nt * t * y1 + 3 * nt * t * t * y2 + t * t * t * y3) / 4096;
+				int screen_x = ox + px * sx / 1000;
+				int screen_y = oy + py * sy / 1000;
+				if (count > 0)
+				{
+					uint32_t color =
+						stroke_color ? stroke_color : fill_color;
+
+					if (color)
+						svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, color, stroke_width);
+				}
+
+				if (count < 256)
+				{
+					points_x[count] = screen_x;
+					points_y[count] = screen_y;
+					++count;
+				}
+			}
+
+			current_x = x3;
+			current_y = y3;
+			continue;
 		}
-		else if (command == 'S' || command == 's' || command == 'Q' || command == 'q')
+
+		// quadratic Bezier
+		if (command == 'Q' || command == 'q')
 		{
-			next_x = command == 's' || command == 'q' ? current_x + values[2] : values[2];
-			next_y = command == 's' || command == 'q' ? current_y + values[3] : values[3];
+			int x0 = current_x;
+			int y0 = current_y;
+
+			int x1 = values[0];
+			int y1 = values[1];
+
+			int x2 = values[2];
+			int y2 = values[3];
+
+			if (command == 'q')
+			{
+				x1 += current_x;
+				y1 += current_y;
+				x2 += current_x;
+				y2 += current_y;
+			}
+
+			for (int step = 1; step <= 16; ++step)
+			{
+				int t = step;
+				int nt = 16 - t;
+				int px = (nt * nt * x0 + 2 * nt * t * x1 + t * t * x2) / 256;
+				int py = (nt * nt * y0 + 2 * nt * t * y1 + t * t * y2) / 256;
+				int screen_x = ox + px * sx / 1000;
+				int screen_y = oy + py * sy / 1000;
+				if (count > 0)
+				{
+					uint32_t color = stroke_color ? stroke_color : fill_color;
+					if (color)
+						svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, color, stroke_width);
+				}
+
+				if (count < 256)
+				{
+					points_x[count] = screen_x;
+					points_y[count] = screen_y;
+					++count;
+				}
+			}
+
+			current_x = x2;
+			current_y = y2;
+			continue;
+		}
+
+		/*
+		 * H / V.
+		 */
+		if (command == 'H' || command == 'h')
+		{
+			int next_x = command == 'h' ? current_x + values[0] : values[0];
+			int screen_x = ox + next_x * sx / 1000;
+			int screen_y = oy + current_y * sy / 1000;
+			if (count > 0)
+			{
+				uint32_t color = stroke_color ? stroke_color : fill_color;
+				if (color)
+					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, color, stroke_width);
+			}
+
+			if (count < 256)
+			{
+				points_x[count] = screen_x;
+				points_y[count] = screen_y;
+				++count;
+			}
+
+			current_x = next_x;
+			continue;
+		}
+
+		if (command == 'V' || command == 'v')
+		{
+			int next_y = command == 'v' ? current_y + values[0] : values[0];
+			int screen_x = ox + current_x * sx / 1000;
+			int screen_y = oy + next_y * sy / 1000;
+			if (count > 0)
+			{
+				uint32_t color = stroke_color ? stroke_color : fill_color;
+				if (color)
+					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, color, stroke_width);
+			}
+
+			if (count < 256)
+			{
+				points_x[count] = screen_x;
+				points_y[count] = screen_y;
+				++count;
+			}
+
+			current_y = next_y;
+			continue;
+		}
+
+		int next_x;
+		int next_y;
+		if (command == 'm' || command == 'l')
+		{
+			next_x = current_x + values[0];
+			next_y = current_y + values[1];
 		}
 		else
 		{
-			next_x = command == 'm' || command == 'l' ? current_x + values[0] : values[0];
-			next_y = command == 'm' || command == 'l' ? current_y + values[1] : values[1];
+			next_x = values[0];
+			next_y = values[1];
 		}
+
+		if (command == 'M' || command == 'm')
+		{
+			if (count >= 3 && fill_color)
+				svg_fill_polygon(display, points_x, points_y, count, fill_color);
+
+			count = 0;
+			start_x = next_x;
+			start_y = next_y;
+			command = command == 'm' ? 'l' : 'L';
+		}
+
 		int screen_x = ox + next_x * sx / 1000;
 		int screen_y = oy + next_y * sy / 1000;
 		if (count > 0)
-			svg_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, color);
+		{
+			uint32_t color = stroke_color ? stroke_color : fill_color;
+
+			if (color)
+				svg_stroke_line(display, points_x[count-1], points_y[count-1], screen_x, screen_y, color, stroke_width);
+		}
+
 		if (count < 256)
 		{
 			points_x[count] = screen_x;
-			points_y[count++] = screen_y;
+			points_y[count] = screen_y;
+			++count;
 		}
+
 		current_x = next_x;
 		current_y = next_y;
-		if (command == 'M')
-		{
-			start_x = current_x;
-			start_y = current_y;
-			command = 'L';
-		}
-		if (command == 'm')
-		{
-			start_x = current_x;
-			start_y = current_y;
-			command = 'l';
-		}
 	}
-	if (filled && count > 2)
-	{
-		#ifdef __cplusplus
-		for (int y = 0; y < display->h; ++y)
-		#else
-		for (int y = 0; y < SCREEN_HEIGHT; ++y)
-		#endif
-		{
-			int intersections[256];
-			int hits = 0;
-			for (int i = 0, j = count - 1; i < count; j = i++)
-				if ((points_y[i] > y) != (points_y[j] > y))
-					intersections[hits++] = points_x[i] + (y - points_y[i]) * (points_x[j] - points_x[i]) / (points_y[j] - points_y[i]);
-			for (int i = 0; i + 1 < hits; i += 2)
-				DISPLAY(draw_hline)(intersections[i], y, intersections[i + 1] - intersections[i] + 1, color);
-		}
-	}
+
+
+	if (fill_color && count >= 3)
+		svg_fill_polygon(display, points_x, points_y, count, fill_color);
 }
 
 void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const char *svg, size_t size, uint32_t override_color)
@@ -332,27 +751,52 @@ void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const char *svg, si
 		if (!end)
 			break;
 		int length = (int)(end - begin + 1);
-		uint32_t color = override_color?override_color:svg_color(begin, length, "fill", 0xFF000000);
-		if (!override_color && (strnstr(begin, "fill-opacity=\"0", length) || strnstr(begin, "opacity=\"0", length)))
-			color = 0;
+		uint32_t fill_color = svg_color(begin, length, "fill", 0x01000000);
+		uint32_t stroke_color = svg_color(begin, length, "stroke", 0);
+		int has_stroke = strnstr(begin, "stroke=\"", length) || strnstr(begin, "stroke='", length);
+		int stroke_width = svg_attr_int(begin, length, "stroke-width", 1);
+		if (fill_color == 0x01000000)
+			fill_color = 0xFF000000;
+		if (stroke_width < 1)
+			stroke_width = 1;
+		if (!fill_color && !stroke_color)
+		{
+			cursor = end + 1;
+			continue;
+		}
+		if (strnstr(begin, "fill-opacity=\"0", length)
+			|| strnstr(begin, "fill-opacity='0", length)
+			|| strnstr(begin, "opacity='0", length)
+			|| strnstr(begin, "opacity=\"0", length))
+		{
+			cursor = end + 1;
+			continue;
+		}
+		if (override_color)
+		{
+			if (fill_color)
+				fill_color = override_color;
+			if (has_stroke && stroke_color)
+				stroke_color = override_color;
+		}
 		int px = x + svg_attr_int(begin, length, "x", 0) * w / source_width;
 		int py = y + svg_attr_int(begin, length, "y", 0) * h / source_height;
 		int pw = svg_attr_int(begin, length, "width", 0) * w / source_width;
 		int ph = svg_attr_int(begin, length, "height", 0) * h / source_height;
 		if (strnstr(begin, "<rect", length))
-			draw_rect(px, py, pw, ph, color);
+			draw_rect(px, py, pw, ph, fill_color);
 		else if (strnstr(begin, "<circle", length))
-			draw_ellipse(x + svg_attr_int(begin, length, "cx", 0) * w / source_width, y + svg_attr_int(begin, length, "cy", 0) * h / source_height, svg_attr_int(begin, length, "r", 0) * w / source_width, svg_attr_int(begin, length, "r", 0) * h / source_height, color, 1);
+			draw_ellipse(x + svg_attr_int(begin, length, "cx", 0) * w / source_width, y + svg_attr_int(begin, length, "cy", 0) * h / source_height, svg_attr_int(begin, length, "r", 0) * w / source_width, svg_attr_int(begin, length, "r", 0) * h / source_height, fill_color, 1);
 		else if (strnstr(begin, "<ellipse", length))
-			draw_ellipse(x + svg_attr_int(begin, length, "cx", 0) * w / source_width, y + svg_attr_int(begin, length, "cy", 0) * h / source_height, svg_attr_int(begin, length, "rx", 0) * w / source_width, svg_attr_int(begin, length, "ry", 0) * h / source_height, color, 1);
+			draw_ellipse(x + svg_attr_int(begin, length, "cx", 0) * w / source_width, y + svg_attr_int(begin, length, "cy", 0) * h / source_height, svg_attr_int(begin, length, "rx", 0) * w / source_width, svg_attr_int(begin, length, "ry", 0) * h / source_height, fill_color, 1);
 		else if (strnstr(begin, "<line", length))
-			svg_line(this, x + svg_attr_int(begin, length, "x1", 0) * w / source_width, y + svg_attr_int(begin, length, "y1", 0) * h / source_height, x + svg_attr_int(begin, length, "x2", 0) * w / source_width, y + svg_attr_int(begin, length, "y2", 0) * h / source_height, color);
+			svg_stroke_line(this, x + svg_attr_int(begin, length, "x1", 0) * w / source_width, y + svg_attr_int(begin, length, "y1", 0) * h / source_height, x + svg_attr_int(begin, length, "x2", 0) * w / source_width, y + svg_attr_int(begin, length, "y2", 0) * h / source_height, stroke_color ? stroke_color : fill_color, stroke_width);
 		else if (strnstr(begin, "<polygon", length))
-			svg_points(this, begin, length, x, y, w * 1000 / source_width, h * 1000 / source_height, color, 1);
+			svg_points(this, begin, length, x, y, w * 1000 / source_width, h * 1000 / source_height, fill_color, 1);
 		else if (strnstr(begin, "<polyline", length))
-			svg_points(this, begin, length, x, y, w * 1000 / source_width, h * 1000 / source_height, color, 0);
+			svg_points(this, begin, length, x, y, w * 1000 / source_width, h * 1000 / source_height, stroke_color ? stroke_color : fill_color, 0);
 		else if (strnstr(begin, "<path", length))
-			svg_path(this, begin, length, x, y, w * 1000 / source_width, h * 1000 / source_height, color, 1);
+			svg_path(this, begin, length, x, y, w * 1000 / source_width, h * 1000 / source_height, fill_color, stroke_color, stroke_width);
 		cursor = end + 1;
 	}
 }

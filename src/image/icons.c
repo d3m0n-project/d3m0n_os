@@ -251,7 +251,7 @@ void		draw_icon(int x, int y, int w, int h, const char *icon_name, uint32_t over
 		return;
 	}
 	if (type == ICON_FORMAT_SVG)
-		draw_svg_buff(x, y, w, h, ((t_svg *)icon)->data, ((t_svg *)icon)->size + 1, 0);//override_color);
+		draw_svg_buff(x, y, w, h, ((t_svg *)icon)->data, ((t_svg *)icon)->size, override_color);
 	else if (type == ICON_FORMAT_BMP)
 		draw_bmp(x, y, w, h, icon, override_color);
 }
