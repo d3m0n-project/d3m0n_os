@@ -49,6 +49,7 @@ public:
 	void		draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);
 	void		draw_text_at(int x, int y, int font_size, const char *text, uint32_t color, t_font *font = 0);
 	void		draw_svg(int x, int y, int w, int h, const char *path, uint32_t override_color = 0);
+	void		draw_svg_buff(int x, int y, int w, int h, const char *data, size_t size, uint32_t override_color = 0);
 };
 
 #endif

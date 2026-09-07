@@ -507,7 +507,9 @@ t_process	*elf_to_proc(char *elf_path)
 	}
 	proc->address_space = address_space_create(image, image_size, section_detail);
 	if (!proc->address_space.l1 || mmu_map_user_range(&proc->address_space, proc->user_stack,
-			USER_STACK_PAGES * PAGE_SIZE, 1, 0))
+			USER_STACK_PAGES * PAGE_SIZE, 1, 0)
+		|| mmu_map_kernel_range(&proc->address_space, proc->kernel_stack,
+			KERNEL_STACK_PAGES * PAGE_SIZE))
 	{
 		scheduler_remove(proc);
 		restore_interrupts(interrupt_state);

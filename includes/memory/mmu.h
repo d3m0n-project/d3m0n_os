@@ -19,6 +19,7 @@ uint32_t		*mmu_kernel_table(void);
 void			mmu_setup(void);
 void			mmu_switch_table(uint32_t *table);
 int				mmu_map_user_range(t_address_space *space, void *address, size_t size, int writable, int executable);
+int				mmu_map_kernel_range(t_address_space *space, void *address, size_t size);
 t_address_space	address_space_create(void *image_ptr, size_t size, t_section_info *);
 
 #endif

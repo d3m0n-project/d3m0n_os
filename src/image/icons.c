@@ -2,11 +2,16 @@
 #include "filesystem/get_next_line.h"
 #include "settings.h"
 #include "libft.h"
+#include "../../compiler/sdk/lib/app/svg.h"
+#include "display/display.h"
 
 typedef struct	s_icon
 {
-	BmpTexture	texture;
-	char		name[32];
+	BmpTexture		bmp_texture;
+	t_svg			svg_texture;
+
+	e_icon_format	format;
+	char			name[32];
 }	t_icon;
 
 static t_icon	*library = 0;
@@ -27,7 +32,9 @@ static int	valid_icon_path(const char *path)
 	{
 		size_t len = ft_strlen(parts[1]);
 
-		if (len > 4 && !ft_strcmp(parts[1] + len - 4, ".bmp"))
+		if (len > 4 && (!ft_strcmp(parts[1] + len - 4, ".bmp") || !ft_strcmp(parts[1] + len - 4, ".BMP")))
+			ok = 1;
+		if (len > 4 && (!ft_strcmp(parts[1] + len - 4, ".svg") || !ft_strcmp(parts[1] + len - 4, ".SVG")))
 			ok = 1;
 	}
 
@@ -42,7 +49,12 @@ static void	free_library(void)
 		return;
 
 	for (size_t i = 0; i < library_count; i++)
-		free_bmp_texture(&library[i].texture);
+	{
+		if (library[i].format == ICON_FORMAT_BMP && library[i].bmp_texture.pixels)
+			free_bmp_texture(&library[i].bmp_texture);
+		if (library[i].format == ICON_FORMAT_SVG && library[i].svg_texture.data)
+			kfree(&library[i].svg_texture.data);
+	}
 
 	kfree(library);
 	library = 0;
@@ -57,7 +69,6 @@ int	load_icon_pack(char *path)
 	size_t	max_icons = 0;
 
 	free_library();
-
 	list_path = ft_strjoin(path, "/icons.lst");
 	if (!list_path)
 		return 1;
@@ -74,7 +85,6 @@ int	load_icon_pack(char *path)
 	while ((line = get_next_line(fd)))
 	{
 		size_t i = ft_strlen(line);
-
 		while (i > 0 && (line[i - 1] == '\n' || line[i - 1] == '\r'))
 		{
 			line[i - 1] = '\0';
@@ -104,7 +114,7 @@ int	load_icon_pack(char *path)
 	// load default icon
 	library[library_count++] = (t_icon){0};
 	ft_strlcpy(library[0].name, "default", 32);
-	bmp_load_image(&library[0].texture, DEFAULT_ICON_PATH);
+	bmp_load_image(&library[0].bmp_texture, DEFAULT_ICON_PATH); // TODO: make default dynamic
 
 
 	fd = open(list_path, O_READ);
@@ -167,7 +177,16 @@ int	load_icon_pack(char *path)
 			return 1;
 		}
 
-		if (bmp_load_image(&library[library_count].texture, full_path))
+		char *format = ft_strrchr(full_path, '.');
+		if (!ft_strcmp(format, ".svg") || !ft_strcmp(format, ".SVG"))
+			library[library_count].format = ICON_FORMAT_SVG;
+		else
+			library[library_count].format = ICON_FORMAT_BMP;
+
+		if (
+			(library[library_count].format == ICON_FORMAT_BMP && bmp_load_image(&library[library_count].bmp_texture, full_path))
+			|| (library[library_count].format == ICON_FORMAT_SVG && svg_read_file(&library[library_count].svg_texture, full_path))
+		)
 		{
 			log("ICONS: Could not load image at %s\n", LOG_ERROR, full_path);
 			kfree(full_path);
@@ -186,10 +205,10 @@ int	load_icon_pack(char *path)
 	return (0);
 }
 
-BmpTexture	*get_icon(char *name, t_conf *conf)
+void	*get_icon(char *name, t_conf *conf, e_icon_format *type)
 {
 	int		setting_index = -1;
-
+	*type = ICON_FORMAT_UNKNOWN;
 	if (conf)
 	{
 		// check if that is an alias in the config
@@ -208,8 +227,31 @@ BmpTexture	*get_icon(char *name, t_conf *conf)
 	for (size_t i = 0; i < library_count; i++)
 	{
 		if (!ft_strcmp(library[i].name, name))
-			return &library[i].texture;
+		{
+			*type = library[i].format;
+			if (library[i].format == ICON_FORMAT_BMP)
+				return &library[i].bmp_texture;
+			if (library[i].format == ICON_FORMAT_SVG)
+				return &library[i].svg_texture;
+			return 0;
+		}
 	}
 	log("ICONS: Could not find icon '%s'\n", LOG_ERROR, name);
 	return 0;
+}
+
+void		draw_icon(int x, int y, int w, int h, const char *icon_name, uint32_t override_color)
+{
+	t_conf	*conf = get_config();
+	e_icon_format type = ICON_FORMAT_UNKNOWN;
+	void	*icon = get_icon((char *)icon_name, conf, &type);
+	if (!icon || type == ICON_FORMAT_UNKNOWN)
+	{
+		log("DRAW ICON: Unknown icon type for %s\n", LOG_WARNING | LOG_INDENT, icon_name);
+		return;
+	}
+	if (type == ICON_FORMAT_SVG)
+		draw_svg_buff(x, y, w, h, ((t_svg *)icon)->data, ((t_svg *)icon)->size + 1, 0);//override_color);
+	else if (type == ICON_FORMAT_BMP)
+		draw_bmp(x, y, w, h, icon, override_color);
 }

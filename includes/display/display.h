@@ -35,6 +35,7 @@ extern uint32_t			DISPLAY_COLORS[17];
 int					display_init();
 uint32_t			get_pixel(int x, int y);
 void				put_pixel(int x, int y, uint32_t color);
+void				draw_hline(int x, int y, int w, uint32_t color);
 void				draw_rect(int x, int y, int w, int h, uint32_t color);
 void				draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int filled);
 void				draw_rect_outline(int x, int y, int w, int h, uint32_t color);

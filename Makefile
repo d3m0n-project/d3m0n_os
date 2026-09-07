@@ -168,9 +168,9 @@ applications:
 	@cp -r applications/* rootfs/apps/d3m0n/
 	@printf "$(COLOR_SUCCESS)[OK] Copied applications list to disk!$(R)\n"
 
-	@chmod +x build_package_lst.sh
-	@bash build_package_lst.sh rootfs/apps/* # TODO: do for other modules
-	@printf "$(COLOR_SUCCESS)[OK] Generated package.lst!$(R)\n"
+#	@chmod +x build_package_lst.sh
+#	@bash build_package_lst.sh rootfs/apps/* # TODO: do for other modules
+#	@printf "$(COLOR_SUCCESS)[OK] Generated package.lst!$(R)\n"
 
 
 disk: applications

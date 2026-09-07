@@ -291,6 +291,13 @@ int	mmu_map_user_range(t_address_space *space, void *address, size_t size, int w
 	return map_range(space->l1, (uintptr_t)address, size, ap, executable ? 0 : 1);
 }
 
+int	mmu_map_kernel_range(t_address_space *space, void *address, size_t size)
+{
+	if (!space || !space->l1)
+		return 1;
+	return map_range(space->l1, (uintptr_t)address, size, L2_AP_PRIV_RW_USER_NONE, 1);
+}
+
 uint32_t	*mmu_kernel_table(void)
 {
 	return mmu_table;

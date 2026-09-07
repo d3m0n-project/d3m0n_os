@@ -77,13 +77,10 @@ static void	draw_battery(t_conf *conf, uint32_t theme_color_fg)
 		final_idx = 7;
 
 	char	*icon_name = (charging)?battery_levels_charging[final_idx]:battery_levels[final_idx];
-	BmpTexture	*battery_icon = get_icon(icon_name, conf);
-	if (!battery_icon)
-		return;
-
 	int text_y = TOPBAR_PADDING + (16 - TOPBAR_FONT_SIZE) / 2;
+
 	draw_text_at(181 + 52, text_y, TOPBAR_FONT_SIZE, battery_percentage, theme_color_fg, &topbar_font);
-	draw_bmp(181 + 95, TOPBAR_PADDING - 1, size, size, battery_icon, theme_color_fg);
+	draw_icon(181 + 95, TOPBAR_PADDING - 1, size, size, icon_name, theme_color_fg);
 }
 
 void	draw_connections(t_conf *conf, uint32_t theme_color_fg)
@@ -101,19 +98,8 @@ void	draw_connections(t_conf *conf, uint32_t theme_color_fg)
 	if (wifi_level < 0 || wifi_level > 5)
 		wifi_level = 0;
 	
-	BmpTexture	*wifi_icon = get_icon(wifi_states[wifi_level], conf);
-	if (!wifi_icon)
-		return;
-
-	BmpTexture	*network_icon = get_icon("device.signal_cellular_4_bar", conf);
-	if (!network_icon)
-	{
-		kfree(wifi_icon);
-		return;
-	}
-	
-	draw_bmp(181, TOPBAR_PADDING - 1, size, size, network_icon, theme_color_fg);
-	draw_bmp(181 + 26, TOPBAR_PADDING - 1, size, size, wifi_icon, theme_color_fg);
+	draw_icon(181, TOPBAR_PADDING - 1, size, size, "device.signal_cellular_4_bar", theme_color_fg);
+	draw_icon(181 + 26, TOPBAR_PADDING - 1, size, size, wifi_states[wifi_level], theme_color_fg);
 }
 
 void	draw_topbar(void)
