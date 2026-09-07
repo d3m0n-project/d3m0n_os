@@ -19,6 +19,7 @@
 #define strnstr(a, b, c)	ft_strnstr(a, b, c)
 #define strlen(a)			ft_strlen(a)
 #define strchr(a, b)		ft_strchr(a, b)
+#define isspace(a)			ft_isspace(a)
 
 #define DISPLAY_FUNC(name)	name
 #define Display				int
@@ -26,7 +27,6 @@
 #define this				0
 #define malloc				kmalloc
 #define free				kfree
-
 #endif
 
 static int svg_attr_int(const char *tag, int length, const char *name, int fallback)
@@ -37,7 +37,7 @@ static int svg_attr_int(const char *tag, int length, const char *name, int fallb
 
 	while (p < end)
 	{
-		while (p < end && (ft_isspace(*p) || *p == '<' || *p == '/'))
+		while (p < end && (isspace(*p) || *p == '<' || *p == '/'))
 			++p;
 
 		if (p + name_len <= end)
@@ -53,11 +53,11 @@ static int svg_attr_int(const char *tag, int length, const char *name, int fallb
 				}
 			}
 
-			if (match && (p + name_len == end || ft_isspace(p[name_len]) || p[name_len] == '='))
+			if (match && (p + name_len == end || isspace(p[name_len]) || p[name_len] == '='))
 			{
 				const char *v = p + name_len;
 
-				while (v < end && ft_isspace(*v))
+				while (v < end && isspace(*v))
 					++v;
 
 				if (v >= end || *v != '=')
@@ -65,7 +65,7 @@ static int svg_attr_int(const char *tag, int length, const char *name, int fallb
 
 				++v;
 
-				while (v < end && ft_isspace(*v))
+				while (v < end && isspace(*v))
 					++v;
 
 				if (v < end && (*v == '"' || *v == '\''))
@@ -94,17 +94,17 @@ static int svg_attr_int(const char *tag, int length, const char *name, int fallb
 		}
 
 		// skip current attribute
-		while (p < end && !ft_isspace(*p) && *p != '=')
+		while (p < end && !isspace(*p) && *p != '=')
 			++p;
 
-		while (p < end && ft_isspace(*p))
+		while (p < end && isspace(*p))
 			++p;
 
 		if (p < end && *p == '=')
 		{
 			++p;
 
-			while (p < end && ft_isspace(*p))
+			while (p < end && isspace(*p))
 				++p;
 
 			if (p < end && (*p == '"' || *p == '\''))
@@ -117,7 +117,7 @@ static int svg_attr_int(const char *tag, int length, const char *name, int fallb
 			}
 			else
 			{
-				while (p < end && !ft_isspace(*p))
+				while (p < end && !isspace(*p))
 					++p;
 			}
 		}
@@ -132,7 +132,7 @@ static uint32_t svg_color(const char *tag, int length, const char *attribute, ui
 	int attr_len = (int)strlen(attribute);
 	while (p < end)
 	{
-		while (p < end && (ft_isspace(*p) || *p == '<' || *p == '/'))
+		while (p < end && (isspace(*p) || *p == '<' || *p == '/'))
 			++p;
 
 		if (p + attr_len <= end)
@@ -148,10 +148,10 @@ static uint32_t svg_color(const char *tag, int length, const char *attribute, ui
 				}
 			}
 
-			if (match && (p + attr_len == end || ft_isspace(p[attr_len]) || p[attr_len] == '='))
+			if (match && (p + attr_len == end || isspace(p[attr_len]) || p[attr_len] == '='))
 			{
 				const char *v = p + attr_len;
-				while (v < end && ft_isspace(*v))
+				while (v < end && isspace(*v))
 					++v;
 
 				if (v >= end || *v != '=')
@@ -159,7 +159,7 @@ static uint32_t svg_color(const char *tag, int length, const char *attribute, ui
 
 				++v;
 
-				while (v < end && ft_isspace(*v))
+				while (v < end && isspace(*v))
 					++v;
 
 				char quote = 0;
@@ -174,7 +174,7 @@ static uint32_t svg_color(const char *tag, int length, const char *attribute, ui
 						if (*v == quote)
 							break;
 					}
-					else if (ft_isspace(*v) || *v == '>')
+					else if (isspace(*v) || *v == '>')
 						break;
 
 					++v;
@@ -217,16 +217,16 @@ static uint32_t svg_color(const char *tag, int length, const char *attribute, ui
 			}
 		}
 
-		while (p < end && !ft_isspace(*p) && *p != '=')
+		while (p < end && !isspace(*p) && *p != '=')
 			++p;
 
-		while (p < end && ft_isspace(*p))
+		while (p < end && isspace(*p))
 			++p;
 
 		if (p < end && *p == '=')
 		{
 			++p;
-			while (p < end && ft_isspace(*p))
+			while (p < end && isspace(*p))
 				++p;
 			if (p < end && (*p == '"' || *p == '\''))
 			{
@@ -417,9 +417,7 @@ static void svg_path(Display *display, const char *tag, int length, int ox, int 
 
 	++cursor;
 
-	while (cursor < end &&
-		*cursor != '"' &&
-		*cursor != '\'')
+	while (cursor < end && *cursor != '"' && *cursor != '\'')
 		++cursor;
 
 	if (cursor >= end)
@@ -427,7 +425,6 @@ static void svg_path(Display *display, const char *tag, int length, int ox, int 
 
 	char quote = *cursor++;
 	const char *path_end = cursor;
-
 	while (path_end < end && *path_end != quote)
 		++path_end;
 
@@ -447,11 +444,9 @@ static void svg_path(Display *display, const char *tag, int length, int ox, int 
 
 	while (cursor < end)
 	{
-		if ((*cursor >= 'A' && *cursor <= 'Z') ||
-			(*cursor >= 'a' && *cursor <= 'z'))
+		if ((*cursor >= 'A' && *cursor <= 'Z') || (*cursor >= 'a' && *cursor <= 'z'))
 		{
 			command = *cursor++;
-
 			if (command == 'Z' || command == 'z')
 			{
 				if (count > 1)
@@ -634,9 +629,7 @@ static void svg_path(Display *display, const char *tag, int length, int ox, int 
 			continue;
 		}
 
-		/*
-		 * H / V.
-		 */
+
 		if (command == 'H' || command == 'h')
 		{
 			int next_x = command == 'h' ? current_x + values[0] : values[0];
