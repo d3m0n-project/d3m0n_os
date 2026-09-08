@@ -1,4 +1,3 @@
-
 #ifndef SVG_H
 #define SVG_H
 
@@ -28,6 +27,8 @@
 #define malloc				kmalloc
 #define free				kfree
 #endif
+
+static int svg_next_number(const char **cursor, const char *end, int *value);
 
 static int svg_attr_int(const char *tag, int length, const char *name, int fallback)
 {
@@ -210,9 +211,6 @@ static uint32_t svg_color(const char *tag, int length, const char *attribute, ui
 				if (value_len == 5 && (value_start[0] == 'b' || value_start[0] == 'B'))
 					return 0xFF0000FF;
 
-				if (value_len == 5 && (value_start[0] == 'b' || value_start[0] == 'B'))
-					return 0xFF000000;
-
 				return fallback;
 			}
 		}
@@ -247,7 +245,7 @@ static void svg_line(Display *display, int x0, int y0, int x1, int y1, uint32_t 
 	(void)display;
 	int dx = x1 > x0 ? x1 - x0 : x0 - x1;
 	int sx = x0 < x1 ? 1 : -1;
-	int dy = y1 > y0 ? y0 - y1 : y1 - y0;
+	int dy = y1 > y0 ? y1 - y0 : y0 - y1;
 	int sy = y0 < y1 ? 1 : -1;
 	int error = dx + dy;
 	while (1)
@@ -283,19 +281,18 @@ static void svg_points(Display *display, const char *tag, int length, int ox, in
 	int first_x = 0;
 	int first_y = 0;
 	int have = 0;
-	while (points < tag + length)
+	const char *end = tag + length;
+	while (points < end)
 	{
-		while (points < tag + length && (*points < '0' || *points > '9') && *points != '-')
-			++points;
-		if (points >= tag + length)
+		int nx;
+		int ny;
+		if (!svg_next_number(&points, end, &nx))
 			break;
-		int nx = svg_attr_int(points, (int)(tag + length - points), "", 0);
-		while (points < tag + length && *points != ',' && *points != ' ' && *points != '\t')
+		while (points < end && (*points == ',' || *points == ' ' || *points == '\t'))
 			++points;
-		while (points < tag + length && (*points == ',' || *points == ' ' || *points == '\t'))
-			++points;
-		int ny = svg_attr_int(points, (int)(tag + length - points), "", 0);
-		while (points < tag + length && *points != ',' && *points != ' ' && *points != '\t')
+		if (!svg_next_number(&points, end, &ny))
+			break;
+		while (points < end && (*points == ',' || *points == ' ' || *points == '\t'))
 			++points;
 		int dx = ox + nx * sx / 1000;
 		int dy = oy + ny * sy / 1000;
@@ -449,12 +446,9 @@ static void svg_path(Display *display, const char *tag, int length, int ox, int 
 			command = *cursor++;
 			if (command == 'Z' || command == 'z')
 			{
-				if (count > 1)
+				if (count > 1 && stroke_color)
 				{
-					uint32_t color = stroke_color ? stroke_color : fill_color;
-
-					if (color)
-						svg_stroke_line(display, points_x[count - 1], points_y[count - 1], points_x[0], points_y[0], color, stroke_width);
+					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], points_x[0], points_y[0], stroke_color, stroke_width);
 				}
 
 				if (fill_color && count >= 3)
@@ -551,6 +545,7 @@ static void svg_path(Display *display, const char *tag, int length, int ox, int 
 				y3 += current_y;
 			}
 
+			// Draw intermediate points only if stroking
 			for (int step = 1; step <= 16; ++step)
 			{
 				int t = step;
@@ -559,16 +554,15 @@ static void svg_path(Display *display, const char *tag, int length, int ox, int 
 				int py = (nt * nt * nt * y0 + 3 * nt * nt * t * y1 + 3 * nt * t * t * y2 + t * t * t * y3) / 4096;
 				int screen_x = ox + px * sx / 1000;
 				int screen_y = oy + py * sy / 1000;
-				if (count > 0)
+				
+				// Only draw strokes if explicit stroke color is set
+				if (count > 0 && stroke_color)
 				{
-					uint32_t color =
-						stroke_color ? stroke_color : fill_color;
-
-					if (color)
-						svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, color, stroke_width);
+					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, stroke_color, stroke_width);
 				}
 
-				if (count < 256)
+				// For fills, only add the final endpoint
+				if (step == 16 && count < 256)
 				{
 					points_x[count] = screen_x;
 					points_y[count] = screen_y;
@@ -609,14 +603,15 @@ static void svg_path(Display *display, const char *tag, int length, int ox, int 
 				int py = (nt * nt * y0 + 2 * nt * t * y1 + t * t * y2) / 256;
 				int screen_x = ox + px * sx / 1000;
 				int screen_y = oy + py * sy / 1000;
-				if (count > 0)
+				
+				// Only draw strokes if explicit stroke color is set
+				if (count > 0 && stroke_color)
 				{
-					uint32_t color = stroke_color ? stroke_color : fill_color;
-					if (color)
-						svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, color, stroke_width);
+					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, stroke_color, stroke_width);
 				}
 
-				if (count < 256)
+				// For fills, only add the final endpoint
+				if (step == 16 && count < 256)
 				{
 					points_x[count] = screen_x;
 					points_y[count] = screen_y;
@@ -635,11 +630,9 @@ static void svg_path(Display *display, const char *tag, int length, int ox, int 
 			int next_x = command == 'h' ? current_x + values[0] : values[0];
 			int screen_x = ox + next_x * sx / 1000;
 			int screen_y = oy + current_y * sy / 1000;
-			if (count > 0)
+			if (count > 0 && stroke_color)
 			{
-				uint32_t color = stroke_color ? stroke_color : fill_color;
-				if (color)
-					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, color, stroke_width);
+				svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, stroke_color, stroke_width);
 			}
 
 			if (count < 256)
@@ -658,11 +651,9 @@ static void svg_path(Display *display, const char *tag, int length, int ox, int 
 			int next_y = command == 'v' ? current_y + values[0] : values[0];
 			int screen_x = ox + current_x * sx / 1000;
 			int screen_y = oy + next_y * sy / 1000;
-			if (count > 0)
+			if (count > 0 && stroke_color)
 			{
-				uint32_t color = stroke_color ? stroke_color : fill_color;
-				if (color)
-					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, color, stroke_width);
+				svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, stroke_color, stroke_width);
 			}
 
 			if (count < 256)
@@ -702,12 +693,9 @@ static void svg_path(Display *display, const char *tag, int length, int ox, int 
 
 		int screen_x = ox + next_x * sx / 1000;
 		int screen_y = oy + next_y * sy / 1000;
-		if (count > 0)
+		if (count > 0 && stroke_color)
 		{
-			uint32_t color = stroke_color ? stroke_color : fill_color;
-
-			if (color)
-				svg_stroke_line(display, points_x[count-1], points_y[count-1], screen_x, screen_y, color, stroke_width);
+			svg_stroke_line(display, points_x[count-1], points_y[count-1], screen_x, screen_y, stroke_color, stroke_width);
 		}
 
 		if (count < 256)
@@ -757,10 +745,7 @@ void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const char *svg, si
 			cursor = end + 1;
 			continue;
 		}
-		if (strnstr(begin, "fill-opacity=\"0", length)
-			|| strnstr(begin, "fill-opacity='0", length)
-			|| strnstr(begin, "opacity='0", length)
-			|| strnstr(begin, "opacity=\"0", length))
+		if (strnstr(begin, "fill-opacity=\"0", length) || strnstr(begin, "fill-opacity='0", length) || strnstr(begin, "opacity='0", length) || strnstr(begin, "opacity=\"0", length))
 		{
 			cursor = end + 1;
 			continue;
