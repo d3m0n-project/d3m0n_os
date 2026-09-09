@@ -1,0 +1,157 @@
+    [0;38;5;69;49m██████╗ ██████╗ [0;38;5;69;49m███╗   ███╗ [0;38;5;69;49m██████╗ [0;38;5;105;49m███╗   ██╗[0m
+    [0;38;5;69;49m██╔══██╗╚════██╗[0;38;5;69;49m████╗ ████║[0;38;5;105;49m██╔═████╗[0;38;5;141;49m████╗  ██║[0m
+    [0;38;5;105;49m██║  ██║ █████╔╝[0;38;5;105;49m██╔████╔██║[0;38;5;141;49m██║██╔██║[0;38;5;177;49m██╔██╗ ██║[0m
+    [0;38;5;105;49m██║  ██║ ╚═══██╗[0;38;5;141;49m██║╚██╔╝██║[0;38;5;141;49m████╔╝██║[0;38;5;177;49m██║╚██╗██║[0m
+    [0;38;5;141;49m██████╔╝██████╔╝[0;38;5;177;49m██║ ╚═╝ ██║[0;38;5;177;49m╚██████╔╝[0;38;5;213;49m██║ ╚████║[0m
+    [0;38;5;213;49m╚═════╝ ╚═════╝ [0;38;5;213;49m╚═╝     ╚═╝ [0;38;5;213;49m╚═════╝ [0;38;5;213;49m╚═╝  ╚═══╝[0m
+
+    [0;38;5;69;49m╔═════════════════╣ CONFIG ╠══════╦══════════╗[0m
+    [0;38;5;69;49m║[0m [0;38;5;141;49mDEBUG                          [0m [0;38;5;69;49m║[0m [32mENABLED[0m  [0;38;5;69;49m║[0m
+    [0;38;5;69;49m║[0m [0;38;5;141;49mDEBUG_OUTLINE                  [0m [0;38;5;69;49m║[0m [31mDISABLED[0m [0;38;5;69;49m║[0m
+    [0;38;5;69;49m║[0m [0;38;5;141;49mUSE_ADMIN                      [0m [0;38;5;69;49m║[0m [32mENABLED[0m  [0;38;5;69;49m║[0m
+    [0;38;5;69;49m║[0m [0;38;5;141;49mSHOW_IMAGE_STATUS              [0m [0;38;5;69;49m║[0m [31mDISABLED[0m [0;38;5;69;49m║[0m
+    [0;38;5;69;49m║[0m [0;38;5;141;49mTRACK_MEMORY_USAGE             [0m [0;38;5;69;49m║[0m [31mDISABLED[0m [0;38;5;69;49m║[0m
+    [0;38;5;69;49m║[0m [0;38;5;141;49mUSE_GDB                        [0m [0;38;5;69;49m║[0m [31mDISABLED[0m [0;38;5;69;49m║[0m
+    [0;38;5;69;49m╚═════════════════════════════════╩══════════╝[0m
+
+[36m[CC] src/display/topbar.c[0m
+[36m[CC] src/image/icons.c[0m
+[36m[LD] Linking kernel...[0m
+arm-none-eabi-gcc -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 -Iincludes -mcpu=arm1176jzf-s -marm -fno-omit-frame-pointer -mno-apcs-frame -MMD -MD -D DEBUG=1 -D DEBUG_OUTLINE=0 -D KERNEL_VERSION=\"2.0.9\" -D KERNEL_VERSION_NAME=\"outset\" -D SHOW_IMAGE_STATUS=0 -D TRACK_MEMORY_USAGE=0 -g3 obj/algorithm/crypto/base64.o obj/algorithm/crypto/chacha20.o obj/algorithm/crypto/sha256.o obj/display/display.o obj/display/font.o obj/display/GPU/VideoCore4.o obj/display/lcd.o obj/display/topbar.o obj/dtb/dtb.o obj/exceptions.o obj/filesystem/block_interface.o obj/filesystem/fat32.o obj/filesystem/fd.o obj/filesystem/list_dir.o obj/frequency_generator.o obj/ft_printf/count_functions.o obj/ft_printf/ft_printf.o obj/ft_printf/ft_putchar_count.o obj/ft_printf/ft_puthex_count.o obj/ft_printf/ft_putnbr_count.o obj/ft_printf/ft_putptr_count.o obj/ft_printf/ft_uint_putnbr_count.o obj/ft_printf/ft_ull_putnbr_count.o obj/ft_printf/parser.o obj/ft_printf/types_display.o obj/gnl/get_next_line.o obj/gnl/get_next_line_utils.o obj/gpio.o obj/image/bmp.o obj/image/ICO/DIB.o obj/image/ico.o obj/image/icons.o obj/image/svg.o obj/ir/ir.o obj/ir/nec.o obj/ir/rc5.o obj/libft/ft_atoi.o obj/libft/ft_bzero.o obj/libft/ft_calloc.o obj/libft/ft_isalnum.o obj/libft/ft_isalpha.o obj/libft/ft_isascii.o obj/libft/ft_isdigit.o obj/libft/ft_isprint.o obj/libft/ft_isspace.o obj/libft/ft_itoa.o obj/libft/ft_lstadd_back.o obj/libft/ft_lstadd_front.o obj/libft/ft_lstclear.o obj/libft/ft_lstdelone.o obj/libft/ft_lstiter.o obj/libft/ft_lstlast.o obj/libft/ft_lstmap.o obj/libft/ft_lstnew.o obj/libft/ft_lstsize.o obj/libft/ft_memchr.o obj/libft/ft_memcmp.o obj/libft/ft_memcpy.o obj/libft/ft_memmove.o obj/libft/ft_memset.o obj/libft/ft_putchar_fd.o obj/libft/ft_putendl_fd.o obj/libft/ft_putnbr_fd.o obj/libft/ft_putstr_fd.o obj/libft/ft_realloc.o obj/libft/ft_split.o obj/libft/ft_strcat.o obj/libft/ft_strchr.o obj/libft/ft_strcmp.o obj/libft/ft_strcspn.o obj/libft/ft_strdup.o obj/libft/ft_striteri.o obj/libft/ft_strjoin.o obj/libft/ft_strlcat.o obj/libft/ft_strlcpy.o obj/libft/ft_strlen.o obj/libft/ft_strmapi.o obj/libft/ft_strncat.o obj/libft/ft_strncmp.o obj/libft/ft_strnstr.o obj/libft/ft_strrchr.o obj/libft/ft_strtrim.o obj/libft/ft_substr.o obj/libft/ft_tolower.o obj/libft/ft_toupper.o obj/mailbox.o obj/main.o obj/math.o obj/memory/memory.o obj/memory/MMU.o obj/proc/debug/process_stack_dump.o obj/proc/elf/app_info.o obj/proc/elf/elf.o obj/proc/mutex.o obj/proc/proc.o obj/proc/processes/init_proc.o obj/proc/scheduler.o obj/proc/syscalls/syscalls.o obj/proc/system_timer.o obj/proc/watchdog.o obj/random.o obj/serial/log.o obj/serial/uart.o obj/settings.o obj/spi.o obj/stats/battery.o obj/stats/stats.o obj/stats/storage.o obj/time.o obj/usb/usb.o obj/asm/boot.o obj/asm/proc/IRQ/IRQ.o obj/asm/proc/start_first_process.o obj/asm/proc/syscalls/swi_handler.o -T linker.ld -lgcc -Wl,-e,_start -o obj/kernel.elf
+[36m[OBJCOPY] Creating kernel.img...[0m
+[32m[OK] Build done: build/d3m0n_os_outset_2.0.9.img[0m
+[33m[QEMU] Starting emulator...[0m
+[1;37m[[1;36m INFO [1;37m] Loading kernel...
+[0m      =>[1;36m INFO [1;37mKERNEL_VERSION:		2.0.9
+[0m      =>[1;36m INFO [1;37mKERNEL_VERSION_NAME:	outset
+[0m[1;37m[[0;32m GOOD [1;37m] MMU initialized!
+[0m[1;37m[[0;32m GOOD [1;37m] Heap memory initialized!
+[0m[1;37m[[0;32m GOOD [1;37m] SD block interface initialized!
+[0m[1;37m[[0;32m GOOD [1;37m] FAT32 mounted!
+[0mFile listing in /
+[0m    APPS (0 bytes)
+[0m    CONFIG (6707 bytes)
+[0m    FONTS (0 bytes)
+[0m    SECURITY (0 bytes)
+[0m    TEST_APP (331236 bytes)
+[0m    THEMES (0 bytes)
+[0m    wallpapers (0 bytes)
+[0m[1;37m[[0;32m GOOD [1;37m] Framebuffer allocated!
+[0m[1;37m[[0;32m GOOD [1;37m] Display initialized!
+[0m[1;37m[[1;36m INFO [1;37m] USB: initializing host controller
+[0m      =>[1;36m INFO [1;37mUSB: root port reset complete, speed=full
+[0m[1;37m[[0;32m GOOD [1;37m] USB: device addr=1 vendor=0x409 product=0x55aa class=0x9 configs=1
+[0m      =>[1;36m INFO [1;37mUSB: config=1 interfaces=1 total_len=25
+[0m[1;37m[[1;36m INFO [1;37m] USB: hub detected, powering port 1
+[0m      =>[1;36m INFO [1;37mUSB: resetting hub port 1
+[0m      =>[1;36m INFO [1;37mUSB: hub port 1 enabled, child speed=full
+[0m[1;37m[[0;32m GOOD [1;37m] USB: device addr=2 vendor=0x627 product=0x1 class=0x0 configs=1
+[0m      =>[1;36m INFO [1;37mUSB: config=1 interfaces=1 total_len=34
+[0m[1;37m[[0;32m GOOD [1;37m] USB: HID boot mouse interface=0 endpoints=1
+[0m      =>[1;36m INFO [1;37mUSB: mouse interrupt IN ep=1 mps=4 interval=10
+[0m[1;37m[[0;32m GOOD [1;37m] USB: HID mouse ready for polling
+[0m[1;37m[[0;32m GOOD [1;37m] USB: enumeration complete
+[0m[1;37m[[0;32m GOOD [1;37m] Config parsed successfully!
+[0m[1;37m[[0;32m GOOD [1;37m] [init] started at 3029ms
+[0m[1;37m[[0;32m GOOD [1;37m] Found 5 icons in the icon pack!
+[0m[1;37m[[1;36m INFO [1;37m] Loaded icons in 298ms
+[0m[1;37m[[1;33m WARN [1;37m] Exited 'LOADER.app+icon' with status code: 0
+[0mELF file:
+[0m	BITS:			32
+[0m	ENDIANNESS:		LSB
+[0m	HEADER VERSION:		1
+[0m	ABI:			UNIX System V
+[0m	ABI VERSION:		0
+[0m	FILE TYPE:		Executable file
+[0m	INSTRUCTION SET:	ARM (AArch32)
+[0m=================================================
+[0mELF: file_size=331236 ph_count=2 ph_entry_size=32 ph_offset=52
+[0m	magic:			valid
+[0m	version:		1.0 
+[0m	name:			My Simple App
+[0m	author:			4re5 group
+[0m	description:		A simple application
+[0m	icon_size:		165662
+[0m	icon_offset:		0x2011ee0
+[0mELF: applying relocations load_base=0xfe284e18 image=0x284e18 min_vaddr=0x2000000
+[0mELF: min_vaddr=0x2000000 max_vaddr=0x203f964 image=0x284e18
+[0mProcess List:
+[0m  K [0      ] init            [state:0x1, irq sp:0x11876c, priority=0]
+[0m  U [2      ] test_app        [state:0x0, irq sp:0x13a03c, priority=0]
+[0m...
+[0mMySimple app started
+Read 342484 bytes from /fonts/Inter.ttf!
+...
+[0m[1;37m[[0;32m GOOD [1;37m] Read 342484 bytes from /fonts/Inter.ttf!
+[0mcommand=M
+[0mcurrent_x=289
+[0mcurrent_y=9
+[0mcommand=H
+[0mcurrent_x=287
+[0mcurrent_y=9
+[0mcommand=V
+[0mcurrent_x=287
+[0mcurrent_y=7
+[0mcommand=h
+[0mcurrent_x=284
+[0mcurrent_y=7
+[0mcommand=v
+[0mcurrent_x=284
+[0mcurrent_y=9
+[0mcommand=H
+[0mcurrent_x=282
+[0mcurrent_y=9
+[0mcommand=C
+[0mcurrent_x=281
+[0mcurrent_y=10
+[0mcommand=v
+[0mcurrent_x=281
+[0mcurrent_y=23
+[0mcommand=C
+[0mcurrent_x=282
+[0mcurrent_y=24
+[0mcommand=h
+[0mcurrent_x=289
+[0mcurrent_y=24
+[0mcommand=c
+[0mcurrent_x=290
+[0mcurrent_y=23
+[0mcommand=V
+[0mcurrent_x=290
+[0mcurrent_y=10
+[0mcommand=C
+[0mcurrent_x=289
+[0mcurrent_y=9
+[0mcommand=z
+[0mcurrent_x=289
+[0mcurrent_y=9
+[0mcommand=M
+[0mcurrent_x=285
+[0mcurrent_y=22
+[0mcommand=v
+[0mcurrent_x=285
+[0mcurrent_y=18
+[0mcommand=H
+[0mcurrent_x=283
+[0mcurrent_y=18
+[0mcommand=L
+[0mcurrent_x=286
+[0mcurrent_y=11
+[0mcommand=v
+[0mcurrent_x=286
+[0mcurrent_y=16
+[0mcommand=h
+[0mcurrent_x=288
+[0mcurrent_y=16
+[0mcommand=L
+[0mcurrent_x=285
+[0mcurrent_y=22
+[0mcommand=z
+[0mcurrent_x=285
+[0mcurrent_y=22
+[0mFinished...
+[1;37m[[1;33m WARN [1;37m] Exited 'test_app' with status code: 0
+[0m...
+[0m...
+[0m...
+[0m

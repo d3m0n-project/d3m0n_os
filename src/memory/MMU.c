@@ -40,6 +40,8 @@
 
 static uint32_t	mmu_table[L1_ENTRIES] __attribute__((aligned(L1_ALIGNMENT), section(".mmu_table")));
 
+extern	void	*stack_top;
+
 
 void	mmu_write_ttbr0(uint32_t value)
 {

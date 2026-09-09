@@ -81,6 +81,7 @@ void	schedule(void)
 	t_process	*old;
 	t_process	*next;
 
+	mmu_switch_table(mmu_kernel_table());
 	old = current_process;
 	next = scheduler_next();
 	if (!next || next == old)
@@ -92,7 +93,6 @@ void	schedule(void)
 	next->state = PROC_RUNNING;
 	next->time_slice = TIME_SLICE_MS;
 	current_process = next;
-	mmu_switch_table((next->mode == PROCESS_USER)?next->address_space.l1:mmu_kernel_table());
 }
 
 void	mmu_switch_current(void)

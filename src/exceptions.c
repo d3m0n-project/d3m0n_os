@@ -151,10 +151,12 @@ void	kernel_panic(ExceptionFrame *frame, uint32_t exception_id)
 	int is_user = is_user_mode(frame);
 	int log_level = (is_user)?LOG_WARNING:LOG_ERROR;
 	log("=== %s PANIC ===\n", log_level, (is_user)?"PROGRAM":"KERNEL");
-	process_list();
+	//process_list();
 
-	if (current_process)
-		check_stack_canary(current_process);
+	log("a\n", 0);
+
+	//if (current_process)
+	//	check_stack_canary(current_process);
 
 	log("=== PANIC DETAIL ===\n", log_level);
 	log("PC:                0x%X\n", log_level | LOG_INDENT, frame->pc);
@@ -164,6 +166,7 @@ void	kernel_panic(ExceptionFrame *frame, uint32_t exception_id)
 	{
 		uint32_t fault_addr = read_dfar();
 		uint32_t dfsr = read_dfsr();
+		//log("dfsr=%lu, dfar=%lu\n", 0, dfsr, fault_addr);
 		log("FAULT ADDR:        0x%X\n", log_level | LOG_INDENT, fault_addr);
 		log("FAULT TYPE:        %s\n", log_level | LOG_INDENT, dfsr_fault_type(dfsr));
 		log("FAULT OPERATION:   %s\n", log_level | LOG_INDENT, ((dfsr & (1u << 11)) != 0)?"WRITE":"READ");

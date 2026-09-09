@@ -39,16 +39,18 @@ _vectors:
 .type irq_handler, %function
 .extern current_process
 .extern process_context_valid
+.extern mmu_kernel_table
+.extern mmu_switch_table
 
 .extern swi_handler
 
 
 _start:
-	# set supervisor mode, disable interrupts
-	msr	cpsr_c, #0xD3
+	# go to supervisor mode
+	msr cpsr_c, #0xD3
 
 
-	# copy exception vectors to 0x00000000
+	# copy exception vectors to addr 0
 	ldr r0, =_vectors
 	mov r1, #0
 	mov r2, #64
@@ -170,6 +172,9 @@ irq_handler:
     mrs r0, spsr
     stmfd sp!, {r0}
 
+	bl mmu_kernel_table
+	bl mmu_switch_table
+
 	    ldr r1, =current_process
 	    ldr r1, [r1]
 	    cmp r1, #0
@@ -245,16 +250,22 @@ bad_irq_context:
     cmp r2, #0
     ldreq r3, =0x13
     ldrne r3, =0x1F
+	mov r6, r3
 
-    mrs r0, cpsr
-    bic r0, r0, #0x1F
-    orr r0, r0, r3
-    msr cpsr_c, r0
+	ldr r0, [r1,#4]
+	mov r4, r0
+	ldr r0, [r1,#8]
+	mov r5, r0
 
-    ldr r0, [r1,#4]
-    mov sp, r0
-    ldr r0, [r1,#8]
-    mov lr, r0
+	bl mmu_switch_current
+
+	mrs r0, cpsr
+	bic r0, r0, #0x1F
+	orr r0, r0, r6
+	msr cpsr_c, r0
+
+	mov sp, r4
+	mov lr, r5
 
     msr cpsr_c, #0xD2
 
