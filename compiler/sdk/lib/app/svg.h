@@ -9,6 +9,7 @@
 #define DISPLAY_FUNC(name)	Display::name
 #define DISPLAY(name)		display->name
 #define PRINT(fmt, data)	(void)fmt;
+#define FUNC_TYPE			inline
 #else
 
 #include "display/display.h"
@@ -16,22 +17,23 @@
 #include "memory/memory.h"
 #include "libft.h"
 #include "time.h"
-#define strnstr(a, b, c)	ft_strnstr(a, b, c)
-#define strlen(a)			ft_strlen(a)
-#define strchr(a, b)		ft_strchr(a, b)
-#define isspace(a)			ft_isspace(a)
-#define PRINT(fmt, data)	log(fmt, 0, data);//usleep(1000000);
+#define strnstr(a, b, c)		ft_strnstr(a, b, c)
+#define strlen(a)				ft_strlen(a)
+#define strchr(a, b)			ft_strchr(a, b)
+#define isspace(a)				ft_isspace(a)
+#define PRINT(fmt, data)		log(fmt, 0, data);//usleep(1000000);
 
-#define DISPLAY_FUNC(name)	name
-#define Display				int
-#define DISPLAY(name)		name
-#define this				0
-#define malloc				kmalloc
-#define free				kfree
+#define DISPLAY_FUNC(name)		name
+#define Display					int
+#define DISPLAY(name)			name
+#define this					0
+#define malloc					kmalloc
+#define free					kfree
+#define FUNC_TYPE				inline static 
 #endif
 
-#define SVG_COORD_SCALE		10000
-#define SVG_TRANSFORM_SCALE	10000000
+#define SVG_COORD_SCALE			10000
+#define SVG_TRANSFORM_SCALE		10000000
 
 inline static int svg_next_number(const char **cursor, const char *end, int *value);
 
@@ -427,15 +429,6 @@ inline static void svg_stroke_line(Display *display, int x0, int y0, int x1, int
 	}
 }
 
-inline static void svg_debug_current(char command, int current_x, int current_y, int ox, int oy, int sx, int sy)
-{
-	int screen_x = ox + (current_x * sx) / SVG_TRANSFORM_SCALE;
-	int screen_y = oy + (current_y * sy) / SVG_TRANSFORM_SCALE;
-	PRINT("command=%c\n", command);
-	PRINT("current_x=%i\n", screen_x);
-	PRINT("current_y=%i\n", screen_y);
-}
-
 inline static const char *svg_path_data(const char *tag, int length)
 {
 	const char *p = tag;
@@ -532,7 +525,6 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 
 				current_x = start_x;
 				current_y = start_y;
-				svg_debug_current(command, current_x, current_y, ox, oy, sx, sy);
 				count = 0;
 				command = 0;
 				continue;
@@ -644,7 +636,7 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 
 			current_x = x3;
 			current_y = y3;
-			svg_debug_current(command, current_x, current_y, ox, oy, sx, sy);
+
 			continue;
 		}
 
@@ -690,7 +682,6 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 
 			current_x = x2;
 			current_y = y2;
-			svg_debug_current(command, current_x, current_y, ox, oy, sx, sy);
 			continue;
 		}
 
@@ -711,7 +702,6 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 			}
 
 			current_x = next_x;
-			svg_debug_current(command, current_x, current_y, ox, oy, sx, sy);
 			continue;
 		}
 
@@ -731,13 +721,11 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 			}
 
 			current_y = next_y;
-			svg_debug_current(command, current_x, current_y, ox, oy, sx, sy);
 			continue;
 		}
 
 		int next_x;
 		int next_y;
-		char completed_command = command;
 		if (command == 'm' || command == 'l')
 		{
 			next_x = current_x + values[0];
@@ -774,7 +762,6 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 
 		current_x = next_x;
 		current_y = next_y;
-		svg_debug_current(completed_command, current_x, current_y, ox, oy, sx, sy);
 	}
 
 
@@ -782,7 +769,7 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 		svg_fill_polygon(display, points_x, points_y, count, fill_color);
 }
 
-inline static void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const char *svg, size_t size, uint32_t override_color)
+FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const char *svg, size_t size, uint32_t override_color)
 {
 	int source_width = svg_attr_int(svg, size, "width", 320);
 	int source_height = svg_attr_int(svg, size, "height", 480);
@@ -847,7 +834,7 @@ inline static void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const
 	}
 }
 
-inline static void	DISPLAY_FUNC(draw_svg)(int x, int y, int w, int h, const char *path, uint32_t override_color)
+FUNC_TYPE void	DISPLAY_FUNC(draw_svg)(int x, int y, int w, int h, const char *path, uint32_t override_color)
 {
 	if (!path || w <= 0 || h <= 0)
 		return;
