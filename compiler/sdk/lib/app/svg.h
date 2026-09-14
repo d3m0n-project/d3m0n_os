@@ -4,32 +4,33 @@
 #include "types.h"
 
 #ifdef __cplusplus
-#include "app/graphics.hpp"
-#include "sys.h"
-#define DISPLAY_FUNC(name)	Display::name
-#define DISPLAY(name)		display->name
-#define PRINT(fmt, data)	(void)fmt;
-#define FUNC_TYPE			inline
+	#include "app/graphics.hpp"
+	#include "sys.h"
+	#define DISPLAY_FUNC(name)	Display::name
+	#define DISPLAY(name)		display->name
+	#define PRINT(fmt, data)	(void)fmt;
+	#define FUNC_TYPE			inline
+	#include "app/HTML/html_colors.h"
 #else
+	#include "../compiler/sdk/lib/app/HTML/html_colors.h"
+	#include "display/display.h"
+	#include "filesystem/filesystem.h"
+	#include "memory/memory.h"
+	#include "libft.h"
+	#include "time.h"
+	#define strnstr(a, b, c)		ft_strnstr(a, b, c)
+	#define strlen(a)				ft_strlen(a)
+	#define strchr(a, b)			ft_strchr(a, b)
+	#define isspace(a)				ft_isspace(a)
+	#define PRINT(fmt, data)		log(fmt, 0, data);//usleep(1000000);
 
-#include "display/display.h"
-#include "filesystem/filesystem.h"
-#include "memory/memory.h"
-#include "libft.h"
-#include "time.h"
-#define strnstr(a, b, c)		ft_strnstr(a, b, c)
-#define strlen(a)				ft_strlen(a)
-#define strchr(a, b)			ft_strchr(a, b)
-#define isspace(a)				ft_isspace(a)
-#define PRINT(fmt, data)		log(fmt, 0, data);//usleep(1000000);
-
-#define DISPLAY_FUNC(name)		name
-#define Display					int
-#define DISPLAY(name)			name
-#define this					0
-#define malloc					kmalloc
-#define free					kfree
-#define FUNC_TYPE				inline static 
+	#define DISPLAY_FUNC(name)		name
+	#define Display					int
+	#define DISPLAY(name)			name
+	#define this					0
+	#define malloc					kmalloc
+	#define free					kfree
+	#define FUNC_TYPE				inline static 
 #endif
 
 #define SVG_COORD_SCALE			10000
@@ -146,7 +147,6 @@ inline static uint32_t svg_color(const char *tag, int length, const char *attrib
 		if (p + attr_len <= end)
 		{
 			int match = 1;
-
 			for (int i = 0; i < attr_len; ++i)
 			{
 				if (p[i] != attribute[i])
@@ -192,6 +192,10 @@ inline static uint32_t svg_color(const char *tag, int length, const char *attrib
 				if (strnstr(value_start, "none", value_len) || strnstr(value_start, "transparent", value_len))
 					return 0;
 
+				uint32_t found_color_name = get_html_color_from_name(value_start, value_len);
+				if (found_color_name)
+					return found_color_name;
+
 				if (value_len == 7 && value_start[0] == '#')
 				{
 					uint32_t value = 0;
@@ -212,12 +216,8 @@ inline static uint32_t svg_color(const char *tag, int length, const char *attrib
 
 						value = (value << 4) | (uint32_t)n;
 					}
-					return 0xFF000000 | value;
+					return 0xFF000000 | ((value & 0x00FF0000) >> 16) | ((value & 0x000000FF) << 16);
 				}
-
-				if (value_len == 5 && (value_start[0] == 'b' || value_start[0] == 'B'))
-					return 0xFF0000FF;
-
 				return fallback;
 			}
 		}
@@ -498,8 +498,8 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 
 	end = path_end;
 
-	int points_x[256];
-	int points_y[256];
+	int points_x[256] = {0};
+	int points_y[256] = {0};
 	int count = 0;
 
 	int current_x = 0;
@@ -509,9 +509,11 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 	int start_y = 0;
 
 	char command = 0;
-
 	while (cursor < end)
 	{
+		for (int a=0; a<255; a++)
+			for(int b=0; b<255; b++)
+				DISPLAY_FUNC(put_pixel)(points_x[a], points_y[b], 0xff0000ff);
 		if ((*cursor >= 'A' && *cursor <= 'Z') || (*cursor >= 'a' && *cursor <= 'z'))
 		{
 			command = *cursor++;
@@ -594,16 +596,15 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 		{
 			int x0 = current_x;
 			int y0 = current_y;
-
+ 
 			int x1 = values[0];
 			int y1 = values[1];
-
+ 
 			int x2 = values[2];
 			int y2 = values[3];
-
+ 
 			int x3 = values[4];
 			int y3 = values[5];
-
 			if (command == 'c')
 			{
 				x1 += current_x;
@@ -613,45 +614,58 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 				x3 += current_x;
 				y3 += current_y;
 			}
-
-			for (int step = 1; step <= 16; ++step)
+ 
+			for (int step = 0; step <= 16; ++step)
 			{
 				int t = step;
 				int nt = 16 - t;
-				int px = (nt * nt * nt * x0 + 3 * nt * nt * t * x1 + 3 * nt * t * t * x2 + t * t * t * x3) / 4096;
-				int py = (nt * nt * nt * y0 + 3 * nt * nt * t * y1 + 3 * nt * t * t * y2 + t * t * t * y3) / 4096;
-				int screen_x = ox + (px * sx) / SVG_TRANSFORM_SCALE;
-				int screen_y = oy + (py * sy) / SVG_TRANSFORM_SCALE;
+				int64_t px = ((int64_t)nt * nt * nt * x0 + 3LL * nt * nt * t * x1 + 3LL * nt * t * t * x2 + (int64_t)t * t * t * x3) / 4096;
+				int64_t py = ((int64_t)nt * nt * nt * y0 + 3LL * nt * nt * t * y1 + 3LL * nt * t * t * y2 + (int64_t)t * t * t * y3) / 4096;
+				int screen_x = ox + (int)((px * (int64_t)sx) / SVG_TRANSFORM_SCALE);
+				int screen_y = oy + (int)((py * (int64_t)sy) / SVG_TRANSFORM_SCALE);
 				
 				if (count > 0 && stroke_color)
 					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, stroke_color, stroke_width);
-
+ 
 				if (count < 256)
 				{
+					PRINT("new point: (%i, ", screen_x);
+					PRINT("%i)\n", screen_y);
+					if (screen_x < 0 || screen_x >= 320)
+					{
+						PRINT("  >>> px: %i ", px);
+						PRINT("sx: %i ", sx);
+						PRINT("py: %i ", py);
+						PRINT("sy: %i ", sy);
+						PRINT("ox: %i ", ox);
+						PRINT("oy: %i ", oy);
+						PRINT("\n", 0);
+					}
 					points_x[count] = screen_x;
 					points_y[count] = screen_y;
 					++count;
 				}
 			}
-
+ 
 			current_x = x3;
 			current_y = y3;
-
+ 
 			continue;
 		}
-
+ 
 		// quadratic Bezier
 		if (command == 'Q' || command == 'q')
 		{
+			// TODO: check if calculation is perfect
 			int x0 = current_x;
 			int y0 = current_y;
-
+ 
 			int x1 = values[0];
 			int y1 = values[1];
-
+ 
 			int x2 = values[2];
 			int y2 = values[3];
-
+ 
 			if (command == 'q')
 			{
 				x1 += current_x;
@@ -659,19 +673,19 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 				x2 += current_x;
 				y2 += current_y;
 			}
-
-			for (int step = 1; step <= 16; ++step)
+ 
+			for (int step = 0; step <= 16; ++step)
 			{
 				int t = step;
 				int nt = 16 - t;
 				int px = (nt * nt * x0 + 2 * nt * t * x1 + t * t * x2) / 256;
 				int py = (nt * nt * y0 + 2 * nt * t * y1 + t * t * y2) / 256;
-				int screen_x = ox + (px * sx) / SVG_TRANSFORM_SCALE;
-				int screen_y = oy + (py * sy) / SVG_TRANSFORM_SCALE;
+				int screen_x = ox + (int)((long)px * sx / SVG_TRANSFORM_SCALE);
+				int screen_y = oy + (int)((long)py * sy / SVG_TRANSFORM_SCALE);
 				
 				if (count > 0 && stroke_color)
 					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, stroke_color, stroke_width);
-
+ 
 				if (count < 256)
 				{
 					points_x[count] = screen_x;
@@ -679,7 +693,7 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 					++count;
 				}
 			}
-
+ 
 			current_x = x2;
 			current_y = y2;
 			continue;
@@ -787,7 +801,7 @@ FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const cha
 		if (!end)
 			break;
 		int length = (int)(end - begin + 1);
-		uint32_t fill_color = svg_color(begin, length, "fill", 0x01000000);
+		uint32_t fill_color = svg_color(begin, length, "fill", 0xff000000);
 		uint32_t stroke_color = svg_color(begin, length, "stroke", 0);
 		int has_stroke = strnstr(begin, "stroke=\"", length) || strnstr(begin, "stroke='", length);
 		int stroke_width = svg_attr_int(begin, length, "stroke-width", 1);
@@ -804,7 +818,7 @@ FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const cha
 		{
 			cursor = end + 1;
 			continue;
-		}
+		} // TODO: handle opacity
 		if (override_color)
 		{
 			if (fill_color)
@@ -817,11 +831,39 @@ FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const cha
 		int pw = svg_attr_int(begin, length, "width", 0) * w / source_width;
 		int ph = svg_attr_int(begin, length, "height", 0) * h / source_height;
 		if (strnstr(begin, "<rect", length))
-			draw_rect(px, py, pw, ph, fill_color);
+		{
+			int rx = svg_attr_int(begin, length, "rx", 0);
+			draw_rounded_rect(px, py, pw, ph, rx * w / source_width, fill_color);
+		}
 		else if (strnstr(begin, "<circle", length))
-			draw_ellipse(x + svg_attr_int(begin, length, "cx", 0) * w / source_width, y + svg_attr_int(begin, length, "cy", 0) * h / source_height, svg_attr_int(begin, length, "r", 0) * w / source_width, svg_attr_int(begin, length, "r", 0) * h / source_height, fill_color, 1);
+		{
+			int cx = svg_attr_int(begin, length, "cx", 0);
+			int cy = svg_attr_int(begin, length, "cy", 0);
+			int r = svg_attr_int(begin, length, "r", 0);
+			draw_ellipse(
+				x + cx * w / source_width,
+				y + cy * h / source_height,
+				r * w / source_width,
+				r * h / source_height,
+				fill_color,
+				1
+			);
+		}
 		else if (strnstr(begin, "<ellipse", length))
-			draw_ellipse(x + svg_attr_int(begin, length, "cx", 0) * w / source_width, y + svg_attr_int(begin, length, "cy", 0) * h / source_height, svg_attr_int(begin, length, "rx", 0) * w / source_width, svg_attr_int(begin, length, "ry", 0) * h / source_height, fill_color, 1);
+		{
+			int cx = svg_attr_int(begin, length, "cx", 0);
+			int cy = svg_attr_int(begin, length, "cy", 0);
+			int rx = svg_attr_int(begin, length, "rx", 0);
+			int ry = svg_attr_int(begin, length, "ry", 0);
+			draw_ellipse(
+				x + cx * w / source_width,
+				y + cy * h / source_height,
+				rx * w / source_width,
+				ry * h / source_height,
+				fill_color,
+				1
+			);
+		}
 		else if (strnstr(begin, "<line", length))
 			svg_stroke_line(this, x + svg_attr_int(begin, length, "x1", 0) * w / source_width, y + svg_attr_int(begin, length, "y1", 0) * h / source_height, x + svg_attr_int(begin, length, "x2", 0) * w / source_width, y + svg_attr_int(begin, length, "y2", 0) * h / source_height, stroke_color ? stroke_color : fill_color, stroke_width);
 		else if (strnstr(begin, "<polygon", length))

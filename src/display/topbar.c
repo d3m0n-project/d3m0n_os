@@ -84,12 +84,16 @@ static void	draw_battery(t_conf *conf, uint32_t theme_color_fg)
 	//draw_icon(181 + 95, TOPBAR_PADDING - 1, size, size, icon_name, theme_color_fg);
 
 	const char *test_buff = "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24\" viewBox=\"0 0 24 24\" width=\"24\">"
-								"<path d=\"M0 0h24v24H0V0z\" fill=\"none\"/>"
-								"<path d=\"M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4zM11 20v-5.5H9L13 7v5.5h2L11 20z\"/>"
-								"</svg>";
-	draw_svg_buff(181 + 95, TOPBAR_PADDING - 1, size, size, test_buff, ft_strlen(test_buff), theme_color_fg);
+								"<path d=\"M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4zM11 20v-5.5H9L13\"/>"
+								//"<path d=\"M0 0h24v24H0V0z\" fill=\"none\"/>"
+								//"<path d=\"M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4zM11 20v-5.5H9L13 7v5.5h2L11 20z\"/>"
+							"</svg>";
+	draw_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0xff00ff00);
+	draw_svg_buff(10, 10, 200, 200, test_buff, ft_strlen(test_buff), 0);
 	(void)icon_name;
 	(void)size;
+	while (1)
+		asm volatile("wfe");
 }
 
 void	draw_connections(t_conf *conf, uint32_t theme_color_fg)

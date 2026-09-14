@@ -102,6 +102,63 @@ void	draw_rect(int x, int y, int w, int h, uint32_t color)
 	#endif
 }
 
+void	draw_rounded_rect(int x, int y, int w, int h, int radius, uint32_t color)
+{
+	if (w <= 0 || h <= 0)
+		return;
+
+	if (radius < 0)
+		radius = 0;
+
+	if (radius > w / 2)
+		radius = w / 2;
+	if (radius > h / 2)
+		radius = h / 2;
+
+	int x2 = x + w - 1;
+	int y2 = y + h - 1;
+	for (int py = y; py <= y2; py++)
+	{
+		for (int px = x; px <= x2; px++)
+		{
+			int cx = px;
+			int cy = py;
+
+			if (px < x + radius && py < y + radius)
+			{
+				cx = x + radius;
+				cy = y + radius;
+			}
+			else if (px >= x2 - radius && py < y + radius)
+			{
+				cx = x2 - radius;
+				cy = y + radius;
+			}
+			else if (px < x + radius && py >= y2 - radius)
+			{
+				cx = x + radius;
+				cy = y2 - radius;
+			}
+			else if (px >= x2 - radius && py >= y2 - radius)
+			{
+				cx = x2 - radius;
+				cy = y2 - radius;
+			}
+			else
+			{
+				put_pixel(px, py, color);
+				continue;
+			}
+
+			int dx = px - cx;
+			int dy = py - cy;
+
+			if (dx * dx + dy * dy <= radius * radius)
+				put_pixel(px, py, color);
+		}
+	}
+}
+
 void	draw_rect_outline(int x, int y, int w, int h, uint32_t color)
 {
 	draw_hline(x, y, w, color);
