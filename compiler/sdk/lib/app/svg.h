@@ -38,6 +38,23 @@
 
 inline static int svg_next_number(const char **cursor, const char *end, int *value);
 
+inline static void	svg_add_point(int points_x[32][256], int points_y[32][256], int point_counts[32], int path, int x, int y)
+{
+	int count = point_counts[path];
+	if (count > 0)
+	{
+		if (points_x[path][count - 1] == x && points_y[path][count - 1] == y)
+			return;
+	}
+
+	if (count >= 256)
+		return;
+
+	points_x[path][count] = x;
+	points_y[path][count] = y;
+	point_counts[path]++;
+}
+
 inline static int svg_attr_int(const char *tag, int length, const char *name, int fallback)
 {
 	const char *p = tag;
@@ -328,7 +345,7 @@ inline static int svg_next_number(const char **cursor, const char *end, int *val
 	while (p < end && (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n' || *p == ','))
 		++p;
 
-	if (p >= end || ((*p < '0' || *p > '9') && *p != '-' && *p != '+'))
+	if (p >= end || ((*p < '0' || *p > '9') && *p != '-' && *p != '+' && *p != '.'))
 		return 0;
 
 	if (*p == '-')
@@ -375,24 +392,103 @@ inline static int svg_next_number(const char **cursor, const char *end, int *val
 	return 1;
 }
 
-inline static void svg_fill_polygon(Display *display, int *points_x, int *points_y, int count, uint32_t color)
+inline static void	svg_fill_paths(Display *display, int points_x[32][256], int points_y[32][256], int point_counts[32], int path_count, uint32_t color)
 {
 	(void)display;
+	if (path_count <= 0 || !color)
+		return;
+
 	#ifdef __cplusplus
-	for (int y = 0; y < display->h; ++y)
+	int screen_width = display->w;
+	int screen_height = display->h;
 	#else
-	for (int y = 0; y < SCREEN_HEIGHT; ++y)
+	int screen_width = SCREEN_WIDTH;
+	int screen_height = SCREEN_HEIGHT;
 	#endif
+
+	int min_y = screen_height - 1;
+	int max_y = 0;
+	int have_points = 0;
+
+	for (int path = 0; path < path_count; ++path)
+	{
+		int count = point_counts[path];
+		if (count < 3)
+			continue;
+
+		for (int i = 0; i < count; ++i)
+		{
+			if (points_y[path][i] < min_y)
+				min_y = points_y[path][i];
+
+			if (points_y[path][i] > max_y)
+				max_y = points_y[path][i];
+
+			have_points = 1;
+		}
+	}
+
+	if (!have_points)
+		return;
+
+	if (min_y < 0)
+		min_y = 0;
+
+	if (max_y >= screen_height)
+		max_y = screen_height - 1;
+	
+	for (int y = min_y; y <= max_y; ++y)
 	{
 		int intersections[256];
 		int hits = 0;
-		for (int i = 0, j = count - 1; i < count; j = i++)
+
+		// use doubles coords to avoid decimal point for 0.5
+		int scan_y = y * 2 + 1;
+
+		for (int path = 0; path < path_count; ++path)
 		{
-			if ((points_y[i] > y) != (points_y[j] > y) && hits < 256)
-				intersections[hits++] = points_x[i] + (y - points_y[i]) * (points_x[j] - points_x[i]) / (points_y[j] - points_y[i]);
+			int count = point_counts[path];
+			if (count < 3)
+				continue;
+
+			for (int i = 0, j = count - 1; i < count; j = i++)
+			{
+				int x0 = points_x[path][j];
+				int y0 = points_y[path][j];
+				int x1 = points_x[path][i];
+				int y1 = points_y[path][i];
+
+				// ignore horizontal edges
+				if (y0 == y1)
+					continue;
+
+
+				int y0_2 = y0 * 2;
+				int y1_2 = y1 * 2;
+				if (y0_2 < y1_2)
+				{
+					if (scan_y < y0_2 || scan_y >= y1_2)
+						continue;
+				}
+				else
+				{
+					if (scan_y < y1_2 || scan_y >= y0_2)
+						continue;
+				}
+
+				int64_t dx = (int64_t)x1 - x0;
+				int64_t dy = (int64_t)y1 - y0;
+				int64_t sy = (int64_t)scan_y - y0_2;
+				int64_t x_intersect = (int64_t)x0 + (sy * dx) / (2LL * dy);
+				if (hits < 256)
+					intersections[hits++] = (int)x_intersect;
+			}
 		}
-		
-		// Sort intersections by X coordinate
+
+		if (hits < 2)
+			continue;
+
+		// sort intersections
 		for (int i = 0; i < hits - 1; ++i)
 		{
 			for (int j = i + 1; j < hits; ++j)
@@ -405,13 +501,124 @@ inline static void svg_fill_polygon(Display *display, int *points_x, int *points
 				}
 			}
 		}
-		
+
+		// remove duplicates
+		int unique_hits = 0;
+
+		for (int i = 0; i < hits; ++i)
+		{
+			if (unique_hits == 0 || intersections[i] != intersections[unique_hits - 1])
+				intersections[unique_hits++] = intersections[i];
+		}
+
+
+		for (int i = 0; i + 1 < unique_hits; i += 2)
+		{
+			int x1 = intersections[i];
+			int x2 = intersections[i + 1];
+
+			if (x1 > x2)
+			{
+				int temp = x1;
+				x1 = x2;
+				x2 = temp;
+			}
+
+			if (x2 < 0 || x1 >= screen_width)
+				continue;
+
+			if (x1 < 0)
+				x1 = 0;
+
+			if (x2 >= screen_width)
+				x2 = screen_width - 1;
+
+			if (x2 >= x1)
+				DISPLAY(draw_hline)(x1, y, x2 - x1 + 1, color);
+		}
+	}
+}
+
+inline static void	svg_fill_polygon(Display *display, int *points_x, int *points_y, int count, uint32_t color)
+{
+	(void)display;
+	if (count < 3)
+		return;
+
+	int min_y = points_y[0];
+	int max_y = points_y[0];
+	for (int i = 1; i < count; ++i)
+	{
+		if (points_y[i] < min_y)
+			min_y = points_y[i];
+		if (points_y[i] > max_y)
+			max_y = points_y[i];
+	}
+
+	#ifdef __cplusplus
+	int screen_height = display->h;
+	#else
+	int screen_height = SCREEN_HEIGHT;
+	#endif
+
+	if (min_y < 0)
+		min_y = 0;
+	if (max_y >= screen_height)
+		max_y = screen_height - 1;
+
+
+	for (int y = min_y; y <= max_y; ++y)
+	{
+		int intersections[256];
+		int hits = 0;
+		for (int i = 0, j = count - 1; i < count; j = i++)
+		{
+			int yi = points_y[i];
+			int yj = points_y[j];
+			if ((yi > y) != (yj > y))
+			{
+				if (yi != yj) // avoid division by zero
+				{
+					int xi = points_x[i];
+					int xj = points_x[j];
+					// calc x intersection
+					int x_intersect = xi + (y - yi) * (xj - xi) / (yj - yi);
+					
+					if (hits < 256)
+						intersections[hits++] = x_intersect;
+				}
+			}
+		}
+
+		// sort intersections by x
+		for (int i = 0; i < hits - 1; ++i)
+		{
+			for (int j = i + 1; j < hits; ++j)
+			{
+				if (intersections[i] > intersections[j])
+				{
+					int temp = intersections[i];
+					intersections[i] = intersections[j];
+					intersections[j] = temp;
+				}
+			}
+		}
+
+		// fill pixels
 		for (int i = 0; i + 1 < hits; i += 2)
 		{
 			int x1 = intersections[i];
 			int x2 = intersections[i + 1];
+			if (x1 < 0)
+				x1 = 0;
+			if (x2 < 0)
+				x2 = 0;
+			
 			if (x2 > x1)
-				DISPLAY(draw_hline)(x1, y, x2 - x1 + 1, color);
+			{
+				int width = x2 - x1 + 1;
+				DISPLAY(draw_hline)(x1, y, width, color);
+			}
 		}
 	}
 }
@@ -498,9 +705,11 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 
 	end = path_end;
 
-	int points_x[256] = {0};
-	int points_y[256] = {0};
-	int count = 0;
+	int points_x[32][256] = {0};
+	int points_y[32][256] = {0};
+	int point_counts[32] = {0};
+
+	int path_count = 0;
 
 	int current_x = 0;
 	int current_y = 0;
@@ -511,23 +720,20 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 	char command = 0;
 	while (cursor < end)
 	{
-		for (int a=0; a<255; a++)
-			for(int b=0; b<255; b++)
-				DISPLAY_FUNC(put_pixel)(points_x[a], points_y[b], 0xff0000ff);
 		if ((*cursor >= 'A' && *cursor <= 'Z') || (*cursor >= 'a' && *cursor <= 'z'))
 		{
 			command = *cursor++;
 			if (command == 'Z' || command == 'z')
 			{
-				if (count > 1 && stroke_color)
-					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], points_x[0], points_y[0], stroke_color, stroke_width);
-
-				if (fill_color && count >= 3)
-					svg_fill_polygon(display, points_x, points_y, count, fill_color);
+				if (path_count > 0 && point_counts[path_count - 1] > 1)
+				{
+					int count = point_counts[path_count - 1];
+					if (stroke_color)
+						svg_stroke_line(display, points_x[path_count - 1][count - 1], points_y[path_count - 1][count - 1], points_x[path_count - 1][0], points_y[path_count - 1][0], stroke_color, stroke_width);
+				}
 
 				current_x = start_x;
 				current_y = start_y;
-				count = 0;
 				command = 0;
 				continue;
 			}
@@ -541,7 +747,6 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 			continue;
 		}
 
-		// characters needed per command
 		int needed;
 		switch (command)
 		{
@@ -591,20 +796,72 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 			continue;
 		}
 
+		// create a new subpath
+		if (command == 'M' || command == 'm')
+		{
+			int next_x;
+			int next_y;
+
+			if (command == 'm')
+			{
+				next_x = current_x + values[0];
+				next_y = current_y + values[1];
+			}
+			else
+			{
+				next_x = values[0];
+				next_y = values[1];
+			}
+
+			if (path_count >= 32)
+			{
+				command = command == 'm' ? 'l' : 'L';
+				current_x = next_x;
+				current_y = next_y;
+				continue;
+			}
+
+			path_count++;
+			point_counts[path_count - 1] = 0;
+
+			start_x = next_x;
+			start_y = next_y;
+
+			int screen_x = ox + (next_x * sx) / SVG_TRANSFORM_SCALE;
+			int screen_y = oy + (next_y * sy) / SVG_TRANSFORM_SCALE;
+
+			points_x[path_count - 1][0] = screen_x;
+			points_y[path_count - 1][0] = screen_y;
+			point_counts[path_count - 1] = 1;
+
+			current_x = next_x;
+			current_y = next_y;
+			command = command == 'm' ? 'l' : 'L';
+
+			continue;
+		}
+
+		// no active subpath, ignore
+		if (path_count <= 0)
+			continue;
+
+		int path_index = path_count - 1;
+
 		// cubic Bezier
 		if (command == 'C' || command == 'c')
 		{
 			int x0 = current_x;
 			int y0 = current_y;
- 
+
 			int x1 = values[0];
 			int y1 = values[1];
- 
+
 			int x2 = values[2];
 			int y2 = values[3];
- 
+
 			int x3 = values[4];
 			int y3 = values[5];
+
 			if (command == 'c')
 			{
 				x1 += current_x;
@@ -614,58 +871,43 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 				x3 += current_x;
 				y3 += current_y;
 			}
- 
+
 			for (int step = 0; step <= 16; ++step)
 			{
 				int t = step;
 				int nt = 16 - t;
+
 				int64_t px = ((int64_t)nt * nt * nt * x0 + 3LL * nt * nt * t * x1 + 3LL * nt * t * t * x2 + (int64_t)t * t * t * x3) / 4096;
 				int64_t py = ((int64_t)nt * nt * nt * y0 + 3LL * nt * nt * t * y1 + 3LL * nt * t * t * y2 + (int64_t)t * t * t * y3) / 4096;
+
 				int screen_x = ox + (int)((px * (int64_t)sx) / SVG_TRANSFORM_SCALE);
 				int screen_y = oy + (int)((py * (int64_t)sy) / SVG_TRANSFORM_SCALE);
-				
+
+				int count = point_counts[path_index];
 				if (count > 0 && stroke_color)
-					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, stroke_color, stroke_width);
- 
-				if (count < 256)
-				{
-					PRINT("new point: (%i, ", screen_x);
-					PRINT("%i)\n", screen_y);
-					if (screen_x < 0 || screen_x >= 320)
-					{
-						PRINT("  >>> px: %i ", px);
-						PRINT("sx: %i ", sx);
-						PRINT("py: %i ", py);
-						PRINT("sy: %i ", sy);
-						PRINT("ox: %i ", ox);
-						PRINT("oy: %i ", oy);
-						PRINT("\n", 0);
-					}
-					points_x[count] = screen_x;
-					points_y[count] = screen_y;
-					++count;
-				}
+					svg_stroke_line(display, points_x[path_index][count - 1], points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
+
+				svg_add_point(points_x, points_y, point_counts, path_index, screen_x, screen_y);
 			}
- 
+
 			current_x = x3;
 			current_y = y3;
- 
+
 			continue;
 		}
- 
+
 		// quadratic Bezier
 		if (command == 'Q' || command == 'q')
 		{
-			// TODO: check if calculation is perfect
 			int x0 = current_x;
 			int y0 = current_y;
- 
+
 			int x1 = values[0];
 			int y1 = values[1];
- 
+
 			int x2 = values[2];
 			int y2 = values[3];
- 
+
 			if (command == 'q')
 			{
 				x1 += current_x;
@@ -673,7 +915,7 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 				x2 += current_x;
 				y2 += current_y;
 			}
- 
+
 			for (int step = 0; step <= 16; ++step)
 			{
 				int t = step;
@@ -682,37 +924,37 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 				int py = (nt * nt * y0 + 2 * nt * t * y1 + t * t * y2) / 256;
 				int screen_x = ox + (int)((long)px * sx / SVG_TRANSFORM_SCALE);
 				int screen_y = oy + (int)((long)py * sy / SVG_TRANSFORM_SCALE);
-				
+				int count = point_counts[path_index];
 				if (count > 0 && stroke_color)
-					svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, stroke_color, stroke_width);
- 
+					svg_stroke_line(display, points_x[path_index][count - 1], points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
+
 				if (count < 256)
 				{
-					points_x[count] = screen_x;
-					points_y[count] = screen_y;
-					++count;
+					points_x[path_index][count] = screen_x;
+					points_y[path_index][count] = screen_y;
+					point_counts[path_index]++;
 				}
 			}
- 
+
 			current_x = x2;
 			current_y = y2;
 			continue;
 		}
-
 
 		if (command == 'H' || command == 'h')
 		{
 			int next_x = command == 'h' ? current_x + values[0] : values[0];
 			int screen_x = ox + (next_x * sx) / SVG_TRANSFORM_SCALE;
 			int screen_y = oy + (current_y * sy) / SVG_TRANSFORM_SCALE;
+			int count = point_counts[path_index];
 			if (count > 0 && stroke_color)
-				svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, stroke_color, stroke_width);
+				svg_stroke_line(display, points_x[path_index][count - 1], points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
 
 			if (count < 256)
 			{
-				points_x[count] = screen_x;
-				points_y[count] = screen_y;
-				++count;
+				points_x[path_index][count] = screen_x;
+				points_y[path_index][count] = screen_y;
+				point_counts[path_index]++;
 			}
 
 			current_x = next_x;
@@ -724,14 +966,15 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 			int next_y = command == 'v' ? current_y + values[0] : values[0];
 			int screen_x = ox + (current_x * sx) / SVG_TRANSFORM_SCALE;
 			int screen_y = oy + (next_y * sy) / SVG_TRANSFORM_SCALE;
+			int count = point_counts[path_index];
 			if (count > 0 && stroke_color)
-				svg_stroke_line(display, points_x[count - 1], points_y[count - 1], screen_x, screen_y, stroke_color, stroke_width);
+				svg_stroke_line(display, points_x[path_index][count - 1], points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
 
 			if (count < 256)
 			{
-				points_x[count] = screen_x;
-				points_y[count] = screen_y;
-				++count;
+				points_x[path_index][count] = screen_x;
+				points_y[path_index][count] = screen_y;
+				point_counts[path_index]++;
 			}
 
 			current_y = next_y;
@@ -740,7 +983,7 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 
 		int next_x;
 		int next_y;
-		if (command == 'm' || command == 'l')
+		if (command == 'l')
 		{
 			next_x = current_x + values[0];
 			next_y = current_y + values[1];
@@ -751,36 +994,25 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 			next_y = values[1];
 		}
 
-		if (command == 'M' || command == 'm')
-		{
-			if (count >= 3 && fill_color)
-				svg_fill_polygon(display, points_x, points_y, count, fill_color);
-
-			count = 0;
-			start_x = next_x;
-			start_y = next_y;
-			command = command == 'm' ? 'l' : 'L';
-		}
-
 		int screen_x = ox + (next_x * sx) / SVG_TRANSFORM_SCALE;
 		int screen_y = oy + (next_y * sy) / SVG_TRANSFORM_SCALE;
+		int count = point_counts[path_index];
 		if (count > 0 && stroke_color)
-			svg_stroke_line(display, points_x[count-1], points_y[count-1], screen_x, screen_y, stroke_color, stroke_width);
-
+			svg_stroke_line(display, points_x[path_index][count - 1], points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
 		if (count < 256)
 		{
-			points_x[count] = screen_x;
-			points_y[count] = screen_y;
-			++count;
+			points_x[path_index][count] = screen_x;
+			points_y[path_index][count] = screen_y;
+			point_counts[path_index]++;
 		}
 
 		current_x = next_x;
 		current_y = next_y;
 	}
 
-
-	if (fill_color && count >= 3)
-		svg_fill_polygon(display, points_x, points_y, count, fill_color);
+	// fill all contours
+	if (fill_color && path_count > 0)
+		svg_fill_paths(display, points_x, points_y, point_counts, path_count, fill_color);
 }
 
 FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const char *svg, size_t size, uint32_t override_color)

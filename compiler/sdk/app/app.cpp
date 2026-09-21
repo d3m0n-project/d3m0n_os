@@ -45,7 +45,10 @@ void Window::draw(void)
 	{
 		current->layout(0, this->top_bar ? 24 : 0, window_width, window_height - (this->top_bar ? 24 : 0));
 		if (current->visible)
+		{
+			//printf("drawn %s\n", current->name.c_str());
 			current->draw(display);
+		}
 		current = current->next;
 	}
 	display->present();
@@ -59,7 +62,7 @@ Control::Control(void)
 	this->margin_bottom = Size(0);
 	this->width = Size(50);
 	this->height = Size(30);
-	this->name = "Unknown Control";
+	this->name = "Unnamed Control";
 	this->visible = true;
 	this->enabled = true;
 	this->location = Point(0, 0);

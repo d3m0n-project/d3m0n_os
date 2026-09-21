@@ -81,19 +81,7 @@ static void	draw_battery(t_conf *conf, uint32_t theme_color_fg)
 	int text_y = TOPBAR_PADDING + (16 - TOPBAR_FONT_SIZE) / 2;
 
 	draw_text_at(181 + 52, text_y, TOPBAR_FONT_SIZE, battery_percentage, theme_color_fg, &topbar_font);
-	//draw_icon(181 + 95, TOPBAR_PADDING - 1, size, size, icon_name, theme_color_fg);
-
-	const char *test_buff = "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24\" viewBox=\"0 0 24 24\" width=\"24\">"
-								"<path d=\"M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4zM11 20v-5.5H9L13\"/>"
-								//"<path d=\"M0 0h24v24H0V0z\" fill=\"none\"/>"
-								//"<path d=\"M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4zM11 20v-5.5H9L13 7v5.5h2L11 20z\"/>"
-							"</svg>";
-	draw_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0xff00ff00);
-	draw_svg_buff(10, 10, 200, 200, test_buff, ft_strlen(test_buff), 0);
-	(void)icon_name;
-	(void)size;
-	while (1)
-		asm volatile("wfe");
+	draw_icon(181 + 95, TOPBAR_PADDING - 1, size, size, icon_name, theme_color_fg);
 }
 
 void	draw_connections(t_conf *conf, uint32_t theme_color_fg)
@@ -129,50 +117,11 @@ void	draw_topbar(void)
 		}
 	}
 
-	if (1)//window->top_bar)
-	{
-		draw_rect(0, 0, SCREEN_WIDTH, TOPBAR_HEIGHT, theme_color_bg);
+	draw_rect(0, 0, SCREEN_WIDTH, TOPBAR_HEIGHT, theme_color_bg);
 
-		if (1 == 0)
-			draw_clock(conf, theme_color_fg);
+	draw_clock(conf, theme_color_fg);
 
-		// draw battery and connection status
-		draw_battery(conf, theme_color_fg);
-
-		if (1 == 0)
-			draw_connections(conf, theme_color_fg);
-
-		
-		
-		//if (current_process)
-		//{
-		//	int size = TOPBAR_HEIGHT - TOPBAR_PADDING * 2;
-		//	draw_text(current_pos + TOPBAR_PADDING, TOPBAR_PADDING, size / 2, size, current_process->proc_name, DISPLAY_COLORS[MAGENTA], &topbar_font);
-		//	current_pos += (size / 2) * ft_strlen(current_process->proc_name) + TOPBAR_PADDING;
-		//}
-	}
-	//if (!window->is_launcher)
-	//{
-	//int cross_s = TOPBAR_HEIGHT - (2 * TOPBAR_PADDING);
-	//int cross_x = SCREEN_WIDTH - (cross_s + TOPBAR_PADDING);
-	//int cross_y = TOPBAR_PADDING;
-	
-	//draw_text(cross_x, cross_y, cross_s, cross_s, "X", DISPLAY_COLORS[RED], &topbar_font); // draw exit icon
-	// add close event if not added yet
-	//if (window->events[0].type == EVENT_UNDEFINED)
-	//{
-	//	window->events[0].script = init_script(0);
-	//	if (!window->events[0].script)
-	//	{
-	//		panic("Could not allocate the app close cross script\n");
-	//		return;
-	//	}
-	//	window->events[0].type = EVENT_ON_CLICK;
-	//	window->events[0].script->func = (void *)fn_app_exit;
-	//	window->events[0].script->args = 0;
-	//	window->events[0].script->next = 0;
-	//	window->events[0].override_trigger_corners[0] = (t_point){.x=cross_x, .y=cross_y};
-	//	window->events[0].override_trigger_corners[1] = (t_point){.x=cross_x+cross_s, .y=cross_y+cross_s};
-	//}
-	//}
+	// draw battery and connection status
+	draw_battery(conf, theme_color_fg);
+	draw_connections(conf, theme_color_fg);
 }

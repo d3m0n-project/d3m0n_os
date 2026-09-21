@@ -69,7 +69,7 @@ void	init_proc(void)
 
 	
 	//process_create(rsa_require_thread,          "SECURITY.RSA", 1);
-	t_process *icon_loader = process_create(app_and_icon_loader_thread,  "LOADER.app+icon", 1);
+	t_process	*icon_loader = process_create(app_and_icon_loader_thread,  "LOADER.app+icon", 1);
 	if (!icon_loader)
 		panic("INIT: Failed to start icon loader process\n");
 
