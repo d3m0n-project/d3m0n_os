@@ -11,6 +11,7 @@ USE_ADMIN			= 1
 SHOW_IMAGE_STATUS	= 0
 TRACK_MEMORY_USAGE	= 0
 USE_GDB				= 0
+BUILD_APPS			= 1
 
 ifeq ($(USE_ADMIN), 1)
 	SUDO_EXECUTABLE	= sudo
@@ -94,7 +95,7 @@ define onoff
 $(if $(filter 1,$(1)),$(COLOR_SUCCESS)ENABLED$(R),$(COLOR_ERROR)DISABLED$(R))
 endef
 
-VARS := DEBUG DEBUG_OUTLINE USE_ADMIN SHOW_IMAGE_STATUS TRACK_MEMORY_USAGE USE_GDB
+VARS := DEBUG DEBUG_OUTLINE USE_ADMIN SHOW_IMAGE_STATUS TRACK_MEMORY_USAGE USE_GDB BUILD_APPS
 MSG_OUTLINE_COLOR=$(C1)
 MSG_COLOR=$(C3)
 show-config:
@@ -164,13 +165,16 @@ $(OBJ_DIR)/asm/%.o: $(SRC_DIR)/%.s
 applications:
 	@rm -rf rootfs/apps/ > /dev/null
 	@mkdir -p rootfs/apps/
-	@mkdir -p rootfs/apps/d3m0n/
-	@cp -r applications/* rootfs/apps/d3m0n/
+
+	@find applications -mindepth 1 -type d -exec sh -c 'path="$$1"; mkdir -p "rootfs/apps/$${path#applications/}"' _ {} \;
+	@find applications -type f -name "*.d3m0n" -exec sh -c 'path="$$1"; cp "$$path" "rootfs/apps/$${path#applications/}"' _ {} \;
 	@printf "$(COLOR_SUCCESS)[OK] Copied applications list to disk!$(R)\n"
 
-#	@chmod +x build_package_lst.sh
-#	@bash build_package_lst.sh rootfs/apps/* # TODO: do for other modules
-#	@printf "$(COLOR_SUCCESS)[OK] Generated package.lst!$(R)\n"
+ifneq ($(BUILD_APPS),0)
+	@chmod +x applications/builder.sh
+	@bash applications/builder.sh rootfs/apps/
+	@printf "$(COLOR_SUCCESS)[OK] Compiled and installed packages!$(R)\n"
+endif
 
 
 disk: applications
