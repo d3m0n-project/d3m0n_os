@@ -65,8 +65,34 @@ int main(int argc, char **argv)
 {
 	if (argc == 1)
 	{
-		cerr << "\033[31mERROR\033[0m: Usage: " << argv[0] << " [options] file..." << endl;
+		cerr << "\033[31mERROR\033[0m: Usage:         " << argv[0] << " [options] file..." << endl;
+		cerr << "       Project Init:  " << argv[0] << " init project_name" << endl;
 		return 1;
+	}
+
+	if (strcmp(argv[1], "init") == 0)
+	{
+		if (argc != 3)
+		{
+			cerr << "\033[31mERROR\033[0m: Usage " + (string)argv[0] + " init project_name" << endl;
+			return 1;
+		}
+		string project_name = (string)argv[2];
+		if (project_name.find(' ') != std::string::npos || project_name.find('&') != std::string::npos || project_name.find(';') != std::string::npos || project_name.find('|') != std::string::npos || project_name.find('$') != std::string::npos)
+		{
+			cerr << "\033[31mERROR\033[0m: Invalid project name!" << endl;
+			return 1;
+		}
+		string command = "mkdir " + project_name + "&& cp -r " + string(LIB_PATH) + "/template/* " + project_name;
+		int ret = system(command.c_str());
+		if (ret != 0)
+		{
+			cerr << "\033[31mERROR\033[0m: Could not initialize new project from template (try reinstalling d3c)" << endl;
+			return 1;
+		}
+
+		cout << "\033[32mSUCCESS\033[0m: Successfully initialized a new blank d3m0n project!" << endl;
+		return 0;
 	}
 
 	bool compile_only = false;
@@ -76,7 +102,8 @@ int main(int argc, char **argv)
 		{
 			cout << "d3c: the official d3m0n os compiler" << endl;
 			cout << "\033[30m" << "	SDK LOADED:     " << "\033[0m" << (INCLUDE_SDK?"\033[32mYes":"\033[31mNo") << "\033[0m" << endl;
-			cout << "\033[30m" << "	SDK PATH:       " << "\033[0m" << LIB_PATH << endl;
+			cout << "\033[30m" << "	SDK PATH:       " << "\033[0m" << LIB_PATH << "/sdk/" << endl;
+			cout << "\033[30m" << "	TEMPLATE PATH:  " << "\033[0m" << LIB_PATH << "/template/" << endl;
 			cout << "\033[30m" << "	AUTHOR:         " << "\033[0m" << "4re5 group" << "\033[0m" << endl;
 			return 0;
 		}
@@ -116,7 +143,7 @@ int main(int argc, char **argv)
 	arguments.emplace_back("-fpie");
 	arguments.emplace_back("-mcpu=arm1176jzf-s");
 	#if INCLUDE_SDK == 1
-	arguments.emplace_back("-I" + (string)LIB_PATH);
+	arguments.emplace_back("-I" + (string)LIB_PATH + "/sdk");
 	#endif
 	if (!compile_only)
 		arguments.emplace_back("-Wl,-e,_start");

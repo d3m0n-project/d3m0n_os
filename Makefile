@@ -163,16 +163,16 @@ $(OBJ_DIR)/asm/%.o: $(SRC_DIR)/%.s
 	@$(CC) $(C_FLAGS) -c $< -o $@
 
 applications:
-	@rm -rf rootfs/apps/ > /dev/null
-	@mkdir -p rootfs/apps/
+	@rm -rf ./rootfs/apps/ > /dev/null
+	@mkdir -p ./rootfs/apps/
 
-	@find applications -mindepth 1 -type d -exec sh -c 'path="$$1"; mkdir -p "rootfs/apps/$${path#applications/}"' _ {} \;
-	@find applications -type f -name "*.d3m0n" -exec sh -c 'path="$$1"; cp "$$path" "rootfs/apps/$${path#applications/}"' _ {} \;
-	@printf "$(COLOR_SUCCESS)[OK] Copied applications list to disk!$(R)\n"
+#	@find applications -mindepth 1 -type d -exec sh -c 'path="$$1"; mkdir -p "rootfs/apps/$${path#applications/}"' _ {} \;
+#	@find applications -type f -name "*.d3m0n" -exec sh -c 'path="$$1"; cp "$$path" "rootfs/apps/$${path#applications/}"' _ {} \;
+#	@printf "$(COLOR_SUCCESS)[OK] Copied applications list to disk!$(R)\n"
 
 ifneq ($(BUILD_APPS),0)
 	@chmod +x applications/builder.sh
-	@bash applications/builder.sh rootfs/apps/
+	@bash applications/builder.sh $(shell pwd)/rootfs/apps/
 	@printf "$(COLOR_SUCCESS)[OK] Compiled and installed packages!$(R)\n"
 endif
 
@@ -185,6 +185,7 @@ disk: applications
 	@mkfs.vfat -F 32 -n D3M0NFS $(DISK)
 	@mcopy -i $(DISK) -s rootfs/* ::
 	@rm -rf rootfs/apps/ > /dev/null
+	@printf "$(COLOR_SUCCESS)[OK] cleaned up rootfs apps dir$(R)\n"
 	@printf "$(COLOR_SUCCESS)[OK] Disk ready: $(DISK)$(R)\n"
 
 

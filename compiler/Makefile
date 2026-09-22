@@ -23,7 +23,7 @@ endif
 SDK_HEADER_PATH			= $(INSTALL_DIR)/sdk
 CPP_FLAGS				= -Wall -Wextra -Werror \
  							-DINCLUDE_SDK=$(INCLUDE_SDK) \
-							-DLIB_PATH="\"$(SDK_HEADER_PATH)\"" \
+							-DLIB_PATH="\"$(INSTALL_DIR)\"" \
 							-MMD -MP
 CWD						= $(shell pwd)
 OBJCOPY					= $(shell $(CXX) -print-prog-name=objcopy)
@@ -35,6 +35,7 @@ TARGET_BFD				= $(shell $(OBJCOPY) --info | awk '/^elf/ {print $$1; exit}')
 all: $(SDK_BUILD) install
 
 $(SDK_BUILD):
+	@rm -rf "$(INSTALL_DIR)/" > /dev/null
 	@mkdir -p $(SDK_HEADER_PATH)
 # compile a d3c without sdk
 	@$(MAKE) build \
@@ -71,7 +72,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) -c $< -o $@ $(CPP_FLAGS)
 
 install: build
-	@mkdir -p $(INSTALL_DIR)
+	@mkdir -p "$(INSTALL_DIR)"
 	@printf "Install $(OUT) to $(INSTALL_DIR)? [Y/n] "; \
 	read answer; \
 	case "$$answer" in \
@@ -92,11 +93,14 @@ else
 	@ln -s "$(INSTALL_DIR)/$(OUT)" $(HOME)/.local/bin/d3c   2>/dev/null || true
 endif
 
+	@cp -r template/ $(INSTALL_DIR)/template
+
 	@printf "\n"
 	@printf "=============================================================\n"
 	@printf "\033[32mSUCCESS\033[0m: $(OUT) installed to $(INSTALL_DIR)/$(OUT)\n"
 	@printf "Make sure $(INSTALL_DIR) is in your PATH!\n"
 	@printf "Put this command in your bashrc: \033[35mexport PATH=\"\$$PATH:$(INSTALL_DIR)\"\033[0m\n"
+	@printf "   => Get started with: \033[35md3c init my_project\033[0m\n"
 	@printf "=============================================================\n\n"
 
 
