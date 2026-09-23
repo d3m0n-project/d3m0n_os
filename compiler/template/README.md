@@ -1,3 +1,3 @@
-# d3m0n default desktop app
+# d3m0n simple app
 
-simple app launcher for the device
+simple d3m0n app template

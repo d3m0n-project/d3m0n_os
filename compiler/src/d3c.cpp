@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 		int ret = system(command.c_str());
 		if (ret != 0)
 		{
-			cerr << "\033[31mERROR\033[0m: Could not initialize new project from template (try reinstalling d3c)" << endl;
+			cerr << "\033[31mERROR\033[0m: Could not initialize new project from template" << endl;
 			return 1;
 		}
 

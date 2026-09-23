@@ -10,7 +10,7 @@ theme: 0
 time_mode: 1
 
 # launcher desktop application
-launcher: com.4re5.d3m0n.system.launcher
+launcher: /apps/system/launcher/launcher.d3m0n
 
 
 # ------- icons ---------

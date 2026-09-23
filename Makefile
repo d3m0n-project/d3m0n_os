@@ -184,7 +184,9 @@ disk: applications
 	@$(SUDO_EXECUTABLE) parted $(DISK) mkpart primary fat32 1MiB 100%
 	@mkfs.vfat -F 32 -n D3M0NFS $(DISK)
 	@mcopy -i $(DISK) -s rootfs/* ::
-	@rm -rf rootfs/apps/ > /dev/null
+	@echo "Apps Structure:"
+	@tree rootfs/apps/
+#	@rm -rf rootfs/apps/ > /dev/null
 	@printf "$(COLOR_SUCCESS)[OK] cleaned up rootfs apps dir$(R)\n"
 	@printf "$(COLOR_SUCCESS)[OK] Disk ready: $(DISK)$(R)\n"
 

@@ -96,6 +96,11 @@ int sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 		if (!buffer)
 			return -1;
 
+		if (fd == 1)
+			log("    \033[0;35m[\033[1;35m%10.10s\033[0;35m]\033[1;37m => \033[0;37m", LOG_NONE, current_process->proc_name);
+		else
+			log("    \033[0;35m[\033[1;31m%10.10s\033[0;35m]\033[1;37m => \033[0;37m", LOG_NONE, current_process->proc_name);
+
 		uint32_t written = 0;
 		while (written < count)
 		{

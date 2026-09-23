@@ -2,6 +2,8 @@
 #define IMAGE_HPP
 
 #include "helpers.hpp"
+#include "stdlib.h"
+#include "app/svg.h"
 
 class Image : public Control
 {
@@ -21,9 +23,11 @@ public:
 				extension = path + 1;
 			++path;
 		}
-		if (extension[0] == 's' && extension[1] == 'v' && extension[2] == 'g' && extension[3] == '\0')
+		if (strcmp((char *)extension, (char *)"svg") == 0 || 1)
 		{
-			display->draw_svg(computed_location.x, computed_location.y, computed_width, computed_height, source.c_str());
+			int ret = display->draw_svg(computed_location.x, computed_location.y, computed_width, computed_height, source.c_str());
+			if (ret == 1)
+				printf("Image: svg at '%s' does not exists!\n", source.c_str());
 			return;
 		}
 		display->draw_rect(computed_location.x, computed_location.y, computed_width, computed_height, bg_color);

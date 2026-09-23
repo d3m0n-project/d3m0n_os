@@ -62,22 +62,23 @@ void	app_and_icon_loader_thread(void)
 
 void	init_proc(void)
 {
-	//t_conf		*config = get_config();
+	t_conf		*config = get_config();
 	//t_window	main_window;
 
 	log("[init] started at %llums\n", LOG_SUCCESS, time_us() / 1000);
 
 	
 	//process_create(rsa_require_thread,          "SECURITY.RSA", 1);
-	t_process	*icon_loader = process_create(app_and_icon_loader_thread,  "LOADER.app+icon", 1);
+	t_process	*icon_loader = process_create(app_and_icon_loader_thread,  "INIT[LOADER.ICONS]", 1);
 	if (!icon_loader)
 		panic("INIT: Failed to start icon loader process\n");
 
 	while (icon_loader->state != PROC_ZOMBIE) // wait for processes completion
 		asm volatile("wfe");
 
-	if (!elf_to_proc("test_app")) // TODO: change me
-		panic("Failed to start test_app\n");
+	char *launcher_path = config->launcher;
+	if (!elf_to_proc(launcher_path))
+		panic("Failed to start homepage desktop, check config\n");
 	
 	process_list();
 

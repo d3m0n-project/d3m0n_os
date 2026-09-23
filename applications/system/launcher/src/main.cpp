@@ -3,10 +3,10 @@
 #include "app.hpp"
 
 APP_INFO(
-	"My Simple App",
+	"d3m0n default app launcher",
 	1.0,
 	"4re5 group",
-	"A simple application",
+	"Official default app launcher, homescreen application",
 	"icon.ico"
 )
 
@@ -15,11 +15,11 @@ APP_INFO(
 
 extern "C" int	app_main(void)
 {
-	printf("MySimple app started\n");
+	printf("Launcher started\n");
 
 	MainWindow	window;
 	window.draw();
 
-	printf("Finished...\n");
+	printf("Launcher Finished...\n");
 	return 0;
 }

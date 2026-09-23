@@ -6,6 +6,7 @@
 #include "printf/printf.hpp"
 #include "stdlib.h"
 #include "memory.h"
+#include "app/app_manifest.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -153,8 +153,6 @@ void	kernel_panic(ExceptionFrame *frame, uint32_t exception_id)
 	log("=== %s PANIC ===\n", log_level, (is_user)?"PROGRAM":"KERNEL");
 	//process_list();
 
-	log("a\n", 0);
-
 	//if (current_process)
 	//	check_stack_canary(current_process);
 
@@ -190,7 +188,7 @@ void	kernel_panic(ExceptionFrame *frame, uint32_t exception_id)
 	else
 	{
 		// kill crashed process
-		process_exit_current((uint32_t)(-1*exception_id));
+		process_exit_current((uint32_t)(-1 * exception_id));
 	}
 	while (1) asm volatile("wfi"); // just in case
 }

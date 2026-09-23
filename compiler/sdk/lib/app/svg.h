@@ -6,9 +6,10 @@
 #ifdef __cplusplus
 	#include "app/graphics.hpp"
 	#include "sys.h"
+	#include "stdio.hpp"
 	#define DISPLAY_FUNC(name)	Display::name
 	#define DISPLAY(name)		display->name
-	#define PRINT(fmt, data)	(void)fmt;
+	#define PRINT(fmt, data)	printf(fmt, data);
 	#define FUNC_TYPE			inline
 	#include "app/HTML/html_colors.h"
 #else
@@ -705,9 +706,15 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 
 	end = path_end;
 
-	int points_x[32][256] = {0};
-	int points_y[32][256] = {0};
-	int point_counts[32] = {0};
+	typedef struct {
+		int points_x[32][256];
+		int points_y[32][256];
+		int point_counts[32];
+	}	svg_path_buffers_t;
+
+	svg_path_buffers_t	*buffers = (svg_path_buffers_t *)malloc(sizeof(svg_path_buffers_t));
+	if (!buffers)
+		return;
 
 	int path_count = 0;
 
@@ -725,11 +732,11 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 			command = *cursor++;
 			if (command == 'Z' || command == 'z')
 			{
-				if (path_count > 0 && point_counts[path_count - 1] > 1)
+				if (path_count > 0 && buffers->point_counts[path_count - 1] > 1)
 				{
-					int count = point_counts[path_count - 1];
+					int count = buffers->point_counts[path_count - 1];
 					if (stroke_color)
-						svg_stroke_line(display, points_x[path_count - 1][count - 1], points_y[path_count - 1][count - 1], points_x[path_count - 1][0], points_y[path_count - 1][0], stroke_color, stroke_width);
+						svg_stroke_line(display, buffers->points_x[path_count - 1][count - 1], buffers->points_y[path_count - 1][count - 1], buffers->points_x[path_count - 1][0], buffers->points_y[path_count - 1][0], stroke_color, stroke_width);
 				}
 
 				current_x = start_x;
@@ -737,7 +744,6 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 				command = 0;
 				continue;
 			}
-
 			continue;
 		}
 
@@ -822,7 +828,7 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 			}
 
 			path_count++;
-			point_counts[path_count - 1] = 0;
+			buffers->point_counts[path_count - 1] = 0;
 
 			start_x = next_x;
 			start_y = next_y;
@@ -830,9 +836,9 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 			int screen_x = ox + (next_x * sx) / SVG_TRANSFORM_SCALE;
 			int screen_y = oy + (next_y * sy) / SVG_TRANSFORM_SCALE;
 
-			points_x[path_count - 1][0] = screen_x;
-			points_y[path_count - 1][0] = screen_y;
-			point_counts[path_count - 1] = 1;
+			buffers->points_x[path_count - 1][0] = screen_x;
+			buffers->points_y[path_count - 1][0] = screen_y;
+			buffers->point_counts[path_count - 1] = 1;
 
 			current_x = next_x;
 			current_y = next_y;
@@ -883,11 +889,11 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 				int screen_x = ox + (int)((px * (int64_t)sx) / SVG_TRANSFORM_SCALE);
 				int screen_y = oy + (int)((py * (int64_t)sy) / SVG_TRANSFORM_SCALE);
 
-				int count = point_counts[path_index];
+				int count = buffers->point_counts[path_index];
 				if (count > 0 && stroke_color)
-					svg_stroke_line(display, points_x[path_index][count - 1], points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
+					svg_stroke_line(display, buffers->points_x[path_index][count - 1], buffers->points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
 
-				svg_add_point(points_x, points_y, point_counts, path_index, screen_x, screen_y);
+				svg_add_point(buffers->points_x, buffers->points_y, buffers->point_counts, path_index, screen_x, screen_y);
 			}
 
 			current_x = x3;
@@ -924,15 +930,15 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 				int py = (nt * nt * y0 + 2 * nt * t * y1 + t * t * y2) / 256;
 				int screen_x = ox + (int)((long)px * sx / SVG_TRANSFORM_SCALE);
 				int screen_y = oy + (int)((long)py * sy / SVG_TRANSFORM_SCALE);
-				int count = point_counts[path_index];
+				int count = buffers->point_counts[path_index];
 				if (count > 0 && stroke_color)
-					svg_stroke_line(display, points_x[path_index][count - 1], points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
+					svg_stroke_line(display, buffers->points_x[path_index][count - 1], buffers->points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
 
 				if (count < 256)
 				{
-					points_x[path_index][count] = screen_x;
-					points_y[path_index][count] = screen_y;
-					point_counts[path_index]++;
+					buffers->points_x[path_index][count] = screen_x;
+					buffers->points_y[path_index][count] = screen_y;
+					buffers->point_counts[path_index]++;
 				}
 			}
 
@@ -946,15 +952,15 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 			int next_x = command == 'h' ? current_x + values[0] : values[0];
 			int screen_x = ox + (next_x * sx) / SVG_TRANSFORM_SCALE;
 			int screen_y = oy + (current_y * sy) / SVG_TRANSFORM_SCALE;
-			int count = point_counts[path_index];
+			int count = buffers->point_counts[path_index];
 			if (count > 0 && stroke_color)
-				svg_stroke_line(display, points_x[path_index][count - 1], points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
+				svg_stroke_line(display, buffers->points_x[path_index][count - 1], buffers->points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
 
 			if (count < 256)
 			{
-				points_x[path_index][count] = screen_x;
-				points_y[path_index][count] = screen_y;
-				point_counts[path_index]++;
+				buffers->points_x[path_index][count] = screen_x;
+				buffers->points_y[path_index][count] = screen_y;
+				buffers->point_counts[path_index]++;
 			}
 
 			current_x = next_x;
@@ -966,15 +972,15 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 			int next_y = command == 'v' ? current_y + values[0] : values[0];
 			int screen_x = ox + (current_x * sx) / SVG_TRANSFORM_SCALE;
 			int screen_y = oy + (next_y * sy) / SVG_TRANSFORM_SCALE;
-			int count = point_counts[path_index];
+			int count = buffers->point_counts[path_index];
 			if (count > 0 && stroke_color)
-				svg_stroke_line(display, points_x[path_index][count - 1], points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
+				svg_stroke_line(display, buffers->points_x[path_index][count - 1], buffers->points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
 
 			if (count < 256)
 			{
-				points_x[path_index][count] = screen_x;
-				points_y[path_index][count] = screen_y;
-				point_counts[path_index]++;
+				buffers->points_x[path_index][count] = screen_x;
+				buffers->points_y[path_index][count] = screen_y;
+				buffers->point_counts[path_index]++;
 			}
 
 			current_y = next_y;
@@ -996,14 +1002,14 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 
 		int screen_x = ox + (next_x * sx) / SVG_TRANSFORM_SCALE;
 		int screen_y = oy + (next_y * sy) / SVG_TRANSFORM_SCALE;
-		int count = point_counts[path_index];
+		int count = buffers->point_counts[path_index];
 		if (count > 0 && stroke_color)
-			svg_stroke_line(display, points_x[path_index][count - 1], points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
+			svg_stroke_line(display, buffers->points_x[path_index][count - 1], buffers->points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
 		if (count < 256)
 		{
-			points_x[path_index][count] = screen_x;
-			points_y[path_index][count] = screen_y;
-			point_counts[path_index]++;
+			buffers->points_x[path_index][count] = screen_x;
+			buffers->points_y[path_index][count] = screen_y;
+			buffers->point_counts[path_index]++;
 		}
 
 		current_x = next_x;
@@ -1012,7 +1018,7 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 
 	// fill all contours
 	if (fill_color && path_count > 0)
-		svg_fill_paths(display, points_x, points_y, point_counts, path_count, fill_color);
+		svg_fill_paths(display, buffers->points_x, buffers->points_y, buffers->point_counts, path_count, fill_color);
 }
 
 FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const char *svg, size_t size, uint32_t override_color)
@@ -1058,6 +1064,8 @@ FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const cha
 			if (has_stroke && stroke_color)
 				stroke_color = override_color;
 		}
+		//auto ptr = &Display::draw_svg_buff;
+		//PRINT("ptr: %p\n", ptr);
 		int px = x + svg_attr_int(begin, length, "x", 0) * w / source_width;
 		int py = y + svg_attr_int(begin, length, "y", 0) * h / source_height;
 		int pw = svg_attr_int(begin, length, "width", 0) * w / source_width;
@@ -1108,16 +1116,16 @@ FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const cha
 	}
 }
 
-FUNC_TYPE void	DISPLAY_FUNC(draw_svg)(int x, int y, int w, int h, const char *path, uint32_t override_color)
+FUNC_TYPE int	DISPLAY_FUNC(draw_svg)(int x, int y, int w, int h, const char *path, uint32_t override_color)
 {
 	if (!path || w <= 0 || h <= 0)
-		return;
+		return 1;
 	int fd = open(path, O_READ);
 	if (fd < 0)
-		return;
+		return 1;
 	char *svg = (char *)malloc(65536);
 	if (!svg)
-		return;
+		return 1;
 
 	int total = 0;
 	int amount;
@@ -1127,11 +1135,12 @@ FUNC_TYPE void	DISPLAY_FUNC(draw_svg)(int x, int y, int w, int h, const char *pa
 	if (!total)
 	{
 		free(svg);
-		return;
+		return 1;
 	}
 	svg[total] = '\0';
 	draw_svg_buff(x, y, w, h, svg, total, override_color);
 	free(svg);
+	return 0;
 }
 
 #endif
