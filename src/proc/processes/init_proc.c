@@ -81,10 +81,9 @@ void	init_proc(void)
 		panic("Failed to start homepage desktop, check config\n");
 	
 	process_list();
-
+	log("Finished init_proc, entering standby mode...\n", LOG_INFO);
 	while (1)
 	{
-		log("...\n", 0);
 		usleep(1000000);
 	}
 	

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="500px" height="500px" viewBox="0 0 500 500" enable-background="new 0 0 487.211 642.045" xml:space="preserve"><script xmlns="" src="chrome-extension://mfidniedemcgceagapgdekdbmanojomk/js/elephant.js"/>
+	<polygon fill="#00FF00" fill-opacity="0.5" points="100,100 100,300 250,100"/>
+
+	<polygon fill="#FF0000" fill-opacity="0.5" points="100,400 400,400 250,150"/>
+
+	<polygon fill="#0000FF" fill-opacity="0.5" points="400,100 400,300 250,100"/>
+</svg>

@@ -2,6 +2,7 @@
 #define SVG_H
 
 #include "types.h"
+#include "xml.h"
 
 #ifdef __cplusplus
 	#include "app/graphics.hpp"
@@ -54,6 +55,129 @@ inline static void	svg_add_point(int points_x[32][256], int points_y[32][256], i
 	points_x[path][count] = x;
 	points_y[path][count] = y;
 	point_counts[path]++;
+}
+
+inline static void svg_viewbox(const char *tag, int length, int *x, int *y, int *w, int *h)
+{
+	const char *p = tag;
+	const char *end = tag + length;
+	int viewbox_len = strlen("viewBox");
+
+	*x = 0;
+	*y = 0;
+	*w = 320;  // fallback
+	*h = 480;  // fallback
+
+	while (p < end)
+	{
+		while (p < end && (isspace(*p) || *p == '<' || *p == '/'))
+			++p;
+
+		if (p + viewbox_len <= end)
+		{
+			int match = 1;
+
+			for (int i = 0; i < viewbox_len; ++i)
+			{
+				if (p[i] != "viewBox"[i])
+				{
+					match = 0;
+					break;
+				}
+			}
+
+			if (match && (p + viewbox_len == end || isspace(p[viewbox_len]) || p[viewbox_len] == '='))
+			{
+				const char *v = p + viewbox_len;
+
+				while (v < end && isspace(*v))
+					++v;
+
+				if (v >= end || *v != '=')
+					return;
+
+				++v;
+
+				while (v < end && isspace(*v))
+					++v;
+
+				if (v < end && (*v == '"' || *v == '\''))
+					++v;
+
+				// parse x, y, width, height
+				int values[4];
+				int found = 0;
+				while (found < 4 && v < end)
+				{
+					int num = 0;
+					int sign = 1;
+					int digits = 0;
+
+					while (v < end && (*v == ' ' || *v == '\t' || *v == ','))
+						++v;
+
+					if (v >= end)
+						break;
+
+					if (*v == '-')
+					{
+						sign = -1;
+						++v;
+					}
+					else if (*v == '+')
+						++v;
+
+					while (v < end && *v >= '0' && *v <= '9')
+					{
+						num = num * 10 + (*v - '0');
+						++v;
+						++digits;
+					}
+
+					if (digits)
+						values[found++] = sign * num;
+				}
+
+				if (found == 4)
+				{
+					*x = values[0];
+					*y = values[1];
+					*w = values[2];
+					*h = values[3];
+				}
+				return;
+			}
+		}
+
+		// skip current attribute
+		while (p < end && !isspace(*p) && *p != '=')
+			++p;
+
+		while (p < end && isspace(*p))
+			++p;
+
+		if (p < end && *p == '=')
+		{
+			++p;
+
+			while (p < end && isspace(*p))
+				++p;
+
+			if (p < end && (*p == '"' || *p == '\''))
+			{
+				char quote = *p++;
+				while (p < end && *p != quote)
+					++p;
+				if (p < end)
+					++p;
+			}
+			else
+			{
+				while (p < end && !isspace(*p))
+					++p;
+			}
+		}
+	}
 }
 
 inline static int svg_attr_int(const char *tag, int length, const char *name, int fallback)
@@ -152,6 +276,7 @@ inline static int svg_attr_int(const char *tag, int length, const char *name, in
 
 	return fallback;
 }
+
 inline static uint32_t svg_color(const char *tag, int length, const char *attribute, uint32_t fallback)
 {
 	const char *p = tag;
@@ -296,6 +421,7 @@ inline static void svg_line(Display *display, int x0, int y0, int x1, int y1, ui
 
 inline static void svg_points(Display *display, const char *tag, int length, int ox, int oy, int sx, int sy, uint32_t color, int close)
 {
+	PRINT("aaa\n", 0);
 	(void)display;
 	const char *points = strnstr(tag, "points", length);
 	if (!points)
@@ -334,7 +460,12 @@ inline static void svg_points(Display *display, const char *tag, int length, int
 	}
 	if (close && have)
 		svg_line(display, px, py, first_x, first_y, color);
+	PRINT("px:      %i, ", px);
+	PRINT("py:      %i, ", py);
+	PRINT("first_x: %i, ", first_x);
+	PRINT("first_y: %i\n", first_y);
 }
+
 inline static int svg_next_number(const char **cursor, const char *end, int *value)
 {
 	const char *p = *cursor;
@@ -705,7 +836,6 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 		++path_end;
 
 	end = path_end;
-
 	typedef struct {
 		int points_x[32][256];
 		int points_y[32][256];
@@ -893,6 +1023,7 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 				if (count > 0 && stroke_color)
 					svg_stroke_line(display, buffers->points_x[path_index][count - 1], buffers->points_y[path_index][count - 1], screen_x, screen_y, stroke_color, stroke_width);
 
+				DISPLAY(put_pixel)(screen_x, screen_y, 0xFF00FF00);
 				svg_add_point(buffers->points_x, buffers->points_y, buffers->point_counts, path_index, screen_x, screen_y);
 			}
 
@@ -1023,12 +1154,17 @@ inline static void svg_path(Display *display, const char *tag, int length, int o
 
 FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const char *svg, size_t size, uint32_t override_color)
 {
-	int source_width = svg_attr_int(svg, size, "width", 320);
-	int source_height = svg_attr_int(svg, size, "height", 480);
+	int viewbox_x, viewbox_y, viewbox_w, viewbox_h;
+	svg_viewbox(svg, size, &viewbox_x, &viewbox_y, &viewbox_w, &viewbox_h);
+	
+	int source_width = viewbox_w;
+	int source_height = viewbox_h;
+	
 	if (source_width <= 0)
 		source_width = 320;
 	if (source_height <= 0)
 		source_height = 480;
+
 	const char *cursor = svg;
 	while (cursor < svg + size)
 	{
@@ -1064,12 +1200,11 @@ FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const cha
 			if (has_stroke && stroke_color)
 				stroke_color = override_color;
 		}
-		//auto ptr = &Display::draw_svg_buff;
-		//PRINT("ptr: %p\n", ptr);
 		int px = x + svg_attr_int(begin, length, "x", 0) * w / source_width;
 		int py = y + svg_attr_int(begin, length, "y", 0) * h / source_height;
 		int pw = svg_attr_int(begin, length, "width", 0) * w / source_width;
 		int ph = svg_attr_int(begin, length, "height", 0) * h / source_height;
+		PRINT("begin = '%s'\n", begin);
 		if (strnstr(begin, "<rect", length))
 		{
 			int rx = svg_attr_int(begin, length, "rx", 0);

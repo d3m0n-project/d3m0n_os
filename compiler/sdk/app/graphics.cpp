@@ -1,6 +1,6 @@
 #include "app/graphics.hpp"
 #include "app/font.hpp"
-#include "app/svg.h"
+#include "app/parsing/svg.h"
 
 void	Display::put_pixel(int x, int y, uint32_t color)
 {

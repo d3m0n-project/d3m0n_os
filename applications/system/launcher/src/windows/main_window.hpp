@@ -13,7 +13,7 @@ public:
 		wallpaper.location = Point(0, 0);
 		wallpaper.width = Size(this->width);
 		wallpaper.height = Size(this->height);
-		wallpaper.source = "/wallpapers/default.svg";
+		wallpaper.source = "/test.svg";
 
 
 		rect1.location = Point(0, 0);

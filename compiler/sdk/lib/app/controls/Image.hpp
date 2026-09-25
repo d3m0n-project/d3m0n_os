@@ -28,6 +28,7 @@ public:
 			int ret = display->draw_svg(computed_location.x, computed_location.y, computed_width, computed_height, source.c_str());
 			if (ret == 1)
 				printf("Image: svg at '%s' does not exists!\n", source.c_str());
+			printf("DEBUG MSG: drawn image\n");
 			return;
 		}
 		display->draw_rect(computed_location.x, computed_location.y, computed_width, computed_height, bg_color);

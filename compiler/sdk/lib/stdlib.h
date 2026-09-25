@@ -37,6 +37,7 @@ extern "C" {
 	char			*strchr(const char *str, int c);
 	char			*strrchr(const char *str, int c);
 	char			*strnstr(const char *into, const char *substring, size_t len);
+	size_t			strspn(const char *s, const char *accept);
 	int				strncmp(const char *s1, const char *s2, size_t len);
 	int				strcmp(char *s1, char *s2);
 	void			*memchr(const void *str, int c, size_t len);

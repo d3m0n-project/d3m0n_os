@@ -36,6 +36,7 @@ extern "C" {
 	#define va_arg(ap,type)			__builtin_va_arg(ap,type)
 	#define va_copy(dst,src)		__builtin_va_copy(dst,src)
 	#define va_end(ap)				__builtin_va_end(ap)
+
 #ifdef __cplusplus
 }
 class AppException : public exception
