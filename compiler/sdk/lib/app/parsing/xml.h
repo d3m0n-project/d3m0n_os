@@ -298,7 +298,7 @@ static void	xml_parser_error(struct xml_parser* parser, enum xml_parser_offset o
 	int row = 0;
 	int column = 0;
 
-	size_t character = max(0, min(parser->length, parser->position + offset));
+	size_t character = min(parser->length, parser->position + offset);
 	for (size_t position = 0; position < character; ++position)
 	{
 		column++;
@@ -396,6 +396,7 @@ static void xml_skip_whitespace(struct xml_parser* parser)
  */
 static struct xml_attribute** xml_find_attributes(struct xml_parser* parser, struct xml_string* tag_open)
 {
+	(void)parser;
 	xml_parser_info(parser, "find_attributes");
 	char*	tmp;
 	char*	rest = 0;
@@ -683,7 +684,7 @@ static struct xml_node* xml_parse_node(struct xml_parser* parser)
 		content = xml_parse_content(parser);
 		if (!content)
 		{
-			xml_parser_error(parser, 0, "xml_parse_node::content");
+			xml_parser_error(parser, (xml_parser_offset)0, "xml_parse_node::content");
 			goto exit_failure;
 		}
 	}
@@ -822,7 +823,7 @@ struct xml_document* xml_open_document(int fd)
 			buffer_size += 2 * read_chunk;
 		}
 
-		read_bytes_count = read(fd, &buffer[document_length], read_chunk);
+		read_bytes_count = read(fd, (char *)&buffer[document_length], read_chunk);
 		document_length += read_bytes_count;
 	}
 	close(fd);
@@ -958,7 +959,7 @@ struct xml_node*	xml_easy_child(struct xml_node* node, uint8_t const* child_name
 		// convert child_name to xml_string for easy comparison
 		struct xml_string cn = {
 			.buffer = child_name,
-			.length = strlen(child_name)
+			.length = strlen((const char *)child_name)
 		};
 
 		// interate through all children

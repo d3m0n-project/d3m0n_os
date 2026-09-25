@@ -112,3 +112,25 @@ size_t	printf(const char *format, ...)
 	free(buffer.data);
 	return (buffer.len);
 }
+
+size_t	fprintf(int fd, const char *format, ...)
+{
+	va_list	args;
+	t_buf	buffer;
+
+	buffer.data = 0;
+	buffer.len = 0;
+	buffer.cap = 0;
+	va_start(args, format);
+	if (!vprintf_internal(format, &buffer, &args))
+	{
+		if (buffer.data)
+			free(buffer.data);
+		va_end(args);
+		return 0;
+	}
+	va_end(args);
+	write(fd, buffer.data, buffer.len);
+	free(buffer.data);
+	return (buffer.len);
+}
