@@ -1,1051 +1,636 @@
-/**
- * Copyright (c) 2012 ooxi/xml.c
- *     https://github.com/ooxi/xml.c
- *
- * This software is provided 'as-is', without any express or implied warranty.
- * In no event will the authors be held liable for any damages arising from the
- * use of this software.
- * 
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- *  1. The origin of this software must not be misrepresented; you must not
- *     claim that you wrote the original software. If you use this software in a
- *     product, an acknowledgment in the product documentation would be
- *     appreciated but is not required.
- * 
- *  2. Altered source versions must be plainly marked as such, and must not be
- *     misrepresented as being the original software.
- *
- *  3. This notice may not be removed or altered from any source distribution.
- * 
- * 
- *    This project has been edited by 4re5 group, for project: d3m0n os
- * 
- */
-
 #ifndef XML_H
 #define XML_H
-#include "types.h"
-#include "stdio.hpp"
+
 #include "stdlib.h"
 
+#ifdef __cplusplus
+extern "C" {
+#else
+#define	memchr(a, b, c)		ft_memchr(a, b, c)
+#define	strlen(a)			ft_strlen(a)
+#define	memcmp(a, b, c)		ft_memcmp(a, b, c)
+#define	isspace(a)			ft_isspace(a)
+#endif
 
-
-
-
-/* 
- * public domain strtok_r() by Charlie Gordon
- *
- *   from comp.lang.c  9/14/2007
- *
- *      http://groups.google.com/group/comp.lang.c/msg/2ab1ecbb86646684
- *
- *     (Declaration that it's public domain):
- *      http://groups.google.com/group/comp.lang.c/msg/7c7b39328fefab9c
- */
-static char*	xml_strtok_r(char *str, const char *delim, char **nextp)
+typedef enum
 {
-	char	*ret;
-	if (str == 0)
-		str = *nextp;
+	SXML_ERROR_XMLINVALID= -1,	/* Parser found invalid XML data - not much you can do beyond error reporting */
+	SXML_SUCCESS= 0,			/* Parser has completed successfully - parsing of XML document is complete */
+	SXML_ERROR_BUFFERDRY= 1,	/* Parser ran out of input data - refill buffer with more XML text to continue parsing */
+	SXML_ERROR_TOKENSFULL= 2	/* Parser has filled all the supplied tokens with data - provide more tokens for further output */
+}	sxmlerr_t;
 
-	str += strspn(str, delim);
-	if (*str == '\0')
+/*
+ You provide sxml_parse() with a buffer of XML text for parsing.
+ The parser will handle text data encoded in ascii, latin-1 and utf-8.
+ It should also work with other encodings that are acsii extensions.
+
+ sxml_parse() is reentrant.
+ In the case of return code SXML_ERROR_BUFFERDRY or SXML_ERROR_TOKENSFULL, you are expected to call the function again after resolving the problem to continue parsing.
+ */
+
+typedef	struct sxml_t sxml_t;
+typedef	struct sxmltok_t sxmltok_t;
+static inline sxmlerr_t	sxml_parse(sxml_t *parser, const char *buffer, unsigned bufferlen, sxmltok_t* tokens, unsigned num_tokens);
+
+/*
+ The sxml_t object stores all data required for SXML to continue from where it left of.
+
+ After calling sxml_parse() 'ntokens' tells you how many output tokens have been filled with data.
+ Depending on how you resolve SXML_ERROR_BUFFERDRY or SXML_ERROR_TOKENSFULL you may need to modifiy 'bufferpos' and 'ntokens' to correctly reflect the new buffer and tokens you provide.
+*/
+
+struct sxml_t
+{
+	unsigned bufferpos;	/* Current offset into buffer - all XML data before this position has been successfully parsed */
+	unsigned ntokens;	/* Number of tokens filled with valid data by the parser */
+	unsigned taglevel;	/* Used internally - keeps track of number of unclosed XML elements to detect start and end of document */
+};
+
+/*
+ Before you call sxml_parse() for the first time, you have to initialize the parser object.
+ You may easily do that with the provided function sxml_init().
+*/
+
+static inline void	sxml_init(sxml_t *parser);
+
+/*
+ Unlike most XML parsers, SXML does not use SAX callbacks or allocate a DOM tree.
+ Instead you will have to interpret the XML structure through a table of tokens.
+
+ A token can describe any of the following types:
+*/
+
+typedef enum
+{
+	SXML_STARTTAG,	/* Start tag describes the opening of an XML element */
+	SXML_ENDTAG,	/* End tag is the closing of an XML element */
+
+	SXML_CHARACTER,		/* Character data may be escaped - check if the first character is an ampersand '&' to identity a XML character reference */
+	SXML_CDATA,			/* Character data should be read as is - it is not escaped */
+
+	/* And some other token types you might be interested in: */
+	SXML_INSTRUCTION,	/* Can be used to identity the text encoding */
+	SXML_DOCTYPE,		/* If you'd like to interpret DTD data */
+	SXML_COMMENT		/* Most likely you don't care about comments - but this is where you'll find them */
+}	sxmltype_t;
+
+/*
+ If you are familiar with the structure of an XML document most of these type names should sound familiar.
+ 
+ A token has the following data:
+*/
+
+struct sxmltok_t
+{
+	unsigned short type;	/* A token is one of the above sxmltype_t */
+	unsigned short size;	/* The following number of tokens contain additional data related to this token - used for describing attributes */
+
+	/* 'startpos' and 'endpos' together define a range within the provided text buffer - use these offsets with the buffer to extract the text value of the token */
+	unsigned startpos;
+	unsigned endpos;
+};
+
+static const char* str_findchr(const char* start, const char* end, int c)
+{
+	const char* it;
+	assert(start <= end, 0);
+	assert(0 <= c && c <= 127, 0);	/* CHAR_MAX - memchr implementation will only work when searching for ascii characters within a utf-8 string */
+	
+	it= (const char*)memchr(start, c, end - start);
+	return (it != NULL) ? it : end;
+}
+
+static const char* str_findstr(const char* start, const char* end, const char* needle)
+{
+	size_t	needlelen;
+	int		first;
+	assert(start <= end, 0);
+	
+	needlelen= strlen(needle);
+	assert(0 < needlelen, 0);
+	first = (unsigned char)needle[0];
+
+	while (start + needlelen <= end)
+	{
+		const char* it= (const char*)memchr(start, first, (end - start) - (needlelen - 1));
+		if (it == NULL)
+			break;
+
+		if (memcmp(it, needle, needlelen) == 0)
+			return it;
+
+		start= it + 1;
+	}
+
+	return end;
+}
+
+static int str_startswith(const char* start, const char* end, const char* prefix)
+{
+	long nbytes;
+	assert(start <= end, 0);
+	
+	nbytes= strlen(prefix);
+	if (end - start < nbytes)
 		return 0;
-
-	ret = str;
-	str += strcspn(str, delim);
-	if (*str)
-		*str++ = '\0';
-
-	*nextp = str;
-	return ret;
+	
+	return memcmp(prefix, start, nbytes) == 0;
 }
 
-
-void	xml_string_copy(struct xml_string* string, uint8_t* buffer, size_t length);
-
-
-
-/**
- * [OPAQUE API]
- *
- * UTF-8 text
- */
-struct	xml_string {
-	uint8_t const*	buffer;
-	size_t			length;
-};
-
-/**
- * [OPAQUE API]
- *
- * An xml_attribute may contain text content.
- */
-struct	xml_attribute {
-	struct xml_string* name;
-	struct xml_string* content;
-};
-
-/**
- * [OPAQUE API]
- *
- * An xml_node will always contain a tag name, a 0-terminated list of attributes
- * and a 0-terminated list of children. Moreover it may contain text content.
- */
-struct	xml_node {
-	struct xml_string*		name;
-	struct xml_string*		content;
-	struct xml_attribute**	attributes;
-	struct xml_node**		children;
-};
-
-/**
- * [OPAQUE API]
- *
- * An xml_document simply contains the root node and the underlying buffer
- */
-struct xml_document {
-	struct {
-		uint8_t*		buffer;
-		size_t			length;
-	}	buffer;
-	struct xml_node*	root;
-};
-
-
-
-
-
-/**
- * [PRIVATE]
- *
- * Parser context
- */
-struct	xml_parser {
-	uint8_t*	buffer;
-	size_t		position;
-	size_t		length;
-};
-
-/**
- * [PRIVATE]
- *
- * Character offsets
- */
-enum xml_parser_offset {
-	NO_CHARACTER = -1,
-	CURRENT_CHARACTER = 0,
-	NEXT_CHARACTER = 1,
-};
-
-
-
-
-
-/**
- * [PRIVATE]
- *
- * @return Number of attributes in 0-terminated array
- */
-static size_t	get_zero_terminated_array_attributes(struct xml_attribute** attributes)
+static int NameStartChar(int c)
 {
-	size_t elements = 0;
-	while (attributes[elements])
-		++elements;
-
-	return elements;
-}
-
-
-
-/**
- * [PRIVATE]
- *
- * @return Number of nodes in 0-terminated array
- */
-static size_t	get_zero_terminated_array_nodes(struct xml_node** nodes)
-{
-	size_t elements = 0;
-	while (nodes[elements])
-		++elements;
-
-	return elements;
-}
-
-
-
-/**
- * [PRIVATE]
- *
- * @warning No UTF conversions will be attempted
- *
- * @return true iff a == b
- */
-static int	xml_string_equals(struct xml_string* a, struct xml_string* b)
-{
-	if (a->length != b->length)
-		return false;
-
-	for (size_t i = 0; i < a->length; ++i)
-	{
-		if (a->buffer[i] != b->buffer[i])
-			return false;
-	}
-	return true;
-}
-
-
-
-/**
- * [PRIVATE]
- */
-static uint8_t*	xml_string_clone(struct xml_string* s)
-{
-	if (!s)
-		return 0;
-
-	uint8_t	*clone = (uint8_t *)calloc(s->length + 1, sizeof(uint8_t));
-	xml_string_copy(s, clone, s->length);
-	clone[s->length] = 0;
-
-	return clone;
-}
-
-
-
-/**
- * [PRIVATE]
- *
- * Frees the resources allocated by the string
- *
- * @warning `buffer` must _not_ be freed, since it is a reference to the
- *     document's buffer
- */
-static void	xml_string_free(struct xml_string* string)
-{
-	free(string);
-}
-
-
-
-/**
- * [PRIVATE]
- *
- * Frees the resources allocated by the attribute
- */
-static void	xml_attribute_free(struct xml_attribute* attribute)
-{
-	if(attribute->name)
-		xml_string_free(attribute->name);
-
-	if(attribute->content)
-		xml_string_free(attribute->content);
-	free(attribute);
-}
-
-/**
- * [PRIVATE]
- * 
- * Frees the resources allocated by the node
- */
-static void	xml_node_free(struct xml_node* node)
-{
-	xml_string_free(node->name);
-	if (node->content)
-	{
-		xml_string_free(node->content);
-	}
-
-	struct xml_attribute** at = node->attributes;
-	while(*at)
-	{
-		xml_attribute_free(*at);
-		++at;
-	}
-	free(node->attributes);
-
-	struct xml_node** it = node->children;
-	while (*it)
-	{
-		xml_node_free(*it);
-		++it;
-	}
-	free(node->children);
-	free(node);
-}
-
-
-
-/**
- * [PRIVATE]
- *
- * Echos the parsers call stack for debugging purposes
- */
-#define xml_parser_info(parser, message) {}
-
-
-
-/**
- * [PRIVATE]
- *
- * Echos an error regarding the parser's source to the console
- */
-static void	xml_parser_error(struct xml_parser* parser, enum xml_parser_offset offset, char const* message)
-{
-	int row = 0;
-	int column = 0;
-
-	size_t character = min(parser->length, parser->position + offset);
-	for (size_t position = 0; position < character; ++position)
-	{
-		column++;
-		if ('\n' == parser->buffer[position])
-		{
-			row++;
-			column = 0;
-		}
-	}
-
-	if (NO_CHARACTER != offset)
-		fprintf(stderr,	"xml_parser_error at %i:%i (is %c): %s\n", row + 1, column, parser->buffer[character], message);
-	else
-		fprintf(stderr,	"xml_parser_error at %i:%i: %s\n", row + 1, column, message);
-
-}
-
-
-
-/**
- * [PRIVATE]
- *
- * Returns the n-th not-whitespace byte in parser and 0 if such a byte does not
- * exist
- */
-static uint8_t	xml_parser_peek(struct xml_parser* parser, size_t n)
-{
-	size_t position = parser->position;
-	while (position < parser->length)
-	{
-		if (!isspace(parser->buffer[position]))
-		{
-			if (n == 0)
-				return parser->buffer[position];
-			else
-				--n;
-		}
-
-		position++;
-	}
-
-	return 0;
-}
-
-
-
-/**
- * [PRIVATE]
- *
- * Moves the parser's position n bytes. If the new position would be out of
- * bounds, it will be converted to the bounds itself
- */
-static void	xml_parser_consume(struct xml_parser* parser, size_t n)
-{
-	// Move the position forward
-	parser->position += n;
-
-	/* Don't go too far
-	 *
-	 * @warning Valid because parser->length must be greater than 0
+	/*
+	 We don't perform utf-8 decoding - just accept all characters with hight bit set
+	 (0xC0 <= c && c <= 0xD6) || (0xD8 <= c && c <= 0xF6) || (0xF8 <= c && c <= 0x2FF) ||
+	 (0x370 <= c && c <= 0x37D) || (0x37F <= c && c <= 0x1FFF) || (0x200C <= c && c <= 0x200D) ||
+	 (0x2070 <= c && c <= 0x218F) || (0x2C00 <= c && c <= 0x2FEF) || (0x3001 <= c && c <= 0xD7FF) ||
+	 (0xF900 <= c && c <= 0xFDCF) || (0xFDF0 <= c && c <= 0xFFFD) || (0x10000 <= c && c <= 0xEFFFF);
 	 */
-	if (parser->position >= parser->length)
-		parser->position = parser->length - 1;
+	if (0x80 <= c)
+		return 1;
+
+	return c == ':' || ('A' <= c && c <= 'Z') || c == '_' || ('a' <= c && c <= 'z');
 }
 
-
-
-/**
- * [PRIVATE]
- * 
- * Skips to the next non-whitespace character
- */
-static void xml_skip_whitespace(struct xml_parser* parser)
+static int NameChar(int c)
 {
-	xml_parser_info(parser, "whitespace");
+	return NameStartChar (c) ||
+		c == '-' || c == '.' || ('0'  <= c && c <= '9') ||
+		c == 0xB7 || (0x0300 <= c && c <= 0x036F) || (0x203F <= c && c <= 0x2040);
+}
 
-	while (isspace(parser->buffer[parser->position]))
+#define ISSPACE(c)		(isspace(((unsigned char)(c))))
+#define ISALPHA(c)		(NameStartChar(((unsigned char)(c))))
+#define ISALNUM(c)		(NameChar(((unsigned char)(c))))
+
+/* Left trim isspace */
+static const char* str_ltrim(const char* start, const char* end)
+{
+	const char* it;
+	assert(start <= end, 0);
+
+	for (it= start; it != end && ISSPACE (*it); it++)
+		;
+
+	return it;
+}
+
+/* Right trim isspace */
+static const char* str_rtrim(const char* start, const char* end)
+{
+	const char* it, *prev;
+	assert(start <= end, 0);
+
+	for (it= end; start != it; it= prev)
 	{
-		if (parser->position + 1 >= parser->length)
-			return;
-		else
-			parser->position++;
+		prev= it - 1;
+		if (!ISSPACE (*prev))
+			return it;
 	}
+	
+	return start;
 }
 
-
-
-/**
- * [PRIVATE]
- *
- * Finds and creates all attributes on the given node.
- *
- * @author Blake Felt
- * @see https://github.com/Molorius
- */
-static struct xml_attribute** xml_find_attributes(struct xml_parser* parser, struct xml_string* tag_open)
+static const char* str_find_notalnum(const char* start, const char* end)
 {
-	(void)parser;
-	xml_parser_info(parser, "find_attributes");
-	char*	tmp;
-	char*	rest = 0;
-	char*	token;
-	char*	str_name;
-	char*	str_content;
-	const	unsigned char* start_name;
-	const	unsigned char* start_content;
-	size_t	old_elements;
-	size_t	new_elements;
-	struct	xml_attribute* new_attribute;
-	struct	xml_attribute** attributes;
-	int		position;
+	const char* it;	
+	assert(start <= end, 0);
 
-	attributes = (struct xml_attribute **)calloc(1, sizeof(struct xml_attribute*));
-	attributes[0] = 0;
+	for (it= start; it != end && ISALNUM (*it); it++)
+		;
 
-	tmp = (char*) xml_string_clone(tag_open);
-
-	token = xml_strtok_r(tmp, " ", &rest); // skip the first value
-	if(token == 0)
-		goto cleanup;
-
-	tag_open->length = strlen(token);
-
-	for(token=xml_strtok_r(0," ", &rest); token!=0; token=xml_strtok_r(0," ", &rest))
-	{
-		str_name = (char *)malloc(strlen(token)+1);
-		str_content = (char *)malloc(strlen(token)+1);
-		// %s=\"%s\" wasn't working for some reason, ugly hack to make it work
-		if(sscanf(token, "%[^=]=\"%[^\"]", str_name, str_content) != 2)
-		{
-			if(sscanf(token, "%[^=]=\'%[^\']", str_name, str_content) != 2)
-			{
-				free(str_name);
-				free(str_content);
-				continue;
-			}
-		}
-		position = token-tmp;
-		start_name = &tag_open->buffer[position];
-		start_content = &tag_open->buffer[position + strlen(str_name) + 2];
-
-		new_attribute = (struct xml_attribute *)malloc(sizeof(struct xml_attribute));
-		new_attribute->name = (struct xml_string *)malloc(sizeof(struct xml_string));
-		new_attribute->name->buffer = (unsigned char*)start_name;
-		new_attribute->name->length = strlen(str_name);
-		new_attribute->content = (struct xml_string *)malloc(sizeof(struct xml_string));
-		new_attribute->content->buffer = (unsigned char*)start_content;
-		new_attribute->content->length = strlen(str_content);
-
-		old_elements = get_zero_terminated_array_attributes(attributes);
-		new_elements = old_elements + 1;
-		attributes = (struct xml_attribute **)realloc(attributes, (new_elements+1)*sizeof(struct xml_attribute*));
-
-		attributes[new_elements-1] = new_attribute;
-		attributes[new_elements] = 0;
-
-
-		free(str_name);
-		free(str_content);
-	}
-
-cleanup:
-	free(tmp);
-	return attributes;
+	return it;
 }
 
+/* MARK: State */
 
-
-/**
- * [PRIVATE]
- *
- * Parses the name out of the an XML tag's ending
- *
- * ---( Example )---
- * tag_name>
- * ---
- */
-static struct xml_string*	xml_parse_tag_end(struct xml_parser* parser)
+/* Collect arguments in a structure for convenience */
+typedef struct
 {
-	xml_parser_info(parser, "tag_end");
-	size_t start = parser->position;
-	size_t length = 0;
+	const char		*buffer;
+	unsigned		bufferlen;
+	sxmltok_t		*tokens;
+	unsigned		num_tokens;
+} sxml_args_t;
 
-	// Parse until `>' or a whitespace is reached
-	while (start + length < parser->length)
+#define buffer_fromoffset(args,i)	((args)->buffer + (i))
+#define buffer_tooffset(args,ptr)	(unsigned) ((ptr) - (args)->buffer)
+#define buffer_getend(args)			((args)->buffer + (args)->bufferlen)
+
+static int state_pushtoken(sxml_t* state, sxml_args_t* args, sxmltype_t type, const char* start, const char* end)
+{
+	sxmltok_t* token;
+	unsigned i= state->ntokens++;
+	if (args->num_tokens < state->ntokens)
+		return 0;
+	
+	token= &args->tokens[i];
+	token->type= type;
+	token->startpos= buffer_tooffset (args, start);
+	token->endpos= buffer_tooffset (args, end);
+	token->size= 0;
+
+	switch (type)
 	{
-		uint8_t current = xml_parser_peek(parser, CURRENT_CHARACTER);
-		if (('>' == current) || isspace(current))
+		case SXML_STARTTAG:	state->taglevel++;	break;
+
+		case SXML_ENDTAG:
+			assert(0 < state->taglevel, 0);
+			state->taglevel--;
 			break;
-		else
-		{
-			xml_parser_consume(parser, 1);
-			length++;
-		}
-	}
 
-	// Consume `>'
-	if ('>' != xml_parser_peek(parser, CURRENT_CHARACTER))
-	{
-		xml_parser_error(parser, CURRENT_CHARACTER, "xml_parse_tag_end::expected tag end");
-		return 0;
-	}
-	xml_parser_consume(parser, 1);
-
-	// Return parsed tag name
-	struct xml_string* name = (struct xml_string*)malloc(sizeof(struct xml_string));
-	name->buffer = &parser->buffer[start];
-	name->length = length;
-	return name;
-}
-
-
-
-/**
- * [PRIVATE]
- *
- * Parses an opening XML tag without attributes
- *
- * ---( Example )---
- * <tag_name>
- * ---
- */
-static struct xml_string*	xml_parse_tag_open(struct xml_parser* parser)
-{
-	xml_parser_info(parser, "tag_open");
-	xml_skip_whitespace(parser);
-
-	// Consume `<'
-	if ('<' != xml_parser_peek(parser, CURRENT_CHARACTER))
-	{
-		xml_parser_error(parser, CURRENT_CHARACTER, "xml_parse_tag_open::expected opening tag");
-		return 0;
-	}
-	xml_parser_consume(parser, 1);
-
-	// Consume tag name
-	return xml_parse_tag_end(parser);
-}
-
-
-
-/**
- * [PRIVATE]
- *
- * Parses an closing XML tag without attributes
- *
- * ---( Example )---
- * </tag_name>
- * ---
- */
-static struct xml_string* xml_parse_tag_close(struct xml_parser* parser)
-{
-	xml_parser_info(parser, "tag_close");
-	xml_skip_whitespace(parser);
-
-	// Consume `</'
-	if (('<' != xml_parser_peek(parser, CURRENT_CHARACTER)) ||	('/' != xml_parser_peek(parser, NEXT_CHARACTER)))
-	{
-		if ('<' != xml_parser_peek(parser, CURRENT_CHARACTER))
-			xml_parser_error(parser, CURRENT_CHARACTER, "xml_parse_tag_close::expected closing tag `<'");
-		if ('/' != xml_parser_peek(parser, NEXT_CHARACTER))
-			xml_parser_error(parser, NEXT_CHARACTER, "xml_parse_tag_close::expected closing tag `/'");
-		return 0;
-	}
-	xml_parser_consume(parser, 2);
-
-	// Consume tag name
-	return xml_parse_tag_end(parser);
-}
-
-
-
-/**
- * [PRIVATE]
- *
- * Parses a tag's content
- *
- * ---( Example )---
- *     this is
- *   a
- *       tag {} content
- * ---
- *
- * @warning CDATA etc. is _not_ and will never be supported
- */
-static struct xml_string* xml_parse_content(struct xml_parser* parser)
-{
-	xml_parser_info(parser, "content");
-
-	// Whitespace will be ignored
-	xml_skip_whitespace(parser);
-
-	size_t start = parser->position;
-	size_t length = 0;
-
-	// Consume until `<' is reached
-	while (start + length < parser->length)
-	{
-		uint8_t current = xml_parser_peek(parser, CURRENT_CHARACTER);
-		if ('<' == current)
+		default:
 			break;
-		else
-		{
-			xml_parser_consume(parser, 1);
-			length++;
-		}
 	}
 
-	// Next character must be an `<' or we have reached end of file
-	if ('<' != xml_parser_peek(parser, CURRENT_CHARACTER))
-	{
-		xml_parser_error(parser, CURRENT_CHARACTER, "xml_parse_content::expected <");
-		return 0;
-	}
-
-	// Ignore tailing whitespace
-	while ((length > 0) && isspace(parser->buffer[start + length - 1]))
-		length--;
-
-
-	// Return text
-	struct xml_string* content = (struct xml_string*)malloc(sizeof(struct xml_string));
-	content->buffer = &parser->buffer[start];
-	content->length = length;
-	return content;
+	return 1;
 }
 
-
-
-/**
- * [PRIVATE]
- * 
- * Parses an XML fragment node
- *
- * ---( Example without children )---
- * <Node>Text</Node>
- * ---
- *
- * ---( Example with children )---
- * <Parent>
- *     <Child>Text</Child>
- *     <Child>Text</Child>
- *     <Test>Content</Test>
- * </Parent>
- * ---
- */
-static struct xml_node* xml_parse_node(struct xml_parser* parser)
+static sxmlerr_t state_setpos(sxml_t* state, const sxml_args_t* args, const char* ptr)
 {
-	xml_parser_info(parser, "node");
-
-	// Setup variables
-	struct xml_string* tag_open = 0;
-	struct xml_string* tag_close = 0;
-	struct xml_string* content = 0;
-
-	size_t original_length;
-	struct xml_attribute** attributes;
-
-	struct xml_node** children = (struct xml_node**)calloc(1, sizeof(struct xml_node*));
-	children[0] = 0;
-
-
-	// Parse open tag
-	tag_open = xml_parse_tag_open(parser);
-	if (!tag_open)
-	{
-		xml_parser_error(parser, NO_CHARACTER, "xml_parse_node::tag_open");
-		goto exit_failure;
-	}
-
-	original_length = tag_open->length;
-	attributes = xml_find_attributes(parser, tag_open);
-
-	/* If tag ends with `/' it's self closing, skip content lookup */
-	if (tag_open->length > 0 && '/' == tag_open->buffer[original_length - 1])
-		// Drop `/'
-		goto node_creation;
-
-
-	// If the content does not start with '<', a text content is assumed
-	if ('<' != xml_parser_peek(parser, CURRENT_CHARACTER))
-	{
-		content = xml_parse_content(parser);
-		if (!content)
-		{
-			xml_parser_error(parser, (xml_parser_offset)0, "xml_parse_node::content");
-			goto exit_failure;
-		}
-	}
-	// Otherwise children are to be expected
-	else while ('/' != xml_parser_peek(parser, NEXT_CHARACTER))
-	{
-
-		// Parse child node
-		struct xml_node* child = xml_parse_node(parser);
-		if (!child)
-		{
-			xml_parser_error(parser, NEXT_CHARACTER, "xml_parse_node::child");
-			goto exit_failure;
-		}
-
-		// Grow child array :)
-		size_t old_elements = get_zero_terminated_array_nodes(children);
-		size_t new_elements = old_elements + 1;
-		children = (struct xml_node**)realloc(children, (new_elements + 1) * sizeof(struct xml_node*));
-
-		// Save child
-		children[new_elements - 1] = child;
-		children[new_elements] = 0;
-	}
-
-
-	// Parse close tag
-	tag_close = xml_parse_tag_close(parser);
-	if (!tag_close)
-	{
-		xml_parser_error(parser, NO_CHARACTER, "xml_parse_node::tag_close");
-		goto exit_failure;
-	}
-
-
-	// Close tag has to match open tag
-	if (!xml_string_equals(tag_open, tag_close))
-	{
-		xml_parser_error(parser, NO_CHARACTER, "xml_parse_node::tag missmatch");
-		goto exit_failure;
-	}
-
-
-	// Return parsed node
-	xml_string_free(tag_close);
-
-node_creation:;
-	struct xml_node* node = (struct xml_node*)malloc(sizeof(struct xml_node));
-	node->name = tag_open;
-	node->content = content;
-	node->attributes = attributes;
-	node->children = children;
-	return node;
-
-
-	// A failure occured, so free all allocalted resources
-exit_failure:
-	if (tag_open)
-		xml_string_free(tag_open);
-	if (tag_close)
-		xml_string_free(tag_close);
-	if (content)
-		xml_string_free(content);
-
-
-	struct xml_node** it = children;
-	while (*it)
-	{
-		xml_node_free(*it);
-		++it;
-	}
-	free(children);
-	return 0;
+	state->bufferpos= buffer_tooffset(args, ptr);
+	return (state->ntokens <= args->num_tokens) ? SXML_SUCCESS : SXML_ERROR_TOKENSFULL;
 }
 
+#define state_commit(dest,src) memcpy((dest), (src), sizeof (sxml_t))
 
+/*
+ MARK: Parse
+ 
+ SXML does minimal validation of the input data.
+ SXML_ERROR_XMLSTRICT is returned if some simple XML validation tests fail.
+ SXML_ERROR_XMLINVALID is instead returned if the invalid XML data is serious enough to prevent the parser from continuing.
+ We currently make no difference between these two - but they are marked differently in case we wish to do so in the future.
+*/
 
+#define SXML_ERROR_XMLSTRICT	SXML_ERROR_XMLINVALID
 
+#define ENTITY_MAXLEN			8	/* &#x03A3; */
+#define MIN(a,b)				((a) < (b) ? (a) : (b))
 
-/**
- * [PUBLIC API]
- */
-struct xml_document*	xml_parse_document(uint8_t* buffer, size_t length)
+static sxmlerr_t parse_characters(sxml_t* state, sxml_args_t* args, const char* end)
 {
-	// Initialize parser
-	struct xml_parser parser = {
-		.buffer = buffer,
-		.position = 0,
-		.length = length
-	};
+	const char* start= buffer_fromoffset(args, state->bufferpos);
+	const char* limit, *colon, *ampr= str_findchr(start, end, '&');
+	assert(end <= buffer_getend (args), (sxmlerr_t)0);
 
-	// an empty buffer can never contain a valid document
-	if (!length)
-	{
-		xml_parser_error(&parser, NO_CHARACTER, "xml_parse_document::length equals zero");
-		return 0;
-	}
+	if (ampr != start)
+		state_pushtoken(state, args, SXML_CHARACTER, start, ampr);
 
-	// parse the root node
-	struct xml_node* root = xml_parse_node(&parser);
-	if (!root)
-	{
-		xml_parser_error(&parser, NO_CHARACTER, "xml_parse_document::parsing document failed");
-		return 0;
-	}
+	if (ampr == end)
+		return state_setpos(state, args, ampr);
 
-	// return parsed document
-	struct xml_document* document = (struct xml_document*)malloc(sizeof(struct xml_document));
-	document->buffer.buffer = buffer;
-	document->buffer.length = length;
-	document->root = root;
-
-	return document;
-}
-
-
-
-/**
- * [PUBLIC API]
- */
-struct xml_document* xml_open_document(int fd)
-{
-	size_t const read_chunk = 4096;
-	size_t document_length = 0;
-	size_t buffer_size = 4069;
-	uint8_t* buffer = (uint8_t *)malloc(buffer_size * sizeof(uint8_t));
-
-	// read hole file into buffer
-	size_t read_bytes_count = 1;
-	while (read_bytes_count > 0)
-	{
-		// reallocate buffer
-		if (buffer_size - document_length < read_chunk)
-		{
-			buffer = (uint8_t *)realloc(buffer, buffer_size + 2 * read_chunk);
-			buffer_size += 2 * read_chunk;
-		}
-
-		read_bytes_count = read(fd, (char *)&buffer[document_length], read_chunk);
-		document_length += read_bytes_count;
-	}
-	close(fd);
-
-	// try to parse buffer
-	struct xml_document* document = xml_parse_document(buffer, document_length);
-	if (!document)
-	{
-		free(buffer);
-		return 0;
-	}
-	return document;
-}
-
-
-
-/**
- * [PUBLIC API]
- */
-void	xml_document_free(struct xml_document* document, bool free_buffer)
-{
-	xml_node_free(document->root);
-
-	if (free_buffer)
-		free(document->buffer.buffer);
-	free(document);
-}
-
-
-
-/**
- * [PUBLIC API]
- */
-struct xml_node*	xml_document_root(struct xml_document* document)
-{
-	return document->root;
-}
-
-
-
-/**
- * [PUBLIC API]
- */
-struct xml_string*	xml_node_name(struct xml_node* node)
-{
-	return node->name;
-}
-
-
-
-/**
- * [PUBLIC API]
- */
-struct xml_string*	xml_node_content(struct xml_node* node)
-{
-	return node->content;
-}
-
-
-
-/**
- * [PUBLIC API]
- *
- * @warning O(n)
- */
-size_t	xml_node_children(struct xml_node* node)
-{
-	return get_zero_terminated_array_nodes(node->children);
-}
-
-
-
-/**
- * [PUBLIC API]
- */
-struct xml_node*	xml_node_child(struct xml_node* node, size_t child)
-{
-	if (child >= xml_node_children(node))
-		return 0;
-	return node->children[child];
-}
-
-
-
-/**
- * [PUBLIC API]
- */
-size_t	xml_node_attributes(struct xml_node* node)
-{
-	return get_zero_terminated_array_attributes(node->attributes);
-}
-
-
-
-/**
- * [PUBLIC API]
- */
-struct xml_string*	xml_node_attribute_name(struct xml_node* node, size_t attribute)
-{
-	if(attribute >= xml_node_attributes(node))
-		return 0;
-	return node->attributes[attribute]->name;
-}
-
-
-
-/**
- * [PUBLIC API]
- */
-struct xml_string*	xml_node_attribute_content(struct xml_node* node, size_t attribute)
-{
-	if(attribute >= xml_node_attributes(node))
-		return 0;
-	return node->attributes[attribute]->content;
-}
-
-
-
-/**
- * [PUBLIC API]
- */
-struct xml_node*	xml_easy_child(struct xml_node* node, uint8_t const* child_name, ...)
-{
-	// find children, one by one
-	struct xml_node* current = node;
-
-	va_list arguments;
-	va_start(arguments, child_name);
-
-	// descent to current.child
-	while (child_name)
-	{
-		// convert child_name to xml_string for easy comparison
-		struct xml_string cn = {
-			.buffer = child_name,
-			.length = strlen((const char *)child_name)
-		};
-
-		// interate through all children
-		struct xml_node* next = 0;
-		for (size_t i = 0; i < xml_node_children(current); ++i)
-		{
-			struct xml_node* child = xml_node_child(current, i);
-			if (xml_string_equals(xml_node_name(child), &cn))
-			{
-				if (!next)
-					next = child;
-				// two children with the same name
-				else
-				{
-					va_end(arguments);
-					return 0;
-				}
-			}
-		}
-
-		// no child with that name found
-		if (!next)
-		{
-			va_end(arguments);
-			return 0;
-		}
-		current = next;		
+	/* limit entity to search to ENTITY_MAXLEN */
+	limit= MIN(ampr + ENTITY_MAXLEN, end);
+	colon= str_findchr(ampr, limit, ';');
+	if (colon == limit)
+		return (limit == end) ? SXML_ERROR_BUFFERDRY : SXML_ERROR_XMLINVALID;
 		
-		// Find name of next child
-		child_name = va_arg(arguments, uint8_t const*);
+	start= colon + 1;
+	state_pushtoken(state, args, SXML_CHARACTER, ampr, start);
+	return state_setpos(state, args, start);
+}
+
+static sxmlerr_t parse_attrvalue(sxml_t* state, sxml_args_t* args, const char* end)
+{
+	while (buffer_fromoffset(args, state->bufferpos) != end)
+	{
+		sxmlerr_t err= parse_characters(state, args, end);
+		if (err != SXML_SUCCESS)
+			return err;
 	}
-	va_end(arguments);
-
-
-	// return current element
-	return current;
+	
+	return SXML_SUCCESS;
 }
 
-
-
-/**
- * [PUBLIC API]
- */
-uint8_t*	xml_easy_name(struct xml_node* node)
+static sxmlerr_t parse_attributes(sxml_t* state, sxml_args_t* args)
 {
-	if (!node) 
-		return 0;
-	return xml_string_clone(xml_node_name(node));
+	const char* start= buffer_fromoffset(args, state->bufferpos);
+	const char* end= buffer_getend(args);
+	const char* name= str_ltrim(start, end);
+	
+	unsigned ntokens= state->ntokens;
+	assert(0 < ntokens, (sxmlerr_t)0);
+
+	while (name != end && ISALPHA(*name))
+	{
+		const char* eq, *space, *quot, *value;
+		sxmlerr_t err;
+
+		/* Attribute name */		
+		eq= str_findchr(name, end, '=');
+		if (eq == end)
+			return SXML_ERROR_BUFFERDRY;
+
+		space= str_rtrim(name, eq);
+		state_pushtoken(state, args, SXML_CDATA, name, space);
+
+		/* Attribute value */
+		quot= str_ltrim(eq + 1, end);
+		if (quot == end)
+			return SXML_ERROR_BUFFERDRY;
+		else if (*quot != '\'' && *quot != '"')
+			return SXML_ERROR_XMLINVALID;
+
+		value= quot + 1;
+		quot= str_findchr(value, end, *quot);
+		if (quot == end)
+			return SXML_ERROR_BUFFERDRY;
+
+		state_setpos (state, args, value);
+		err= parse_attrvalue(state, args, quot);
+		if (err != SXML_SUCCESS)
+			return err;
+
+		/* --- */
+		
+		name= str_ltrim(quot + 1, end);
+	}
+
+	{
+		sxmltok_t* token= args->tokens + (ntokens - 1);
+		token->size= (unsigned short) (state->ntokens - ntokens);
+	}
+	
+	return state_setpos(state, args, name);
 }
 
+/* --- */
 
+#define TAG_LEN(str)	(int)(sizeof (str) - 1)
+#define TAG_MINSIZE	3
 
-/**
- * [PUBLIC API]
- */
-uint8_t*	xml_easy_content(struct xml_node* node)
+static sxmlerr_t parse_comment(sxml_t* state, sxml_args_t* args)
 {
-	if (!node)
-		return 0;
-	return xml_string_clone(xml_node_content(node));
+	static const char STARTTAG[]= "<!--";
+	static const char ENDTAG[]= "-->";
+
+	const char* dash;
+	const char* start= buffer_fromoffset(args, state->bufferpos);
+	const char* end= buffer_getend(args);
+	if (end - start < TAG_LEN(STARTTAG))
+		return SXML_ERROR_BUFFERDRY;
+
+	if (!str_startswith(start, end, STARTTAG))
+		return SXML_ERROR_XMLINVALID;
+
+	start+= TAG_LEN(STARTTAG);
+	dash= str_findstr(start, end, ENDTAG);
+	if (dash == end)
+		return SXML_ERROR_BUFFERDRY;
+
+	state_pushtoken(state, args, SXML_COMMENT, start, dash);
+	return state_setpos(state, args, dash + TAG_LEN (ENDTAG));
 }
 
-
-
-/**
- * [PUBLIC API]
- */
-size_t xml_string_length(struct xml_string* string)
+static sxmlerr_t parse_instruction(sxml_t* state, sxml_args_t* args)
 {
-	if (!string)
-		return 0;
-	return string->length;
+	static const char STARTTAG[]= "<?";
+	static const char ENDTAG[]= "?>";
+
+	sxmlerr_t err;
+	const char* quest, *space;
+	const char* start= buffer_fromoffset(args, state->bufferpos);
+	const char* end= buffer_getend(args);
+	assert(TAG_MINSIZE <= end - start, (sxmlerr_t)0);
+
+	if (!str_startswith(start, end, STARTTAG))
+		return SXML_ERROR_XMLINVALID;
+
+	start+= TAG_LEN(STARTTAG);
+	space= str_find_notalnum(start, end);
+	if (space == end)
+		return SXML_ERROR_BUFFERDRY;
+
+	state_pushtoken(state, args, SXML_INSTRUCTION, start, space);
+
+	state_setpos(state, args, space);
+	err= parse_attributes(state, args);
+	if (err != SXML_SUCCESS)
+		return err;
+
+	quest= buffer_fromoffset(args, state->bufferpos);
+	if (end - quest < TAG_LEN(ENDTAG))
+		return SXML_ERROR_BUFFERDRY;
+
+	if (!str_startswith(quest, end, ENDTAG))
+		return SXML_ERROR_XMLINVALID;
+
+	return state_setpos(state, args, quest + TAG_LEN (ENDTAG));
 }
 
-
-
-/**
- * [PUBLIC API]
- */
-void	xml_string_copy(struct xml_string* string, uint8_t* buffer, size_t length)
+static sxmlerr_t parse_doctype(sxml_t* state, sxml_args_t* args)
 {
-	if (!string)
-		return;
+	static const char STARTTAG[]= "<!DOCTYPE";
+	static const char ENDTAG[]= "]>";
 
-	length = min(length, string->length);
-	memcpy(buffer, string->buffer, length);
+	const char* bracket;
+	const char* start= buffer_fromoffset(args, state->bufferpos);
+	const char* end= buffer_getend(args);
+	if (end - start < TAG_LEN(STARTTAG))
+		return SXML_ERROR_BUFFERDRY;
+
+	if (!str_startswith(start, end, STARTTAG))
+		return SXML_ERROR_BUFFERDRY;
+
+	start+= TAG_LEN(STARTTAG);
+	bracket= str_findstr(start, end, ENDTAG);
+	if (bracket == end)
+		return SXML_ERROR_BUFFERDRY;
+
+	state_pushtoken(state, args, SXML_DOCTYPE, start, bracket);
+	return state_setpos(state, args, bracket + TAG_LEN (ENDTAG));
 }
+
+static sxmlerr_t parse_start(sxml_t* state, sxml_args_t* args)
+{	
+	sxmlerr_t err;
+	const char* gt, *name, *space;
+	const char* start= buffer_fromoffset(args, state->bufferpos);
+	const char* end= buffer_getend(args);
+	assert(TAG_MINSIZE <= end - start, (sxmlerr_t)0);
+
+	if (!(start[0] == '<' && ISALPHA(start[1])))
+		return SXML_ERROR_XMLINVALID;
+
+	/* --- */
+
+	name= start + 1;
+	space= str_find_notalnum(name, end);
+	if (space == end)
+		return SXML_ERROR_BUFFERDRY;
+
+	state_pushtoken(state, args, SXML_STARTTAG, name, space);
+
+	state_setpos(state, args, space);
+	err= parse_attributes(state, args);
+	if (err != SXML_SUCCESS)
+		return err;
+
+	/* --- */
+
+	gt= buffer_fromoffset(args, state->bufferpos);
+	
+	if (gt != end && *gt == '/')
+	{
+		state_pushtoken(state, args, SXML_ENDTAG, name, space);
+		gt++;
+	}
+
+	if (gt == end)
+		return SXML_ERROR_BUFFERDRY;
+
+	if (*gt != '>')
+		return SXML_ERROR_XMLINVALID;
+
+	return state_setpos(state, args, gt + 1);
+}
+
+static sxmlerr_t parse_end(sxml_t* state, sxml_args_t* args)
+{
+	const char* gt, *space;
+	const char* start= buffer_fromoffset(args, state->bufferpos);
+	const char* end= buffer_getend(args);
+	assert(TAG_MINSIZE <= end - start, (sxmlerr_t)0);
+
+	if (!(str_startswith(start, end, "</") && ISALPHA(start[2])))
+		return SXML_ERROR_XMLINVALID;
+
+	start+= 2;	
+	gt= str_findchr(start, end, '>');
+	if (gt == end)
+		return SXML_ERROR_BUFFERDRY;
+
+	/* Test for no characters beyond elem name */
+	space= str_find_notalnum(start, gt);
+	if (str_ltrim(space, gt) != gt)
+		return SXML_ERROR_XMLSTRICT;
+
+	state_pushtoken(state, args, SXML_ENDTAG, start, space);
+	return state_setpos(state, args, gt + 1);
+}
+
+static sxmlerr_t parse_cdata(sxml_t* state, sxml_args_t* args)
+{
+	static const char STARTTAG[]= "<![CDATA[";
+	static const char ENDTAG[]= "]]>";
+
+	const char* bracket;
+	const char* start= buffer_fromoffset(args, state->bufferpos);
+	const char* end= buffer_getend(args);
+	if (end - start < TAG_LEN(STARTTAG))
+		return SXML_ERROR_BUFFERDRY;
+
+	if (!str_startswith(start, end, STARTTAG))
+		return SXML_ERROR_XMLINVALID;
+
+	start+= TAG_LEN (STARTTAG);
+	bracket= str_findstr(start, end, ENDTAG);
+	if (bracket == end)
+		return SXML_ERROR_BUFFERDRY;
+
+	state_pushtoken(state, args, SXML_CDATA, start, bracket);
+	return state_setpos(state, args, bracket + TAG_LEN (ENDTAG));
+}
+
+/*
+ MARK: SXML
+ Public API inspired by the JSON parser JSMN ( http://zserge.com/jsmn.html ).
+*/
+
+static inline void	sxml_init(sxml_t *state)
+{
+    state->bufferpos= 0;
+    state->ntokens= 0;
+	state->taglevel= 0;
+}
+
+#define ROOT_FOUND(state)	(0 < (state)->taglevel)
+#define ROOT_PARSED(state)	((state)->taglevel == 0)
+
+static inline sxmlerr_t sxml_parse(sxml_t *state, const char *buffer, unsigned bufferlen, sxmltok_t tokens[], unsigned num_tokens)
+{
+	sxml_t temp= *state;
+	const char* end= buffer + bufferlen;
+	
+	sxml_args_t args;
+	args.buffer= buffer;
+	args.bufferlen= bufferlen;
+	args.tokens= tokens;
+	args.num_tokens= num_tokens;
+
+	/* --- */
+
+	while (!ROOT_FOUND(&temp))
+	{
+		sxmlerr_t err;
+		const char* start= buffer_fromoffset(&args, temp.bufferpos);
+		const char* lt= str_ltrim(start, end);
+		state_setpos(&temp, &args, lt);
+		state_commit(state, &temp);
+
+		if (end - lt < TAG_MINSIZE)
+			return SXML_ERROR_BUFFERDRY;
+
+		/* --- */
+
+		if (*lt != '<')
+			return SXML_ERROR_XMLINVALID;
+
+		switch (lt[1])
+		{
+			case '?':	err= parse_instruction(&temp, &args);	break;
+			case '!':	err= parse_doctype(&temp, &args);	break;
+			default:	err= parse_start(&temp, &args);	break;
+		}
+
+		if (err != SXML_SUCCESS)
+			return err;
+
+		state_commit(state, &temp);
+	}
+
+	/* --- */
+
+	while (!ROOT_PARSED(&temp))
+	{
+		sxmlerr_t err;
+		const char* start= buffer_fromoffset(&args, temp.bufferpos);
+		const char* lt= str_findchr(start, end, '<');
+		while (buffer_fromoffset(&args, temp.bufferpos) != lt)
+		{
+			sxmlerr_t err= parse_characters(&temp, &args, lt);
+			if (err != SXML_SUCCESS)
+				return err;
+
+			state_commit(state, &temp);
+		}
+
+		/* --- */
+
+		if (end - lt < TAG_MINSIZE)
+			return SXML_ERROR_BUFFERDRY;
+
+		switch (lt[1])
+		{
+			case '?':	err= parse_instruction(&temp, &args);		break;
+			case '/':	err= parse_end(&temp, &args);	break;
+			case '!':	err= (lt[2] == '-') ? parse_comment(&temp, &args) : parse_cdata (&temp, &args);	break;
+			default:	err= parse_start(&temp, &args);	break;
+		}
+
+		if (err != SXML_SUCCESS)
+			return err;
+
+		state_commit(state, &temp);
+	}
+
+	return SXML_SUCCESS;
+}
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

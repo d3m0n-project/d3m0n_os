@@ -2,7 +2,7 @@
 #include "filesystem/get_next_line.h"
 #include "settings.h"
 #include "libft.h"
-#include "../../compiler/sdk/lib/app/svg.h"
+#include "../../compiler/sdk/lib/app/parsing/svg.h"
 #include "display/display.h"
 
 typedef struct	s_icon

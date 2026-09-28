@@ -26,6 +26,7 @@ extern "C" {
 	typedef unsigned int			uintptr_t;
 
 	typedef unsigned int			size_t;
+	typedef int						ssize_t;
 
 	#define SIZE_MAX				(size_t)-1
 
@@ -36,7 +37,6 @@ extern "C" {
 	#define va_arg(ap,type)			__builtin_va_arg(ap,type)
 	#define va_copy(dst,src)		__builtin_va_copy(dst,src)
 	#define va_end(ap)				__builtin_va_end(ap)
-
 #ifdef __cplusplus
 }
 class AppException : public exception
@@ -52,8 +52,11 @@ public:
 		return this->value;
 	}
 };
+
+#define assert(cond, ret)	if (!(cond)) {printf("ASSERT ERROR: %s\n", #cond); return ret;}
 #else
 #define NULL	((void *)0)
+#define assert(cond, ret)	if (!(cond)) {log("ASSERT ERROR: %s\n", LOG_WARNING, #cond); return ret;}
 #endif
 
 #endif

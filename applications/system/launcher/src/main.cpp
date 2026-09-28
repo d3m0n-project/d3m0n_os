@@ -1,6 +1,7 @@
 #include "sys.h"
 #include "stdio.hpp"
 #include "app.hpp"
+#include "stdlib.h"
 
 APP_INFO(
 	"d3m0n default app launcher",

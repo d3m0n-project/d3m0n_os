@@ -3,7 +3,7 @@
 
 #include "helpers.hpp"
 #include "stdlib.h"
-#include "app/svg.h"
+#include "app/parsing/svg.h"
 
 class Image : public Control
 {

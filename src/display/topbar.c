@@ -5,7 +5,7 @@
 #include "stats.h"
 #include "image/icons.h"
 #include "display/display.h"
-#include "../../compiler/sdk/lib/app/svg.h"
+#include "../../compiler/sdk/lib/app/parsing/svg.h"
 
 static t_font	topbar_font = {0};
 
