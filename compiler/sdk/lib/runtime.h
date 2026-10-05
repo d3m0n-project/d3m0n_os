@@ -1,6 +1,8 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
+#include "sys.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,6 +29,15 @@ extern "C" {
 
 	extern int		errno;
 	const char		*strerror(int errnb);
+
+	static inline char	*rng_bytes(char *buff, size_t size)
+	{
+		for (size_t i=0; i<size; i++)
+		{
+			buff[i] = (char)(random_u32() & 0xFF);
+		}
+		return buff;
+	}
 #ifdef __cplusplus
 }
 #endif

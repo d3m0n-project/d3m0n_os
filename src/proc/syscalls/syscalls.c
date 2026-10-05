@@ -7,6 +7,8 @@
 #include "d3m0n.h"
 #include "display/display.h"
 #include "proc/proc.h"
+#include "time.h"
+#include "random.h"
 
 #define SYS_PRINT_MAX_LEN	512
 #define SYSCALL_EXIT_INDEX	0
@@ -95,11 +97,6 @@ int sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 		const char *buffer = (const char *)resolve_user_ptr(user_buf, count);
 		if (!buffer)
 			return -1;
-
-		//if (fd == 1)
-		//	log("    \033[0;35m[\033[1;35m%10.10s\033[0;35m]\033[1;37m => \033[0;37m", LOG_NONE, current_process->proc_name);
-		//else
-		//	log("    \033[0;35m[\033[1;31m%10.10s\033[0;35m]\033[1;37m => \033[0;37m", LOG_NONE, current_process->proc_name);
 
 		uint32_t written = 0;
 		while (written < count)
@@ -344,6 +341,16 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 	return 0;
 }
 
+uint32_t	sys_get_time(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+	return (uint32_t)time_s(); // TODO: timezone
+}
+
+uint32_t	sys_random(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+	return random_u32();
+}
+
 
 
 syscall_t	syscall_table[] = {
@@ -359,7 +366,9 @@ syscall_t	syscall_table[] = {
 	sys_rmdir,
 	sys_sbrk,
 	sys_surface_create,
-	sys_surface_update
+	sys_surface_update,
+	sys_get_time,
+	sys_random
 };
 
 int	syscall_dispatch(uint32_t number, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)

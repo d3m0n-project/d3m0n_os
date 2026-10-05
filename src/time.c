@@ -21,6 +21,11 @@ uint64_t time_us()
     return current_time_delta + (uint64_t)read_timer();
 }
 
+uint64_t    time_s()
+{
+    return time_us() / (1000 * 1000);
+}
+
 void sleep(uint64_t seconds)
 {
     uint64_t start = time_us();

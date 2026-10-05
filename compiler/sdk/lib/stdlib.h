@@ -21,6 +21,7 @@ extern "C" {
 
 	int				isalpha(int c);
 	int				isdigit(int c);
+	int				isxdigit(int c);
 	int				isalnum(int c);
 	int				isascii(int c);
 	int				isprint(int c);
@@ -39,6 +40,7 @@ extern "C" {
 	char			*strpbrk(const char *str, const char *brk);
 	char			*strrchr(const char *str, int c);
 	char			*strnstr(const char *into, const char *substring, size_t len);
+	char			*strstr(const char *haystack, const char *needle);
 	size_t			strspn(const char *s, const char *accept);
 	int				strncmp(const char *s1, const char *s2, size_t len);
 	int				strcmp(const char *s1, const char *s2);

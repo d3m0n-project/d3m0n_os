@@ -4,6 +4,7 @@
 #include "types.h"
 
 uint64_t    time_us();
+uint64_t    time_s();
 void		sleep(uint64_t seconds);
 void		usleep(uint64_t micro_seconds);
 void		set_time(uint64_t time);

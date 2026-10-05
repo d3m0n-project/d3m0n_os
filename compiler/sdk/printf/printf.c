@@ -1,5 +1,6 @@
 #include "printf/printf.hpp"
 #include "stdlib.h"
+#include "stdio.hpp"
 
 static int	print_format(struct s_format f, va_list *args, t_buf *buffer)
 {
@@ -143,7 +144,7 @@ size_t	printf(const char *format, ...)
 	return (buffer.len);
 }
 
-size_t	fprintf(int fd, const char *format, ...)
+size_t	fprintf(FILE *f, const char *format, ...)
 {
 	va_list	args;
 	t_buf	buffer;
@@ -160,7 +161,7 @@ size_t	fprintf(int fd, const char *format, ...)
 		return 0;
 	}
 	va_end(args);
-	write(fd, buffer.data, buffer.len);
+	write(f->fd, buffer.data, buffer.len);
 	free(buffer.data);
 	return (buffer.len);
 }

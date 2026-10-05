@@ -69,6 +69,8 @@ extern "C" {
 
 	#define abs(a)					((a < 0)?-a:a)
 
+	typedef long long				time_t;
+
 #ifdef __cplusplus
 }
 /** @brief Carries an error message for application initialization failures. */

@@ -53,7 +53,9 @@ extern "C" {
 		SYS_RMDIR,
 		SYS_SBRK,
 		SYS_SURFACE_CREATE,
-		SYS_SURFACE_UPDATE
+		SYS_SURFACE_UPDATE,
+		SYS_GET_TIME,
+		SYS_RANDOM
 	}   e_syscall_indexes;
 
 	static inline void __attribute__((noreturn)) exit(int ret_code)
@@ -118,9 +120,19 @@ extern "C" {
 		return syscall(SYS_SURFACE_UPDATE, (uint32_t)surface, 0, 0, 0);
 	}
 
-	static inline	int	sbrk(size_t increment)
+	static inline int	sbrk(size_t increment)
 	{
 		return syscall(SYS_SBRK, increment, 0, 0, 0);
+	}
+
+	static inline uint32_t	time(void *timezone)
+	{
+		return syscall(SYS_GET_TIME, timezone, 0, 0, 0);
+	}
+
+	static inline uint32_t	random_u32(void)
+	{
+		return syscall(SYS_RANDOM, 0, 0, 0, 0);
 	}
 
 #ifdef __cplusplus
