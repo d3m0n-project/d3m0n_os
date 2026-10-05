@@ -1,0 +1,31 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,327,75,352"/>
+<area shape="rect" id="Node000001" href="$classButton.html" title=" " alt="" coords="143,5,209,31"/>
+<area shape="poly" id="edge1_Node000000_Node000001" title=" " alt="" coords="39,313,43,258,54,186,79,109,97,73,121,40,142,25,145,29,125,44,102,76,84,111,60,187,48,258,44,313"/>
+<area shape="rect" id="Node000002" href="$classCheckBox.html" title=" " alt="" coords="133,55,219,80"/>
+<area shape="poly" id="edge2_Node000000_Node000002" title=" " alt="" coords="41,313,47,266,60,207,84,145,101,116,121,89,135,78,139,82,125,93,105,119,89,148,66,209,52,267,46,313"/>
+<area shape="rect" id="Node000003" href="$classHscroll.html" title=" " alt="" coords="143,104,209,129"/>
+<area shape="poly" id="edge3_Node000000_Node000003" title=" " alt="" coords="43,312,52,275,67,229,89,181,121,139,141,125,144,129,125,143,94,184,72,231,57,276,48,314"/>
+<area shape="rect" id="Node000004" href="$classImage.html" title=" " alt="" coords="145,153,207,179"/>
+<area shape="poly" id="edge4_Node000000_Node000004" title=" " alt="" coords="47,313,74,251,95,218,121,188,143,174,146,178,124,192,99,221,79,254,52,315"/>
+<area shape="rect" id="Node000005" href="$classListView.html" title=" " alt="" coords="137,203,215,228"/>
+<area shape="poly" id="edge5_Node000000_Node000005" title=" " alt="" coords="55,313,83,275,121,237,140,226,142,230,124,241,87,278,59,316"/>
+<area shape="rect" id="Node000006" href="$classProgressBar.html" title=" " alt="" coords="126,252,226,277"/>
+<area shape="poly" id="edge6_Node000000_Node000006" title=" " alt="" coords="70,317,121,286,144,275,146,280,124,291,73,322"/>
+<area shape="rect" id="Node000007" href="$classRadioButton.html" title=" " alt="" coords="125,301,227,327"/>
+<area shape="poly" id="edge7_Node000000_Node000007" title=" " alt="" coords="88,328,124,321,125,326,89,333"/>
+<area shape="rect" id="Node000008" href="$classRect.html" title=" " alt="" coords="151,351,201,376"/>
+<area shape="poly" id="edge8_Node000000_Node000008" title=" " alt="" coords="89,345,151,356,150,362,88,350"/>
+<area shape="rect" id="Node000009" href="$classRoundButton.html" title=" " alt="" coords="123,400,229,425"/>
+<area shape="poly" id="edge9_Node000000_Node000009" title=" " alt="" coords="75,357,124,385,149,398,146,402,121,390,72,361"/>
+<area shape="rect" id="Node000010" href="$classSwitch.html" title=" " alt="" coords="143,449,209,475"/>
+<area shape="poly" id="edge10_Node000000_Node000010" title=" " alt="" coords="59,362,87,398,124,435,145,447,142,452,121,439,83,402,55,365"/>
+<area shape="rect" id="Node000011" href="$classText.html" title=" " alt="" coords="151,499,201,524"/>
+<area shape="poly" id="edge11_Node000000_Node000011" title=" " alt="" coords="53,364,80,424,100,456,124,484,152,501,150,506,121,488,96,459,75,426,48,366"/>
+<area shape="rect" id="Node000012" href="$classTextBox.html" title=" " alt="" coords="139,548,213,573"/>
+<area shape="poly" id="edge12_Node000000_Node000012" title=" " alt="" coords="49,365,58,401,72,446,95,492,125,533,141,546,138,550,121,537,90,495,68,448,52,403,43,366"/>
+<area shape="rect" id="Node000013" href="$classVscroll.html" title=" " alt="" coords="143,597,209,623"/>
+<area shape="poly" id="edge13_Node000000_Node000013" title=" " alt="" coords="46,366,53,411,66,469,90,529,105,557,125,583,144,597,141,601,121,587,101,560,85,531,61,470,47,412,41,366"/>
+<area shape="rect" id="Node000014" href="$classWebView.html" title=" " alt="" coords="135,647,217,672"/>
+<area shape="poly" id="edge14_Node000000_Node000014" title=" " alt="" coords="44,366,48,420,60,490,85,565,102,600,125,632,140,645,137,649,121,636,98,603,80,567,55,491,43,420,39,366"/>
+</map>

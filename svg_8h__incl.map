@@ -1,0 +1,25 @@
+<map id="compiler/sdk/lib/app/parsing/svg.h" name="compiler/sdk/lib/app/parsing/svg.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="411,5,566,45"/>
+<area shape="rect" id="Node000002" href="$types_8h.html" title=" " alt="" coords="20,328,91,353"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="411,29,310,32,197,42,143,51,97,62,59,77,35,95,19,120,10,148,8,178,11,209,26,268,45,314,41,316,21,270,6,210,3,179,5,147,14,118,31,92,57,72,95,57,142,46,196,37,310,27,411,24"/>
+<area shape="rect" id="Node000003" href="$xml_8h.html" title=" " alt="" coords="45,101,103,126"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="412,38,273,59,195,75,117,96,111,98,109,93,116,91,193,70,272,54,411,33"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="128,93,311,133"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="430,48,292,92,291,87,429,43"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="335,101,466,126"/>
+<area shape="poly" id="edge8_Node000001_Node000007" title=" " alt="" coords="471,48,425,92,421,89,467,44"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="491,101,665,126"/>
+<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="510,44,558,89,554,93,507,48"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="690,101,837,126"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="550,43,715,94,713,99,548,48"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="861,101,919,126"/>
+<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="567,33,700,54,775,71,849,91,855,93,854,98,848,96,774,76,699,60,566,38"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="943,101,1007,126"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="567,30,736,50,835,67,932,91,940,93,938,98,931,96,834,73,735,55,566,35"/>
+<area shape="rect" id="Node000004" href="$stdlib_8h.html" title=" " alt="" coords="43,181,113,207"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="77,126,79,167,74,168,72,126"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="79,208,62,315,57,314,74,207"/>
+<area shape="rect" id="Node000005" href="$memory_8h.html" title=" " alt="" coords="93,255,180,280"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="90,205,121,243,117,246,86,209"/>
+<area shape="poly" id="edge6_Node000005_Node000002" title=" " alt="" coords="125,282,81,321,77,317,122,278"/>
+</map>
