@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 	/**
-	 * @brief Allocated size bytes in heap.
+	 * @brief Allocate `size` bytes in heap.
 	 *
 	 * @param size Total amount in `bytes` to allocate.
 	 * @return A pointer to the first byte allocated memory.
@@ -29,7 +29,7 @@ extern "C" {
 	 * Act as a malloc and a memset, allocates nmemb*size bytes and set them to zero.
 	 *
 	 * @param nmemb The number of members of the asked type.
-	 * @param size Size of a single member.
+	 * @param size Memory size of a single member.
 	 * @return A pointer to the first byte of the newly allocated buffer.
 	 */
 	void	*calloc(size_t nmemb, size_t size);

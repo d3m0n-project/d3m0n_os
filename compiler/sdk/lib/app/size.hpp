@@ -15,6 +15,7 @@ using namespace std;
 //	}
 //};
 
+/** @brief Represents the Size type. */
 class Size
 {
 private:
@@ -52,6 +53,7 @@ public:
 		this->percentage = relative_size;
 	}
 
+	/** @brief get operation. */
 	uint32_t	get(void) const
 	{
 		if (this->relative)
@@ -60,6 +62,7 @@ public:
 			return this->size;
 	}
 
+	/** @brief get operation. */
 	uint32_t	get(uint32_t parent_size) const
 	{
 		if (this->percentage)

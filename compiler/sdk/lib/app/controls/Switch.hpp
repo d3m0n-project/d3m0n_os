@@ -3,6 +3,7 @@
 
 #include "helpers.hpp"
 
+/** @brief Represents the Switch type. */
 class Switch : public Control
 {
 public:
@@ -13,6 +14,7 @@ public:
 
 	Switch() : content(), font_size(0), text_align(0), checked(false) {}
 
+	/** @brief draw operation. */
 	void	draw(Display *display) override
 	{
 		int x = computed_location.x, y = computed_location.y, h = computed_height;

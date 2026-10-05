@@ -3,6 +3,7 @@
 
 #include "types.h"
 
+/** @brief Represents the string type. */
 class string
 {
 private:
@@ -68,6 +69,7 @@ public:
 		return *this;
 	}
 
+	/** @brief Implements the + operation. */
 	string operator+(const string &other) const
 	{
 		string result;
@@ -92,6 +94,7 @@ public:
 		delete[] _data;
 	}
 
+	/** @brief length operation. */
 	size_t length() const
 	{
 		return _length;

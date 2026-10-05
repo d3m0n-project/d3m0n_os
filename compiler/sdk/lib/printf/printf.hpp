@@ -27,6 +27,7 @@ typedef enum
 		LEN_LL
 }		e_length;
 
+/** @brief Stores the s_format data. */
 typedef struct s_format
 {
 		char			flags[6];
@@ -36,6 +37,7 @@ typedef struct s_format
 		e_length		length;
 }		t_format;
 
+/** @brief Stores the s_buf data. */
 typedef struct s_buf
 {
 	char	*data;

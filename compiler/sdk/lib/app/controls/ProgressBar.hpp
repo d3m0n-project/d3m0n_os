@@ -3,6 +3,7 @@
 
 #include "helpers.hpp"
 
+/** @brief Represents the ProgressBar type. */
 class ProgressBar : public Control
 {
 public:
@@ -19,6 +20,7 @@ public:
 		this->max = 100;
 	}
 
+	/** @brief draw operation. */
 	void draw(Display *display) override
 	{
 		int x = computed_location.x + padding;

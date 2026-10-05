@@ -12,6 +12,7 @@
 
 using namespace std;
 
+/** @brief load_font operation. */
 static inline int	load_font(const char *path, t_font	*out)
 {
 	int	fd = open(path, O_READ);
@@ -78,6 +79,7 @@ static inline int	load_font(const char *path, t_font	*out)
 	return 0;
 }
 
+/** @brief free_font operation. */
 static inline void	free_font(t_font *font)
 {
 	if (!font)

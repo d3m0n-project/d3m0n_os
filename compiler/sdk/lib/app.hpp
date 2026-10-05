@@ -42,12 +42,15 @@ extern "C" {
 #endif
 
 #ifdef __cplusplus
+/** @brief Represents the Control type. */
 class Control
 {
 public:
 	Control(void);
 	virtual ~Control(void) {}
+	/** @brief add_control operation. */
 	void	add_control(Control *control);
+	/** @brief layout operation. */
 	void	layout(int parent_x, int parent_y, int parent_width, int parent_height);
 
 	Size				margin_top;
@@ -70,12 +73,14 @@ public:
 	Control				*next;
 	Control				*parent;
 
+	/** @brief draw operation. */
 	virtual void		draw(Display *drawing_function)
 	{
 		(void)drawing_function;
 	}
 };
 
+/** @brief Represents the Window type. */
 class Window
 {
 public:
@@ -88,8 +93,10 @@ public:
 
 	Window(const char *title, const Size &width, const Size &height);
 	~Window();
+	/** @brief add_control operation. */
 	void	add_control(Control *control);
 
+	/** @brief draw operation. */
 	void	draw(void);
 };
 #endif

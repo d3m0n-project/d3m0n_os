@@ -3,6 +3,7 @@
 
 #include "helpers.hpp"
 
+/** @brief Represents the TextBox type. */
 class TextBox : public Control
 {
 public:
@@ -13,6 +14,7 @@ public:
 
 	TextBox() : content(), type(), font_size(0), text_align(0) {}
 
+	/** @brief draw operation. */
 	void	draw(Display *display) override
 	{
 		int x, y, w, h; control_inner(*this, x, y, w, h);

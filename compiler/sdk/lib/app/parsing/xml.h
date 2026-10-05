@@ -29,7 +29,9 @@ typedef enum
  In the case of return code SXML_ERROR_BUFFERDRY or SXML_ERROR_TOKENSFULL, you are expected to call the function again after resolving the problem to continue parsing.
  */
 
+/** @brief Stores the sxml_t data. */
 typedef	struct sxml_t sxml_t;
+/** @brief Stores the sxmltok_t data. */
 typedef	struct sxmltok_t sxmltok_t;
 static inline sxmlerr_t	sxml_parse(sxml_t *parser, const char *buffer, unsigned bufferlen, sxmltok_t* tokens, unsigned num_tokens);
 
@@ -40,6 +42,7 @@ static inline sxmlerr_t	sxml_parse(sxml_t *parser, const char *buffer, unsigned 
  Depending on how you resolve SXML_ERROR_BUFFERDRY or SXML_ERROR_TOKENSFULL you may need to modifiy 'bufferpos' and 'ntokens' to correctly reflect the new buffer and tokens you provide.
 */
 
+/** @brief Stores the sxml_t data. */
 struct sxml_t
 {
 	unsigned bufferpos;	/* Current offset into buffer - all XML data before this position has been successfully parsed */
@@ -81,6 +84,7 @@ typedef enum
  A token has the following data:
 */
 
+/** @brief Stores the sxmltok_t data. */
 struct sxmltok_t
 {
 	unsigned short type;	/* A token is one of the above sxmltype_t */

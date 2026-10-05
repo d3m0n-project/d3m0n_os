@@ -1,6 +1,7 @@
 #ifndef CHECKBOX_HPP
 #define CHECKBOX_HPP
 #include "helpers.hpp"
+/** @brief Represents the CheckBox type. */
 class CheckBox : public Control
 {
 public:
@@ -10,6 +11,7 @@ public:
 	bool		checked;
 	CheckBox() : content(), font_size(0), text_align(0), checked(false) {}
 
+	/** @brief draw operation. */
 	void draw(Display *display) override
 	{
 		int s = computed_height < computed_width ? computed_height : computed_width;

@@ -10,6 +10,7 @@
 #define ANCHOR_CENTER_X 16
 #define ANCHOR_CENTER_Y 32
 
+/** @brief control_inner operation. */
 inline void control_inner(const Control &control, int &x, int &y, int &w, int &h)
 {
 	x = control.computed_location.x + control.margin_left.get();
@@ -20,6 +21,7 @@ inline void control_inner(const Control &control, int &x, int &y, int &w, int &h
 	if (h < 0) h = 0;
 }
 
+/** @brief control_text_position operation. */
 inline void control_text_position(int anchor, int x, int y, int w, int h, int tw, int th, int &out_x, int &out_y)
 {
 	out_x = (anchor & ANCHOR_LEFT) ? x : (anchor & ANCHOR_RIGHT) ? x + w - tw : x + (w - tw) / 2;
@@ -28,6 +30,7 @@ inline void control_text_position(int anchor, int x, int y, int w, int h, int tw
 	if (out_y < y) out_y = y;
 }
 
+/** @brief control_font_size operation. */
 inline int control_font_size(int requested, int width, int height, const char *text)
 {
 	if (requested > 0)
@@ -41,6 +44,7 @@ inline int control_font_size(int requested, int width, int height, const char *t
 	return result > 0 ? result : 8;
 }
 
+/** @brief control_text operation. */
 inline void control_text(Display *display, const Control &control, const char *text, int align, int requested_size)
 {
 	int x, y, w, h;
@@ -71,6 +75,7 @@ inline void control_text(Display *display, const Control &control, const char *t
 	display->draw_text(tx, ty, size, size * 2, text, control.color, 0);
 }
 
+/** @brief control_children operation. */
 inline void control_children(Control &control, Display *display)
 {
 	Control *child = control.controls;
@@ -82,6 +87,7 @@ inline void control_children(Control &control, Display *display)
 	}
 }
 
+/** @brief control_round_rect operation. */
 inline void control_round_rect(Display *display, int x, int y, int w, int h, int radius, uint32_t color)
 {
 	if (radius <= 0)

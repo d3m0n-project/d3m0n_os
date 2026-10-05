@@ -5,6 +5,7 @@
 #include "stdlib.h"
 #include "app/parsing/svg.h"
 
+/** @brief Represents the Image type. */
 class Image : public Control
 {
 public:
@@ -13,6 +14,7 @@ public:
 
 	Image() : source(), mode(0) {}
 
+	/** @brief draw operation. */
 	void	draw(Display *display) override
 	{
 		const char *path = source.c_str();

@@ -4,6 +4,7 @@
 #include "types.h"
 //#include "stdio.hpp"
 
+/** @brief Stores the s_font data. */
 typedef struct s_font
 {
 	uint8_t		*data;
@@ -24,50 +25,63 @@ typedef struct s_font
 	char		name[25];
 }	t_font;
 
+/** @brief void operation. */
 typedef void			(*ttf_pixel_fn)(void *context, int x, int y, uint8_t coverage);
+/** @brief ttf_parse operation. */
 static inline int		ttf_parse(t_font *font);
+/** @brief ttf_glyph_for_codepoint operation. */
 static inline uint16_t	ttf_glyph_for_codepoint(const t_font *font, uint32_t codepoint);
+/** @brief ttf_glyph_advance operation. */
 static inline int		ttf_glyph_advance(const t_font *font, uint16_t glyph);
+/** @brief ttf_render_glyph operation. */
 static inline void		ttf_render_glyph(const t_font *font, uint16_t glyph, int origin_x, int baseline_y, int scale_x, int scale_y, ttf_pixel_fn pixel, void *context);
 
 #ifndef TTF_IMPLEMENTATION
 #define TTF_IMPLEMENTATION
 
+/** @brief ttf_u16 operation. */
 static uint16_t	ttf_u16(const uint8_t *p)
 {
 	return ((uint16_t)p[0] << 8) | p[1];
 }
 
+/** @brief ttf_i16 operation. */
 static int16_t	ttf_i16(const uint8_t *p)
 {
 	return (int16_t)ttf_u16(p);
 }
 
+/** @brief ttf_u32 operation. */
 static uint32_t	ttf_u32(const uint8_t *p)
 {
 	return ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) | ((uint32_t)p[2] << 8) | p[3];
 }
 
+/** @brief ttf_range operation. */
 static int	ttf_range(const t_font *f, uint32_t at, uint32_t n)
 {
 	return (at <= f->size && n <= f->size - at);
 }
 
+/** @brief ttf_glyph_range operation. */
 static int	ttf_glyph_range(uint32_t at, uint32_t n, uint32_t size)
 {
 	return (at <= size && n <= size - at);
 }
 
+/** @brief ttf_gu16 operation. */
 static uint16_t	ttf_gu16(const uint8_t *g, uint32_t at)
 {
 	return ((uint16_t)g[at] << 8) | g[at + 1];
 }
 
+/** @brief ttf_gi16 operation. */
 static int16_t	ttf_gi16(const uint8_t *g, uint32_t at)
 {
 	return (int16_t)ttf_gu16(g, at);
 }
 
+/** @brief ttf_table operation. */
 static uint32_t	ttf_table(const t_font *f, uint32_t tag)
 {
 	uint16_t	count;
@@ -92,6 +106,7 @@ static uint32_t	ttf_table(const t_font *f, uint32_t tag)
 	return (0);
 }
 
+/** @brief ttf_parse operation. */
 static inline int	ttf_parse(t_font *f)
 {
 	uint32_t	cmap_table;
@@ -152,6 +167,7 @@ static inline int	ttf_parse(t_font *f)
 	return (f->cmap?0:1);
 }
 
+/** @brief ttf_glyph_for_codepoint operation. */
 static inline uint16_t	ttf_glyph_for_codepoint(const t_font *f, uint32_t cp)
 {
 	const uint8_t	*p;
@@ -197,6 +213,7 @@ static inline uint16_t	ttf_glyph_for_codepoint(const t_font *f, uint32_t cp)
 	return 0;
 }
 
+/** @brief ttf_glyph_advance operation. */
 static inline int	ttf_glyph_advance(const t_font *f, uint16_t g)
 {
 	uint32_t	at;
@@ -214,8 +231,10 @@ static inline int	ttf_glyph_advance(const t_font *f, uint16_t g)
 	return ((int)ttf_u16(f->data + at));
 }
 
+/** @brief ttf_render_glyph_depth operation. */
 static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int ox, int base, int sx, int sy, ttf_pixel_fn pixel, void *ctx, int depth)
 {
+	/** @brief Stores the s_point data. */
 	typedef struct s_point
 	{
 		int			x;
@@ -223,6 +242,7 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 		uint8_t		on;
 	}	t_point;
 
+	/** @brief Stores the s_edge data. */
 	typedef struct s_edge
 	{
 		int			x0;
@@ -713,6 +733,7 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 	}
 }
 
+/** @brief ttf_render_glyph operation. */
 static inline void	ttf_render_glyph(const t_font *f, uint16_t glyph, int ox, int base, int sx, int sy, ttf_pixel_fn pixel, void *ctx)
 {
 	ttf_render_glyph_depth(f, glyph, ox, base, sx, sy, pixel, ctx, 0);

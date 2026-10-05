@@ -3,6 +3,7 @@
 
 #include "helpers.hpp"
 
+/** @brief Represents the Hscroll type. */
 class Hscroll : public Control
 {
 public:
@@ -12,6 +13,7 @@ public:
 
 	Hscroll() : bar(true), scroll(0), content_width(0) {}
 
+	/** @brief draw operation. */
 	void	draw(Display *display) override
 	{
 		display->draw_rect(computed_location.x, computed_location.y, computed_width, computed_height, bg_color);

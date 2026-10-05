@@ -8,6 +8,7 @@ using namespace std;
 
 extern "C" {
 #endif
+	/** @brief Stores the s_point data. */
 	typedef struct s_point
 	{
 		int	x;
@@ -39,6 +40,7 @@ extern "C" {
 	#define va_end(ap)				__builtin_va_end(ap)
 #ifdef __cplusplus
 }
+/** @brief Represents the AppException type. */
 class AppException : public exception
 {
 private:
@@ -48,6 +50,7 @@ public:
 		this->value = val;
 	}
 
+	/** @brief what operation. */
 	const char* what() {
 		return this->value;
 	}

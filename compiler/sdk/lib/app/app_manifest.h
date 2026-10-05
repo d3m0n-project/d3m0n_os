@@ -8,6 +8,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+/** @brief Stores the AppMetadata data. */
 typedef struct AppMetadata
 {
 	uint32_t			magic;
