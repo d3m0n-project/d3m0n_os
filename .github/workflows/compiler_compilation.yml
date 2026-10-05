@@ -1,4 +1,4 @@
-name: d3c & sdk compilation
+name: d3c & SDK Build Check
 
 on:
   push:

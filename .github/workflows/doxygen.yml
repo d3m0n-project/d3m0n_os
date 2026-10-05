@@ -1,4 +1,4 @@
-name: Generate SDK Documentation
+name: SDK Documentation
 
 on:
   push:
@@ -22,7 +22,14 @@ jobs:
           sudo apt-get install -y doxygen graphviz
 
       - name: Generate documentation
-        run: doxygen Doxyfile
+        run: |
+          doxygen Doxyfile
+
+      - name: Check generated files
+        run: |
+          echo "Generated documentation:"
+          find docs -maxdepth 2 -type f | head -50
+          test -d docs/html
 
       - name: Publish documentation
         uses: peaceiris/actions-gh-pages@v4
