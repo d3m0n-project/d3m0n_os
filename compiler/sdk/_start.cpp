@@ -19,6 +19,11 @@ extern "C" void	abort(void)
 
 extern "C" int	app_main(void);
 
+/**
+ * @brief Entrypoint function.
+ *
+ * Just calls app_main and call exit when finished.
+ */
 extern "C" void	_start(void)
 {
 	try
