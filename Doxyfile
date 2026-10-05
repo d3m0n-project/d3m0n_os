@@ -1,0 +1,9 @@
+PROJECT_NAME			= "d3m0n os SDK"
+OUTPUT_DIRECTORY		= documentation
+INPUT					= ./compiler/sdk
+FILE_PATTERNS			= *.cpp *.h *.hpp
+RECURSIVE				= YES
+EXTRACT_ALL				= YES
+GENERATE_HTML			= YES
+GENERATE_LATEX			= NO
+HAVE_DOT				= YES
