@@ -7,12 +7,12 @@
 extern "C" {
 #endif
 	#define syscall(number, a0, a1, a2, a3) ({                \
-		register uint32_t _r0 asm("r0") = (uint32_t)(a0);     \
-		register uint32_t _r1 asm("r1") = (uint32_t)(a1);     \
-		register uint32_t _r2 asm("r2") = (uint32_t)(a2);     \
-		register uint32_t _r3 asm("r3") = (uint32_t)(a3);     \
-		register uint32_t _r7 asm("r7") = (uint32_t)(number); \
-		asm volatile(                                         \
+		register uint32_t _r0 __asm__("r0") = (uint32_t)(a0);     \
+		register uint32_t _r1 __asm__("r1") = (uint32_t)(a1);     \
+		register uint32_t _r2 __asm__("r2") = (uint32_t)(a2);     \
+		register uint32_t _r3 __asm__("r3") = (uint32_t)(a3);     \
+		register uint32_t _r7 __asm__("r7") = (uint32_t)(number); \
+		__asm__ volatile(                                         \
 			"svc #0"                                          \
 			: "+r"(_r0)                                       \
 			: "r"(_r1), "r"(_r2), "r"(_r3), "r"(_r7)          \

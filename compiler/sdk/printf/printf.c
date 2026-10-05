@@ -90,6 +90,36 @@ int	sprintf(char *str, const char *format, ...)
 	return ret;
 }
 
+int	snprintf(char *str, size_t size, const char *format, ...)
+{
+	va_list	args;
+	t_buf	buffer;
+	int		ret;
+
+	if (!str || !format)
+		return -1;
+
+	buffer.data = 0;
+	buffer.len = 0;
+	buffer.cap = 0;
+
+	va_start(args, format);
+	ret = vprintf_internal(format, &buffer, &args);
+	va_end(args);
+
+	if (ret < 0)
+	{
+		free(buffer.data);
+		return -1;
+	}
+
+	memcpy(str, buffer.data, min(buffer.len, size));
+	str[min(buffer.len, size)] = '\0';
+
+	free(buffer.data);
+	return ret;
+}
+
 
 size_t	printf(const char *format, ...)
 {

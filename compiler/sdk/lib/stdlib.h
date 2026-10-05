@@ -36,17 +36,20 @@ extern "C" {
 	int				tolower(int c);
 	int				toupper(int c);
 	char			*strchr(const char *str, int c);
+	char			*strpbrk(const char *str, const char *brk);
 	char			*strrchr(const char *str, int c);
 	char			*strnstr(const char *into, const char *substring, size_t len);
 	size_t			strspn(const char *s, const char *accept);
 	int				strncmp(const char *s1, const char *s2, size_t len);
-	int				strcmp(char *s1, char *s2);
+	int				strcmp(const char *s1, const char *s2);
 	void			*memchr(const void *str, int c, size_t len);
 	int				memcmp(const void *s1, const void *s2, size_t len);
 	int				atoi(char *str);
+	float			strtof(const char *str, char **endptr);
 	unsigned long	strtoul(const char *nptr, char **endptr, int base);
 	char			*strncat(char *dst, const char *src, size_t n);
 	char			*strcat(char *dst, const char *src);
+	int				strcoll(const char *s1, const char *s2);
 
 	char			*strdup(const char *src);
 

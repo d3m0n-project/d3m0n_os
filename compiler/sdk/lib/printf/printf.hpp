@@ -6,8 +6,8 @@
 #include "stdlib.h"
 
 #define putc(c) do { \
-    char _c = (c);    \
-    write(1, &_c, 1); \
+	char _c = (c);	\
+	write(1, &_c, 1); \
 } while (0)
 
 #define FLAG_MINUS 0

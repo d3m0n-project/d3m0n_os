@@ -5,7 +5,8 @@ CXX			= d3c
 AR			= arm-none-eabi-ar
 C_FILES		= $(shell find . -name '*.c')
 CPP_FILES	= $(shell find . -name '*.cpp')
-O_FILES		= $(C_FILES:%.c=$(OBJ_DIR)/%.o) $(CPP_FILES:%.cpp=$(OBJ_DIR)/%.o)
+ASM_FILES	= $(shell find . -name '*.s')
+O_FILES		= $(C_FILES:%.c=$(OBJ_DIR)/%.o) $(CPP_FILES:%.cpp=$(OBJ_DIR)/%.o) $(ASM_FILES:%.s=$(OBJ_DIR)/asm/%.o)
 DEBUG		= 0
 C_FLAGS		= -Wall -Wextra -Werror -DVERSION="$(VERSION)" -DDEBUG=$(DEBUG) -Ilib
 
@@ -24,6 +25,11 @@ $(OBJ_DIR)/%.o: %.cpp
 	@printf "\033[35m  => $<\033[0m\n"
 
 $(OBJ_DIR)/%.o: %.c
+	@mkdir -p "$(@D)"
+	@"$(CXX)" -c "$<" -o "$@" $(C_FLAGS)
+	@printf "\033[35m  => $<\033[0m\n"
+
+$(OBJ_DIR)/asm/%.o: %.s
 	@mkdir -p "$(@D)"
 	@"$(CXX)" -c "$<" -o "$@" $(C_FLAGS)
 	@printf "\033[35m  => $<\033[0m\n"
