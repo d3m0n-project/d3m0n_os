@@ -16,7 +16,7 @@ USE_MDFILE_AS_MAINPAGE	= docs/README.md
 PROJECT_LOGO			= docs/images/logo.png
 GENERATE_TREEVIEW		= YES
 DISABLE_INDEX			= NO
-FULL_SIDEBAR			= NO
+FULL_SIDEBAR			= YES
 HTML_EXTRA_STYLESHEET	= docs/doxygen-awesome-css/doxygen-awesome.css \
 						  docs/doxygen-awesome-css/doxygen-awesome-sidebar-only.css
 HTML_COLORSTYLE			= LIGHT  # required with Doxygen >= 1.9.5
