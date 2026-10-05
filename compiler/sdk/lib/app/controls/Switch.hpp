@@ -3,7 +3,7 @@
 
 #include "helpers.hpp"
 
-/** @brief Represents the Switch type. */
+/** @brief Control that displays an on/off switch with optional text. */
 class Switch : public Control
 {
 public:
@@ -14,7 +14,7 @@ public:
 
 	Switch() : content(), font_size(0), text_align(0), checked(false) {}
 
-	/** @brief draw operation. */
+	/** @brief Draws this control and, where applicable, its child controls. */
 	void	draw(Display *display) override
 	{
 		int x = computed_location.x, y = computed_location.y, h = computed_height;

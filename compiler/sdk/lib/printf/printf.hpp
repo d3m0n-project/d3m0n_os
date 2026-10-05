@@ -27,7 +27,7 @@ typedef enum
 		LEN_LL
 }		e_length;
 
-/** @brief Stores the s_format data. */
+/** @brief Stores the parsed flags, width, precision, length, and conversion type for a printf specifier. */
 typedef struct s_format
 {
 		char			flags[6];
@@ -37,7 +37,7 @@ typedef struct s_format
 		e_length		length;
 }		t_format;
 
-/** @brief Stores the s_buf data. */
+/** @brief Tracks the data, current length, and capacity of a growable output buffer. */
 typedef struct s_buf
 {
 	char	*data;

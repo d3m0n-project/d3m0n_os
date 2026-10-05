@@ -11,7 +11,7 @@ using namespace std;
 #define HEX_CHARSET			"0123456789ABCDEF"
 #define INDEX_OF(c, str)	(int)(str - (strchr(str, c) || (str + 1)))
 
-/** @brief Represents the ColorValueException type. */
+/** @brief Reports an invalid color value. */
 class ColorValueException : public exception
 {
 private:
@@ -19,13 +19,13 @@ private:
 public:
 	ColorValueException(string val) : value(val) {}
 
-	/** @brief what operation. */
+	/** @brief Returns the exception message. */
 	const char* what() {
 		return "Invalid color value";
 	}
 };
 
-/** @brief Represents the Color type. */
+/** @brief Stores a color value and converts between packed and textual color forms. */
 class Color
 {
 private:
@@ -54,7 +54,6 @@ public:
 	Color(string html)
 	{
 		if (html[0] != '#' || (html.length() - 1) != 6)
-			/** @brief ColorValueException operation. */
 			throw ColorValueException(html);
 		int c[3] = {0};
 		for (int part=0; part<3; part++)
@@ -66,7 +65,7 @@ public:
 		Color(c[0], c[1], c[2]);
 	}
 
-	/** @brief Implements the  uint32_t operation. */
+	/** @brief Returns the color packed into a 32-bit RGBA value. */
 	operator uint32_t() const
 	{
 		return this->value;

@@ -3,7 +3,7 @@
 
 #include "helpers.hpp"
 
-/** @brief Represents the Rect type. */
+/** @brief Control that draws a filled rectangular area. */
 class Rect : public Control
 {
 public:
@@ -11,7 +11,7 @@ public:
 
 	Rect() : radius(0) {}
 
-	/** @brief draw operation. */
+	/** @brief Draws this control and, where applicable, its child controls. */
 	void	draw(Display *display) override
 	{
 		control_round_rect(display, computed_location.x, computed_location.y, computed_width, computed_height, radius, bg_color);

@@ -15,7 +15,7 @@ using namespace std;
 //	}
 //};
 
-/** @brief Represents the Size type. */
+/** @brief Represents a fixed or parent-relative dimension. */
 class Size
 {
 private:
@@ -53,7 +53,7 @@ public:
 		this->percentage = relative_size;
 	}
 
-	/** @brief get operation. */
+	/** @brief Returns the dimension in pixels, resolving a relative value when possible. */
 	uint32_t	get(void) const
 	{
 		if (this->relative)
@@ -62,7 +62,7 @@ public:
 			return this->size;
 	}
 
-	/** @brief get operation. */
+	/** @brief Returns the dimension in pixels, resolving a relative value when possible. */
 	uint32_t	get(uint32_t parent_size) const
 	{
 		if (this->percentage)

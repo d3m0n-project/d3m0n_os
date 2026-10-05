@@ -3,12 +3,12 @@
 
 #include "helpers.hpp"
 
-/** @brief Represents the ListView type. */
+/** @brief Control that displays a scrollable list of items. */
 class ListView : public Control
 {
 public:
 	ListView() {}
-	/** @brief draw operation. */
+	/** @brief Draws this control and, where applicable, its child controls. */
 	void draw(Display *display) override
 	{
 		if ((uint32_t)bg_color)

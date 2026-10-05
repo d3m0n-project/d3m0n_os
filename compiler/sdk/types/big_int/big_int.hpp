@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-/** @brief Represents the BigInt type. */
+/** @brief Represents a signed arbitrary-precision integer. */
 class BigInt
 {
 private:
@@ -11,59 +11,59 @@ private:
 	uint32_t	digits[MAX_BIGINT_LIMB];
 	size_t		length;
 public:
-	/** @brief display operation. */
+	/** @brief Writes the integer in decimal form. */
 	void		display(int decimal);
 	BigInt(uint32 n);
 	BigInt(const uint8_t *bytes, size_t len);
 
-	/** @brief Implements the + operation. */
+	/** @brief Returns the sum of this arbitrary-precision integer and the operand. */
 	BigInt		operator+(const BigInt& n2);
-	/** @brief Implements the - operation. */
+	/** @brief Returns the difference between this arbitrary-precision integer and the operand. */
 	BigInt		operator-(const BigInt& n2);
-	/** @brief Implements the * operation. */
+	/** @brief Returns the product of this arbitrary-precision integer and the operand. */
 	BigInt		operator*(const BigInt& b);
-	/** @brief Implements the / operation. */
+	/** @brief Divides this integer by the divisor and returns the quotient and remainder. */
 	BigIntDiv	operator/(const BigInt& den);
-	/** @brief Implements the > operation. */
+	/** @brief Returns whether this integer is greater than the other integer. */
 	int			operator>(const BigInt& n2);
-	/** @brief Implements the < operation. */
+	/** @brief Returns whether this integer is less than the other integer. */
 	int			operator<(const BigInt& n2);
-	/** @brief Implements the << operation. */
+	/** @brief Shifts the stored digits one place toward the more significant end. */
 	void		operator<<(void);
-	/** @brief Implements the >> operation. */
+	/** @brief Shifts the stored digits one place toward the less significant end. */
 	void		operator>>(void);
 
-	/** @brief cmp_abs operation. */
+	/** @brief Compares the magnitudes of two integers. */
 	long		cmp_abs(BigInt *a, BigInt *b);
-	/** @brief gcd operation. */
+	/** @brief Returns the greatest common divisor of this integer and another. */
 	BigInt		gcd(const BigInt& b);
-	/** @brief mod operation. */
+	/** @brief Returns the remainder after division by the divisor. */
 	BigInt		mod(const BigInt& den);
-	/** @brief mod_inverse operation. */
+	/** @brief Computes the modular inverse for the supplied exponent and modulus. */
 	BigInt		mod_inverse(BigInt *e, BigInt *phi);
 	
-	/** @brief clone operation. */
+	/** @brief Returns a copy of this integer. */
 	BigInt		clone(void);
 	
-	/** @brief to_fixed_bytes operation. */
+	/** @brief Writes the integer as a fixed-length byte sequence. */
 	uint8_t		to_fixed_bytes(BigInt *a, size_t len);
 	uint8_t		*get_bytes(size_t *byte_len);
 	
-	/** @brief normalize operation. */
+	/** @brief Removes redundant high-order digits and canonicalizes the sign. */
 	void		normalize(void);
 	BigInt		*modular_pow(BigInt *base, BigInt *exp, BigInt *mod);
 	
-	/** @brief is_even operation. */
+	/** @brief Returns whether the integer is even. */
 	int			is_even(void);
-	/** @brief is_odd operation. */
+	/** @brief Returns whether the integer is odd. */
 	int			is_odd(void);
-	/** @brief is_zero operation. */
+	/** @brief Returns whether the integer is zero. */
 	int			is_zero(void);
 	
-	/** @brief bit_length operation. */
+	/** @brief Returns the number of significant bits in the integer. */
 	size_t		bit_length(void);
 	BigInt		*rng(BigInt *min, BigInt *max);
-	/** @brief mod_small operation. */
+	/** @brief Returns the remainder when divided by a 32-bit value. */
 	uint32_t	mod_small(uint32_t p);
 };
 

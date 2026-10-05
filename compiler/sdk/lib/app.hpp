@@ -42,15 +42,15 @@ extern "C" {
 #endif
 
 #ifdef __cplusplus
-/** @brief Represents the Control type. */
+/** @brief Base class for controls that can be laid out and drawn in a window. */
 class Control
 {
 public:
 	Control(void);
 	virtual ~Control(void) {}
-	/** @brief add_control operation. */
+	/** @brief Adds a control to this control’s child list. */
 	void	add_control(Control *control);
-	/** @brief layout operation. */
+	/** @brief Computes this control’s position and size relative to its parent. */
 	void	layout(int parent_x, int parent_y, int parent_width, int parent_height);
 
 	Size				margin_top;
@@ -73,14 +73,14 @@ public:
 	Control				*next;
 	Control				*parent;
 
-	/** @brief draw operation. */
+	/** @brief Draws the window’s visible controls. */
 	virtual void		draw(Display *drawing_function)
 	{
 		(void)drawing_function;
 	}
 };
 
-/** @brief Represents the Window type. */
+/** @brief Top-level container that owns controls and renders an application window. */
 class Window
 {
 public:
@@ -93,10 +93,10 @@ public:
 
 	Window(const char *title, const Size &width, const Size &height);
 	~Window();
-	/** @brief add_control operation. */
+	/** @brief Adds a control to this control’s child list. */
 	void	add_control(Control *control);
 
-	/** @brief draw operation. */
+	/** @brief Draws the window’s visible controls. */
 	void	draw(void);
 };
 #endif

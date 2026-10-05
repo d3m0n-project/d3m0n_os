@@ -8,7 +8,7 @@ using namespace std;
 
 extern "C" {
 #endif
-	/** @brief Stores the s_point data. */
+	/** @brief Stores a two-dimensional integer coordinate. */
 	typedef struct s_point
 	{
 		int	x;
@@ -40,7 +40,7 @@ extern "C" {
 	#define va_end(ap)				__builtin_va_end(ap)
 #ifdef __cplusplus
 }
-/** @brief Represents the AppException type. */
+/** @brief Carries an error message for application initialization failures. */
 class AppException : public exception
 {
 private:
@@ -50,7 +50,7 @@ public:
 		this->value = val;
 	}
 
-	/** @brief what operation. */
+	/** @brief Returns the exception message. */
 	const char* what() {
 		return this->value;
 	}

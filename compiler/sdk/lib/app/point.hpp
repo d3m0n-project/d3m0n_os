@@ -1,7 +1,7 @@
 #ifndef POINT_HPP
 #define POINT_HPP
 
-/** @brief Represents the Point type. */
+/** @brief Stores an integer x/y coordinate. */
 class	Point
 {
 public:
@@ -20,13 +20,13 @@ public:
 		this->y = y;
 	}
 
-	/** @brief Implements the + operation. */
+	/** @brief Returns the coordinate-wise sum of this point and the operand. */
 	Point	operator+(Point &p2)
 	{
 		return Point(this->x + p2.x, this->y + p2.y);
 	}
 
-	/** @brief Implements the - operation. */
+	/** @brief Returns the coordinate-wise difference between this point and the operand. */
 	Point	operator-(Point &p2)
 	{
 		return Point(this->x - p2.x, this->y - p2.y);

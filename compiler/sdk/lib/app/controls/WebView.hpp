@@ -3,13 +3,13 @@
 
 #include "helpers.hpp"
 
-/** @brief Represents the WebView type. */
+/** @brief Control that displays web content from a URL. */
 class WebView : public Control
 {
 public:
 	string url;
 	WebView() : url() {}
-	/** @brief draw operation. */
+	/** @brief Draws this control and, where applicable, its child controls. */
 	void draw(Display *display) override
 	{
 		(void)display;

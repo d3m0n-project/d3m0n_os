@@ -38,7 +38,7 @@
 
 #define SVG_TOKEN_COUNT		1024
 
-/** @brief print_range operation. */
+/** @brief Writes a byte range to the requested output stream. */
 static void	print_range(const char *buffer, unsigned start, unsigned end)
 {
 	while (start < end)
@@ -47,7 +47,7 @@ static void	print_range(const char *buffer, unsigned start, unsigned end)
 	}
 }
 
-/** @brief draw_attribute operation. */
+/** @brief Applies an SVG attribute to the current drawing state. */
 static unsigned	draw_attribute(char *element_name, const char *buffer, const sxmltok_t *tokens, unsigned pos, unsigned count, int x, int y, int w, int h, uint32_t override_color)
 {
     const sxmltok_t	*key;
@@ -65,10 +65,6 @@ static unsigned	draw_attribute(char *element_name, const char *buffer, const sxm
 
     pos++;
 
-    /*
-     * Everything after the CDATA key until the next CDATA
-     * belongs to this attribute's value.
-     */
     for (i = pos; i < count; i++)
     {
         if (tokens[i].type == SXML_CDATA)
@@ -92,7 +88,7 @@ static unsigned	draw_attribute(char *element_name, const char *buffer, const sxm
     return pos;
 }
 
-/** @brief draw_xml_tree operation. */
+/** @brief Traverses the parsed XML tree and draws its SVG elements. */
 static void draw_xml_tree(const char *buffer, const sxmltok_t *tokens, unsigned num_tokens, int x, int y, int w, int h, uint32_t override_color)
 {
     unsigned i = 0;
@@ -146,7 +142,7 @@ static void draw_xml_tree(const char *buffer, const sxmltok_t *tokens, unsigned 
     }
 }
 
-/** @brief DISPLAY_FUNC operation. */
+/** @brief Parses SVG markup from a buffer and draws its elements. */
 FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const char *buffer, size_t buffer_len, uint32_t override_color)
 {
     sxmltok_t	*tokens = (sxmltok_t *)malloc(SVG_TOKEN_COUNT * sizeof(sxmltok_t));
@@ -189,7 +185,7 @@ FUNC_TYPE void	DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const cha
     draw_xml_tree(buffer, tokens, parser.ntokens, x, y, w, h, override_color);
 }
 
-/** @brief DISPLAY_FUNC operation. */
+/** @brief Loads an SVG from a path and draws it into the specified rectangle. */
 FUNC_TYPE int	DISPLAY_FUNC(draw_svg)(int x, int y, int w, int h, const char *path, uint32_t override_color)
 {
 	if (!path || w <= 0 || h <= 0)

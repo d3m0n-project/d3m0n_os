@@ -3,7 +3,7 @@
 
 #include "helpers.hpp"
 
-/** @brief Represents the Vscroll type. */
+/** @brief Control that displays and manages vertical scrolling. */
 class Vscroll : public Control
 {
 public:
@@ -13,7 +13,7 @@ public:
 
 	Vscroll() : bar(true), scroll(0), content_height(0) {}
 
-	/** @brief draw operation. */
+	/** @brief Draws this control and, where applicable, its child controls. */
 	void	draw(Display *display) override
 	{
 		display->draw_rect(computed_location.x, computed_location.y, computed_width, computed_height, bg_color);

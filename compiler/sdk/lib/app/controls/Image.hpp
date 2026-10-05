@@ -5,7 +5,7 @@
 #include "stdlib.h"
 #include "app/parsing/svg.h"
 
-/** @brief Represents the Image type. */
+/** @brief Control that loads and draws an image from its source path. */
 class Image : public Control
 {
 public:
@@ -14,7 +14,7 @@ public:
 
 	Image() : source(), mode(0) {}
 
-	/** @brief draw operation. */
+	/** @brief Draws this control and, where applicable, its child controls. */
 	void	draw(Display *display) override
 	{
 		const char *path = source.c_str();

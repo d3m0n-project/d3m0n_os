@@ -3,7 +3,7 @@
 
 #include "helpers.hpp"
 
-/** @brief Represents the Text type. */
+/** @brief Control that draws text within its bounds. */
 class Text : public Control
 {
 public:
@@ -13,7 +13,7 @@ public:
 
 	Text() : content(), font_size(0), text_align(0) {}
 
-	/** @brief draw operation. */
+	/** @brief Draws this control and, where applicable, its child controls. */
 	void	draw(Display *display) override
 	{
 		int x, y, w, h;

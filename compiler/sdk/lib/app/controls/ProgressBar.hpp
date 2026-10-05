@@ -3,7 +3,7 @@
 
 #include "helpers.hpp"
 
-/** @brief Represents the ProgressBar type. */
+/** @brief Control that displays progress between a minimum and maximum value. */
 class ProgressBar : public Control
 {
 public:
@@ -20,7 +20,7 @@ public:
 		this->max = 100;
 	}
 
-	/** @brief draw operation. */
+	/** @brief Draws this control and, where applicable, its child controls. */
 	void draw(Display *display) override
 	{
 		int x = computed_location.x + padding;

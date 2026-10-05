@@ -12,7 +12,7 @@
 using namespace std;
 
 
-/** @brief Represents the Display type. */
+/** @brief Provides framebuffer drawing operations and text rendering. */
 class Display
 {
 private:
@@ -33,38 +33,36 @@ public:
 	Display()
 	{
 		if (load_font("/fonts/Inter.ttf", &this->main_font))
-			/** @brief AppException operation. */
 			throw AppException("Could not initialize main font!");
 		this->w = 320;
 		this->h = 480 - 32; // change according to topbar height
 		if (surface_create(this->w, this->h, &this->fb, &this->pitch))
-			/** @brief AppException operation. */
 			throw AppException("Could not initialize display surface!");
 	}
 
-	/** @brief present operation. */
+	/** @brief Submits the current framebuffer contents for display. */
 	void		present(void) { surface_update(this->fb); }
 
-	/** @brief put_pixel operation. */
+	/** @brief Writes a color to one framebuffer pixel. */
 	void		put_pixel(int x, int y, uint32_t color);
-	/** @brief get_pixel operation. */
+	/** @brief Reads the color of one framebuffer pixel. */
 	uint32_t	get_pixel(int x, int y);
-	/** @brief draw_hline operation. */
+	/** @brief Draws a horizontal line of the requested width. */
 	void		draw_hline(int x, int y, int w, uint32_t color);
-	/** @brief draw_rect operation. */
+	/** @brief Fills a rectangle with the requested color. */
 	void		draw_rect(int x, int y, int w, int h, uint32_t color);
-	/** @brief draw_rounded_rect operation. */
+	/** @brief Fills a rectangle with rounded corners. */
 	void		draw_rounded_rect(int x, int y, int w, int h, int radius, uint32_t color);
-	/** @brief draw_ellipse operation. */
+	/** @brief Draws a filled or outlined ellipse. */
 	void		draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int filled);
-	/** @brief draw_text operation. */
+	/** @brief Draws text inside a rectangle using the selected font. */
 	void		draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);
-	/** @brief draw_text_at operation. */
+	/** @brief Draws text at a position using the selected font size. */
 	void		draw_text_at(int x, int y, int font_size, const char *text, uint32_t color, t_font *font = 0);
 
-	/** @brief draw_svg operation. */
+	/** @brief Loads an SVG from a path and draws it into the specified rectangle. */
 	int			draw_svg(int x, int y, int w, int h, const char *path, uint32_t override_color = 0);
-	/** @brief draw_svg_buff operation. */
+	/** @brief Parses SVG data from a buffer and draws it into the specified rectangle. */
 	void		draw_svg_buff(int x, int y, int w, int h, const char *data, size_t size, uint32_t override_color = 0);
 };
 

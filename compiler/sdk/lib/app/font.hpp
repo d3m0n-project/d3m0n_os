@@ -12,7 +12,7 @@
 
 using namespace std;
 
-/** @brief load_font operation. */
+/** @brief Loads a TrueType font from the supplied path into the font structure. */
 static inline int	load_font(const char *path, t_font	*out)
 {
 	int	fd = open(path, O_READ);
@@ -79,7 +79,7 @@ static inline int	load_font(const char *path, t_font	*out)
 	return 0;
 }
 
-/** @brief free_font operation. */
+/** @brief Releases the data owned by a loaded font. */
 static inline void	free_font(t_font *font)
 {
 	if (!font)

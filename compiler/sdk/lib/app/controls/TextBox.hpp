@@ -3,7 +3,7 @@
 
 #include "helpers.hpp"
 
-/** @brief Represents the TextBox type. */
+/** @brief Control that displays text, optionally masking it as a password. */
 class TextBox : public Control
 {
 public:
@@ -14,7 +14,7 @@ public:
 
 	TextBox() : content(), type(), font_size(0), text_align(0) {}
 
-	/** @brief draw operation. */
+	/** @brief Draws this control and, where applicable, its child controls. */
 	void	draw(Display *display) override
 	{
 		int x, y, w, h; control_inner(*this, x, y, w, h);

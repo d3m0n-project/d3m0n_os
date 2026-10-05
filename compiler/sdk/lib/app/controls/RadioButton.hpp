@@ -3,7 +3,7 @@
 
 #include "helpers.hpp"
 
-/** @brief Represents the RadioButton type. */
+/** @brief Control that displays a selectable radio button with text. */
 class RadioButton : public Control
 {
 public:
@@ -14,7 +14,7 @@ public:
 
 	RadioButton() : content(), font_size(0), text_align(0), checked(false) {}
 
-	/** @brief draw operation. */
+	/** @brief Draws this control and, where applicable, its child controls. */
 	void draw(Display *display) override
 	{
 		int r = computed_height < computed_width ? computed_height / 2 : computed_width / 2;

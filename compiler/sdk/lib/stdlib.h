@@ -9,11 +9,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	/** @brief Stores the s_list data. */
+	/** @brief Represents one node in a singly linked list. */
 	typedef struct s_list
 	{
 		void			*content;
-		/** @brief Stores the s_list data. */
 		struct s_list	*next;
 	}	t_list;
 

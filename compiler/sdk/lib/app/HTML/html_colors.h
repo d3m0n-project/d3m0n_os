@@ -4,7 +4,7 @@
 
 #include "types.h"
 
-/** @brief Stores the s_HTMLColor data. */
+/** @brief Associates an HTML color name with its RGB component array. */
 typedef struct s_HTMLColor
 {
 	const char	*name;
@@ -155,7 +155,7 @@ static const t_HTMLColor	html_colors_list[HTML_COLORS_COUNT] = {
 	{.name="Gainsboro", .value=(const int [3]){220, 220, 220}}
 };
 
-/** @brief strncmp_no_alpha operation. */
+/** @brief Compares two strings case-insensitively for at most the requested number of characters. */
 inline static int strncmp_no_alpha(char *s1, char *s2, size_t length)
 {
 	size_t i = 0;
@@ -178,7 +178,7 @@ inline static int strncmp_no_alpha(char *s1, char *s2, size_t length)
 	return (0);
 }
 
-/** @brief get_html_color_from_name operation. */
+/** @brief Looks up an HTML color name and returns its packed color value. */
 inline static	uint32_t	get_html_color_from_name(const char *name, size_t name_length)
 {
 	for (int i=0; i<HTML_COLORS_COUNT; i++)

@@ -3,7 +3,7 @@
 
 #include "helpers.hpp"
 
-/** @brief Represents the Button type. */
+/** @brief Control that draws a rectangular button with text. */
 class Button : public Control
 {
 public:
@@ -14,7 +14,7 @@ public:
 
 	Button() : content(), image(), font_size(0), text_align(0) {}
 
-	/** @brief draw operation. */
+	/** @brief Draws this control and, where applicable, its child controls. */
 	void draw(Display *display) override
 	{
 		int x, y, w, h;
