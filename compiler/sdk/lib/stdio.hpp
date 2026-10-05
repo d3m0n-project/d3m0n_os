@@ -8,23 +8,26 @@
 #include "memory.h"
 #include "app/app_manifest.h"
 
-#define stderr	2
-#define stdout	1
-//#define stdin	0 // TODO: stdin
-
 #define BUFSIZ	1024
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 	typedef struct {
-		int fd;
+		int		fd;
+		int		eof;
 	}	FILE;
 
-	int		sprintf(char *str, const char *format, ...);
-	int		snprintf(char *str, size_t size, const char *format, ...);
-	size_t	printf(const char *format, ...);
-	size_t	fprintf(int fd, const char *format, ...);
+	#define stderr	&(FILE){fd=2, eof=0}
+	#define stdout	&(FILE){fd=1, eof=0}
+	//#define stdin	0 // TODO: stdin
+
+	int					sprintf(char *str, const char *format, ...);
+	int					snprintf(char *str, size_t size, const char *format, ...);
+	size_t				printf(const char *format, ...);
+	size_t				fprintf(int fd, const char *format, ...);
+
+	static inline int	feof(FILE *f) { return f->eof; }
 #ifdef __cplusplus
 }
 #endif
