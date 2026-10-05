@@ -28,11 +28,11 @@ jobs:
       - name: Check generated files
         run: |
           echo "Generated documentation:"
-          find documentation -maxdepth 2 -type f | head -50
-          test -d documentation/html
+          find docs -maxdepth 2 -type f | head -50
+          test -d docs/html
 
       - name: Publish documentation
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./documentation/html
+          publish_dir: ./docs/html

@@ -1,5 +1,5 @@
 PROJECT_NAME			= "d3m0n os SDK"
-OUTPUT_DIRECTORY		= documentation
+OUTPUT_DIRECTORY		= docs
 INPUT					= ./compiler/sdk
 FILE_PATTERNS			= *.cpp *.h *.hpp
 RECURSIVE				= YES
