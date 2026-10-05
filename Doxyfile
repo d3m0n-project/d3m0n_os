@@ -8,9 +8,18 @@ GENERATE_HTML			= YES
 GENERATE_LATEX			= NO
 HAVE_DOT				= YES
 
+TAB_SIZE				= 4
+MARKDOWN_SUPPORT		= YES
+USE_MDFILE_AS_MAINPAGE	= docs/main.md
+
+
 PROJECT_LOGO			= docs/images/logo.png
 GENERATE_TREEVIEW		= YES
 DISABLE_INDEX			= NO
 FULL_SIDEBAR			= NO
-HTML_EXTRA_STYLESHEET	= docs/doxygen-awesome-css/doxygen-awesome.css
+HTML_EXTRA_STYLESHEET	= docs/doxygen-awesome-css/doxygen-awesome.css \
+						  docs/doxygen-awesome-css/doxygen-awesome-sidebar-only.css
 HTML_COLORSTYLE			= LIGHT  # required with Doxygen >= 1.9.5
+
+
+HAVE_DOT               = YES
