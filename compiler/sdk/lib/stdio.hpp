@@ -18,12 +18,13 @@ extern "C" {
 		int		fd;
 		int		is_eof;
 		int		error;
+		int		ungot;
 	}	FILE;
 
 	#define EOF		-1
-	#define stderr	(&(FILE){.fd = 2, .is_eof = 0, .error = 0})
-	#define stdout	(&(FILE){.fd = 1, .is_eof = 0, .error = 0})
-	#define stdin	(&(FILE){.fd = 0, .is_eof = 0, .error = 0}) // TODO: stdin
+	#define stderr	(&(FILE){.fd = 2, .is_eof = 0, .error = 0, .ungot=0})
+	#define stdout	(&(FILE){.fd = 1, .is_eof = 0, .error = 0, .ungot=0})
+	#define stdin	(&(FILE){.fd = 0, .is_eof = 0, .error = 0, .ungot=0}) // TODO: stdin
 
 	int					sprintf(char *str, const char *format, ...);
 	int					snprintf(char *str, size_t size, const char *format, ...);
@@ -99,6 +100,7 @@ extern "C" {
 		}
 
 		f->fd = fd;
+		f->ungot = 0;
 		f->is_eof = 0;
 		f->error = 0;
 
@@ -144,6 +146,7 @@ extern "C" {
 		}
 
 		f->fd = fd;
+		f->ungot = 0;
 		f->is_eof = 0;
 		f->error = 0;
 		return f;
@@ -151,6 +154,12 @@ extern "C" {
 
 	static inline char	getc(FILE *f)
 	{
+		if (f->ungot > 0)
+		{
+			int tmp = f->ungot;
+			f->ungot = 0;
+			return tmp;
+		}
 		char c = '\0';
 		fread(&c, 1, 1, f);
 		return c;
@@ -190,6 +199,12 @@ extern "C" {
 
 	static inline char	*fgets(char *string, int size, FILE *f)
 	{
+		if (f->ungot > 0)
+		{
+			int tmp = f->ungot;
+			f->ungot = 0;
+			return tmp;
+		}
 		fread(string, size, 1, f); // TODO: check this
 		return string;
 	}
