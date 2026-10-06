@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "memory.h"
-
+#include "sys.h"
 
 
 #ifdef __cplusplus
@@ -84,7 +84,9 @@ extern "C" {
 	// system commands
 	int				system(const char *command)
 	{
-		
+		write(1, "TODO: system()\n", 16);
+		(void)command;
+		return 0;
 	}
 
 #ifdef __cplusplus

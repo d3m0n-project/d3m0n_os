@@ -253,6 +253,19 @@ int	sys_rmdir(uint32_t user_path, uint32_t a1, uint32_t a2, uint32_t a3)
 	return dir_delete(path);
 }
 
+int	sys_remove(uint32_t user_path, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+	const char	*path;
+
+	(void)a1;
+	(void)a2;
+	(void)a3;
+	path = resolve_user_string_ptr(user_path);
+	if (!path)
+		return (-1);
+	return file_delete(path);
+}
+
 int	sys_sbrk(uint32_t increment, uint32_t a1, uint32_t a2, uint32_t a3)
 {
 	t_process *proc = current_process;
@@ -399,25 +412,16 @@ uint32_t	sys_kill(uint32_t pid, uint32_t code, uint32_t a2, uint32_t a3)
 	return 0;
 }
 
-uint32_t	sys_pstatus(uint32_t pid, uint32_t a1, uint32_t a2, uint32_t a3)
+uint32_t	sys_pstate(uint32_t pid, uint32_t a1, uint32_t a2, uint32_t a3)
 {
 	t_process *proc = scheduled_processes;
 	while (proc)
 	{
 		if (proc->pid == pid)
-		{
-			if (proc->mode == USER_MODE)
-			{
-				t_process *backup = current_process;
-				current_process = proc;
-				process_exit_current(code);
-				current_process = backup;
-				return 1;
-			}
-		}
+			return (uint32_t)proc->state;
 		proc = scheduled_processes->next;
 	}
-	return 0;
+	return PROC_ZOMBIE;
 }
 
 
@@ -433,6 +437,7 @@ syscall_t	syscall_table[] = {
 	sys_rename,
 	sys_mkdir,
 	sys_rmdir,
+	sys_remove,
 	sys_sbrk,
 	sys_surface_create,
 	sys_surface_update,
@@ -440,7 +445,7 @@ syscall_t	syscall_table[] = {
 	sys_random,
 	sys_exec,
 	sys_kill,
-	sys_pstatus
+	sys_pstate
 };
 
 // TODO: kill, waitpid

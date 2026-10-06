@@ -56,7 +56,9 @@ extern "C" {
 		SYS_SURFACE_UPDATE,
 		SYS_GET_TIME,
 		SYS_RANDOM,
-		SYS_EXEC
+		SYS_EXEC,
+		SYS_KILL,
+		SYS_PSTATE
 	}   e_syscall_indexes;
 
 	static inline void __attribute__((noreturn)) exit(int ret_code)
@@ -144,6 +146,16 @@ extern "C" {
 	static inline uint32_t	exec(const char *path, const char **argv)
 	{
 		return syscall(SYS_EXEC, (uint32_t)path, (uint32_t)argv, 0, 0);
+	}
+
+	static inline uint32_t	kill(uint32_t pid, int code)
+	{
+		return syscall(SYS_KILL, (uint32_t)pid, (uint32_t)code, 0, 0);
+	}
+
+	static inline uint32_t	pstate(uint32_t pid)
+	{
+		return syscall(SYS_PSTATE, (uint32_t)pid, 0, 0, 0);
 	}
 
 #ifdef __cplusplus
