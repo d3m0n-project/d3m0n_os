@@ -6,7 +6,7 @@
 
 static  uint64_t        current_time_delta = 0;
 
-static inline uint32_t read_timer()
+static inline uint32_t read_timer(void)
 {
     return TIMER_CLO;
 }
@@ -16,12 +16,17 @@ void    set_time(uint64_t time)
     current_time_delta = time;
 }
 
-uint64_t time_us()
+uint64_t    time_from_boot(void)
+{
+    return (uint64_t)read_timer();
+}
+
+uint64_t time_us(void)
 {
     return current_time_delta + (uint64_t)read_timer();
 }
 
-uint64_t    time_s()
+uint64_t    time_s(void)
 {
     return time_us() / (1000 * 1000);
 }

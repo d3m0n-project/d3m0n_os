@@ -51,6 +51,7 @@ extern "C" {
 		SYS_RENAME,
 		SYS_MKDIR,
 		SYS_RMDIR,
+		SYS_REMOVE,
 		SYS_SBRK,
 		SYS_SURFACE_CREATE,
 		SYS_SURFACE_UPDATE,
@@ -118,6 +119,11 @@ extern "C" {
 		return syscall(SYS_RMDIR, (uint32_t)path, 0, 0, 0);
 	}
 
+	static inline int	remove(const char *path)
+	{
+		return syscall(SYS_REMOVE, (uint32_t)path, 0, 0, 0);
+	}
+
 	static inline int	surface_create(uint32_t width, uint32_t height, uint8_t **surface, int *pitch)
 	{
 		return syscall(SYS_SURFACE_CREATE, width, height, (uint32_t)surface, (uint32_t)pitch);
@@ -136,6 +142,11 @@ extern "C" {
 	static inline uint32_t	time(void *timezone)
 	{
 		return syscall(SYS_GET_TIME, timezone, 0, 0, 0);
+	}
+
+	static inline uint32_t	clock()
+	{
+		return syscall(SYS_GET_TIME, 0, 1, 0, 0);
 	}
 
 	static inline uint32_t	random_u32(void)

@@ -15,6 +15,12 @@ extern "C" {
 		int	y;
 	}	t_point;
 
+	#define CLOCKS_PER_SEC			1000000U
+
+	#define bool					int
+	#define TRUE					1
+	#define FALSE					0
+
 	typedef unsigned char			uint8_t;
 	typedef unsigned short			uint16_t;
 	typedef unsigned int			uint32_t;

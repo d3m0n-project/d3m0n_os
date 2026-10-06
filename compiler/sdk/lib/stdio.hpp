@@ -14,6 +14,12 @@
 #define _IOLBF		1	// line buffered
 #define _IONBF		2	// unbuffered
 
+#define L_tmpnam	10
+
+#if L_tmpnam <= 5
+	#error "L_tmpnam must be greater than 5 to ensure valid tmp names"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -258,6 +264,27 @@ extern "C" {
 		
 		ret->error = 0;
 		ret->is_eof = 0;
+		return ret;
+	}
+
+	static inline char	*tmpnam()
+	{
+		char	*ret = (char *)calloc(L_tmpnam, sizeof(char));
+		if (!ret)
+			return 0;
+		
+		// TODO: retry if error
+		rng_bytes(ret, L_tmpnam - 5); // - '.tmp'
+		int i = 0;
+		for (; i<L_tmpnam - 5; i++)
+			ret[i] = 'A' + (ret[i] % 57);
+
+		ret[i++] = '.';
+		ret[i++] = 't';
+		ret[i++] = 'm';
+		ret[i++] = 'p';
+		ret[i++] = '\0';
+
 		return ret;
 	}
 
