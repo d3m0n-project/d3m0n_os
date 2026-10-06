@@ -339,9 +339,7 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 
 	draw_topbar();
 	for (row = 0; row < proc->surface_height; row++)
-		ft_memcpy(framebuffer + (row + TOPBAR_HEIGHT) * pitch,
-			surface + row * proc->surface_width * sizeof(uint32_t),
-			proc->surface_width * sizeof(uint32_t));
+		ft_memcpy(framebuffer + (row + TOPBAR_HEIGHT) * pitch, surface + row * proc->surface_width * sizeof(uint32_t), proc->surface_width * sizeof(uint32_t));
 	#if DEBUG_OUTLINE == 1
 	draw_rect_outline(0, TOPBAR_HEIGHT, proc->surface_width, proc->surface_height, OUTLINE_COLOR);
 	#endif
@@ -358,6 +356,69 @@ uint32_t	sys_random(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 	return random_u32();
 }
 
+uint32_t	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
+{
+	const char *elf_path = (const char *)resolve_user_ptr(path_ptr, sizeof(const char));
+	const char **argv = (const char **)resolve_user_ptr(argv_ptr, sizeof(const char *));
+	if (!elf_path || !argv)
+		return 0;
+
+	(void)argv; // TODO: argv for execve
+	t_process *proc = elf_to_proc(elf_path);
+	if (!proc)
+	{
+		log("\033[31mSYS_EXEC\033[0m: Could not start process  '%s'...\n", LOG_WARNING | LOG_INDENT, elf_path);
+		return 0;
+	}
+	return proc->pid;
+}
+
+
+uint32_t	sys_kill(uint32_t pid, uint32_t code, uint32_t a2, uint32_t a3)
+{
+	t_process *proc = scheduled_processes;
+	if (current_process->pid == pid)
+		return 0;
+	while (proc)
+	{
+		if (proc->pid == pid)
+		{
+			if (proc->mode == PROCESS_USER || current_process->mode == PROCESS_KERNEL)
+			{
+				t_process *backup = current_process;
+				current_process = proc;
+				process_exit_current(code);
+				current_process = backup;
+				return 1;
+			}
+			else
+				return 0;
+		}
+		proc = scheduled_processes->next;
+	}
+	return 0;
+}
+
+uint32_t	sys_pstatus(uint32_t pid, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+	t_process *proc = scheduled_processes;
+	while (proc)
+	{
+		if (proc->pid == pid)
+		{
+			if (proc->mode == USER_MODE)
+			{
+				t_process *backup = current_process;
+				current_process = proc;
+				process_exit_current(code);
+				current_process = backup;
+				return 1;
+			}
+		}
+		proc = scheduled_processes->next;
+	}
+	return 0;
+}
 
 
 syscall_t	syscall_table[] = {
@@ -376,8 +437,13 @@ syscall_t	syscall_table[] = {
 	sys_surface_create,
 	sys_surface_update,
 	sys_get_time,
-	sys_random
+	sys_random,
+	sys_exec,
+	sys_kill,
+	sys_pstatus
 };
+
+// TODO: kill, waitpid
 
 int	syscall_dispatch(uint32_t number, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {

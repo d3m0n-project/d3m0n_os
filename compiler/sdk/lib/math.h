@@ -1,6 +1,9 @@
 #ifndef MATH_H
 #define MATH_H
 
+#define HUGE_VAL (__builtin_inf())
+
+
 static inline double	ldexp(double x, int exp)
 {
 	union
@@ -421,6 +424,7 @@ static inline float	fabsf(float x)
 	return v.f;
 }
 
+// trigonometry related builtins
 static inline float			sinf(float angle) { return __builtin_sinf(angle); }
 static inline double		sin(double angle) { return __builtin_sin(angle); }
 static inline long double	sinl(long double angle) { return __builtin_sinl(angle); }
@@ -444,5 +448,41 @@ static inline long double	acosl(long double angle) { return __builtin_acosl(angl
 static inline float			atanf(float angle) { return __builtin_atanf(angle); }
 static inline double		atan(double angle) { return __builtin_atan(angle); }
 static inline long double	atanl(long double angle) { return __builtin_atanl(angle); }
+
+static inline float			atan2f(float x, float y) { return __builtin_atan2f(x, y); }
+static inline double		atan2(double x, double y) { return __builtin_atan2(x, y); }
+static inline long double	atan2l(long double x, long double y) { return __builtin_atan2l(x, y); }
+
+
+// float handling functions
+static inline float			ceilf(float x) { return __builtin_ceilf(x); }
+static inline double		ceil(double x) { return __builtin_ceil(x); }
+static inline long double	ceill(long double x) { return __builtin_ceill(x); }
+
+// sqrt
+static inline float			sqrtf(float x) { return __builtin_sqrtf(x); }
+static inline double		sqrt(double x) { return __builtin_sqrt(x); }
+static inline long double	sqrtl(long double x) { return __builtin_sqrtl(x); }
+
+// log
+// natural logarithm
+static inline float			logf(float x) { return __builtin_logf(x); }
+static inline double		log(double x) { return __builtin_log(x); }
+static inline long double	logl(long double x) { return __builtin_logl(x); }
+
+// log base 2
+static inline float			log2f(float x) { return __builtin_log2f(x); }
+static inline double		log2(double x) { return __builtin_log2(x); }
+static inline long double	log2l(long double x) { return __builtin_log2l(x); }
+
+// log base 10
+static inline float			log10f(float x) { return __builtin_log10f(x); }
+static inline double		log10(double x) { return __builtin_log10(x); }
+static inline long double	log10l(long double x) { return __builtin_log10l(x); }
+
+// exp
+static inline float			expf(float x) { return __builtin_expf(x); }
+static inline double		exp(double x) { return __builtin_exp(x); }
+static inline long double	expl(long double x) { return __builtin_expl(x); }
 
 #endif

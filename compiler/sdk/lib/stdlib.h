@@ -79,6 +79,14 @@ extern "C" {
 	t_list			*lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *));
 
 	void			cleanup_splitted(char **splitted);
+
+
+	// system commands
+	int				system(const char *command)
+	{
+		
+	}
+
 #ifdef __cplusplus
 }
 #endif
