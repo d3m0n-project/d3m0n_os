@@ -145,6 +145,13 @@ int	sys_close(uint32_t fd, uint32_t a1, uint32_t a2, uint32_t a3)
 	return pclose((int)fd - 3, current_process->fds);
 }
 
+int	sys_lseek(uint32_t fd, uint32_t offset, uint32_t whence, uint32_t a3)
+{
+	if (fd < 3) // TODO: stdin, stdout and stderr
+		return -1;
+	plseek((int)fd - 3, offset, (e_seek_directive)whence, current_process->fds);
+}
+
 int	sys_uname(uint32_t user_buf, uint32_t buf_len, uint32_t a2, uint32_t a3)
 {
 	char		*dst;
@@ -359,6 +366,7 @@ syscall_t	syscall_table[] = {
 	sys_write,
 	sys_open,
 	sys_close,
+	sys_lseek,
 	sys_uname,
 	sys_getdents,
 	sys_rename,

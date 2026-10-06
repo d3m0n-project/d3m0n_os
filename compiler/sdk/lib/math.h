@@ -409,4 +409,40 @@ result:
 	return ux.f;
 }
 
+static inline float	fabsf(float x)
+{
+	union {
+		float f;
+		uint32_t u;
+	}	v;
+
+	v.f = x;
+	v.u &= 0x7fffffffU;
+	return v.f;
+}
+
+static inline float			sinf(float angle) { return __builtin_sinf(angle); }
+static inline double		sin(double angle) { return __builtin_sin(angle); }
+static inline long double	sinl(long double angle) { return __builtin_sinl(angle); }
+
+static inline float			cosf(float angle) { return __builtin_cosf(angle); }
+static inline double		cos(double angle) { return __builtin_cos(angle); }
+static inline long double	cosl(long double angle) { return __builtin_cosl(angle); }
+
+static inline float			tanf(float angle) { return __builtin_tanf(angle); }
+static inline double		tan(double angle) { return __builtin_tan(angle); }
+static inline long double	tanl(long double angle) { return __builtin_tanl(angle); }
+
+static inline float			asinf(float angle) { return __builtin_asinf(angle); }
+static inline double		asin(double angle) { return __builtin_asin(angle); }
+static inline long double	asinl(long double angle) { return __builtin_asinl(angle); }
+
+static inline float			acosf(float angle) { return __builtin_acosf(angle); }
+static inline double		acos(double angle) { return __builtin_acos(angle); }
+static inline long double	acosl(long double angle) { return __builtin_acosl(angle); }
+
+static inline float			atanf(float angle) { return __builtin_atanf(angle); }
+static inline double		atan(double angle) { return __builtin_atan(angle); }
+static inline long double	atanl(long double angle) { return __builtin_atanl(angle); }
+
 #endif

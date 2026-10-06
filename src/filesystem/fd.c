@@ -261,7 +261,12 @@ int		close(int fd)
 
 uint32_t	lseek(int fd, int32_t offset, e_seek_directive whence)
 {
-	if (fd < 0 || fd >= FS_MAX_FDS || g_fds[fd].mode == FILE_NOT_CREATED)
+	plseek(fd, offset, whence, g_fds);
+}
+
+uint32_t	plseek(int fd, int32_t offset, e_seek_directive whence, fs_fd *fds)
+{
+	if (fd < 0 || fd >= FS_MAX_FDS || fds[fd].mode == FILE_NOT_CREATED)
 		return -1;
 
 	int32_t new_pos;
@@ -272,10 +277,10 @@ uint32_t	lseek(int fd, int32_t offset, e_seek_directive whence)
 			new_pos = offset;
 			break;
 		case SEEK_CUR:
-			new_pos = g_fds[fd].file.pos + offset;
+			new_pos = fds[fd].file.pos + offset;
 			break;
 		case SEEK_END:
-			new_pos = g_fds[fd].file.size + offset;
+			new_pos = fds[fd].file.size + offset;
 			break;
 		default:
 			return -1;
@@ -284,10 +289,10 @@ uint32_t	lseek(int fd, int32_t offset, e_seek_directive whence)
 	if (new_pos < 0)
 		return -1;
 
-	if (new_pos > (int32_t)g_fds[fd].file.size)
-		new_pos = g_fds[fd].file.size;
+	if (new_pos > (int32_t)fds[fd].file.size)
+		new_pos = fds[fd].file.size;
 
-	g_fds[fd].file.pos = new_pos;
+	fds[fd].file.pos = new_pos;
 
 	return new_pos;
 }

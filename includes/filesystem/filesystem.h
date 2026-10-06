@@ -60,5 +60,6 @@ int			popen(const char *path, int flags, fs_fd *fds);
 uint32_t	pread(int fd, char *buffer, uint32_t count, fs_fd *fds);
 int			pwrite(int fd, const char *buffer, uint32_t count, fs_fd *fds);
 int			pclose(int fd, fs_fd *fds);
+uint32_t	plseek(int fd, int32_t offset, e_seek_directive whence, fs_fd *fds);
 
 #endif

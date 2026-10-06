@@ -9,7 +9,10 @@
 #include "memory.h"
 #include "app/app_manifest.h"
 
-#define BUFSIZ	1024
+#define BUFSIZ		1024
+#define _IOFBF		0	// fully buffered
+#define _IOLBF		1	// line buffered
+#define _IONBF		2	// unbuffered
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +22,13 @@ extern "C" {
 		int		is_eof;
 		int		error;
 		int		ungot;
-	}	FILE;
+		char	*buf;
+		size_t	buf_size;
+		size_t	buf_pos;
+		size_t	buf_len;
+		int		buf_mode;
+		int		buf_owned;
+	} FILE;
 
 	#define EOF		-1
 	#define stderr	(&(FILE){.fd = 2, .is_eof = 0, .error = 0, .ungot=0})
@@ -99,6 +108,13 @@ extern "C" {
 			return 0;
 		}
 
+		f->buf = 0;
+		f->buf_size = 0;
+		f->buf_pos = 0;
+		f->buf_len = 0;
+		f->buf_mode = _IONBF;
+		f->buf_owned = 0;
+
 		f->fd = fd;
 		f->ungot = 0;
 		f->is_eof = 0;
@@ -145,6 +161,13 @@ extern "C" {
 			return 0;
 		}
 
+		f->buf = 0;
+		f->buf_size = 0;
+		f->buf_pos = 0;
+		f->buf_len = 0;
+		f->buf_mode = _IONBF;
+		f->buf_owned = 0;
+
 		f->fd = fd;
 		f->ungot = 0;
 		f->is_eof = 0;
@@ -152,30 +175,38 @@ extern "C" {
 		return f;
 	}
 
-	static inline char	getc(FILE *f)
+	static inline int	getc(FILE *f)
 	{
+		int	c;
 		if (f->ungot > 0)
 		{
-			int tmp = f->ungot;
+			c = f->ungot;
 			f->ungot = 0;
-			return tmp;
+			return c;
 		}
-		char c = '\0';
-		fread(&c, 1, 1, f);
+
+		c = EOF;
+		if (fread(&c, 1, 1, f) != 1)
+			return EOF;
+
 		return c;
 	}
 
-	static inline char	ferror(FILE *f)
+
+	static inline int	ferror(FILE *f)
 	{
 		return f->error;
 	}
 
-	static inline int fclose(FILE *f)
+	static inline int	fclose(FILE *f)
 	{
 		int	ret;
 
 		if (f == 0)
 			return EOF;
+
+		if (f->buf_owned && f->buf)
+			free(f->buf);
 
 		ret = close(f->fd);
 		if (ret < 0)
@@ -187,24 +218,26 @@ extern "C" {
 		return 0;
 	}
 
-	static inline void	fflush(FILE *f)
+	static inline int	fflush(FILE *f)
 	{
-		(void)f; // TODO: flushing ? maybe
+		// ret EOF if err
+
+		// clear buffered
+		if (f->ungot > 0)
+			f->ungot = 0;
+		// TODO: real flushing ? maybe
+		return 0;
 	}
 
-	static inline void	fwrite(char *buff, size_t size, size_t nmemb, FILE *f)
+	static inline size_t	fwrite(char *buff, size_t size, size_t nmemb, FILE *f)
 	{
-		write(f->fd, buff, size * nmemb);
+		return write(f->fd, buff, size * nmemb);
 	}
 
 	static inline char	*fgets(char *string, int size, FILE *f)
 	{
 		if (f->ungot > 0)
-		{
-			int tmp = f->ungot;
-			f->ungot = 0;
-			return tmp;
-		}
+			return (char *)&f->ungot;
 		fread(string, size, 1, f); // TODO: check this
 		return string;
 	}
@@ -227,6 +260,114 @@ extern "C" {
 		ret->is_eof = 0;
 		return ret;
 	}
+
+	static inline int	ungetc(int c, FILE *f)
+	{
+		if (c <= 0)
+			return 0;
+		f->ungot = c;
+		return c;
+	}
+
+	static inline void	clearerr(FILE *f)
+	{
+		f->error = 0;
+		f->is_eof = 0;
+	}
+
+	static inline int	fseek(FILE *f, long offset, e_seek_directive whence)
+	{
+		long	ret;
+		if (!f)
+			return -1;
+
+		ret = lseek(f->fd, offset, whence);
+		if (ret < 0)
+		{
+			f->error = 1;
+			return -1;
+		}
+
+		f->ungot = 0;
+		f->is_eof = 0;
+
+		return 0;
+	}
+
+
+	static inline long	ftell(FILE *f)
+	{
+		long pos;
+		if (!f)
+			return -1;
+
+		pos = lseek(f->fd, 0, SEEK_CUR);
+		if (pos < 0)
+		{
+			f->error = 1;
+			return -1;
+		}
+
+		if (f->ungot > 0)
+			pos--;
+
+		return pos;
+	}
+
+	static inline int	setvbuf(FILE *f, char *buf, int mode, size_t size)
+	{
+		char	*new_buf;
+		if (!f)
+			return -1;
+
+		if (mode != _IOFBF && mode != _IOLBF && mode != _IONBF)
+		{
+			f->error = 1;
+			return -1;
+		}
+
+
+		if (f->buf_owned && f->buf)
+			free(f->buf);
+
+		f->buf = 0;
+		f->buf_size = 0;
+		f->buf_pos = 0;
+		f->buf_len = 0;
+		f->buf_owned = 0;
+		f->buf_mode = mode;
+
+		if (mode == _IONBF)
+			return 0;
+
+		if (size == 0)
+		{
+			f->error = 1;
+			return -1;
+		}
+
+		if (buf)
+		{
+			f->buf = buf;
+			f->buf_size = size;
+		}
+		else
+		{
+			new_buf = (char *)malloc(size);
+			if (!new_buf)
+			{
+				f->error = 1;
+				return -1;
+			}
+
+			f->buf = new_buf;
+			f->buf_size = size;
+			f->buf_owned = 1;
+		}
+		return 0;
+	}
+
+
 #ifdef __cplusplus
 }
 #endif

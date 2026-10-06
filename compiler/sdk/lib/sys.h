@@ -38,7 +38,6 @@ extern "C" {
 	}	e_seek_directive;
 
 
-
 	typedef enum
 	{
 		SYS_EXIT,
@@ -46,6 +45,7 @@ extern "C" {
 		SYS_WRITE,
 		SYS_OPEN,
 		SYS_CLOSE,
+		SYS_LSEEK,
 		SYS_UNAME,
 		SYS_GETDENTS,
 		SYS_RENAME,
@@ -83,6 +83,11 @@ extern "C" {
 	static inline int	close(int fd)
 	{
 		return syscall(SYS_CLOSE, (uint32_t)fd, 0, 0, 0);
+	}
+
+	static inline int	lseek(int fd, size_t offset, e_seek_directive whence)
+	{
+		return syscall(SYS_LSEEK, (uint32_t)fd, (uint32_t)offset, (uint32_t)whence, 0);
 	}
 
 	static inline int	uname(char *buffer, uint32_t buffer_len)
