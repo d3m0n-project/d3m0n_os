@@ -50,9 +50,9 @@ Just download lastest [release](https://github.com/d3m0n-project/d3m0n_os/releas
 ### Build kernel image
 To execute this code and build your d3m0n os image (.img), you must execute these commands **line by line** in your linux machine terminal.
 ```bash
-git clone https://github.com/d3m0n-project/d3m0n_os.git
+git clone https://github.com/d3m0n-project/d3m0n_os.git --recurse-submodules
 cd d3m0n_os
-make -j 4
+make export
 ```
 
 ## Configure your OS
