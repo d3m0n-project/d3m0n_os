@@ -73,7 +73,7 @@ extern "C" {
 	#define va_copy(dst,src)		__builtin_va_copy(dst,src)
 	#define va_end(ap)				__builtin_va_end(ap)
 
-	#define abs(a)					((a < 0)?-a:a)
+	//#define abs(a)					((a < 0)?-a:a)
 
 	typedef long long				time_t;
 

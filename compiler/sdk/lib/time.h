@@ -104,6 +104,72 @@ struct tm	*localtime(const time_t *timer)
 	return gmtime(timer);
 }
 
+static int	days_in_month(int year, int month)
+{
+	static const int days[] = {
+		31, 28, 31, 30, 31, 30,
+		31, 31, 30, 31, 30, 31
+	};
+
+	if (month == 1)
+		return days[month] + is_leap_year(year);
+
+	return days[month];
+}
+
+static inline time_t	mktime(struct tm * tm)
+{
+	long long days = 0;
+	long long seconds;
+
+	int year = tm->tm_year + 1900;
+	int month = tm->tm_mon;
+
+	year += month / 12;
+	month %= 12;
+	if (month < 0)
+	{
+		month += 12;
+		year--;
+	}
+
+	tm->tm_year = year - 1900;
+	tm->tm_mon = month;
+
+	// days from 1970-01-01 to the beginning of year
+	if (year >= 1970)
+	{
+		for (int y = 1970; y < year; y++)
+			days += 365 + is_leap_year(y);
+	}
+	else
+	{
+		for (int y = year; y < 1970; y++)
+			days -= 365 + is_leap_year(y);
+	}
+
+	// days preceding current month
+	for (int m = 0; m < month; m++)
+		days += days_in_month(year, m);
+
+	days += tm->tm_mday - 1;
+	seconds = days * 86400LL;
+	seconds += tm->tm_hour * 3600LL;
+	seconds += tm->tm_min * 60LL;
+	seconds += tm->tm_sec;
+
+	tm->tm_wday = -1;
+	tm->tm_yday = -1;
+	tm->tm_isdst = 0;
+
+	return (time_t)seconds;
+}
+
+static inline double	difftime(time_t end, time_t begin)
+{
+	return  (end - begin);
+}
+
 
 static int put_char(char **dst, size_t *remaining, char c)
 {

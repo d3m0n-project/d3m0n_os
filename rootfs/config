@@ -10,7 +10,8 @@ theme: 0
 time_mode: 1
 
 # launcher desktop application
-launcher: /apps/system/launcher/launcher.d3m0n
+#launcher: /apps/system/launcher/launcher.d3m0n
+launcher: /apps/testing/test/test.d3m0n
 
 
 # ------- icons ---------

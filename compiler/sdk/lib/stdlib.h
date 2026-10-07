@@ -19,6 +19,12 @@ extern "C" {
 	#define max(a, b)		((a > b)?a:b)
 	#define min(a, b)		((a < b)?a:b)
 
+	
+	int				islower(int c);
+	int				isupper(int c);
+	int				isgraph(int c);
+	int				iscntrl(int c);
+	int				ispunct(int c);
 	int				isalpha(int c);
 	int				isdigit(int c);
 	int				isxdigit(int c);
@@ -82,7 +88,7 @@ extern "C" {
 
 
 	// system commands
-	int				system(const char *command)
+	static inline int	system(const char *command)
 	{
 		write(1, "TODO: system()\n", 16);
 		(void)command;

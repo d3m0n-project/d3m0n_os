@@ -3,6 +3,20 @@
 
 #include "types.h"
 
+#define LC_CTYPE			0
+#define LC_NUMERIC			1
+#define LC_TIME				2
+#define LC_COLLATE			3
+#define LC_MONETARY			4
+#define LC_MESSAGES			5
+#define LC_ALL				6
+#define LC_PAPER			7
+#define LC_NAME				8
+#define LC_ADDRESS			9
+#define LC_TELEPHONE		10
+#define LC_MEASUREMENT		11
+#define LC_IDENTIFICATION	12
+
 struct lconv
 {
 	const char	*decimal_point;
@@ -67,6 +81,36 @@ static inline struct lconv *localeconv(void)
 	};
 
 	return &l;
+}
+
+static const char *locale_names[] = {
+	[LC_CTYPE]			= "C",
+	[LC_NUMERIC]		= "C",
+	[LC_TIME]			= "C",
+	[LC_COLLATE]		= "C",
+	[LC_MONETARY]		= "C",
+	[LC_MESSAGES]		= "C",
+	[LC_PAPER]			= "C",
+	[LC_NAME]			= "C",
+	[LC_ADDRESS]		= "C",
+	[LC_TELEPHONE]		= "C",
+	[LC_MEASUREMENT]	= "C",
+	[LC_IDENTIFICATION] = "C",
+};
+
+static inline char	*setlocale(int category, const char *locale)
+{
+	static char current_locale[] = "C";
+	if (locale == 0)
+		return current_locale;
+
+	if (category < LC_CTYPE || category > LC_IDENTIFICATION)
+		return 0;
+
+	if (locale[0] == '\0' || (locale[0] == 'C' && locale[1] == '\0'))
+		return current_locale;
+
+	return 0;
 }
 
 #endif

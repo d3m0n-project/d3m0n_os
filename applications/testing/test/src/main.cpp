@@ -20,6 +20,12 @@ extern "C" int	main(void)
 	MainWindow	window;
 	window.draw();
 
+	uint32_t pid = exec("/programs/lua/lua", 0);
+	printf("pid: %lu\n", pid);
+
+	uint32_t code = kill(pid, 1234);
+	printf("code: %lu\n", code);
+
 	printf("MySimple Finished...\n");
 	return 0;
 }

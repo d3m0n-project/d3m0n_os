@@ -1,6 +1,7 @@
 #include "runtime.h"
 
-int	errno = 0;
+int			__errno = 0;
+extern int	errno __attribute__((alias("__errno")));
 
 const char	*strerror(int errnb)
 {

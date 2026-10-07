@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 	arguments.emplace_back("-I" + (string)LIB_PATH + "/sdk");
 	#endif
 	if (!compile_only)
-		arguments.emplace_back("-Wl,-e,_start");
+		arguments.emplace_back("-Wl,-e,main");
 
 	for (int i = 1; i < argc; ++i)
 		arguments.emplace_back(argv[i]);
