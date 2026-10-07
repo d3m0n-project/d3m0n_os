@@ -171,15 +171,17 @@ void process_exit_current(uint32_t status_code)
 {
 	uint32_t cpsr = disable_interrupts();
 	t_process *exiting = current_process;
+	uint32_t surface_addr = 0;
 	if (!exiting)
 	{
 		restore_interrupts(cpsr);
 		return;
 	}
-	if (exiting->surface_addr)
+	surface_addr = exiting->surface_addr;
+	if (surface_addr)
 	{
-		kfree((void *)(uintptr_t)exiting->surface_addr); // IF STACK OVERFLOW, current_process content can be overrided
-		exiting->surface_addr = 0;                       // TODO: fix
+		exiting->surface_addr = 0;
+		kfree((void *)(uintptr_t)surface_addr);
 	}
 
 	if (status_code >= (uint32_t)-6)

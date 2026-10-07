@@ -261,7 +261,7 @@ int		close(int fd)
 
 uint32_t	lseek(int fd, int32_t offset, e_seek_directive whence)
 {
-	plseek(fd, offset, whence, g_fds);
+	return plseek(fd, offset, whence, g_fds);
 }
 
 uint32_t	plseek(int fd, int32_t offset, e_seek_directive whence, fs_fd *fds)

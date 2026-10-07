@@ -147,9 +147,10 @@ int	sys_close(uint32_t fd, uint32_t a1, uint32_t a2, uint32_t a3)
 
 int	sys_lseek(uint32_t fd, uint32_t offset, uint32_t whence, uint32_t a3)
 {
+	(void)a3;
 	if (fd < 3) // TODO: stdin, stdout and stderr
 		return -1;
-	plseek((int)fd - 3, offset, (e_seek_directive)whence, current_process->fds);
+	return plseek((int)fd - 3, offset, (e_seek_directive)whence, current_process->fds);
 }
 
 int	sys_uname(uint32_t user_buf, uint32_t buf_len, uint32_t a2, uint32_t a3)
@@ -359,8 +360,10 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 	return 0;
 }
 
-uint32_t	sys_get_time(uint32_t timezone_ptr, uint32_t relative, uint32_t a2, uint32_t a3)
+int	sys_get_time(uint32_t timezone_ptr, uint32_t relative, uint32_t a2, uint32_t a3)
 {
+	(void)a2;
+	(void)a3;
 	 // TODO: timezone
 	if (relative == 1)
 		return (uint32_t)(time_from_boot() / CLOCKS_PER_SEC);
@@ -370,20 +373,26 @@ uint32_t	sys_get_time(uint32_t timezone_ptr, uint32_t relative, uint32_t a2, uin
 	return (uint32_t)time_s();
 }
 
-uint32_t	sys_random(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+int	sys_random(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
+	(void)a0;
+	(void)a1;
+	(void)a2;
+	(void)a3;
 	return random_u32();
 }
 
-uint32_t	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
+int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 {
+	(void)a2;
+	(void)a3;
 	const char *elf_path = (const char *)resolve_user_ptr(path_ptr, sizeof(const char));
 	const char **argv = (const char **)resolve_user_ptr(argv_ptr, sizeof(const char *));
 	if (!elf_path || !argv)
 		return 0;
 
 	(void)argv; // TODO: argv for execve
-	t_process *proc = elf_to_proc(elf_path);
+	t_process *proc = elf_to_proc((char *)elf_path);
 	if (!proc)
 	{
 		log("\033[31mSYS_EXEC\033[0m: Could not start process  '%s'...\n", LOG_WARNING | LOG_INDENT, elf_path);
@@ -393,8 +402,10 @@ uint32_t	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3
 }
 
 
-uint32_t	sys_kill(uint32_t pid, uint32_t code, uint32_t a2, uint32_t a3)
+int	sys_kill(uint32_t pid, uint32_t code, uint32_t a2, uint32_t a3)
 {
+	(void)a2;
+	(void)a3;
 	t_process *proc = scheduled_processes;
 	if (current_process->pid == pid)
 		return 0;
@@ -418,8 +429,11 @@ uint32_t	sys_kill(uint32_t pid, uint32_t code, uint32_t a2, uint32_t a3)
 	return 0;
 }
 
-uint32_t	sys_pstate(uint32_t pid, uint32_t a1, uint32_t a2, uint32_t a3)
+int	sys_pstate(uint32_t pid, uint32_t a1, uint32_t a2, uint32_t a3)
 {
+	(void)a1;
+	(void)a2;
+	(void)a3;
 	t_process *proc = scheduled_processes;
 	while (proc)
 	{
