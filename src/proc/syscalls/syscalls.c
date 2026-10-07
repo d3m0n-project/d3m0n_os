@@ -387,7 +387,9 @@ int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 	(void)a2;
 	(void)a3;
 	const char *elf_path = (const char *)resolve_user_ptr(path_ptr, sizeof(const char));
-	const char **argv = (const char **)resolve_user_ptr(argv_ptr, sizeof(const char *));
+	const char **argv = 0;
+	if (argv_ptr)
+		argv = (const char **)resolve_user_ptr(argv_ptr, sizeof(const char *));
 	if (!elf_path || !argv)
 		return 0;
 
@@ -398,6 +400,7 @@ int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 		log("\033[31mSYS_EXEC\033[0m: Could not start process  '%s'...\n", LOG_WARNING | LOG_INDENT, elf_path);
 		return 0;
 	}
+	log("proc: %s, pid: %lu\n", 1, proc->proc_name, proc->pid);
 	return proc->pid;
 }
 

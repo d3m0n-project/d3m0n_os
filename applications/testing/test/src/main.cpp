@@ -20,6 +20,8 @@ extern "C" int	main(void)
 	MainWindow	window;
 	window.draw();
 
+	printf("starting lua\n");
+
 	uint32_t pid = exec("/programs/lua/lua", 0);
 	printf("pid: %lu\n", pid);
 
