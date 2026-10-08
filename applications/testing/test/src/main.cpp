@@ -22,12 +22,13 @@ extern "C" int	main(void)
 
 	printf("starting lua\n");
 
-	uint32_t pid = exec("/programs/lua/lua", 0);
-	printf("pid: %lu\n", pid);
+	//uint32_t pid = exec("/programs/bin/lua", 0);
+	//printf("pid: %lu\n", pid);
 
-	uint32_t code = kill(pid, 1234);
-	printf("code: %lu\n", code);
+	//uint32_t code = kill(pid, 1234);
+	//printf("code: %lu\n", code);
 
 	printf("MySimple Finished...\n");
+	//exit(0);
 	return 0;
 }

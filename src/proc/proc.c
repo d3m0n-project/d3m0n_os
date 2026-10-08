@@ -44,25 +44,27 @@ void	prepare_initial_stack(t_process *p, void (*entry)(void))
 	p->user_lr = 0;
 }
 
-int	process_context_valid(t_process *p)
+int process_context_valid(t_process *p)
 {
-	uint32_t low;
-	uint32_t high;
-	uint32_t *f;
-	uint32_t mode;
+	uint32_t	low;
+	uint32_t	high;
+	uint32_t	*f;
+	uint32_t	mode;
 
 	if (!p || !p->kernel_stack || !p->irq_sp)
 		return 0;
 
-	low = (uint32_t)p->kernel_stack;
+	low  = (uint32_t)p->kernel_stack;
 	high = low + KERNEL_STACK_PAGES * PAGE_SIZE;
+
 	if (p->irq_sp < low || p->irq_sp > high - IRQ_FRAME_SIZE || (p->irq_sp & 3))
 		return 0;
 
 	if (p->user_sp & 3)
 		return 0;
-	if (p->mode != PROCESS_KERNEL && p->mode != PROCESS_USER) // check for process mode corruption
+	if (p->mode != PROCESS_KERNEL && p->mode != PROCESS_USER)
 		return 0;
+
 	if (p->mode == PROCESS_USER)
 	{
 		uint32_t user_low;
@@ -70,18 +72,20 @@ int	process_context_valid(t_process *p)
 
 		if (!p->user_stack)
 			return 0;
-		user_low = (uint32_t)p->user_stack;
+		user_low  = (uint32_t)p->user_stack;
 		user_high = user_low + USER_STACK_PAGES * PAGE_SIZE;
 		if (p->user_sp < user_low + 4 || p->user_sp > user_high)
 			return 0;
 	}
-	else if (p->user_sp < low + 4 || p->user_sp > high - IRQ_FRAME_SIZE - 8)
-		return 0;
+	else
+	{
+		if (p->user_sp < low + 4 || p->user_sp > high)
+			return 0;
+	}
 
-	f = (uint32_t *)p->irq_sp;
-
-	// check mode
+	f	= (uint32_t *)p->irq_sp;
 	mode = f[0] & 0x1f;
+
 	if (p->mode == PROCESS_KERNEL && mode != 0x13)
 		return 0;
 	if (p->mode == PROCESS_USER && mode != 0x1f && mode != 0x10)
@@ -115,11 +119,13 @@ void		process_list(void)
 t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 {
 	t_process *p = ft_calloc(sizeof(t_process), 1);
-	if (!p) {
+	if (!p)
+	{
 		log("PROC: Could not allocate new process\n", LOG_ERROR);
 		return 0;
 	}
-	if (current_pid == (uint32_t)-1) {
+	if (current_pid == (uint32_t)-1)
+	{
 		log("PROC: Maximum PID reached, kill some processes!\n", LOG_ERROR);
 		kfree(p);
 		return 0;
@@ -129,10 +135,15 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 	p->pid = allocate_pid();
 	p->state = PROC_READY;
 	p->kernel_stack = alloc_pages(KERNEL_STACK_PAGES);
+	if (!p->kernel_stack)
+	{
+		kfree(p);
+		return 0;
+	}
+
 	if (kernel_mode)
 	{
 		p->mode = PROCESS_KERNEL;
-		p->user_sp = ((uint32_t)p->kernel_stack + KERNEL_STACK_PAGES * PAGE_SIZE) & ~7;
 	}
 	else
 	{
@@ -146,37 +157,38 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 		}
 		p->user_sp = ((uint32_t)p->user_stack + USER_STACK_PAGES * PAGE_SIZE) & ~7;
 	}
-	if (kernel_mode)
-		p->user_sp -= IRQ_FRAME_SIZE + 12;
-	
-	if (!p->kernel_stack)
-	{
-		if (p->user_stack)
-			kfree(p->user_stack);
-		kfree(p->kernel_stack);
-		kfree(p);
-		return 0;
-	}
 
-	// clear fds
-	for (int i=0; i<FS_MAX_FDS; i++)
+	for (int i = 0; i < FS_MAX_FDS; i++)
 		p->fds[i] = (fs_fd){0};
 
 	prepare_initial_stack(p, entry);
+
+	// for kernel processes, user_sp is the SVC sp — initialize it
+	// to irq_sp so the validator sees a consistent in-bounds value
+	// before the first context save
+	if (kernel_mode)
+		p->user_sp = p->irq_sp;
+
 	scheduler_add(p);
 	return p;
 }
 
-void process_exit_current(uint32_t status_code)
+void 	process_exit_current(uint32_t status_code)
 {
-	uint32_t cpsr = disable_interrupts();
-	t_process *exiting = current_process;
-	uint32_t surface_addr = 0;
+	uint32_t	cpsr;
+	t_process   *exiting;
+	uint32_t	surface_addr;
+	t_process   *next;
+
+	cpsr = disable_interrupts();
+	exiting = current_process;
 	if (!exiting)
 	{
 		restore_interrupts(cpsr);
 		return;
 	}
+
+	log("exiting proc: 0x%x\n", 1, exiting);
 	surface_addr = exiting->surface_addr;
 	if (surface_addr)
 	{
@@ -186,33 +198,37 @@ void process_exit_current(uint32_t status_code)
 
 	if (status_code >= (uint32_t)-6)
 	{
-		log("Crashed '%s' due to a %s\n", LOG_ERROR, current_process->proc_name, get_exception_name(-status_code));
+		log("Crashed '%s' due to a %s\n", LOG_ERROR, exiting->proc_name, get_exception_name(-status_code));
 		exiting->state = PROC_CRASHED;
 	}
 	else
 	{
-		log("Exited '%s' with status code: %lu\n", LOG_WARNING, current_process->proc_name, status_code);
+		log("Exited '%s' with status code: %lu\n", LOG_WARNING, exiting->proc_name, status_code);
 		exiting->state = PROC_ZOMBIE;
 	}
 
-	// close all opened fds
-	for (int i=0; i<FS_MAX_FDS; i++)
+	for (int i = 0; i < FS_MAX_FDS; i++)
 	{
 		if (exiting->fds[i].file.first_cluster)
 			fat32_close(&exiting->fds[i].file);
 	}
 
 	scheduler_remove(exiting);
-	if (!scheduled_processes)
+
+	next = scheduler_next();
+	if (!next)
 	{
 		current_process = 0;
-		log("No other process to resume\n", LOG_WARNING);
+		log("SCHEDULER: No other process to resume\n", LOG_WARNING);
+		restore_interrupts(cpsr & ~(1u << 7));
 		while (1)
 			__asm__ volatile("wfe");
 	}
 
-	exiting->time_slice = 0;
-	restore_interrupts(cpsr & ~(1u << 7));
-	while (1)
-		__asm__ volatile("wfe");
+	next->state = PROC_RUNNING;
+	next->time_slice = TIME_SLICE_MS;
+	current_process = next;
+
+	mmu_switch_current();
+	start_first_process(next);
 }

@@ -170,14 +170,11 @@ void	kernel_panic(ExceptionFrame *frame, uint32_t exception_id)
 		log("FAULT OPERATION:   %s\n", log_level | LOG_INDENT, ((dfsr & (1u << 11)) != 0)?"WRITE":"READ");
 	}
 	if (exception_id == 0)
-	{
 		log("INSTRUCTION:       0x%X\n", log_level | LOG_INDENT, *(uint32_t *)frame->pc);
-	}
 
 
 	uart_print("\n");
 
-	
 	if (!is_user)
 	{
 		#if DEBUG == 1

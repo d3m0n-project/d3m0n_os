@@ -85,6 +85,7 @@ _Static_assert(OFFSETOF(t_process, priority)		== 96,  "priority");
 _Static_assert(OFFSETOF(t_process, time_slice)		== 100, "time_slice");
 
 void					scheduler_start();
+void					schedule();
 void					timer_handler();
 t_process				*process_create(void (*entry)(void), char *name, int kernel_mode);
 

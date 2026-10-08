@@ -230,13 +230,13 @@ irq_handler:
     bl process_context_valid
     cmp r0, #0
     bne 2f
-	    ldr r0, =bad_process_context
-	    bl panic
-	    b .
+	ldr r0, =bad_process_context
+	bl panic
+	b .
 bad_irq_context:
-	    ldr r0, =bad_process_context
-	    bl panic
-	    b .
+	ldr r0, =bad_process_context
+	bl panic
+	b .
 
 2:
     ldr r1, =current_process

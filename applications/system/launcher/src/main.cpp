@@ -14,7 +14,7 @@ APP_INFO(
 #include "windows/main_window.hpp"
 
 
-extern "C" int	app_main(void)
+extern "C" int	main(void)
 {
 	printf("Launcher started\n");
 

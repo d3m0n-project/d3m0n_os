@@ -30,28 +30,33 @@ void	scheduler_add(t_process *p)
 
 t_process	*scheduler_next(void)
 {
+	t_process	*start;
 	t_process	*next;
 
 	if (!scheduled_processes)
 		return 0;
 
-	if (!current_process)
-		return scheduled_processes;
+	start = (current_process && current_process->next)?current_process->next:scheduled_processes;
+	next = start;
+	do {
+		if (next->state == PROC_READY)
+			return next;
+		next = next->next ? next->next : scheduled_processes;
+	} while (next != start);
 
-	next = current_process->next;
-	if (!next)
-		next = scheduled_processes;
-
-	return next;
+	return 0;
 }
 
 
 void	scheduler_remove(t_process *p)
 {
-	t_process	*curr;
+	t_process *curr;
 
 	if (!p || !scheduled_processes)
 		return;
+
+	if (p == current_process)
+		current_process = 0;
 
 	if (scheduled_processes == p)
 	{
@@ -76,7 +81,7 @@ void	scheduler_remove(t_process *p)
 	}
 }
 
-void	schedule(void)
+void schedule(void)
 {
 	t_process	*old;
 	t_process	*next;
@@ -127,6 +132,9 @@ void timer_handler(void)
 	watchdog_feed();
 	if (!current_process)
 		return;
+
+	//if (!process_context_valid(current_process))
+	//	log("proc '%s' has an invalid context\n", LOG_WARNING, current_process->proc_name);
 
 	check_stack_canary(current_process);
 	if (current_process->time_slice > 0)
