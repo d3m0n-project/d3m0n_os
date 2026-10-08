@@ -22,13 +22,16 @@ extern "C" int	main(void)
 
 	printf("starting lua\n");
 
-	//uint32_t pid = exec("/programs/bin/lua", 0);
-	//printf("pid: %lu\n", pid);
+	uint32_t pid = exec("/programs/bin/lua", 0);
+	printf("pid: %lu\n", pid);
 
 	//uint32_t code = kill(pid, 1234);
 	//printf("code: %lu\n", code);
 
-	printf("MySimple Finished...\n");
-	//exit(0);
+	//while (pstate(pid) != 4)
+	//	__asm__ volatile("nop");
+
+
+	printf("MySimple app Finished...\n");
 	return 0;
 }

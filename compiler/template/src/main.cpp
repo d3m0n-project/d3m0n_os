@@ -20,6 +20,6 @@ extern "C" int	main(void)
 	MainWindow	window;
 	window.draw();
 
-	printf("MySimple Finished...\n");
+	printf("MySimple app Finished...\n");
 	return 0;
 }

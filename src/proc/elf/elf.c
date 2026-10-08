@@ -291,55 +291,6 @@ static int load_image_bounds(char *file_buf, uint32_t file_size, elf_header_32 *
 	return (0);
 }
 
-static void	apply_relocations(char *image, char *file_buf, elf_header_32 *header, uint32_t min_vaddr, uint32_t max_vaddr)
-{
-	uint16_t sh_count = u16(header->SECTION_TABLE_ENTRY_COUNT);
-	uint16_t sh_ent_size = u16(header->SECTION_TABLE_ENTRY_SIZE);
-	uint32_t sh_off = u32(header->SECTIONS_TABLE_OFFSET);
-	int32_t  load_base = (int32_t)((uint32_t)image - min_vaddr);
-
-	log("ELF: applying relocations load_base=0x%x image=0x%x min_vaddr=0x%x\n", 0, (uint32_t)load_base, (uint32_t)image, min_vaddr);
-	
-	for (uint16_t i = 0; i < sh_count; i++)
-	{
-		elf_section_header_32 sh;
-		ft_memcpy(&sh, file_buf + sh_off + i * sh_ent_size, sizeof(sh));
-
-		uint32_t type = u32(sh.TYPE);
-		if (type != SHT_REL && type != SHT_RELA)
-			continue;
-
-		uint32_t rel_off  = u32(sh.OFFSET);
-		uint32_t rel_size = u32(sh.SIZE);
-		uint32_t ent_sz   = u32(sh.ENTSIZE);
-		if (ent_sz == 0)
-			continue;
-
-		uint32_t count = rel_size / ent_sz;
-		for (uint32_t j = 0; j < count; j++)
-		{
-			char	*entry	 = file_buf + rel_off + j * ent_sz;
-			uint32_t rel_vaddr = u32(entry + 0);
-			uint32_t info	  = u32(entry + 4);
-			uint8_t  rel_type  = (uint8_t)(info & 0xFF);
-
-			if (rel_type != R_ARM_ABS32 && rel_type != R_ARM_RELATIVE)
-				continue;
-
-			if (rel_vaddr < min_vaddr || rel_vaddr + 4 > max_vaddr)
-				continue;
-
-			uint32_t *patch = (uint32_t *)(image + (rel_vaddr - min_vaddr));
-			uint32_t  val   = *patch;
-
-			if (val < min_vaddr || val > max_vaddr)
-				continue;
-
-			*patch = (uint32_t)((int32_t)val + load_base);
-		}
-	}
-}
-
 static void load_pt_segments(char *image, char *file_buf, elf_header_32 *header, char is_msb, uint32_t min_vaddr)
 {
 	uint16_t				ph_count;
@@ -382,11 +333,41 @@ static char *proc_name_from_path(char *path)
 	return ((char *)"elf");
 }
 
+static void set_initial_user_args(t_process *proc, const char *path)
+{
+	uintptr_t stack_top;
+	uintptr_t argv_addr;
+	uintptr_t arg0_addr;
+	uint32_t *argv;
+	uint32_t *frame;
+	size_t path_len;
+
+	if (!proc || !proc->user_stack || !path)
+		return;
+	stack_top = (uintptr_t)proc->user_stack + USER_STACK_PAGES * PAGE_SIZE;
+	path_len = ft_strlen(path) + 1;
+	if (path_len + 2 * sizeof(uint32_t) > USER_STACK_PAGES * PAGE_SIZE)
+		return;
+	argv_addr = stack_top - 2 * sizeof(uint32_t);
+	arg0_addr = (argv_addr - path_len) & ~(uintptr_t)7;
+	argv = (uint32_t *)argv_addr;
+	argv[0] = (uint32_t)arg0_addr;
+	argv[1] = 0;
+	ft_memcpy((void *)arg0_addr, path, path_len);
+	proc->user_sp = (uint32_t)arg0_addr;
+
+	/* The initial exception frame restores r0-r12 from slots 1-13. */
+	frame = (uint32_t *)proc->irq_sp;
+	frame[1] = 1;
+	frame[2] = (uint32_t)argv_addr;
+}
+
 t_process	*elf_to_proc(char *elf_path)
 {
 	int				fd;
 	char			*file_buf;
 	char			*image;
+	char			*image_allocation;
 	char			is_msb;
 	uint32_t		file_size;
 	uint32_t		min_vaddr;
@@ -395,7 +376,7 @@ t_process	*elf_to_proc(char *elf_path)
 	void			(*entry)(void);
 	elf_header_32	header;
 	t_process		*proc;
-	t_section_info	*section_detail;
+	t_section_info	*section_detail = NULL;
 	uint32_t		interrupt_state;
 
 	fd = open(elf_path, O_READ);
@@ -453,75 +434,76 @@ t_process	*elf_to_proc(char *elf_path)
 		return (0);
 	}
 	size_t	image_size = (size_t)(max_vaddr - min_vaddr) + USER_HEAP_RESERVED + 8;
-	image = ft_calloc(image_size, 1);
-	if (!image)
+	/* Keep image and ELF virtual page offsets equal for page based mappings. */
+	image_allocation = ft_calloc(image_size + 0x1FFF, 1);
+	if (!image_allocation)
 	{
 		kfree(file_buf);
 		log("ELF: Could not allocate image memory\n", LOG_ERROR);
 		return (0);
 	}
+	image = (char *)((((uintptr_t)image_allocation + 0xFFF) & ~(uintptr_t)0xFFF)
+		+ (min_vaddr & 0xFFF));
 	load_pt_segments(image, file_buf, &header, is_msb, min_vaddr);
-	// ensure app validity
-	if (parse_app_info(&header, file_buf, file_size, &section_detail))
+	// detect elf type
+	bool is_app = parse_app_info(&header, file_buf, file_size, &section_detail);
+	(void)is_app;
+	if (section_detail != NULL)
 	{
-		kfree(file_buf);
-		kfree(image);
-		log("ELF: Invalid App, please recompile using d3c: '%s'\n", LOG_ERROR, elf_path);
-		return 0;
-	}
-	for (t_section_info *section = section_detail; section->size != 0; ++section)
-	{
-		if (!(section->flags & SHF_ALLOC))
-			continue;
-		if (section->start_offset < min_vaddr
-			|| (uint64_t)section->start_offset + section->size > max_vaddr)
+		for (t_section_info *section = section_detail; section->size != 0; ++section)
 		{
-			kfree(section_detail);
-			kfree(file_buf);
-			kfree(image);
-			log("ELF: Section is outside loaded image '%s'\n", LOG_ERROR, elf_path);
-			return 0;
+			if (!(section->flags & SHF_ALLOC))
+				continue;
+			if (section->start_offset < min_vaddr || (uint64_t)section->start_offset + section->size > max_vaddr)
+			{
+				kfree(section_detail);
+				kfree(file_buf);
+				kfree(image_allocation);
+				log("ELF: Section is outside loaded image '%s'\n", LOG_ERROR, elf_path);
+				return 0;
+			}
+			section->start_offset -= min_vaddr;
 		}
-		section->start_offset -= min_vaddr;
 	}
 
-	apply_relocations(image, file_buf, &header, min_vaddr, max_vaddr);
+	/* ET_EXEC is mapped at its linked virtual addresses, so its load bias is 0.
+	 * Rebasing these pointers by the physical backing address breaks user reads. */
 	log("ELF: min_vaddr=0x%x max_vaddr=0x%x image=0x%x\n", 0, min_vaddr, max_vaddr, (uint32_t)image);
 	entry_vaddr = u32(header.ENTRY_POINT);
 	if (entry_vaddr < min_vaddr || entry_vaddr >= max_vaddr)
 	{
 		kfree(file_buf);
-		kfree(image);
+		kfree(image_allocation);
 		log("ELF: Entry point outside loaded image\n", LOG_ERROR);
 		return (0);
 	}
-	entry = (void (*)(void))(uintptr_t)(image + (entry_vaddr - min_vaddr));
+	// For user processes, entry should be the virtual address, not the physical address
+	entry = (void (*)(void))(uintptr_t)entry_vaddr;
 	interrupt_state = disable_interrupts();
 	proc = process_create(entry, proc_name_from_path(elf_path), 0);
 	if (!proc)
 	{
 		restore_interrupts(interrupt_state);
 		kfree(file_buf);
-		kfree(image);
+		kfree(image_allocation);
 		return (0);
 	}
-	proc->address_space = address_space_create(image, image_size, section_detail);
-	if (!proc->address_space.l1 || mmu_map_user_range(&proc->address_space, proc->user_stack,
-			USER_STACK_PAGES * PAGE_SIZE, 1, 0)
-		|| mmu_map_kernel_range(&proc->address_space, proc->kernel_stack,
-			KERNEL_STACK_PAGES * PAGE_SIZE))
+	set_initial_user_args(proc, elf_path);
+	proc->address_space = address_space_create(image, image_size, min_vaddr, section_detail);
+	if (!proc->address_space.l1 || mmu_map_user_range(&proc->address_space, proc->user_stack, USER_STACK_PAGES * PAGE_SIZE, 1, 0) || mmu_map_kernel_range(&proc->address_space, proc->kernel_stack, KERNEL_STACK_PAGES * PAGE_SIZE))
 	{
 		scheduler_remove(proc);
 		restore_interrupts(interrupt_state);
 		kfree(section_detail);
 		kfree(file_buf);
-		kfree(image);
+		kfree(image_allocation);
 		log("ELF: Could not create process address space '%s'\n", LOG_ERROR, elf_path);
 		return 0;
 	}
-	proc->image_vaddr_base = (uint32_t)image;
+	proc->image_vaddr_base = min_vaddr;
 	proc->image_size = max_vaddr - min_vaddr;
-	proc->heap_start = (uint32_t)(((uint8_t *)image + (max_vaddr - min_vaddr)) + 7) & ~7U;
+	proc->image_backing = image;
+	proc->heap_start = (max_vaddr + 7) & ~7U;
 	proc->heap_end = proc->heap_start;
 	restore_interrupts(interrupt_state);
 	kfree(file_buf);

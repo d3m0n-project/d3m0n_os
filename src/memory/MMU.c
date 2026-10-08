@@ -2,6 +2,7 @@
 #include "memory/mmu.h"
 #include  "memory/memory.h"
 #include "proc/elf.h"
+#include "proc/proc.h"
 
 #define L1_ENTRIES				4096
 #define L1_ALIGNMENT			0x4000
@@ -198,19 +199,38 @@ static uint32_t	*ensure_l2(uint32_t *l1, uint32_t address)
 	return table;
 }
 
-static int	map_range(uint32_t *l1, uintptr_t start, size_t size, uint32_t ap, uint32_t xn)
+static int	map_range(uint32_t *l1, uintptr_t vaddr, uintptr_t paddr, size_t size, uint32_t ap, uint32_t xn)
 {
-	uintptr_t	end = start + size;
+	uintptr_t	vend = vaddr + size;
+	uintptr_t	pend = paddr + size;
 
-	if (end < start)
+	if (vend < vaddr || pend < paddr)
 		return 1;
-	for (uintptr_t address = start & ~((uintptr_t)MMU_PAGE_SIZE - 1); address < end; address += MMU_PAGE_SIZE)
+	for (uintptr_t va = vaddr & ~((uintptr_t)MMU_PAGE_SIZE - 1), pa = paddr & ~((uintptr_t)MMU_PAGE_SIZE - 1);
+	     va < vend;
+	     va += MMU_PAGE_SIZE, pa += MMU_PAGE_SIZE)
 	{
-		uint32_t *l2 = ensure_l2(l1, (uint32_t)address);
+		uint32_t *l2 = ensure_l2(l1, (uint32_t)va);
+		uint32_t index = L2_INDEX((uint32_t)va);
+		uint32_t old = l2 ? l2[index] : 0;
+		uint32_t old_ap = old & (L2_APX | (3u << L2_AP_SHIFT));
+		uint32_t default_ap = L2_AP_PRIV_RW_USER_NONE;
+		uint32_t merged_ap = ap;
+		uint32_t merged_xn = xn;
+
 		if (!l2)
 			return 1;
-		l2[L2_INDEX((uint32_t)address)] = small_page_descriptor(
-			(uint32_t)address, ap, 1, 1, xn);
+		/* Existing user mappings can share a page at section boundaries.
+		 * Keep the page writable/executable if any section needs that access. */
+		if ((old & 3u) && old_ap != default_ap)
+		{
+			if (old_ap == L2_AP_PRIV_RW_USER_RW || ap == L2_AP_PRIV_RW_USER_RW)
+				merged_ap = L2_AP_PRIV_RW_USER_RW;
+			else
+				merged_ap = L2_AP_PRIV_RO_USER_RO;
+			merged_xn = ((old & L2_XN) != 0) && (xn != 0);
+		}
+		l2[index] = small_page_descriptor((uint32_t)pa, merged_ap, 1, 1, merged_xn);
 	}
 	return 0;
 }
@@ -287,17 +307,22 @@ void	mmu_switch_table(uint32_t *table)
 int	mmu_map_user_range(t_address_space *space, void *address, size_t size, int writable, int executable)
 {
 	uint32_t ap = writable ? L2_AP_PRIV_RW_USER_RW : L2_AP_PRIV_RO_USER_RO;
+	uintptr_t addr = (uintptr_t)address;
 
 	if (!space || !space->l1)
 		return 1;
-	return map_range(space->l1, (uintptr_t)address, size, ap, executable ? 0 : 1);
+	// For user stacks, use identity mapping (virtual address = physical address)
+	return map_range(space->l1, addr, addr, size, ap, executable ? 0 : 1);
 }
 
 int	mmu_map_kernel_range(t_address_space *space, void *address, size_t size)
 {
+	uintptr_t addr = (uintptr_t)address;
+
 	if (!space || !space->l1)
 		return 1;
-	return map_range(space->l1, (uintptr_t)address, size, L2_AP_PRIV_RW_USER_NONE, 1);
+	// For kernel stacks, use identity mapping (virtual address = physical address)
+	return map_range(space->l1, addr, addr, size, L2_AP_PRIV_RW_USER_NONE, 1);
 }
 
 uint32_t	*mmu_kernel_table(void)
@@ -305,7 +330,7 @@ uint32_t	*mmu_kernel_table(void)
 	return mmu_table;
 }
 
-t_address_space	address_space_create(void *image_ptr, size_t size, t_section_info *sections)
+t_address_space	address_space_create(void *image_ptr, size_t size, uint32_t vaddr_base, t_section_info *sections)
 {
 	uint32_t	*proc_mmu_table = alloc_l1_table();
 	uintptr_t	image = (uintptr_t)image_ptr;
@@ -313,15 +338,55 @@ t_address_space	address_space_create(void *image_ptr, size_t size, t_section_inf
 		return (t_address_space){0};
 	for (unsigned i = 0; i < 528; ++i)
 		proc_mmu_table[i] = mmu_table[i];
-	if (map_range(proc_mmu_table, image, size, L2_AP_PRIV_RW_USER_RW, 1))
-		return (t_address_space){0};
-	for (t_section_info *s = sections; s->size != 0; ++s)
+	
+	// Check if we have any allocated sections
+	int has_allocated_sections = 0;
+	if (sections != NULL)
 	{
-		if (!(s->flags & SHF_ALLOC))
-			continue;
-		uint32_t ap = (s->flags & SHF_WRITE) ? L2_AP_PRIV_RW_USER_RW : L2_AP_PRIV_RO_USER_RO;
-		uint32_t xn = (s->flags & SHF_EXECINSTR) ? 0 : 1;
-		if (map_range(proc_mmu_table, image + s->start_offset, s->size, ap, xn))
+		for (t_section_info *s = sections; s->size != 0; ++s)
+		{
+			if (s->flags & SHF_ALLOC)
+			{
+				has_allocated_sections = 1;
+				log("MMU: found allocated section: %s at offset 0x%x size 0x%x flags 0x%x\n", 0, 
+					s->name ? s->name : "(null)", s->start_offset, s->size, s->flags);
+				break;
+			}
+		}
+	}
+	
+	if (has_allocated_sections)
+	{
+		// Map only the allocated sections with their proper permissions
+		for (t_section_info *s = sections; s->size != 0; ++s)
+		{
+			if (!(s->flags & SHF_ALLOC))
+				continue;
+			uint32_t ap = (s->flags & SHF_WRITE) ? L2_AP_PRIV_RW_USER_RW : L2_AP_PRIV_RO_USER_RO;
+			uint32_t xn = (s->flags & SHF_EXECINSTR) ? 0 : 1;
+			log("MMU: mapping section %s vaddr=0x%x paddr=0x%x size=0x%x ap=%d xn=%d\n", 0,
+				s->name ? s->name : "(null)", vaddr_base + s->start_offset, (uint32_t)(image + s->start_offset), 
+				s->size, ap, xn);
+			// Map section at (vaddr_base + start_offset) to (image + start_offset)
+			if (map_range(proc_mmu_table, (uintptr_t)(vaddr_base + s->start_offset), 
+			              image + s->start_offset, s->size, ap, xn))
+				return (t_address_space){0};
+		}
+		/* The ELF heap follows the image and has reserved physical backing. */
+		if (size > USER_HEAP_RESERVED + 8)
+		{
+			size_t image_span = size - USER_HEAP_RESERVED - 8;
+			if (map_range(proc_mmu_table, (uintptr_t)(vaddr_base + image_span),
+			              image + image_span, size - image_span,
+			              L2_AP_PRIV_RW_USER_RW, 1))
+				return (t_address_space){0};
+		}
+	}
+	else
+	{
+		// No allocated sections or no section info available, map the entire image with RW permissions
+		log("MMU: mapping entire image vaddr=0x%x paddr=0x%x size=0x%x\n", 0, vaddr_base, (uint32_t)image, size);
+		if (map_range(proc_mmu_table, (uintptr_t)vaddr_base, image, size, L2_AP_PRIV_RW_USER_RW, 1))
 			return (t_address_space){0};
 	}
 

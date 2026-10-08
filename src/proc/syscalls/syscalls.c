@@ -27,7 +27,7 @@ static void	*resolve_user_ptr(uint32_t user_ptr, uint32_t len)
     {
         if ((uint64_t)user_ptr + len > (uint64_t)proc->image_vaddr_base + proc->image_size)
             return 0;
-        return (void *)user_ptr; // already physical
+        return (uint8_t *)proc->image_backing + (user_ptr - proc->image_vaddr_base);
     }
 
     // user stack
@@ -48,7 +48,7 @@ static void	*resolve_user_ptr(uint32_t user_ptr, uint32_t len)
     {
         if ((uint64_t)user_ptr + len > proc->heap_end)
             return 0;
-        return (void *)user_ptr;
+        return (uint8_t *)proc->image_backing + (user_ptr - proc->image_vaddr_base);
     }
 
     log("resolve_user_ptr: ptr 0x%x not in any valid region\n", LOG_WARNING, user_ptr);
@@ -390,10 +390,12 @@ int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 	const char **argv = 0;
 	if (argv_ptr)
 		argv = (const char **)resolve_user_ptr(argv_ptr, sizeof(const char *));
-	if (!elf_path || !argv)
+	if (!elf_path)// || !argv)
 		return 0;
 
-	(void)argv; // TODO: argv for execve
+	
+	if (!argv)
+		log("SYS_EXEC: argv support will be implemented soon\n", LOG_WARNING | LOG_INDENT);
 	t_process *proc = elf_to_proc((char *)elf_path);
 	if (!proc)
 	{

@@ -1,6 +1,0 @@
-test_app
-obj/
-*.o
-*.d
-a.out
-test_app.map

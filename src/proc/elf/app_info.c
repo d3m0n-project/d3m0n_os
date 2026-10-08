@@ -121,6 +121,5 @@ int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size, t_s
 	}
 	if (appmeta_found && rodata_offset > 0)
 		return display_app_manifest(&metadata, buffer, rodata_addr, rodata_offset);
-	log("APP: ELF is not a valid d3m0n application, please recompile with d3c!\n", LOG_ERROR);
-	return 1;
+	return 1; // not an app but a simple executable
 }

@@ -1,8 +1,9 @@
 #include "sys.h"
 
-extern	int	main(void); // TODO: argv
+extern int main(int argc, char **argv);
 
-void	_start(void)
+void _start(int argc, char **argv)
 {
-	main();
+	// TODO: fix system crash if no exit is called
+	exit(main(argc, argv));
 }

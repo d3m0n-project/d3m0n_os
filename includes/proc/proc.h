@@ -62,6 +62,7 @@ typedef struct s_process
 	t_address_space	address_space;
 	uint32_t		image_vaddr_base;
 	uint32_t		image_size;
+	void			*image_backing;
 	uint32_t		surface_addr;
 	uint32_t		surface_size;
 	uint32_t		surface_width;
