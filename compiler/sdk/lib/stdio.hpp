@@ -51,24 +51,24 @@ extern "C" {
 
 	static inline int	feof(FILE *f) { return f->is_eof; }
 
-	size_t	fread(void *ptr, size_t size, size_t nmemb, FILE *f);
-	FILE	*fopen(const char *path, const char *mode);
-	int		fputs(const char *string, FILE *stream);
-	int		fputc(int character, FILE *stream);
-	FILE	*freopen(const char *path, const char *mode, FILE *f);
-	int		getc(FILE *f);
-	int		ferror(FILE *f);
-	int		fclose(FILE *f);
-	int		fflush(FILE *f);
-	size_t	fwrite(const char *buff, size_t size, size_t nmemb, FILE *f);
-	char	*fgets(char *string, int size, FILE *f);
-	FILE	*tmpfile();
-	char	*tmpnam();
-	int		ungetc(int c, FILE *f);
-	void	clearerr(FILE *f);
-	int		fseek(FILE *f, long offset, e_seek_directive whence);
-	long	ftell(FILE *f);
-	int		setvbuf(FILE *f, char *buf, int mode, size_t size);
+	size_t				fread(void *ptr, size_t size, size_t nmemb, FILE *f);
+	FILE				*fopen(const char *path, const char *mode);
+	int					fputs(const char *string, FILE *stream);
+	int					fputc(int character, FILE *stream);
+	FILE				*freopen(const char *path, const char *mode, FILE *f);
+	int					getc(FILE *f);
+	int					ferror(FILE *f);
+	int					fclose(FILE *f);
+	int					fflush(FILE *f);
+	size_t				fwrite(const char *buff, size_t size, size_t nmemb, FILE *f);
+	char				*fgets(char *string, int size, FILE *f);
+	FILE				*tmpfile();
+	char				*tmpnam();
+	int					ungetc(int c, FILE *f);
+	void				clearerr(FILE *f);
+	int					fseek(FILE *f, long offset, e_seek_directive whence);
+	long				ftell(FILE *f);
+	int					setvbuf(FILE *f, char *buf, int mode, size_t size);
 #ifdef __cplusplus
 }
 #endif

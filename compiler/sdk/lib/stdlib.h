@@ -95,6 +95,10 @@ extern "C" {
 		return 0;
 	}
 
+	#ifndef abs
+		#define abs(x)	((x < 0)?-x:x)
+	#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -3,7 +3,7 @@ APP_PATH    ?= ./
 PWD         = $(shell pwd)
 OUT         = $(APP_PATH)$(shell basename $(PWD)).d3m0n
 
-CXXFLAGS    = -Wall -Wextra -Werror
+CXXFLAGS    = -Wall -Wextra -Werror -g3
 
 SRC_DIR     = src
 OBJ_DIR     = obj
