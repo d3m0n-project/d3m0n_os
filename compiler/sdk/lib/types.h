@@ -8,6 +8,12 @@ using namespace std;
 
 extern "C" {
 #endif
+	#ifdef KERNEL_VERSION
+		extern unsigned int	log(const char *fmt, int type, ...);
+	#else
+		extern unsigned int	printf(const char *fmt, ...);
+	#endif
+
 	/** @brief Stores a two-dimensional integer coordinate. */
 	typedef struct s_point
 	{
@@ -77,6 +83,18 @@ extern "C" {
 
 	typedef long long				time_t;
 
+	static inline void	assert_fail(const char *condition)
+	{
+		#ifdef KERNEL_VERSION
+			log("ASSERT ERROR: %s\n", 4, condition); // warn
+		#else
+			printf("ASSERT ERROR: %s\n", condition);
+		#endif
+
+		while (1)
+			__asm__ volatile("wfe");
+	}
+
 #ifdef __cplusplus
 }
 /** @brief Carries an error message for application initialization failures. */
@@ -95,10 +113,10 @@ public:
 	}
 };
 
-#define assert(cond, ret)	if (!(cond)) {printf("ASSERT ERROR: %s\n", #cond); return ret;}
 #else
-#define NULL				((void *)0)
-#define assert(cond, ret)	if (!(cond)) {log("ASSERT ERROR: %s\n", LOG_WARNING, #cond); return ret;}
+	#define NULL				((void *)0)
 #endif
+
+#define assert(cond)			((cond)?(void)0:assert_fail(#cond))
 
 #endif

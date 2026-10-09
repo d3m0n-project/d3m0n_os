@@ -98,8 +98,8 @@ struct sxmltok_t
 static const char* str_findchr(const char* start, const char* end, int c)
 {
 	const char* it;
-	assert(start <= end, 0);
-	assert(0 <= c && c <= 127, 0);	/* CHAR_MAX - memchr implementation will only work when searching for ascii characters within a utf-8 string */
+	assert(start <= end);
+	assert(0 <= c && c <= 127);	/* CHAR_MAX - memchr implementation will only work when searching for ascii characters within a utf-8 string */
 	
 	it= (const char*)memchr(start, c, end - start);
 	return (it != NULL) ? it : end;
@@ -109,10 +109,10 @@ static const char* str_findstr(const char* start, const char* end, const char* n
 {
 	size_t	needlelen;
 	int		first;
-	assert(start <= end, 0);
+	assert(start <= end);
 	
 	needlelen= strlen(needle);
-	assert(0 < needlelen, 0);
+	assert(0 < needlelen);
 	first = (unsigned char)needle[0];
 
 	while (start + needlelen <= end)
@@ -133,7 +133,7 @@ static const char* str_findstr(const char* start, const char* end, const char* n
 static int str_startswith(const char* start, const char* end, const char* prefix)
 {
 	long nbytes;
-	assert(start <= end, 0);
+	assert(start <= end);
 	
 	nbytes= strlen(prefix);
 	if (end - start < nbytes)
@@ -172,7 +172,7 @@ static int NameChar(int c)
 static const char* str_ltrim(const char* start, const char* end)
 {
 	const char* it;
-	assert(start <= end, 0);
+	assert(start <= end);
 
 	for (it= start; it != end && ISSPACE (*it); it++)
 		;
@@ -184,7 +184,7 @@ static const char* str_ltrim(const char* start, const char* end)
 static const char* str_rtrim(const char* start, const char* end)
 {
 	const char* it, *prev;
-	assert(start <= end, 0);
+	assert(start <= end);
 
 	for (it= end; start != it; it= prev)
 	{
@@ -199,7 +199,7 @@ static const char* str_rtrim(const char* start, const char* end)
 static const char* str_find_notalnum(const char* start, const char* end)
 {
 	const char* it;	
-	assert(start <= end, 0);
+	assert(start <= end);
 
 	for (it= start; it != end && ISALNUM (*it); it++)
 		;
@@ -240,7 +240,7 @@ static int state_pushtoken(sxml_t* state, sxml_args_t* args, sxmltype_t type, co
 		case SXML_STARTTAG:	state->taglevel++;	break;
 
 		case SXML_ENDTAG:
-			assert(0 < state->taglevel, 0);
+			assert(0 < state->taglevel);
 			state->taglevel--;
 			break;
 
@@ -277,7 +277,7 @@ static sxmlerr_t parse_characters(sxml_t* state, sxml_args_t* args, const char* 
 {
 	const char* start= buffer_fromoffset(args, state->bufferpos);
 	const char* limit, *colon, *ampr= str_findchr(start, end, '&');
-	assert(end <= buffer_getend (args), (sxmlerr_t)0);
+	assert(end <= buffer_getend (args));
 
 	if (ampr != start)
 		state_pushtoken(state, args, SXML_CHARACTER, start, ampr);
@@ -315,7 +315,7 @@ static sxmlerr_t parse_attributes(sxml_t* state, sxml_args_t* args)
 	const char* name= str_ltrim(start, end);
 	
 	unsigned ntokens= state->ntokens;
-	assert(0 < ntokens, (sxmlerr_t)0);
+	assert(0 < ntokens);
 
 	while (name != end && ISALPHA(*name))
 	{
@@ -397,7 +397,7 @@ static sxmlerr_t parse_instruction(sxml_t* state, sxml_args_t* args)
 	const char* quest, *space;
 	const char* start= buffer_fromoffset(args, state->bufferpos);
 	const char* end= buffer_getend(args);
-	assert(TAG_MINSIZE <= end - start, (sxmlerr_t)0);
+	assert(TAG_MINSIZE <= end - start);
 
 	if (!str_startswith(start, end, STARTTAG))
 		return SXML_ERROR_XMLINVALID;
@@ -453,7 +453,7 @@ static sxmlerr_t parse_start(sxml_t* state, sxml_args_t* args)
 	const char* gt, *name, *space;
 	const char* start= buffer_fromoffset(args, state->bufferpos);
 	const char* end= buffer_getend(args);
-	assert(TAG_MINSIZE <= end - start, (sxmlerr_t)0);
+	assert(TAG_MINSIZE <= end - start);
 
 	if (!(start[0] == '<' && ISALPHA(start[1])))
 		return SXML_ERROR_XMLINVALID;
@@ -496,7 +496,7 @@ static sxmlerr_t parse_end(sxml_t* state, sxml_args_t* args)
 	const char* gt, *space;
 	const char* start= buffer_fromoffset(args, state->bufferpos);
 	const char* end= buffer_getend(args);
-	assert(TAG_MINSIZE <= end - start, (sxmlerr_t)0);
+	assert(TAG_MINSIZE <= end - start);
 
 	if (!(str_startswith(start, end, "</") && ISALPHA(start[2])))
 		return SXML_ERROR_XMLINVALID;

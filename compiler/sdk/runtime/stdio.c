@@ -150,7 +150,6 @@ FILE		*freopen(const char *path, const char *mode, FILE *f)
 
 int	getc(FILE *f)
 {
-	printf("getc\n");
 	int	c;
 	if (f->ungot > 0)
 	{
@@ -210,11 +209,10 @@ size_t	fwrite(const char *buff, size_t size, size_t nmemb, FILE *f)
 
 char	*fgets(char *string, int size, FILE *f)
 {
-	printf("fgets\n");
 	if (f->ungot > 0)
 		return (char *)&f->ungot;
 	(void)size;
-	//fread(string, size, 1, f); // TODO: check this
+	fread(string, 1, size, f); // TODO: check this
 	return string;
 }
 
