@@ -11,6 +11,8 @@
 	#define KERNEL_VERSION_NAME (const char *)"outset"
 #endif
 
+#define DEBUG_OBJDUMP_NB_LINES		10
+
 #ifndef DEBUG
 	#define DEBUG 0
 #endif

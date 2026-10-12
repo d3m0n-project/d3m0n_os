@@ -5,7 +5,7 @@
 #include "protocol/uart.h"
 #include "display/color.h"
 
-typedef enum
+typedef enum : int
 {
 	LOG_NONE=0,
 	LOG_SUCCESS=1,
@@ -17,6 +17,6 @@ typedef enum
 
 extern const char *UART_COLORS[17];
 
-void	log(const char *fmt, e_logtype type, ...);
+void	log(const char *fmt, int type, ...);
 
 #endif

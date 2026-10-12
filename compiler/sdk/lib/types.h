@@ -9,7 +9,7 @@ using namespace std;
 extern "C" {
 #endif
 	#ifdef KERNEL_VERSION
-		extern unsigned int	log(const char *fmt, int type, ...);
+		extern void			log(const char *fmt, int type, ...);
 	#else
 		extern unsigned int	printf(const char *fmt, ...);
 	#endif
@@ -78,8 +78,6 @@ extern "C" {
 	#define va_arg(ap,type)			__builtin_va_arg(ap,type)
 	#define va_copy(dst,src)		__builtin_va_copy(dst,src)
 	#define va_end(ap)				__builtin_va_end(ap)
-
-	//#define abs(a)					((a < 0)?-a:a)
 
 	typedef long long				time_t;
 

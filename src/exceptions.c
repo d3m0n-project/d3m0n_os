@@ -184,6 +184,9 @@ void	kernel_panic(ExceptionFrame *frame, uint32_t exception_id)
 	}
 	else
 	{
+		#if DEBUG == 1
+		log("DEBUG TIPS: Use this command to view where the crash append in your program:\n	>> arm-none-eabi-objdump -d rootfs/programs/bin/my_program --start-address=0x%X --stop-address=0x%X\n", LOG_INFO, frame->pc - (0x4 * DEBUG_OBJDUMP_NB_LINES), frame->pc + (0x4 * DEBUG_OBJDUMP_NB_LINES));
+		#endif
 		// kill crashed process
 		process_exit_current((uint32_t)(-1 * exception_id));
 	}

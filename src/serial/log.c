@@ -9,7 +9,7 @@ int		ft_vprintf(const char *format, va_list *args);
 
 static t_mutex	log_mutex = MUTEX_INITIALIZER;
 
-void	log(const char *fmt, e_logtype type, ...)
+void	log(const char *fmt, int type, ...)
 {
 	va_list args;
 	va_start(args, type);

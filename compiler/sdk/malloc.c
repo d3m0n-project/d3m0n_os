@@ -41,6 +41,21 @@ static void	coalesce_blocks(t_malloc_block *block)
 }
 
 t_heap_header	*g_heap;
+static uint32_t	g_malloc_trace_count;
+
+static void	trace_malloc(uint32_t size, void *ptr)
+{
+	static const char	hex[] = "0123456789ABCDEF";
+	char				buffer[] = "malloc size=0x00000000 ptr=0x00000000\n";
+	uint32_t			i;
+
+	for (i = 0; i < 8; ++i)
+	{
+		buffer[14 + i] = hex[(size >> (28 - i * 4)) & 0xF];
+		buffer[29 + i] = hex[((uint32_t)(uintptr_t)ptr >> (28 - i * 4)) & 0xF];
+	}
+	write(1, buffer, sizeof(buffer) - 1);
+}
 
 void	*malloc(size_t size)
 {
@@ -107,6 +122,11 @@ void	*malloc(size_t size)
 	}
 
 	best->free = 0;
+	if (g_malloc_trace_count < 16)
+	{
+		trace_malloc(aligned, (char *)best + sizeof(t_malloc_block));
+		g_malloc_trace_count++;
+	}
 	return ((char *)best + sizeof(t_malloc_block));
 }
 
