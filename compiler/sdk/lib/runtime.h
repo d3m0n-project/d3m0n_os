@@ -22,7 +22,9 @@ extern "C" {
 
 	extern int			_setjmp(jmp_buf env);
 	extern int			_longjmp(jmp_buf env, int value);
-	static inline int	setjmp(jmp_buf env) { return _setjmp(env); }
+	/* setjmp must capture its caller's stack frame directly. A C wrapper's
+	 * own saved LR is overwritten after the wrapper returns. */
+	#define setjmp(env) _setjmp(env)
 	static inline int	longjmp(jmp_buf env, int val) { return _longjmp(env, val); }
 
 	void				abort(void);

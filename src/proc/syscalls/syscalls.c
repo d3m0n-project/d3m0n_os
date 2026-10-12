@@ -72,13 +72,33 @@ int	sys_exit(uint32_t mode, uint32_t a1, uint32_t a2, uint32_t a3)
 int	sys_read(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 {
 	char	*buffer;
+	uint32_t i;
+	int		c;
 
 	(void)a3;
+	if (fd == 0)
+	{
+		if (count == 0)
+			return 0;
+		buffer = (char *)resolve_user_ptr(user_buf, count);
+		if (!buffer)
+			return -1;
+		for (i = 0; i < count; ++i)
+		{
+			c = uart_getc();
+			if (c == '\r')
+				c = '\n';
+			buffer[i] = (char)c;
+			if (c == '\n')
+				return (int)(i + 1);
+		}
+		return (int)i;
+	}
 	buffer = (char *)resolve_user_ptr(user_buf, count);
 	if (!buffer)
 		return (-1);
 
-	if (fd < 3)  // TODO: stdin, stdout and stderr
+	if (fd < 3)
 		return -1;
 
 	return (int)pread((int)fd - 3, buffer, count, current_process->fds);
@@ -386,17 +406,24 @@ int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 {
 	(void)a2;
 	(void)a3;
+
+	if (!path_ptr)
+		return 0;
+
 	const char *elf_path = (const char *)resolve_user_ptr(path_ptr, sizeof(const char));
 	const char **argv = 0;
 	if (argv_ptr)
 		argv = (const char **)resolve_user_ptr(argv_ptr, sizeof(const char *));
-	if (!elf_path)// || !argv)
+	if (!elf_path)
 		return 0;
 
-	
-	if (!argv)
-		log("SYS_EXEC: argv support will be implemented soon\n", LOG_WARNING | LOG_INDENT);
-	t_process *proc = elf_to_proc((char *)elf_path);
+	int argv_len = 0;
+	while (argv && argv[argv_len])
+		argv_len++;
+
+	log("argc: %i\n", 0, argv_len);
+
+	t_process *proc = elf_to_proc((char *)elf_path, (const char *)argv, argv_len);
 	if (!proc)
 	{
 		log("\033[31mSYS_EXEC\033[0m: Could not start process  '%s'...\n", LOG_WARNING | LOG_INDENT, elf_path);

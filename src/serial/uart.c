@@ -11,6 +11,7 @@
 
 #define UART0_DR			(*(volatile unsigned int*)(UART0_BASE + 0x00))
 #define UART0_FR			(*(volatile unsigned int*)(UART0_BASE + 0x18))
+#define UART0_FR_RXFE		(1u << 4)
 
 
 void	uart_putc(char c)
@@ -22,6 +23,13 @@ void	uart_putc(char c)
 		continue;
 
 	UART0_DR = c;
+}
+
+int	uart_getc(void)
+{
+	while (UART0_FR & UART0_FR_RXFE)
+		continue;
+	return (int)(UART0_DR & 0xFFu);
 }
 
 void	uart_print_n(const char* str, size_t n)

@@ -333,36 +333,90 @@ static char *proc_name_from_path(char *path)
 	return ((char *)"elf");
 }
 
-static void set_initial_user_args(t_process *proc, const char *path)
+static void set_initial_user_args(t_process *proc, const char *path, const char *original_argv, int original_argv_len)
 {
-	uintptr_t stack_top;
-	uintptr_t argv_addr;
-	uintptr_t arg0_addr;
-	uint32_t *argv;
-	uint32_t *frame;
-	size_t path_len;
+	uintptr_t	stack_top;
+	uintptr_t	sp;
+	uintptr_t	argv_addr;
+	uintptr_t	arg_addr;
+	uint32_t	*argv;
+	uint32_t	*frame;
+	size_t		path_len;
+	size_t		argc;
+	size_t		args_size;
+	size_t		i;
+	size_t		cursor;
 
-	if (!proc || !proc->user_stack || !path)
+	if (!proc || !proc->user_stack || !path || original_argv_len < 0)
 		return;
+
 	stack_top = (uintptr_t)proc->user_stack + USER_STACK_PAGES * PAGE_SIZE;
 	path_len = ft_strlen(path) + 1;
-	if (path_len + 2 * sizeof(uint32_t) > USER_STACK_PAGES * PAGE_SIZE)
-		return;
-	argv_addr = stack_top - 2 * sizeof(uint32_t);
-	arg0_addr = (argv_addr - path_len) & ~(uintptr_t)7;
-	argv = (uint32_t *)argv_addr;
-	argv[0] = (uint32_t)arg0_addr;
-	argv[1] = 0;
-	ft_memcpy((void *)arg0_addr, path, path_len);
-	proc->user_sp = (uint32_t)arg0_addr;
 
-	/* The initial exception frame restores r0-r12 from slots 1-13. */
+	argc = 1;
+	if (original_argv && original_argv_len > 0)
+	{
+		argc = 1;
+		i = 0;
+		while (i < (size_t)original_argv_len)
+		{
+			size_t len = ft_strlen(original_argv + i);
+			if (len >= (size_t)original_argv_len - i)
+				return; // missing NULL terminator
+			i += len + 1;
+			argc++;
+		}
+	}
+
+
+	args_size = path_len;
+	if (original_argv && original_argv_len > 0)
+		args_size += (size_t)original_argv_len;
+
+	if (args_size + (argc + 2) * sizeof(uint32_t) > USER_STACK_PAGES * PAGE_SIZE)
+		return;
+
+	sp = stack_top;
+
+	// reserve space for argc argv ptr and NULL
+	sp -= (argc + 2) * sizeof(uint32_t);
+	sp &= ~(uintptr_t)7;
+	argv_addr = sp + sizeof(uint32_t);
+	argv = (uint32_t *)argv_addr;
+
+	// cpy
+	arg_addr = argv_addr - path_len;
+	arg_addr &= ~(uintptr_t)7;
+
+	ft_memcpy((void *)arg_addr, path, path_len);
+	argv[0] = (uint32_t)arg_addr;
+
+	cursor = arg_addr;
+	size_t arg_idx = 1;
+	if (original_argv && original_argv_len > 0)
+	{
+		i = 0;
+		while (i < (size_t)original_argv_len)
+		{
+			size_t len = ft_strlen(original_argv + i) + 1;
+
+			cursor = (cursor - len) & ~(uintptr_t)3;
+			ft_memcpy((void *)cursor, original_argv + i, len);
+			argv[arg_idx++] = (uint32_t)cursor;
+			i += len;
+		}
+	}
+
+	argv[argc] = 0;
+
 	frame = (uint32_t *)proc->irq_sp;
-	frame[1] = 1;
+	frame[1] = (uint32_t)argc;
 	frame[2] = (uint32_t)argv_addr;
+
+	proc->user_sp = (uint32_t)sp;
 }
 
-t_process	*elf_to_proc(char *elf_path)
+t_process	*elf_to_proc(char *elf_path, const char *argv, int argv_len)
 {
 	int				fd;
 	char			*file_buf;
@@ -434,7 +488,6 @@ t_process	*elf_to_proc(char *elf_path)
 		return (0);
 	}
 	size_t	image_size = (size_t)(max_vaddr - min_vaddr) + USER_HEAP_RESERVED + 8;
-	/* Keep image and ELF virtual page offsets equal for page based mappings. */
 	image_allocation = ft_calloc(image_size + 0x1FFF, 1);
 	if (!image_allocation)
 	{
@@ -442,8 +495,7 @@ t_process	*elf_to_proc(char *elf_path)
 		log("ELF: Could not allocate image memory\n", LOG_ERROR);
 		return (0);
 	}
-	image = (char *)((((uintptr_t)image_allocation + 0xFFF) & ~(uintptr_t)0xFFF)
-		+ (min_vaddr & 0xFFF));
+	image = (char *)((((uintptr_t)image_allocation + 0xFFF) & ~(uintptr_t)0xFFF) + (min_vaddr & 0xFFF));
 	load_pt_segments(image, file_buf, &header, is_msb, min_vaddr);
 	// detect elf type
 	bool is_app = parse_app_info(&header, file_buf, file_size, &section_detail);
@@ -466,8 +518,6 @@ t_process	*elf_to_proc(char *elf_path)
 		}
 	}
 
-	/* ET_EXEC is mapped at its linked virtual addresses, so its load bias is 0.
-	 * Rebasing these pointers by the physical backing address breaks user reads. */
 	log("ELF: min_vaddr=0x%x max_vaddr=0x%x image=0x%x\n", 0, min_vaddr, max_vaddr, (uint32_t)image);
 	entry_vaddr = u32(header.ENTRY_POINT);
 	if (entry_vaddr < min_vaddr || entry_vaddr >= max_vaddr)
@@ -477,7 +527,7 @@ t_process	*elf_to_proc(char *elf_path)
 		log("ELF: Entry point outside loaded image\n", LOG_ERROR);
 		return (0);
 	}
-	// For user processes, entry should be the virtual address, not the physical address
+	// for user processes, entry should be the virtual address, not the physical address
 	entry = (void (*)(void))(uintptr_t)entry_vaddr;
 	interrupt_state = disable_interrupts();
 	proc = process_create(entry, proc_name_from_path(elf_path), 0);
@@ -488,7 +538,7 @@ t_process	*elf_to_proc(char *elf_path)
 		kfree(image_allocation);
 		return (0);
 	}
-	set_initial_user_args(proc, elf_path);
+	set_initial_user_args(proc, elf_path, argv, argv_len);
 	proc->address_space = address_space_create(image, image_size, min_vaddr, section_detail);
 	if (!proc->address_space.l1 || mmu_map_user_range(&proc->address_space, proc->user_stack, USER_STACK_PAGES * PAGE_SIZE, 1, 0) || mmu_map_kernel_range(&proc->address_space, proc->kernel_stack, KERNEL_STACK_PAGES * PAGE_SIZE))
 	{
@@ -507,7 +557,7 @@ t_process	*elf_to_proc(char *elf_path)
 	proc->heap_end = proc->heap_start;
 	restore_interrupts(interrupt_state);
 	kfree(file_buf);
-	return (proc);
+	return proc;
 }
 
 int	section_is_executable(const t_section_info *section)

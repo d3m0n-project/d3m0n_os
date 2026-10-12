@@ -8,7 +8,8 @@ CPP_FILES	= $(shell find . -name '*.cpp')
 ASM_FILES	= $(shell find . -name '*.s')
 O_FILES		= $(C_FILES:%.c=$(OBJ_DIR)/%.o) $(CPP_FILES:%.cpp=$(OBJ_DIR)/%.o) $(ASM_FILES:%.s=$(OBJ_DIR)/asm/%.o)
 DEBUG		= 0
-C_FLAGS		= -Wall -Wextra -Werror -DVERSION="$(VERSION)" -DDEBUG=$(DEBUG) -Ilib
+DEBUG_ALLOC = 0
+C_FLAGS		= -Wall -Wextra -Werror -DVERSION="$(VERSION)" -DDEBUG=$(DEBUG) -DDEBUG_ALLOC=$(DEBUG_ALLOC) -Ilib
 
 # only used in copy_headers
 COPY_DEST	?= "/tmp"

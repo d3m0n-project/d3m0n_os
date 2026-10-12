@@ -5,7 +5,25 @@ uint32_t	current_pid = 0;
 
 void	*alloc_pages(size_t pages)
 {
-	return ft_calloc(pages, PAGE_SIZE);
+	size_t	bytes;
+	void	*raw;
+	uintptr_t aligned;
+
+	if (pages == 0 || pages > (((size_t)-1) - PAGE_SIZE - sizeof(void *)) / PAGE_SIZE)
+		return 0;
+	bytes = pages * PAGE_SIZE;
+	raw = ft_calloc(1, bytes + PAGE_SIZE + sizeof(void *));
+	if (!raw)
+		return 0;
+	aligned = ((uintptr_t)raw + PAGE_SIZE - 1) & ~((uintptr_t)PAGE_SIZE - 1);
+	*(void **)(aligned + bytes) = raw;
+	return (void *)aligned;
+}
+
+static void	free_pages(void *address, size_t pages)
+{
+	if (address && pages)
+		kfree(*(void **)((uintptr_t)address + pages * PAGE_SIZE));
 }
 
 void	check_stack_canary(t_process *p)
@@ -151,7 +169,7 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 		p->user_stack = alloc_pages(USER_STACK_PAGES);
 		if (!p->user_stack)
 		{
-			kfree(p->kernel_stack);
+			free_pages(p->kernel_stack, KERNEL_STACK_PAGES);
 			kfree(p);
 			return 0;
 		}

@@ -61,7 +61,8 @@ SECTIONS
 
     . = ALIGN(16);
 
-    . += 0x4000;
+    /* One page each for FIQ, IRQ, abort, undefined, and SVC stacks. */
+    . += 0x5000;
 
     stack_top = .;
     __irq_stack_top = stack_top - 0x1000;

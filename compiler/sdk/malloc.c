@@ -5,6 +5,11 @@
 #define MALLOC_MIN_SIZE		16
 #define MALLOC_MAGIC		0x4D414C4C
 
+#ifndef DEBUG_ALLOC
+#define DEBUG_ALLOC	0
+#endif
+
+
 typedef struct s_malloc_block
 {
 	uint32_t				size;
@@ -45,6 +50,7 @@ static uint32_t	g_malloc_trace_count;
 
 static void	trace_malloc(uint32_t size, void *ptr)
 {
+	#if DEBUG_ALLOC == 1
 	static const char	hex[] = "0123456789ABCDEF";
 	char				buffer[] = "malloc size=0x00000000 ptr=0x00000000\n";
 	uint32_t			i;
@@ -55,6 +61,10 @@ static void	trace_malloc(uint32_t size, void *ptr)
 		buffer[29 + i] = hex[((uint32_t)(uintptr_t)ptr >> (28 - i * 4)) & 0xF];
 	}
 	write(1, buffer, sizeof(buffer) - 1);
+	#else
+	(void)size;
+	(void)ptr;
+	#endif
 }
 
 void	*malloc(size_t size)
@@ -75,12 +85,22 @@ void	*malloc(size_t size)
 		if ((int)g_heap == -1)
 		{
 			g_heap = 0;
+			if (g_malloc_trace_count < 128)
+			{
+				trace_malloc(aligned, 0);
+				g_malloc_trace_count++;
+			}
 			return (0);
 		}
 
 		if (sbrk(USER_HEAP_RESERVED) == (int)-1)
 		{
 			g_heap = 0;
+			if (g_malloc_trace_count < 128)
+			{
+				trace_malloc(aligned, 0);
+				g_malloc_trace_count++;
+			}
 			return (0);
 		}
 
@@ -107,7 +127,14 @@ void	*malloc(size_t size)
 	}
 
 	if (!best)
+	{
+		if (g_malloc_trace_count < 128)
+		{
+			trace_malloc(aligned, 0);
+			g_malloc_trace_count++;
+		}
 		return (0);
+	}
 
 	if (best->size >= aligned + sizeof(t_malloc_block) + MALLOC_MIN_SIZE)
 	{
@@ -122,7 +149,7 @@ void	*malloc(size_t size)
 	}
 
 	best->free = 0;
-	if (g_malloc_trace_count < 16)
+	if (g_malloc_trace_count < 128)
 	{
 		trace_malloc(aligned, (char *)best + sizeof(t_malloc_block));
 		g_malloc_trace_count++;

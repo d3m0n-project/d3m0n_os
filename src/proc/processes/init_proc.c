@@ -77,15 +77,13 @@ void	init_proc(void)
 		asm volatile("wfe");
 
 	char *launcher_path = config->launcher;
-	if (!elf_to_proc(launcher_path))
-		panic("Failed to start homepage desktop, check config\n");
+	if (!elf_to_proc(launcher_path, (const char *){0}, 0))
+		panic("Failed to start homepage desktop app: check config file\n");
 	
 	process_list();
 	log("Finished init_proc, entering standby mode...\n", LOG_INFO);
 	while (1)
-	{
 		usleep(1000000);
-	}
 	
 	// load desktop app manifest
 	//char	*manifest = get_app_path_from_package(config->launcher, PACKAGE_MANIFEST);

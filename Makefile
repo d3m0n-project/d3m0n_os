@@ -180,10 +180,11 @@ endif
 disk: applications
 	@printf "$(COLOR_INFO)[IMG] Creating disk image...$(R)\n"
 	@dd if=/dev/zero of=$(DISK) bs=1M count=$(IMG_SIZE)
-	@$(SUDO_EXECUTABLE) parted $(DISK) mklabel msdos
-	@$(SUDO_EXECUTABLE) parted $(DISK) mkpart primary fat32 1MiB 100%
-	@mkfs.vfat -F 32 -n D3M0NFS $(DISK)
-	@mcopy -i $(DISK) -s rootfs/* ::
+	@$(SUDO_EXECUTABLE) parted $(DISK) --script mklabel msdos
+	@$(SUDO_EXECUTABLE) parted $(DISK) --script mkpart primary fat32 1MiB 65MiB
+	@$(SUDO_EXECUTABLE) parted $(DISK) --script mkpart primary fat32 65MiB 100%
+	@mkfs.vfat -F 32 -n D3M0NFS --offset=133120 -h 133120 $(DISK)
+	@mcopy -i $(DISK)@@68157440 -s rootfs/* ::
 	@echo "Apps Structure:"
 	@tree rootfs/apps/
 #	@rm -rf rootfs/apps/ > /dev/null
@@ -229,7 +230,8 @@ export: all applications
 	@printf "$(COLOR_SUCCESS)[OK] Bootable SD image created: $(EXPORT_IMG_NAME)$(R)\n"
 
 
-run: all
+run:
+	@$(MAKE) DEBUG=1 all
 	@printf "$(COLOR_WARN)[QEMU] Starting emulator...$(R)\n"
 	@test -f "$(DISK)" || (printf "$(COLOR_ERROR)Disk image not found: $(DISK)$(R)\n" && exit 1)
 	@$(QEMU) $(QEMU_OPTIONS)

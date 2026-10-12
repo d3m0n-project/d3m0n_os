@@ -239,13 +239,24 @@ static int	map_range(uint32_t *l1, uintptr_t vaddr, uintptr_t paddr, size_t size
 
 		if (!l2)
 			return 1;
-		if ((old & 3u) && old_ap != default_ap)
+		if (old & 3u)
 		{
-			if (old_ap == L2_AP_PRIV_RW_USER_RW || ap == L2_AP_PRIV_RW_USER_RW)
+			/* A page shared with a kernel-only range must stay kernel-only. */
+			if (old_ap == default_ap || ap == default_ap)
+			{
+				merged_ap = default_ap;
+				merged_xn = 1;
+			}
+			else if (old_ap == L2_AP_PRIV_RW_USER_RW || ap == L2_AP_PRIV_RW_USER_RW)
+			{
 				merged_ap = L2_AP_PRIV_RW_USER_RW;
+				merged_xn = ((old & L2_XN) != 0) && (xn != 0);
+			}
 			else
+			{
 				merged_ap = L2_AP_PRIV_RO_USER_RO;
-			merged_xn = ((old & L2_XN) != 0) && (xn != 0);
+				merged_xn = ((old & L2_XN) != 0) && (xn != 0);
+			}
 		}
 		l2[index] = small_page_descriptor((uint32_t)pa, merged_ap, 1, 1, merged_xn);
 	}

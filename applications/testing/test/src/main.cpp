@@ -13,7 +13,7 @@ APP_INFO(
 #include "windows/main_window.hpp"
 
 
-extern "C" int	main(void)
+extern "C" int	main(int argc, char **argv)
 {
 	printf("MySimple app started\n");
 
@@ -22,7 +22,10 @@ extern "C" int	main(void)
 
 	printf("starting lua\n");
 
-	uint32_t pid = exec("/programs/bin/lua", 0);
+	printf("ARGC: %i, ARGV[0]: %s\n", argc, argv[0]);
+
+	const char *argv2[] = {"/programs/lua/testes/sort.lua", 0};
+	uint32_t pid = exec("/programs/bin/lua", argv2);
 	printf("pid: %lu\n", pid);
 
 	//uint32_t code = kill(pid, 1234);

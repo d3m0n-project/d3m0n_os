@@ -11,7 +11,9 @@
 
 
 swi_handler:
+	cpsid i
 	ldr sp, =stack_top
+	sub sp, sp, #0x4000
 	stmfd sp!, {r0-r12, lr}
 
 	mov r0, sp
