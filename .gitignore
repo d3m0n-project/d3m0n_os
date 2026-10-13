@@ -12,3 +12,5 @@ compiler/d3c
 compiler/obj
 __pycache__/
 .d3m0n
+*.o
+a.out

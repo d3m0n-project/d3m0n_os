@@ -118,7 +118,7 @@ typedef struct s_section_info
 
 /* functions */
 int					parse_elf_headers(int fd);
-struct s_process	*elf_to_proc(char *elf_path, const char *argv, int argv_len);
+struct s_process	*elf_to_proc(char *elf_path, const char **argv, int argv_len);
 void				print_elf_file_report(elf_header_32 *header);
 void				parse_elf_to_lsb(elf_header_32 *header, elf_program_header_32 *prog_h, elf_section_header_32 *section_h);
 

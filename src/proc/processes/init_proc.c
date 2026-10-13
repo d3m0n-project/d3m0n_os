@@ -77,7 +77,7 @@ void	init_proc(void)
 		asm volatile("wfe");
 
 	char *launcher_path = config->launcher;
-	if (!elf_to_proc(launcher_path, (const char *){0}, 0))
+	if (!elf_to_proc(launcher_path, (const char **){0}, 0))
 		panic("Failed to start homepage desktop app: check config file\n");
 	
 	process_list();

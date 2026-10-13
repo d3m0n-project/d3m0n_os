@@ -423,7 +423,7 @@ int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 
 	log("argc: %i\n", 0, argv_len);
 
-	t_process *proc = elf_to_proc((char *)elf_path, (const char *)argv, argv_len);
+	t_process *proc = elf_to_proc((char *)elf_path, (const char **)argv, argv_len);
 	if (!proc)
 	{
 		log("\033[31mSYS_EXEC\033[0m: Could not start process  '%s'...\n", LOG_WARNING | LOG_INDENT, elf_path);

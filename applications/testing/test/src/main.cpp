@@ -17,15 +17,15 @@ extern "C" int	main(int argc, char **argv)
 {
 	printf("MySimple app started\n");
 
-	MainWindow	window;
-	window.draw();
+	//MainWindow	window;
+	//window.draw();
 
 	printf("starting lua\n");
 
 	printf("ARGC: %i, ARGV[0]: %s\n", argc, argv[0]);
 
 	const char *argv2[] = {"/programs/lua/testes/sort.lua", 0};
-	uint32_t pid = exec("/programs/bin/lua", argv2);
+	uint32_t pid = exec("/programs/bin/test_program", argv2);
 	printf("pid: %lu\n", pid);
 
 	//uint32_t code = kill(pid, 1234);

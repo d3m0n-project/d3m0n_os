@@ -244,8 +244,7 @@ static int load_image_bounds(char *file_buf, uint32_t file_size, elf_header_32 *
 	ph_entry_size = u16(header->PROGRAM_HEADER_ENTRY_SIZE);
 	ph_offset = u32(header->PROGRAM_HEADER_OFFSET);
 
-	log("ELF: file_size=%lu ph_count=%u ph_entry_size=%u ph_offset=%lu\n", 0,
-		file_size, ph_count, ph_entry_size, ph_offset);
+	log("ELF: file_size=%lu ph_count=%u ph_entry_size=%u ph_offset=%lu\n", 0, file_size, ph_count, ph_entry_size, ph_offset);
 
 	if (ph_count == 0 || ph_entry_size < sizeof(elf_program_header_32))
 		return (1);
@@ -333,19 +332,19 @@ static char *proc_name_from_path(char *path)
 	return ((char *)"elf");
 }
 
-static void set_initial_user_args(t_process *proc, const char *path, const char *original_argv, int original_argv_len)
+static void	set_initial_user_args(t_process *proc, const char *path, const char **original_argv, int original_argv_len)
 {
 	uintptr_t	stack_top;
 	uintptr_t	sp;
 	uintptr_t	argv_addr;
 	uintptr_t	arg_addr;
+	uintptr_t	cursor;
 	uint32_t	*argv;
 	uint32_t	*frame;
 	size_t		path_len;
 	size_t		argc;
 	size_t		args_size;
 	size_t		i;
-	size_t		cursor;
 
 	if (!proc || !proc->user_stack || !path || original_argv_len < 0)
 		return;
@@ -353,70 +352,57 @@ static void set_initial_user_args(t_process *proc, const char *path, const char 
 	stack_top = (uintptr_t)proc->user_stack + USER_STACK_PAGES * PAGE_SIZE;
 	path_len = ft_strlen(path) + 1;
 
-	argc = 1;
-	if (original_argv && original_argv_len > 0)
-	{
-		argc = 1;
-		i = 0;
-		while (i < (size_t)original_argv_len)
-		{
-			size_t len = ft_strlen(original_argv + i);
-			if (len >= (size_t)original_argv_len - i)
-				return; // missing NULL terminator
-			i += len + 1;
-			argc++;
-		}
-	}
-
-
+	argc = 1 + (size_t)original_argv_len;
 	args_size = path_len;
-	if (original_argv && original_argv_len > 0)
-		args_size += (size_t)original_argv_len;
+	for (i = 0; i < (size_t)original_argv_len; i++)
+		args_size += ft_strlen(original_argv[i]) + 1;
 
 	if (args_size + (argc + 2) * sizeof(uint32_t) > USER_STACK_PAGES * PAGE_SIZE)
 		return;
 
 	sp = stack_top;
-
-	// reserve space for argc argv ptr and NULL
 	sp -= (argc + 2) * sizeof(uint32_t);
 	sp &= ~(uintptr_t)7;
 	argv_addr = sp + sizeof(uint32_t);
 	argv = (uint32_t *)argv_addr;
 
-	// cpy
-	arg_addr = argv_addr - path_len;
-	arg_addr &= ~(uintptr_t)7;
-
+	// program path
+	arg_addr = (argv_addr - path_len) & ~(uintptr_t)3;
 	ft_memcpy((void *)arg_addr, path, path_len);
 	argv[0] = (uint32_t)arg_addr;
 
+	// other args
 	cursor = arg_addr;
-	size_t arg_idx = 1;
-	if (original_argv && original_argv_len > 0)
+	for (i = 0; i < (size_t)original_argv_len; i++)
 	{
-		i = 0;
-		while (i < (size_t)original_argv_len)
-		{
-			size_t len = ft_strlen(original_argv + i) + 1;
-
-			cursor = (cursor - len) & ~(uintptr_t)3;
-			ft_memcpy((void *)cursor, original_argv + i, len);
-			argv[arg_idx++] = (uint32_t)cursor;
-			i += len;
-		}
+		size_t len = ft_strlen(original_argv[i]) + 1;
+		cursor = (cursor - len) & ~(uintptr_t)3;
+		ft_memcpy((void *)cursor, original_argv[i], len);
+		argv[1 + i] = (uint32_t)cursor;
 	}
 
-	argv[argc] = 0;
+	argv[argc] = 0; // null terminate
 
 	frame = (uint32_t *)proc->irq_sp;
 	frame[1] = (uint32_t)argc;
 	frame[2] = (uint32_t)argv_addr;
 
 	proc->user_sp = (uint32_t)sp;
+
+
+	// display memory at stack top
+    stack_top = (uint32_t)(proc->user_stack + USER_STACK_PAGES * PAGE_SIZE);
+    log("%s: %s\n", 0, proc->proc_name, path);
+    for (uint32_t i=stack_top; i>stack_top - 0x100; i--)
+    {
+        log("%c ", 0, ft_isprint(*(char *)i)?*(char *)i:'.', *(char *)i);
+        if ((stack_top - i)%16 == 15)
+            log("\n", 0);
+    }
+    log("\n", 0);
 }
 
-t_process	*elf_to_proc(char *elf_path, const char *argv, int argv_len)
+t_process	*elf_to_proc(char *elf_path, const char **argv, int argv_len)
 {
 	int				fd;
 	char			*file_buf;
@@ -538,6 +524,7 @@ t_process	*elf_to_proc(char *elf_path, const char *argv, int argv_len)
 		kfree(image_allocation);
 		return (0);
 	}
+	// setup stack
 	set_initial_user_args(proc, elf_path, argv, argv_len);
 	proc->address_space = address_space_create(image, image_size, min_vaddr, section_detail);
 	if (!proc->address_space.l1 || mmu_map_user_range(&proc->address_space, proc->user_stack, USER_STACK_PAGES * PAGE_SIZE, 1, 0) || mmu_map_kernel_range(&proc->address_space, proc->kernel_stack, KERNEL_STACK_PAGES * PAGE_SIZE))
