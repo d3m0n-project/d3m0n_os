@@ -19,8 +19,8 @@
 #define USER_STACK_PAGES			32
 #define PAGE_SIZE					4096
 #define STACK_CANARY				0xDEADC0DE
-#define IRQ_FRAME_WORDS			15
-#define IRQ_FRAME_SIZE			(IRQ_FRAME_WORDS * sizeof(uint32_t))
+#define IRQ_FRAME_WORDS				15
+#define IRQ_FRAME_SIZE				(IRQ_FRAME_WORDS * sizeof(uint32_t))
 
 #define TIME_SLICE_MS				5 // delta t before each scheduler call
 
@@ -108,6 +108,6 @@ void					process_dump_regs(t_process *p);
 
 // security
 void					check_stack_canary(t_process *p);
-int					process_context_valid(t_process *p);
+int						process_context_valid(t_process *p);
 
 #endif

@@ -13,26 +13,21 @@ APP_INFO(
 #include "windows/main_window.hpp"
 
 
-extern "C" int	main(int argc, char **argv)
+extern "C" int	main(void)
 {
 	printf("MySimple app started\n");
 
-	//MainWindow	window;
-	//window.draw();
+	MainWindow	window;
+	window.draw();
 
 	printf("starting lua\n");
 
-	printf("ARGC: %i, ARGV[0]: %s\n", argc, argv[0]);
+	const char *argv2[] = {0};//"/programs/lua/testes/sort.lua", 0};
+	uint32_t pid = exec("/programs/bin/lua", argv2);
+	printf("lua pid: %lu\n", pid);
 
-	const char *argv2[] = {"/programs/lua/testes/sort.lua", 0};
-	uint32_t pid = exec("/programs/bin/test_program", argv2);
-	printf("pid: %lu\n", pid);
-
-	//uint32_t code = kill(pid, 1234);
-	//printf("code: %lu\n", code);
-
-	//while (pstate(pid) != 4)
-	//	__asm__ volatile("nop");
+	while (pstate(pid) != PROC_ZOMBIE) // wait for process killing
+		__asm__ volatile("nop"); // do nothing
 
 
 	printf("MySimple app Finished...\n");

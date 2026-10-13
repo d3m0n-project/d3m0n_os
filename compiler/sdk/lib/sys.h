@@ -62,6 +62,13 @@ extern "C" {
 		SYS_PSTATE
 	}   e_syscall_indexes;
 
+	#define PROC_READY			0
+	#define PROC_RUNNING		1
+	#define PROC_BLOCKED		2
+	#define PROC_SLEEPING		3
+	#define PROC_ZOMBIE			4
+	#define PROC_CRASHED		5
+
 	static inline void __attribute__((noreturn)) exit(int ret_code)
 	{
 		syscall(SYS_EXIT, (uint32_t)ret_code, 0, 0, 0);

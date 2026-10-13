@@ -384,22 +384,13 @@ static void	set_initial_user_args(t_process *proc, const char *path, const char 
 	argv[argc] = 0; // null terminate
 
 	frame = (uint32_t *)proc->irq_sp;
+	sp = cursor - sizeof(uint32_t); // one word gap
+	sp &= ~(uintptr_t)7;
+	
+	argv_addr = (uintptr_t)argv;
 	frame[1] = (uint32_t)argc;
 	frame[2] = (uint32_t)argv_addr;
-
 	proc->user_sp = (uint32_t)sp;
-
-
-	// display memory at stack top
-    stack_top = (uint32_t)(proc->user_stack + USER_STACK_PAGES * PAGE_SIZE);
-    log("%s: %s\n", 0, proc->proc_name, path);
-    for (uint32_t i=stack_top; i>stack_top - 0x100; i--)
-    {
-        log("%c ", 0, ft_isprint(*(char *)i)?*(char *)i:'.', *(char *)i);
-        if ((stack_top - i)%16 == 15)
-            log("\n", 0);
-    }
-    log("\n", 0);
 }
 
 t_process	*elf_to_proc(char *elf_path, const char **argv, int argv_len)

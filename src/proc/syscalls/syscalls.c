@@ -51,7 +51,7 @@ static void	*resolve_user_ptr(uint32_t user_ptr, uint32_t len)
         return (uint8_t *)proc->image_backing + (user_ptr - proc->image_vaddr_base);
     }
 
-    log("resolve_user_ptr: ptr 0x%x not in any valid region\n", LOG_WARNING, user_ptr);
+    log("resolve_user_ptr: ptr %p not in any valid region\n", LOG_WARNING, user_ptr);
     return 0;
 }
 
@@ -411,25 +411,33 @@ int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 		return 0;
 
 	const char *elf_path = (const char *)resolve_user_ptr(path_ptr, sizeof(const char));
-	const char **argv = 0;
+	const char **raw_argv = 0;
 	if (argv_ptr)
-		argv = (const char **)resolve_user_ptr(argv_ptr, sizeof(const char *));
+		raw_argv = (const char **)resolve_user_ptr(argv_ptr, sizeof(const char **));
 	if (!elf_path)
 		return 0;
 
 	int argv_len = 0;
-	while (argv && argv[argv_len])
+	while (raw_argv && raw_argv[argv_len])
 		argv_len++;
 
-	log("argc: %i\n", 0, argv_len);
+	// allocate a copy of raw_argv but with resolved user ptr
+	const char **resolved_argv = ft_calloc(argv_len + 1, sizeof(char *));
+	if (!resolved_argv)
+	{
+		log("SYS_EXEC: Could not allocate memory for resolved argv pointers\n", LOG_ERROR);
+		return 0;
+	}
+	for (int i=0; i<argv_len; i++)
+		resolved_argv[i] = (const char *)resolve_user_ptr((uint32_t)(raw_argv[i]), sizeof(const char *));
 
-	t_process *proc = elf_to_proc((char *)elf_path, (const char **)argv, argv_len);
+	t_process *proc = elf_to_proc((char *)elf_path, resolved_argv, argv_len);
 	if (!proc)
 	{
 		log("\033[31mSYS_EXEC\033[0m: Could not start process  '%s'...\n", LOG_WARNING | LOG_INDENT, elf_path);
 		return 0;
 	}
-	log("proc: %s, pid: %lu\n", 1, proc->proc_name, proc->pid);
+	kfree(resolved_argv);
 	return proc->pid;
 }
 
@@ -440,23 +448,39 @@ int	sys_kill(uint32_t pid, uint32_t code, uint32_t a2, uint32_t a3)
 	(void)a3;
 	t_process *proc = scheduled_processes;
 	if (current_process->pid == pid)
-		return 0;
+	{
+		process_exit_current(code);
+		return 1;
+	}
 	while (proc)
 	{
 		if (proc->pid == pid)
 		{
-			if (proc->mode == PROCESS_USER || current_process->mode == PROCESS_KERNEL)
+			if (proc->mode == PROCESS_KERNEL && current_process->mode != PROCESS_KERNEL)
+    			return 0;
+
+			t_process *exiting = proc;
+
+			if (exiting->surface_addr)
 			{
-				t_process *backup = current_process;
-				current_process = proc;
-				process_exit_current(code);
-				current_process = backup;
-				return 1;
+				exiting->surface_addr = 0;
+				kfree((void *)(uintptr_t)exiting->surface_addr);
 			}
-			else
-				return 0;
+			// cleanup opened files
+			for (int i = 0; i < FS_MAX_FDS; i++)
+			{
+				if (exiting->fds[i].file.first_cluster)
+					fat32_close(&exiting->fds[i].file);
+			}
+
+			log("Killed '%s' with status code: %i\n", LOG_WARNING, exiting->proc_name, code);
+
+			exiting->state = PROC_ZOMBIE;
+			scheduler_remove(exiting);
+			
+			return 1;
 		}
-		proc = scheduled_processes->next;
+		proc = proc->next;
 	}
 	return 0;
 }
@@ -471,7 +495,7 @@ int	sys_pstate(uint32_t pid, uint32_t a1, uint32_t a2, uint32_t a3)
 	{
 		if (proc->pid == pid)
 			return (uint32_t)proc->state;
-		proc = scheduled_processes->next;
+		proc = proc->next;
 	}
 	return PROC_ZOMBIE;
 }

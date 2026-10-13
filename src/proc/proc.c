@@ -206,7 +206,6 @@ void 	process_exit_current(uint32_t status_code)
 		return;
 	}
 
-	log("exiting proc: %s\n", 1, exiting->proc_name);
 	surface_addr = exiting->surface_addr;
 	if (surface_addr)
 	{
@@ -232,7 +231,6 @@ void 	process_exit_current(uint32_t status_code)
 	}
 
 	scheduler_remove(exiting);
-
 	next = scheduler_next();
 	if (!next)
 	{
