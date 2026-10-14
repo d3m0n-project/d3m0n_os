@@ -374,8 +374,7 @@ t_address_space	address_space_create(void *image_ptr, size_t size, uint32_t vadd
 			if (s->flags & SHF_ALLOC)
 			{
 				has_allocated_sections = 1;
-				log("MMU: found allocated section: %s at offset 0x%x size 0x%x flags 0x%x\n", 0, 
-					s->name ? s->name : "(null)", s->start_offset, s->size, s->flags);
+				//log("MMU: found allocated section: %s at offset 0x%x size 0x%x flags 0x%x\n", 0, s->name ? s->name : "(null)", s->start_offset, s->size, s->flags);
 				break;
 			}
 		}
@@ -389,9 +388,9 @@ t_address_space	address_space_create(void *image_ptr, size_t size, uint32_t vadd
 				continue;
 			uint32_t ap = (s->flags & SHF_WRITE) ? L2_AP_PRIV_RW_USER_RW : L2_AP_PRIV_RO_USER_RO;
 			uint32_t xn = (s->flags & SHF_EXECINSTR) ? 0 : 1;
-			log("MMU: mapping section %s vaddr=0x%x paddr=0x%x size=0x%x ap=%d xn=%d\n", 0,
-				s->name ? s->name : "(null)", vaddr_base + s->start_offset, (uint32_t)(image + s->start_offset), 
-				s->size, ap, xn);
+			//log("MMU: mapping section %s vaddr=0x%x paddr=0x%x size=0x%x ap=%d xn=%d\n", 0,
+			//	s->name ? s->name : "(null)", vaddr_base + s->start_offset, (uint32_t)(image + s->start_offset), 
+			//	s->size, ap, xn);
 			if (map_range(proc_mmu_table, (uintptr_t)(vaddr_base + s->start_offset), image + s->start_offset, s->size, ap, xn))
 				return (t_address_space){0};
 		}
@@ -405,7 +404,7 @@ t_address_space	address_space_create(void *image_ptr, size_t size, uint32_t vadd
 	else
 	{
 		// no allocated sections or no section info available, map the entire image with RW permissions
-		log("MMU: mapping entire image vaddr=0x%x paddr=0x%x size=0x%x\n", 0, vaddr_base, (uint32_t)image, size);
+		//log("MMU: mapping entire image vaddr=0x%x paddr=0x%x size=0x%x\n", 0, vaddr_base, (uint32_t)image, size);
 		if (map_range(proc_mmu_table, (uintptr_t)vaddr_base, image, size, L2_AP_PRIV_RW_USER_RW, 1))
 			return (t_address_space){0};
 	}

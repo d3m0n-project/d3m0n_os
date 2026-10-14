@@ -48,6 +48,7 @@ extern "C" {
 	typedef long long int			intmax_t;
 	
 
+	#define UINT32_MAX				((uint32_t)-1)
 	#define SIZE_MAX				((size_t)-1)
 	#define UINT_MAX				0xFFFFFFFFU
 	#define INT_MAX					2147483647

@@ -22,7 +22,7 @@ extern "C" int	main(void)
 
 	printf("starting lua\n");
 
-	const char *argv2[] = {0};//"/programs/lua/testes/sort.lua", 0};
+	const char *argv2[] = {"/programs/test/test.lua", 0};
 	uint32_t pid = exec("/programs/bin/lua", argv2);
 	printf("lua pid: %lu\n", pid);
 

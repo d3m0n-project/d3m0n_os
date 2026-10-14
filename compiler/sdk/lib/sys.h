@@ -63,8 +63,10 @@ extern "C" {
 		SYS_PSTATE,
 
 
-		TOTAL_SYSCALL_COUNT // do not remove me
+		TMP_TOTAL_SYSCALL_COUNT // do not remove me
 	}   e_syscall_indexes;
+
+	#define TOTAL_SYSCALL_COUNT	(TMP_TOTAL_SYSCALL_COUNT + 1)
 
 	#define PROC_READY			0
 	#define PROC_RUNNING		1
