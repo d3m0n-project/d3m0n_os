@@ -15,21 +15,15 @@ APP_INFO(
 
 extern "C" int	main(void)
 {
-	printf("MySimple app started\n");
-
 	MainWindow	window;
 	window.draw();
 
-	printf("starting lua\n");
-
-	const char *argv2[] = {"/programs/test/test.lua", 0};
+	const char *argv2[] = {"/test.lua", 0};
 	uint32_t pid = exec("/programs/bin/lua", argv2);
-	printf("lua pid: %lu\n", pid);
+	//printf("lua pid: %lu\n", pid);
 
 	while (pstate(pid) != PROC_ZOMBIE) // wait for process killing
 		__asm__ volatile("nop"); // do nothing
 
-
-	printf("MySimple app Finished...\n");
 	return 0;
 }

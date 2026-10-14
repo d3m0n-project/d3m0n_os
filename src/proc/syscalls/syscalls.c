@@ -18,46 +18,46 @@ extern void			draw_topbar(void);
 
 static void	*resolve_user_ptr(uint32_t user_ptr, uint32_t len)
 {
-    t_process *proc = current_process;
-    if (!proc)
-        return (void *)user_ptr;
+	t_process *proc = current_process;
+	if (!proc)
+		return (void *)user_ptr;
 
-    // ELF image
-    if (proc->image_size > 0 && user_ptr >= proc->image_vaddr_base && user_ptr < proc->image_vaddr_base + proc->image_size)
-    {
-        if ((uint64_t)user_ptr + len > (uint64_t)proc->image_vaddr_base + proc->image_size)
-            return 0;
-        return (uint8_t *)proc->image_backing + (user_ptr - proc->image_vaddr_base);
-    }
+	// ELF image
+	if (proc->image_size > 0 && user_ptr >= proc->image_vaddr_base && user_ptr < proc->image_vaddr_base + proc->image_size)
+	{
+		if ((uint64_t)user_ptr + len > (uint64_t)proc->image_vaddr_base + proc->image_size)
+			return 0;
+		return (uint8_t *)proc->image_backing + (user_ptr - proc->image_vaddr_base);
+	}
 
-    // user stack
-    if (proc->user_stack)
-    {
-        uint32_t lo = (uint32_t)proc->user_stack;
-        uint32_t hi = lo + USER_STACK_PAGES * PAGE_SIZE;
-        if (user_ptr >= lo && user_ptr < hi)
-        {
-            if ((uint64_t)user_ptr + len > hi)
-                return 0;
-            return (void *)user_ptr;
-        }
-    }
+	// user stack
+	if (proc->user_stack)
+	{
+		uint32_t lo = (uint32_t)proc->user_stack;
+		uint32_t hi = lo + USER_STACK_PAGES * PAGE_SIZE;
+		if (user_ptr >= lo && user_ptr < hi)
+		{
+			if ((uint64_t)user_ptr + len > hi)
+				return 0;
+			return (void *)user_ptr;
+		}
+	}
 
-    // user heap
-    if (proc->heap_start && user_ptr >= proc->heap_start && user_ptr < proc->heap_end)
-    {
-        if ((uint64_t)user_ptr + len > proc->heap_end)
-            return 0;
-        return (uint8_t *)proc->image_backing + (user_ptr - proc->image_vaddr_base);
-    }
+	// user heap
+	if (proc->heap_start && user_ptr >= proc->heap_start && user_ptr < proc->heap_end)
+	{
+		if ((uint64_t)user_ptr + len > proc->heap_end)
+			return 0;
+		return (uint8_t *)proc->image_backing + (user_ptr - proc->image_vaddr_base);
+	}
 
-    log("resolve_user_ptr: ptr %p not in any valid region\n", LOG_WARNING, user_ptr);
-    return 0;
+	log("resolve_user_ptr: ptr %p not in any valid region\n", LOG_WARNING, user_ptr);
+	return 0;
 }
 
 static const char *resolve_user_string_ptr(uint32_t user_ptr)
 {
-    return (const char *)resolve_user_ptr(user_ptr, 1);
+	return (const char *)resolve_user_ptr(user_ptr, 1);
 }
 
 int	sys_exit(uint32_t mode, uint32_t a1, uint32_t a2, uint32_t a3)
@@ -330,10 +330,13 @@ int	sys_surface_create(uint32_t width, uint32_t height, uint32_t surface_ptr, ui
 	uint32_t size;
 	uint8_t *address;
 
+	// TODO: allow non fullscreen surfaces
 	if (!proc || !surface || !pitch || width != SCREEN_WIDTH || height != SCREEN_HEIGHT - TOPBAR_HEIGHT || proc->surface_addr != 0)
 		return -1;
+
 	if (height > (uint32_t)-1 / width / sizeof(uint32_t))
 		return -1;
+
 	size = width * height * sizeof(uint32_t);
 	address = (uint8_t *)kmalloc(size);
 	if (!address)
@@ -457,7 +460,7 @@ int	sys_kill(uint32_t pid, uint32_t code, uint32_t a2, uint32_t a3)
 		if (proc->pid == pid)
 		{
 			if (proc->mode == PROCESS_KERNEL && current_process->mode != PROCESS_KERNEL)
-    			return 0;
+				return 0;
 
 			t_process *exiting = proc;
 

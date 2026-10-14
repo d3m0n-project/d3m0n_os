@@ -1,1 +1,0 @@
-print("d3gl init called")

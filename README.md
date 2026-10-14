@@ -22,7 +22,7 @@ d3m0n OS is the official firmware for the d3m0n devices.
 >   1. [Project Overview](#overview)
 >   2. [Installation](#Installation)<br>
 >   3. [Configuration](Configure_your_OS)<br>
->   4. [Application API](documentation/api.md)<br>
+>   4. [SDK Documentation](https://d3m0n.4re5.com/d3m0n_os/)<br>
 >   5. [About](#about)<br> 
 >   6. [Links](#links)<br>
 
@@ -50,53 +50,47 @@ Just download lastest [release](https://github.com/d3m0n-project/d3m0n_os/releas
 ### Build kernel image
 To execute this code and build your d3m0n os image (.img), you must execute these commands **line by line** in your linux machine terminal.
 ```bash
-git clone https://github.com/d3m0n-project/d3m0n_os.git --recurse-submodules
+git clone --recurse-submodules https://github.com/d3m0n-project/d3m0n_os.git
 cd d3m0n_os
 make export
 ```
 
+
 ## Configure your OS
 
-In order to build your image file (.img) you need first to install [d3m0n os](ps://github.com/d3m0n-project/d3m0n_os#installations) on your linux machine.
-Then use the command `sudo ./d3m0n.sh` and type **2** and hit enter.
-This will display a configuration window in your terminal.
+Multiple `Makefile variables` can be overrided in order to allow users to add debug informations, remove features or just change details of their exported firmware.
+| Variable name         | Default Value | Description                                      | Usage example                            |
+| --------------------- | ------------- | ------------------------------------------------ | ---------------------------------------- |
+| DEBUG	                | 0             | If set, switch from real mode to simulation mode | `make run DEBUG=1`                       |
+| DEBUG_OUTLINE       	| 0             | Draws the control outlines                       | `make run DEBUG=1 DEBUG_OUTLINE=1`       |
+| USE_ADMIN	            | 1             | Use admin rights to compile or make disk         | `make disk USE_ADMIN=0`                  |
+| SHOW_IMAGE_STATUS	    | 0             | Display the loaded images sizes, format...       | `make run DEBUG=1 SHOW_IMAGE_STATUS=1`   |
+| TRACK_MEMORY_USAGE	  | 0             | Display the amount of allocated heap bytes       | `make run DEBUG=1 TRACK_MEMORY_USAGE=1`  |
+| USE_GDB	              | 0             | Launch in debug mode with gdb server             | `make run DEBUG=1 USE_GDB=1`             |
+| BUILD_APPS	          | 1             | Build and loads applications at disk creation    | `make run DEBUG=1 BUILD_APPS=0`          |
 
 
 # d3m0n api
 
 d3m0n operating system contains preinstalled softwares.
-[more information here](./rootfs/usr/share/applications)
+[more information here](./applications/)
 
-[example .d3m0n app](https://github.com/d3m0n-project/d3m0n_os/tree/main/rootfs/usr/share/d3m0n/apps/test_app/source)
-## App handler
-Phone loads apps from temp directory created when startup, 
+[example .d3m0n app](./compiler/template/)
 
-then reads manifest file located at `/usr/share/d3m0n/temp/APP_TOKEN/app`
-- Gets app name, description, category, icon (format "key: value")
-then reads main layout file (.layout) in `/usr/share/d3m0n/temp/APP_TOKEN/layouts/main.layout` (example [here](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/apps/test_app/source/layouts/main.layout))
-
-then execute code (.src) in `/usr/share/d3m0n/temp/APP_TOKEN/src/main.src` (example [here](https://github.com/d3m0n-project/d3m0n_os/blob/main/rootfs/usr/share/d3m0n/apps/test_app/source/src/main.src))
-
-
-## wallpapers
+## Wallpapers
 Wallpapers are located in `/rootfs/wallpapers`. To change it, edit `wallpaper` in d3m0n [config file](#config-file)
-![image](https://github.com/d3m0n-project/d3m0n_os/assets/71982379/5aa3aa21-c8a5-446c-9387-479a81cb5e0a)
 
-## config file
-	wallpaper: default
-	theme: default_dark
-### description
-`wallpaper` is your wallpaper name (without .bmp)
 
-`theme` is your theme folder name that contains all icons and sounds
+## Config file
+A configuration file is provided at the disk root [/config](./rootfs/config).
+It can be used to modify your system style and behaviour like icons, themes, desktop app...
 
 
 ## Links
 
 &nbsp; | Official Links
 ---------|-------
-Website | [d3m0n-project.github.io](https://d3m0n-project.github.io/)
-Forum | [forum.ducksploit.com](https://forum.ducksploit.com/)
+Website | [d3m0n.4re5.com](https://d3m0n.4re5.com/)
 Discord | [discord.com](https://discord.com/invite/Rfb5ajz7cM)
 Subreddit | [r/d3m0nproject](https://www.reddit.com/r/d3m0nproject/)
 
