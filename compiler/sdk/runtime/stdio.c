@@ -216,14 +216,14 @@ char	*fgets(char *string, int size, FILE *f)
 	return string;
 }
 
-FILE	*tmpfile()
+FILE	*tmpfile(void)
 {
 	FILE	*ret = (FILE *)malloc(sizeof(FILE));
 	if (!ret)
 		return 0;
 	
 	char tmp_name[] = "/tmp/[........].tmp"; // TODO: retry if error
-	rng_bytes(tmp_name + 6, 10);
+	rng_bytes((unsigned char *)tmp_name + 6, 10);
 	for (int i=6; i<10 + 6; i++)
 		tmp_name[i] = 'A' + (tmp_name[i] % 57);
 	ret->fd = open(tmp_name, O_CREATE | O_WRITE);
@@ -235,24 +235,31 @@ FILE	*tmpfile()
 	return ret;
 }
 
-char	*tmpnam()
+char	*tmpnam(char *buffer)
 {
-	char	*ret = (char *)calloc(L_tmpnam, sizeof(char));
-	if (!ret)
+	static const char charset[] =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		"0123456789";
+	static char internal_buffer[L_tmpnam];
+
+	enum { SUFFIX_LEN = 4 };
+	const size_t name_len = L_tmpnam - SUFFIX_LEN - 1;
+
+	char *ret = buffer ? buffer : internal_buffer;
+	unsigned char *bytes = malloc(name_len);
+
+	if (!bytes)
 		return 0;
-	
-	// TODO: retry if error
-	rng_bytes(ret, L_tmpnam - 5); // - '.tmp'
-	int i = 0;
-	for (; i<L_tmpnam - 5; i++)
-		ret[i] = 'A' + (ret[i] % 57);
 
-	ret[i++] = '.';
-	ret[i++] = 't';
-	ret[i++] = 'm';
-	ret[i++] = 'p';
-	ret[i++] = '\0';
+	// TODO: retry if the generated name already exists
+	rng_bytes(bytes, name_len);
 
+	for (size_t i = 0; i < name_len; i++)
+		ret[i] = charset[bytes[i] % (sizeof(charset) - 1)];
+
+	free(bytes);
+	memcpy(ret + name_len, ".tmp", SUFFIX_LEN + 1);
 	return ret;
 }
 
@@ -331,7 +338,6 @@ int	setvbuf(FILE *f, char *buf, int mode, size_t size)
 	f->buf_len = 0;
 	f->buf_owned = 0;
 	f->buf_mode = mode;
-
 	if (mode == _IONBF)
 		return 0;
 

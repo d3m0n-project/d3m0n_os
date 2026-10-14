@@ -8,22 +8,20 @@ extern "C" {
 #endif
 	typedef struct
 	{
-		unsigned int r4;
-		unsigned int r5;
-		unsigned int r6;
-		unsigned int r7;
-		unsigned int r8;
-		unsigned int r9;
-		unsigned int r10;
-		unsigned int r11;
-		unsigned int sp;
-		unsigned int lr;
+		unsigned int	r4;
+		unsigned int	r5;
+		unsigned int	r6;
+		unsigned int	r7;
+		unsigned int	r8;
+		unsigned int	r9;
+		unsigned int	r10;
+		unsigned int	r11;
+		unsigned int	sp;
+		unsigned int	lr;
 	}	jmp_buf[1];
 
 	extern int			_setjmp(jmp_buf env);
 	extern int			_longjmp(jmp_buf env, int value);
-	/* setjmp must capture its caller's stack frame directly. A C wrapper's
-	 * own saved LR is overwritten after the wrapper returns. */
 	#define setjmp(env) _setjmp(env)
 	static inline int	longjmp(jmp_buf env, int val) { return _longjmp(env, val); }
 
@@ -33,16 +31,12 @@ extern "C" {
 	extern int			errno;
 	const char			*strerror(int errnb);
 
-	static inline char	*rng_bytes(char *buff, size_t size)
+	static inline unsigned char	*rng_bytes(unsigned char *buff, size_t size)
 	{
-		for (size_t i=0; i<size; i++)
-		{
-			buff[i] = (char)(random_u32() & 0xFF);
-		}
+		for (size_t i = 0; i < size; i++)
+			buff[i] = (unsigned char)random_u32();
 		return buff;
 	}
-
-	void	abort(void);
 
 	char	*getenv(const char *__name);
 

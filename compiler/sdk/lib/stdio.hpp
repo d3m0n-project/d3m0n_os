@@ -62,8 +62,8 @@ extern "C" {
 	int					fflush(FILE *f);
 	size_t				fwrite(const char *buff, size_t size, size_t nmemb, FILE *f);
 	char				*fgets(char *string, int size, FILE *f);
-	FILE				*tmpfile();
-	char				*tmpnam();
+	FILE				*tmpfile(void);
+	char				*tmpnam(char *buffer);
 	int					ungetc(int c, FILE *f);
 	void				clearerr(FILE *f);
 	int					fseek(FILE *f, long offset, e_seek_directive whence);

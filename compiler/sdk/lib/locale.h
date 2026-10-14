@@ -110,6 +110,8 @@ static inline char	*setlocale(int category, const char *locale)
 	if (locale[0] == '\0' || (locale[0] == 'C' && locale[1] == '\0'))
 		return current_locale;
 
+	(void)locale_names; // to remove unused warning
+
 	return 0;
 }
 
