@@ -55,7 +55,7 @@ SECTIONS
     .heap (NOLOAD) : ALIGN(8)
     {
         __heap_start = .;
-        . += 0x01000000;
+        . += 0x10000000;
         __heap_end = .;
     }
 

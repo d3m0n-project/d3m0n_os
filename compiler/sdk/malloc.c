@@ -198,6 +198,29 @@ void	free(void *ptr)
 	coalesce_blocks(block);
 }
 
+void	display_memory_usage(void)
+{
+	t_malloc_block	*block;
+	uint32_t		used;
+	uint32_t		capacity;
+	uint32_t		percentage;
+
+	used = 0;
+	capacity = USER_HEAP_RESERVED - sizeof(t_heap_header) - sizeof(t_malloc_block);
+	if (g_heap && g_heap->magic == MALLOC_MAGIC)
+	{
+		block = g_heap->free_list;
+		while (block)
+		{
+			if (!block->free)
+				used += block->size;
+			block = block->next;
+		}
+	}
+	percentage = (uint32_t)(((uint64_t)used * 10000 + capacity / 2) / capacity);
+	printf("Current process memory usage: %u.%02u%%\n", percentage / 100, percentage % 100);
+}
+
 void	*calloc(size_t nmemb, size_t size)
 {
 	void		*ptr;

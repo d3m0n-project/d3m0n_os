@@ -32,11 +32,14 @@ extern "C" {
 	typedef unsigned int			uint32_t;
 	typedef unsigned long long		uint64_t;
 
+	//typedef unsigned int			wchar_t;
+
 	typedef signed char				int8_t;
 	typedef signed short			int16_t;
 	typedef signed int				int32_t;
 	typedef signed long long		int64_t;
 	typedef unsigned int			uintptr_t;
+	typedef int						intptr_t;
 	typedef int						ptrdiff_t;
 
 	typedef int						sig_atomic_t;
@@ -46,13 +49,19 @@ extern "C" {
 
 	typedef long long unsigned int	uintmax_t;
 	typedef long long int			intmax_t;
+
+	typedef long					off_t;
+	typedef unsigned long			ino_t;
+
 	
 
-	#define UINT32_MAX				((uint32_t)-1)
-	#define SIZE_MAX				((size_t)-1)
+	#define UINT32_MAX				0xFFFFFFFFU
+	#define SIZE_MAX				0xFFFFFFFFU
 	#define UINT_MAX				0xFFFFFFFFU
 	#define INT_MAX					2147483647
 	#define INT_MIN					-2147483648
+	#define INTPTR_MAX				0x7FFFFFFF
+	#define SIZEOF_VOID_P			4
 
 	#define CHAR_BIT				8
 	#define UCHAR_MAX				255

@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define USER_HEAP_RESERVED		0x200000
+#define USER_HEAP_RESERVED		0x03200000
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,6 +44,14 @@ extern "C" {
 	 * @return A pointer to the first byte of the re-allocated buffer.
 	 */
 	void	*realloc(void *ptr, size_t size);
+
+	/**
+	 * @brief Print current process heap usage as a percentage.
+	 *
+	 * Counts allocated payload bytes managed by this SDK allocator and prints
+	 * the percentage of the configured process heap currently in use.
+	 */
+	void	display_memory_usage(void);
 #ifdef __cplusplus
 }
 #endif
