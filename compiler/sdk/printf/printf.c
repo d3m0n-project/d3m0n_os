@@ -122,7 +122,7 @@ int	snprintf(char *str, size_t size, const char *format, ...)
 }
 
 
-size_t	printf(const char *format, ...)
+int	printf(const char *format, ...)
 {
 	va_list	args;
 	t_buf	buffer;
@@ -141,10 +141,10 @@ size_t	printf(const char *format, ...)
 	va_end(args);
 	write(1, buffer.data, buffer.len);
 	free(buffer.data);
-	return (buffer.len);
+	return (int)buffer.len;
 }
 
-size_t	fprintf(FILE *f, const char *format, ...)
+int	fprintf(FILE *f, const char *format, ...)
 {
 	va_list	args;
 	t_buf	buffer;
@@ -163,5 +163,5 @@ size_t	fprintf(FILE *f, const char *format, ...)
 	va_end(args);
 	write(f->fd, buffer.data, buffer.len);
 	free(buffer.data);
-	return (buffer.len);
+	return (int)buffer.len;
 }

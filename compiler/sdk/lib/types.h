@@ -11,7 +11,7 @@ extern "C" {
 	#ifdef KERNEL_VERSION
 		extern void			log(const char *fmt, int type, ...);
 	#else
-		extern unsigned int	printf(const char *fmt, ...);
+		extern int			printf(const char *fmt, ...);
 	#endif
 
 	/** @brief Stores a two-dimensional integer coordinate. */
@@ -26,6 +26,8 @@ extern "C" {
 	#define bool					int
 	#define TRUE					1
 	#define FALSE					0
+	#define true					1
+	#define false					0
 
 	typedef unsigned char			uint8_t;
 	typedef unsigned short			uint16_t;
@@ -54,14 +56,21 @@ extern "C" {
 	typedef unsigned long			ino_t;
 
 	
-
+	#define UINT8_MAX				0xFFU
+	#define UINT16_MAX				0xFFFFU
 	#define UINT32_MAX				0xFFFFFFFFU
-	#define SIZE_MAX				0xFFFFFFFFU
-	#define UINT_MAX				0xFFFFFFFFU
+	#define UINT64_MAX				0xFFFFFFFFFFFFFFFFU
+	#define SIZE_MAX				UINT32_MAX
+	#define UINT_MAX				UINT32_MAX
+	#define LLONG_MAX				0x7FFFFFFFFFFFFFFF
+	#define LLONG_MIN				0x8000000000000000
+	#define	ULLONG_MAX				UINT64_MAX
 	#define INT_MAX					2147483647
 	#define INT_MIN					-2147483648
 	#define INTPTR_MAX				0x7FFFFFFF
+	#define INTPTR_MIN				0x80000000
 	#define SIZEOF_VOID_P			4
+	
 
 	#define CHAR_BIT				8
 	#define UCHAR_MAX				255

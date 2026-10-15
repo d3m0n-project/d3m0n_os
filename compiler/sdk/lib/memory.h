@@ -52,6 +52,10 @@ extern "C" {
 	 * the percentage of the configured process heap currently in use.
 	 */
 	void	display_memory_usage(void);
+
+	#ifndef alloca
+	#define alloca(size)	__builtin_alloca(size)
+	#endif
 #ifdef __cplusplus
 }
 #endif

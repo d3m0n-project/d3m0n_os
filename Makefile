@@ -247,6 +247,12 @@ fclean: clean
 
 re: fclean all
 
+submodules:
+	git submodule update --remote rootfs/programs/micropython
+	git submodule update --remote rootfs/lib/lua/d3gl
+	git submodule update --remote rootfs/programs/lua
+	@printf "$(COLOR_SUCCESS)[SUBMODULES] Updated successfully!$(R)\n"
+
 -include $(D_FILES)
 
-.PHONY: all banner disk run clean fclean re export show-config applications config
+.PHONY: all banner disk run clean fclean re export show-config applications config submodules

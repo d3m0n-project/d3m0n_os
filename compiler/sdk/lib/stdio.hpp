@@ -46,8 +46,8 @@ extern "C" {
 
 	int					sprintf(char *str, const char *format, ...);
 	int					snprintf(char *str, size_t size, const char *format, ...);
-	size_t				printf(const char *format, ...);
-	size_t				fprintf(FILE *f, const char *format, ...);
+	int					printf(const char *format, ...);
+	int					fprintf(FILE *f, const char *format, ...);
 
 	static inline int	feof(FILE *f) { return f->is_eof; }
 

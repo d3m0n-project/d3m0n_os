@@ -3,6 +3,8 @@
 
 #include "sys.h"
 
+#include "errors.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
