@@ -1,4 +1,4 @@
-package.path = "/lib/lua/?.lua;/lib/lua/?/init.lua"
+package.path = "/lib/lua/?.lua;/lib/lua/?/init.lua;/lib/?/lua/init.lua"
 
 
 d3gl = require("d3gl")
