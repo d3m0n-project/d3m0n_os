@@ -3,9 +3,13 @@ print("\n\n---------------------------------------\n")
 
 import d3gl
 
-gl = d3gl(320, 480 - 32)
+d3gl.init(320, 480 - 32)
+print("d3gl init success")
 
-gl.putpixel(10, 10, 0xFF0000FF)
+d3gl.putpixel(10, 10, d3gl.Colors.RED)
+
+d3gl.update()
+print("d3gl update success")
 
 
 print("\n---------------------------------------\n\n")
