@@ -93,7 +93,7 @@ void	*malloc(size_t size)
 			return (0);
 		}
 
-		if (sbrk(USER_HEAP_RESERVED) == (int)-1)
+		if (sbrk(USER_HEAP_RESERVED) == (void *)-1)
 		{
 			g_heap = 0;
 			if (g_malloc_trace_count < 128)

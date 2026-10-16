@@ -70,6 +70,7 @@ extern "C" {
 	#define INTPTR_MAX				0x7FFFFFFF
 	#define INTPTR_MIN				0x80000000
 	#define SIZEOF_VOID_P			4
+	#define UINTPTR_MAX				0xFFFFFFFFU
 	
 
 	#define CHAR_BIT				8

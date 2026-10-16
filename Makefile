@@ -249,7 +249,7 @@ re: fclean all
 
 submodules:
 	git submodule update --remote rootfs/programs/micropython
-	git submodule update --remote rootfs/lib/lua/d3gl
+	git submodule update --remote rootfs/lib/d3gl
 	git submodule update --remote rootfs/programs/lua
 	@printf "$(COLOR_SUCCESS)[SUBMODULES] Updated successfully!$(R)\n"
 

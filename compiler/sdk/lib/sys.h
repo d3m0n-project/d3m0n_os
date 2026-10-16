@@ -146,9 +146,9 @@ extern "C" {
 		return (int)syscall(SYS_SURFACE_UPDATE, (uint32_t)surface, (uint32_t)0, (uint32_t)0, (uint32_t)0);
 	}
 
-	static inline int	sbrk(size_t increment)
+	static inline void	*sbrk(size_t increment)
 	{
-		return (int)syscall(SYS_SBRK, increment, (uint32_t)0, (uint32_t)0, (uint32_t)0);
+		return (void *)syscall(SYS_SBRK, increment, (uint32_t)0, (uint32_t)0, (uint32_t)0);
 	}
 
 	static inline uint32_t	time(void *timezone)
