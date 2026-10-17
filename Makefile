@@ -172,7 +172,7 @@ applications:
 
 ifneq ($(BUILD_APPS),0)
 	@chmod +x applications/builder.sh
-	@bash applications/builder.sh $(shell pwd)/rootfs/apps/
+	@bash applications/builder.sh "$(shell pwd)/rootfs/apps/"
 	@printf "$(COLOR_SUCCESS)[OK] Compiled and installed packages!$(R)\n"
 endif
 

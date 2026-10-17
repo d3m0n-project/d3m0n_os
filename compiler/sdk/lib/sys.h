@@ -151,9 +151,9 @@ extern "C" {
 		return (void *)syscall(SYS_SBRK, increment, (uint32_t)0, (uint32_t)0, (uint32_t)0);
 	}
 
-	static inline uint32_t	time(void *timezone)
+	static inline int	time(void *timezone, uint64_t *output)
 	{
-		return syscall(SYS_GET_TIME, (uint32_t)timezone, (uint32_t)0, (uint32_t)0, (uint32_t)0);
+		return syscall(SYS_GET_TIME, (uint32_t)timezone, (uint32_t)output, (uint32_t)0, (uint32_t)0);
 	}
 
 	static inline uint32_t	clock(void)

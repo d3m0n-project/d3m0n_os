@@ -5,7 +5,6 @@
 
 #define HUGE_VAL (__builtin_inf())
 
-
 static inline double	ldexp(double x, int exp)
 {
 	union
@@ -486,5 +485,17 @@ static inline long double	log10l(long double x) { return __builtin_log10l(x); }
 static inline float			expf(float x) { return __builtin_expf(x); }
 static inline double		exp(double x) { return __builtin_exp(x); }
 static inline long double	expl(long double x) { return __builtin_expl(x); }
+
+#ifndef isfinite
+#define isfinite(x)		__builtin_isfinite(x)
+#endif
+
+#ifndef truncf
+#define truncf(x)		__builtin_truncf(x)
+#endif
+
+#ifndef modff
+#define modff(x, iptr)	__builtin_modff((x), (iptr))
+#endif
 
 #endif

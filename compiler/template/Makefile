@@ -1,7 +1,7 @@
 CXX         = d3c
 APP_PATH    ?= ./
 PWD         = $(shell pwd)
-OUT         = $(APP_PATH)$(shell basename $(PWD)).d3m0n
+OUT         = $(APP_PATH)$(shell basename "$(PWD)").d3m0n
 
 CXXFLAGS    = -Wall -Wextra -Werror
 

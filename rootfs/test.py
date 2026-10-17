@@ -2,6 +2,7 @@ print("\n\n---------------------------------------\n")
 
 
 import d3gl
+import math
 
 d3gl.init(320, 480 - 32)
 print("d3gl init success")

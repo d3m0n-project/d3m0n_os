@@ -383,17 +383,21 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 	return 0;
 }
 
-int	sys_get_time(uint32_t timezone_ptr, uint32_t relative, uint32_t a2, uint32_t a3)
+int	sys_get_time(uint32_t timezone_ptr, uint32_t output_ptr, uint32_t relative, uint32_t a3)
 {
-	(void)a2;
+	uint64_t	*output = (uint64_t *)resolve_user_ptr(output_ptr, sizeof(uint64_t *));
 	(void)a3;
 	 // TODO: timezone
 	if (relative == 1)
 		return (uint32_t)(time_from_boot() / CLOCKS_PER_SEC);
 
-	(void)timezone_ptr;
+	if (!output)
+		return -1;
 
-	return (uint32_t)time_s();
+	(void)timezone_ptr;
+	*output = time_us();
+
+	return 0;
 }
 
 int	sys_random(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
