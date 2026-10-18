@@ -3,7 +3,7 @@ APP_PATH    ?= ./
 PWD         = $(shell pwd)
 OUT         = $(APP_PATH)$(shell basename "$(PWD)").d3m0n
 
-CXXFLAGS    = -Wall -Wextra -Werror -g3
+CXXFLAGS    = -Wall -Wextra -Werror
 
 SRC_DIR     = src
 OBJ_DIR     = obj
@@ -41,7 +41,7 @@ $(OUT): $(O_FILES)
 	@printf "  $(PURPLE)$(BOLD)LINK$(RESET)  $(OUT)\n" >&2
 	@mkdir -p "$(OBJ_DIR)"
 	@mkdir -p "$(APP_PATH)"
-	$(CXX) $(CXXFLAGS) $^ -o $@ >&2
+	$(CXX) $(CXXFLAGS) $^ -o "$@" >&2
 	@printf "  $(GREEN)✓$(RESET) $(OUT)\n" >&2
 
 

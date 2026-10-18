@@ -1,13 +1,13 @@
 print("\n\n---------------------------------------\n")
 
 
-import d3gl
+from d3gl import D3GL, Colors
 import math
 
-d3gl.init(320, 480 - 32)
+d3gl = D3GL(320, 480 - 32)
 print("d3gl init success")
 
-d3gl.putpixel(10, 10, d3gl.Colors.RED)
+d3gl.draw_line(10, 10, 50, 50, Colors.RED)
 
 d3gl.update()
 print("d3gl update success")
