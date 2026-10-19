@@ -1,4 +1,5 @@
 #include <sys/mman.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include <cerrno>
@@ -27,6 +28,9 @@ extern "C"
 
 	extern const unsigned char _binary_linker_ld_start[];
 	extern const unsigned char _binary_linker_ld_end[];
+
+	extern const unsigned char _binary_vc4_qinc_start[];
+	extern const unsigned char _binary_vc4_qinc_end[];
 }
 
 
@@ -63,6 +67,36 @@ static int	create_embedded_archive(const char *name, const unsigned char *begin,
 	}
 	return fd;
 }
+
+static bool	write_embedded_file(const string &path, const unsigned char *begin, const unsigned char *end)
+{
+	int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0600);
+	if (fd == -1)
+	{
+		perror("open embedded vc4.qinc");
+		return false;
+	}
+
+	const unsigned char *ptr = begin;
+	size_t remaining = static_cast<size_t>(end - begin);
+	while (remaining > 0)
+	{
+		ssize_t written = write(fd, ptr, remaining);
+		if (written == -1)
+		{
+			if (errno == EINTR)
+				continue;
+			perror("write embedded vc4.qinc");
+			close(fd);
+			unlink(path.c_str());
+			return false;
+		}
+		ptr += written;
+		remaining -= static_cast<size_t>(written);
+	}
+	close(fd);
+	return true;
+}
 #endif
 
 int main(int argc, char **argv)
@@ -70,7 +104,7 @@ int main(int argc, char **argv)
 	if (argc == 1)
 	{
 		cerr << "\033[31mERROR\033[0m: Usage:                    " << argv[0] << " [options] file..." << endl;
-		cerr << "       GPU code compilation:     " << argv[0] << " --gpu ..." << endl;
+		cerr << "       GPU code compilation:     " << argv[0] << " --gpu mycode.qasm -o mycode.bin" << endl;
 		cerr << "       Project Init:             " << argv[0] << " init project_name" << endl;
 		return 1;
 	}
@@ -106,10 +140,10 @@ int main(int argc, char **argv)
 		if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0)
 		{
 			cout << "d3c: the official d3m0n os compiler" << endl;
-			cout << "\033[30m" << "	SDK LOADED:     " << "\033[0m" << (INCLUDE_SDK?"\033[32mYes":"\033[31mNo") << "\033[0m" << endl;
-			cout << "\033[30m" << "	SDK PATH:       " << "\033[0m" << LIB_PATH << "/sdk/" << endl;
-			cout << "\033[30m" << "	TEMPLATE PATH:  " << "\033[0m" << LIB_PATH << "/template/" << endl;
-			cout << "\033[30m" << "	AUTHOR:         " << "\033[0m" << "4re5 group" << "\033[0m" << endl;
+			cout << "\033[30m" << "	SDK LOADED:       " << "\033[0m" << (INCLUDE_SDK?"\033[32mYes":"\033[31mNo") << "\033[0m" << endl;
+			cout << "\033[30m" << "	SDK PATH:         " << "\033[0m" << LIB_PATH << "/sdk/" << endl;
+			cout << "\033[30m" << "	TEMPLATE PATH:    " << "\033[0m" << LIB_PATH << "/template/" << endl;
+			cout << "\033[30m" << "	AUTHOR:           " << "\033[0m" << "4re5 group" << "\033[0m" << endl;
 			return 0;
 		}
 		if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "-E") == 0 || strcmp(argv[i], "-S") == 0)
@@ -120,10 +154,35 @@ int main(int argc, char **argv)
 		if (strcmp(argv[i], "--gpu") == 0) // compile using vc4asm, only args after --gpu are processed by vc4asm
 		{
 			#if INCLUDE_SDK == 1
-			cout << "\033[35md3c GPU\033[0m:" << "Compiling to VideoCore IV machine code..." << endl;
-			return vc4asm_main(argc - i, argv + i);
+			cout << "\033[35md3c GPU\033[0m: " << "Compiling to VideoCore IV machine code..." << endl;
+			char include_dir[] = "/tmp/d3c-vc4inc-XXXXXX";
+			if (!mkdtemp(include_dir))
+			{
+				perror("mkdtemp vc4asm include directory");
+				return 1;
+			}
+			const string include_file = string(include_dir) + "/vc4.qinc";
+			if (!write_embedded_file(include_file, _binary_vc4_qinc_start, _binary_vc4_qinc_end))
+			{
+				rmdir(include_dir);
+				return 1;
+			}
+			vector<string> gpu_arguments;
+			gpu_arguments.emplace_back(argv[i]);
+			gpu_arguments.emplace_back("-I");
+			gpu_arguments.emplace_back(string(include_dir) + "/");
+			for (int j = i + 1; j < argc; ++j)
+				gpu_arguments.emplace_back(argv[j]);
+			vector<char *> gpu_argv;
+			for (string &argument : gpu_arguments)
+				gpu_argv.push_back(const_cast<char *>(argument.c_str()));
+			gpu_argv.push_back(nullptr);
+			const int result = vc4asm_main(static_cast<int>(gpu_argv.size() - 1), gpu_argv.data());
+			unlink(include_file.c_str());
+			rmdir(include_dir);
+			return result;
 			#else
-			cerr << "\033[31md3c GPU\033[0m:" << "SDK unavailable, could not compile GPU code using vc4asm" << endl;
+			cerr << "\033[31md3c GPU\033[0m: " << "SDK unavailable, could not compile GPU code using vc4asm" << endl;
 			#endif
 		}
 	}

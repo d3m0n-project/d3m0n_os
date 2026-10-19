@@ -11,7 +11,7 @@
 #include "proc/proc.h"
 #include "memory/mmu.h"
 
-
+#include "display/gpu.h"
 
 
 t_conf		config;
@@ -88,7 +88,8 @@ void	kernel_main(void *dtb)
 	else						log("Config parsed successfully!\n", LOG_SUCCESS);
 
 
-	
+	// TODO: test gpu
+	//gpu_test();
 
 
 	panic("finished test\n");

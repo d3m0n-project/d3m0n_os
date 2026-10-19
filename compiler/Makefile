@@ -32,9 +32,7 @@ TARGET_BFD				= $(shell $(OBJCOPY) --info | awk '/^elf/ {print $$1; exit}')
 
 vc4asm_SRC_DIR			= ./vc4asm/src
 vc4asm_OBJ_DIR			= $(OBJ_DIR)/vc4asm
-# Match the vc4asm library sources. Table files are included by their owning
-# .cpp files, vc4dis.cpp defines a second main(), and helpers.asm is an m4
-# include file rather than a C++ translation unit.
+VC4_QINC_OBJ			= $(OBJ_DIR)/vc4qinc.o
 vc4asm_CPP_FILES		= expr.cpp Inst.cpp Validator.cpp ReadBin.cpp WriteC.cpp \
 							ReadX.cpp Message.cpp WriteQasm.cpp utils.cpp WriteELF.cpp \
 							ReaderBase.cpp Disassembler.cpp AssembleInst.cpp Parser.cpp \
@@ -68,12 +66,12 @@ $(SDK_BUILD):
 
 build: $(OUT)
 
-$(OUT): $(vc4asm_O_FILES) $(O_FILES)
+$(OUT): $(vc4asm_O_FILES) $(O_FILES) $(VC4_QINC_OBJ)
 	@mkdir -p $(OBJ_DIR)
 ifneq ($(INCLUDE_SDK),0)
 	ld -r -b binary -o "$(OBJ_DIR)/linker.o" "linker.ld"
 	$(OBJCOPY) -I binary -O $(TARGET_BFD) "$(SDK_BUILD)" "$(OBJ_DIR)/sdk.o"
-	$(CXX) "$(OBJ_DIR)/sdk.o" "$(OBJ_DIR)/linker.o" $(vc4asm_O_FILES) $(O_FILES) -o $@ $(CPP_FLAGS) $(vc4asm_CXX_FLAGS)
+	$(CXX) "$(OBJ_DIR)/sdk.o" "$(OBJ_DIR)/linker.o" $(VC4_QINC_OBJ) $(vc4asm_O_FILES) $(O_FILES) -o $@ $(CPP_FLAGS) $(vc4asm_CXX_FLAGS)
 else
 	$(CXX) $(vc4asm_O_FILES) $(O_FILES) -o $@ $(CPP_FLAGS) $(vc4asm_CXX_FLAGS)
 endif
@@ -84,6 +82,10 @@ endif
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) -c $< -o $@ $(CPP_FLAGS) -I$(vc4asm_SRC_DIR)
+
+$(VC4_QINC_OBJ): vc4asm/share/vc4inc/vc4.qinc
+	@mkdir -p $(OBJ_DIR)
+	cd vc4asm/share/vc4inc && ld -r -b binary -o ../../../$(VC4_QINC_OBJ) vc4.qinc
 
 
 # ------------------------------------------------
