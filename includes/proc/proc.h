@@ -23,6 +23,7 @@
 #define IRQ_FRAME_SIZE				(IRQ_FRAME_WORDS * sizeof(uint32_t))
 
 #define TIME_SLICE_MS				5 // delta t before each scheduler call
+#define PROC_MAX_EVENTS				128
 
 typedef uint32_t e_process_state;
 #define PROC_READY			0
@@ -67,6 +68,8 @@ typedef struct s_process
 	uint32_t		surface_size;
 	uint32_t		surface_width;
 	uint32_t		surface_height;
+
+	t_fifo			events[PROC_MAX_EVENTS];
 
 	fs_fd			fds[FS_MAX_FDS];
 

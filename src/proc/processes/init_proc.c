@@ -62,7 +62,7 @@ void	app_and_icon_loader_thread(void)
 
 void	click_dispatcher(int mouse_x, int mouse_y, unsigned int mouse_btn)
 {
-	t_process *proc = current_process;
+	//t_process *proc = current_process;
 	log("clicked (%i, %i) with %i\n", LOG_INDENT | LOG_INFO, mouse_x, mouse_y, mouse_btn);
 }
 
