@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define PROC_MAX_EVENTS
+#define PROC_MAX_EVENTS	128
 
 typedef struct {
 	uint32_t		type;
@@ -13,7 +13,7 @@ typedef struct {
 }	event_t;
 
 typedef struct {
-	event_t		buffer[FIFO_CAPACITY];
+	event_t		buffer[PROC_MAX_EVENTS];
 	size_t		head;
 	size_t		tail;
 	size_t		count;

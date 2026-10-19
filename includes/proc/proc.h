@@ -69,7 +69,7 @@ typedef struct s_process
 	uint32_t		surface_width;
 	uint32_t		surface_height;
 
-	t_fifo			events[PROC_MAX_EVENTS];
+	//t_fifo			events[PROC_MAX_EVENTS];
 
 	fs_fd			fds[FS_MAX_FDS];
 
