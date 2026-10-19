@@ -1,11 +1,11 @@
 #ifndef XML_H
 #define XML_H
 
-#include "stdlib.h"
-
 #ifdef __cplusplus
+#include "stdlib.h"
 extern "C" {
 #else
+#include "libft.h"
 #define	memchr(a, b, c)		ft_memchr(a, b, c)
 #define	strlen(a)			ft_strlen(a)
 #define	memcmp(a, b, c)		ft_memcmp(a, b, c)
