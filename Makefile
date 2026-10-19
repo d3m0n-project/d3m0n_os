@@ -179,18 +179,17 @@ endif
 
 disk: applications
 	@printf "$(COLOR_INFO)[IMG] Creating disk image...$(R)\n"
-	@dd if=/dev/zero of=$(DISK) bs=1M count=$(IMG_SIZE)
-	@$(SUDO_EXECUTABLE) parted $(DISK) --script mklabel msdos
-	@$(SUDO_EXECUTABLE) parted $(DISK) --script mkpart primary fat32 1MiB 65MiB
-	@$(SUDO_EXECUTABLE) parted $(DISK) --script mkpart primary fat32 65MiB 100%
-	@mkfs.vfat -F 32 -n D3M0NFS --offset=133120 -h 133120 $(DISK)
-	@mcopy -i $(DISK)@@68157440 -s rootfs/* ::
+	@rm -f "$(DISK)"
+	@dd if=/dev/zero of="$(DISK)" bs=1M count=$(IMG_SIZE) status=progress
+	@$(SUDO_EXECUTABLE) parted "$(DISK)" --script mklabel msdos
+	@$(SUDO_EXECUTABLE) parted "$(DISK)" --script mkpart primary fat32 1MiB 65MiB
+	@$(SUDO_EXECUTABLE) parted "$(DISK)" --script mkpart primary fat32 65MiB 100%
+	@$(SUDO_EXECUTABLE) parted "$(DISK)" --script unit s print
+	@mkfs.vfat -F 32 -n D3M0NFS --offset=133120 -h 133120 "$(DISK)"
+	@mcopy -i "$(DISK)@@68157440" -s rootfs/* ::
 	@echo "Apps Structure:"
 	@tree rootfs/apps/
-#	@rm -rf rootfs/apps/ > /dev/null
-	@printf "$(COLOR_SUCCESS)[OK] cleaned up rootfs apps dir$(R)\n"
 	@printf "$(COLOR_SUCCESS)[OK] Disk ready: $(DISK)$(R)\n"
-
 
 
 
