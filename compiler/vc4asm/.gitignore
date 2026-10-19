@@ -1,0 +1,48 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Assembled files
+*.hex
+# intermediate files of test cases
+*.strip
+
+# Files from other Rpositories
+.svn
+CVS
+
+# cmake files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+build-*
+
+# misc files
+diff
+log

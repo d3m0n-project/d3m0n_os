@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <title>VC4ASM Directives</title>
+    <meta content="Marcel M&uuml;ller" name="author">
+    <link rel="stylesheet" href="infstyle.css" type="text/css">
+  </head>
+  <body>
+    <h1>VC4ASM - Assembler directives</h1>
+    <p><a href="index.html">&uarr; Top</a> <tt><a href="#.align">.align</a> <a
+          href="#.assert">.assert</a> <a href="#.back">.back</a> <a href="#.bit">.bit</a>
+        <a href="#.byte">.byte</a> <a href="#.clone">.clone</a> <a href="#.code">.code</a>
+        <a href="#.const">.const</a> <a href="#.double">.double</a> <a href="#.else">.else</a>
+        <a href="#.elseif">.elseif</a> <a href="#.back">.endb</a> <a href="#.func">.endf</a>
+        <a href="#.foreach">.endfor</a> <a href="#.endif">.endif</a> <a href="#.macro">.endm</a>
+        <a href="#.rep">.endr</a> <a href="#.equ">.equ</a> <a href="#.float">.float</a>
+        <a href="#.foreach">.foreach</a> <a href="#.func">.func</a> <a href="#.global">.global</a>
+        <a href="#.if">.if</a> <a href="#.ifset">.ifset</a> <a href="#.include">.include</a>
+        <a href="#.int">.int</a> <a href="#.const">.lconst</a> <a href="#.long">.long</a>
+        <a href="#.set">.lset</a> <a href="#.unset">.lunset</a> <a href="#.macro">.macro</a>
+        <a href="#.rep">.rep</a> <a href="#.rodata">.rodata</a> <a href="#.set">.set</a>
+        <a href="#.short">.short</a> <a href="#.text">.text</a> <a href="#.unset">.unset</a></tt></p>
+    <h2><a id=".const" name=".const"></a><a id=".set" name=".set"></a><tt>.const
+        .set .lconst .lset</tt> - define a constant or single line function</h2>
+    <pre>.const <i>identifier</i>, <i>expression</i>
+.set <i>identifier</i>, <i>expression</i>
+.lconst <i>identifier</i>, <i>expression</i>
+.lset <i>identifier</i>, <i>expression</i><br>.const <var>identifier</var>(<var>argument1, argument2</var> ...) <var>expression</var>
+.set <var>identifier</var>(<var>argument1, argument2</var> ...) <var>expression</var>
+.lconst <var>identifier</var>(<var>argument1, argument2</var> ...) <var>expression</var>
+.lset <var>identifier</var>(<var>argument1, argument2</var> ...) <var>expression</var></pre>
+    <dl>
+      <dt><var><tt>identifier</tt></var></dt>
+      <dd>This identifier is assigned, i.e. from this line on. In case of <tt>.lset</tt>
+        and <tt>.lconst</tt> the assignment is only preserved in the current
+        context, e.g. the current include or macro.</dd>
+      <dt><tt><var>argument1, argument2</var> ...</tt></dt>
+      <dd><var></var>Function arguments. Function arguments must be expressions
+        of any type including registers, but they cannot be incomplete
+        expressions like operators or identifier fragments.<br>
+        These are identifiers that can be used in the <var><tt>expression</tt></var>
+        body like constants wherever an expression is allowed.</dd>
+      <dt><tt><var>expression</var></tt></dt>
+      <dd>This expression is assigned to <var><tt>identifier</tt></var>. The
+        expression can be of any type including registers but it must evaluate
+        at the time <tt>.set</tt> is parsed unless you have an argument list
+        which causes delayed evaluation. You cannot assign incomplete
+        expressions like bare operators.</dd>
+    </dl>
+    <p>Constants can be used wherever an expression is allowed.</p>
+    <p>There is an important difference between constants with arguments and
+      those without. Constants without arguments are evaluated at the time of
+      the definition, i.e. if they use other constants in the expression body
+      the values are taken at the context of definition.<br>
+      As soon as the argument braces are used this behavior changes. These
+      definitions are evaluated at the time and from the context of invocation.</p>
+    <p>The assignment of <tt>.const</tt> and <tt>.lconst</tt> is final, i.e. a
+      second assignment to the same identifier is an error. But final
+      assignments neither prevent from shadowing in nested contexts nor from <tt>.unset</tt>.</p>
+    <p>Further aliases for <tt>.set</tt> are: <tt>.define</tt>, <tt>.equ</tt>.</p>
+    <h3> Example</h3>
+    <pre>.const ra_link_0, ra0<br><br>.set vpm_setup(num, stride, dma) (num &amp; 0xf) &lt;&lt; 20 | (stride &amp; 0x3f) &lt;&lt; 12 | (dma &amp; 0xfff)
+.set v32(y, x) 0x200 | (y &amp; 0x30) | (x &amp; 0xf)<br><br>mov vw_setup, vpm_setup(1, 1, v32(0,0))
+<var></var></pre>
+    <h2><a name=".unset"></a><tt>.unset .lunset</tt> - revoke a constant
+      definition</h2>
+    <pre>.unset <i>identifier</i><br>.lunset <i>identifier</i></pre>
+    <dl>
+      <dt><var><tt>identifier</tt></var></dt>
+      <dd>The assignment of this identifier is undone. This normally reverts the
+        identifier to undefined state. However, if a local version of the
+        identifier currently shadows another value of the same identifier the
+        previous state before the shadowing is restored.</dd>
+    </dl>
+    <p><tt>.lunset</tt> only removes the identifier from the current local
+      context.</p>
+    <h2><a id=".local" name=".local"></a><tt>.local</tt> - enter a local block</h2>
+    <pre>.local<br><i>    #...</i><br>.endloc</pre>
+    <p><tt>.local</tt>/<tt>.endloc</tt> has no direct effect on the generated
+      code but it creates a local context for symbols that can be set by <a href="#.lset">.lset</a>.
+      All local symbols go out of scope at the end of the block. The behavior is
+      similar to <tt>{ }</tt> in C and similar languages.</p>
+    <h3>Example</h3>
+    <pre>.local<br>  .lset count, ra2<br>  mov count, unif<br>:.1<br>  # some loop body here<br><br>  sub.setf count, count, 1<br>  brr.allnz -, r:.1<br>  nop<br>  nop<br>  nop<br>.endloc</pre>
+    <h2><tt>.func</tt> - define a multi line user function</h2>
+    <pre>.func <var>identifier</var>(<var>argument1, argument2</var> ...)<br> &nbsp;<var>body</var><br>.endf<var></var></pre>
+    <dl>
+      <dt><var><tt>identifier</tt></var></dt>
+      <dd>Name of the function.</dd>
+      <dt><tt><var>argument1, argument2</var> ...</tt></dt>
+      <dd><var></var>Function arguments. These are identifiers that can be used
+        in the function body like constants wherever an expression is allowed.</dd>
+      <dt><var><tt>body</tt></var></dt>
+      <dd>The function body may only contain a single expression like <a href="#.set"><tt>.set()</tt></a>.
+        But you may use <tt><a href="#.if">.if</a></tt>, <tt><a href="#.assert">.assert</a></tt>
+        and also <tt>.set</tt> etc. to decide what expression should evaluate.</dd>
+    </dl>
+    <p>Functions are similar to constants with parameters but their body is
+      multi line. This has the side effect that you can use <a href="#.if"><tt>.if</tt></a>
+      or <a href="#.lset"><tt>.lset</tt></a> to do the calculation of the
+      result.</p>
+    <h3>Example</h3>
+    <pre>.func vpm_setup(num, stride, dma)<br>  .assert num &lt;= 16 &amp;&amp; num &gt; 0<br>  .assert stride &lt;= 64 &amp;&amp; stride &gt; 0<br>  .assert (dma &amp; ~0xfff) == 0<br>  (num &amp; 0xf) &lt;&lt; 20 | (stride &amp; 0x3f) &lt;&lt; 12 | dma<br>.endf<br>.func v32(y, x)<br>  .assert (y &amp; ~0x30) == 0<br>  .assert (x &amp; ~0xf) == 0<br> &nbsp;0x200 | y | x<br>.endf<br><br>mov vw_setup, vpm_setup(1, 1, v32(0,0))</pre>
+    <p>The example above provides a checked version of the example to <a href="#.set"><tt>.set</tt></a>.</p>
+    <h2><a id=".macro" name=".macro"></a><tt>.macro</tt> - define a macro</h2>
+    <pre>.macro <var>identifier, argument1, argument2</var> ...<br>    <var>your code</var><br>    ...<br>.endm</pre>
+    <dl>
+      <dt><var><tt>identifier</tt></var></dt>
+      <dd>Name of the macro.</dd>
+      <dt><tt><var>argument1, argument2</var> ...</tt></dt>
+      <dd>Macro arguments. These are identifiers that can be used in the macro
+        body like constants wherever an expression is allowed.</dd>
+    </dl>
+    <p>A macro insert a block of code at the point where it is invoked in the
+      code. The code might depend on arguments. In contrast to function macros
+      may emit code. But they also might contain other directives.</p>
+    <p>The macro arguments must be expressions of any type including registers,
+      but they cannot be incomplete expressions like operators or unresolved
+      identifiers. The arguments are evaluated at the time of macro invocation
+      rather than the time where they are used in the macro body. So they cannot
+      depend on code in the macro body.</p>
+    <h3>Example</h3>
+    <p>Header of a subroutine. The entry point address is assigned to a
+      register,</p>
+    <pre>.macro proc, rx_ptr, label
+    brr rx_ptr, label
+    nop
+    nop
+    nop
+.endm<br><br>proc ra23, r:1f<br>    <var>subroutine body</var><br>    ...<br>:1</pre>
+    <h2><a id=".rrep" name="constant"></a><tt>.rep</tt> - repeat a code block
+      multiple times</h2>
+    <pre>.rep <var>identifier</var>, <var>count<br>    your_code</var><br>    ...<br>.endr<var></var></pre>
+    <dl>
+      <dt><var><tt>identifier</tt></var></dt>
+      <dd>This identifier receives the loop count starting at <tt>0</tt> and up
+        to <tt><var>count</var>-1</tt> for the last loop cycle.<br>
+        At the end of <tt>.endr</tt> the identifier returns to to its previous
+        value.</dd>
+      <dt><tt><var>count</var></tt></dt>
+      <dd>Number of loop cycles. <tt><var>count</var></tt> must be <tt>&ge; 0</tt>
+        and evaluate at the time <tt>.rep</tt> is parsed.</dd>
+    </dl>
+    <h3> Example</h3>
+    <p>Acquire all 15 QPU semaphores.</p>
+    <pre>.rep i 15<br>    sacq i<br>.endr</pre>
+    <h2><tt><a id=".foreach" name=".foreach"></a>.foreach</tt> - repeat code for
+      a set of expressions</h2>
+    <pre>.foreach <var>identifier</var>, <var>expr1, expr2, ...<br>    your_code</var><br>    ...<br>.endfor</pre>
+    <dl>
+      <dt><var><tt>identifier</tt></var></dt>
+      <dd>This identifier receives the expressions.<br>
+        At the end of <tt>.endfor</tt> the identifier returns to its previous
+        value.</dd>
+      <dt><tt><var>expr...</var></tt></dt>
+      <dd>Expressions to assign to <var><tt>identifier</tt></var>. The loop is
+        assembled once for each expression.</dd>
+    </dl>
+    <h3> Example</h3>
+    <p>Clear a bunch of registers.</p>
+    <pre>.foreach reg ra0, rb1, ra2, rb2, ra4, rb4<br>   &nbsp;;mov reg, 0;<br>.endr</pre>
+    <h2><a id=".back" name=".back"></a><tt>.back</tt> - emit code before the
+      last few instructions</h2>
+    <pre>.back <var>count<br>    your_code</var><br>    ...<br>.endb<var></var></pre>
+    <dl>
+      <dt><tt><var>count</var></tt></dt>
+      <dd>Number of instructions to go back. Must be less or equal to 5.</dd>
+    </dl>
+    <p>The code between <tt>.back</tt> and <tt>.endb</tt> is inserted before
+      the last <var><tt>count</tt></var> instructions rather than at the
+      current location. This can be quite useful when dealing with macros and
+      branch instruction. But be aware that there might be dependencies, e.g.
+      the inserted code might modify registers or flags that are used by last
+      instructions. <tt>vc4asm</tt> will not check for that.</p>
+    <h3> Example</h3>
+    <pre>some_macro<br>.back 3<br>brr -, r:loop<br>.endb</pre>
+    <p>The code above will insert the branch instruction before the last three
+      instructions emitted by the macro <tt>some_macro</tt> or even code
+      before.</p>
+    <h2><tt><a id=".clone" name=".clone"></a>.clone</tt> - copy instructions</h2>
+    <pre>.clone <var>label, count</var></pre>
+    <dl>
+      <dt><var><tt>label</tt></var></dt>
+      <dd>Copy instructions starting at this label.</dd>
+      <dt><var><tt>count</tt></var></dt>
+      <dd>Number of instructions to copy.</dd>
+    </dl>
+    <p><tt>.clone</tt> inserts copies <var><tt>count</tt></var> instructions
+      starting at <var><tt>label</tt></var> and inserts them at the current
+      location. It is intended to optimize branch instructions that cannot be
+      placed earlier. The concept is to copy the first few instruction of a
+      branch target instead of using <tt>nop</tt>.</p>
+    <p>You should not clone branch instructions or immediate values from label
+      differences. This is not reliable with a 2 pass assembler.</p>
+    <h3>Example</h3>
+    <pre>brr -, r:target + 3*8<br>.clone :target, 3</pre>
+    <p>This copies the first 3 instructions of <tt>:target</tt> after the
+      branch and branches after the 3<smaller><sup>rd</sup></smaller>
+      instruction of <tt>:target</tt> instead.</p>
+    <h2><a name=".if"></a><a name=".else"></a><a name=".elseif"></a><a name=".endif"></a><tt>.if</tt>
+      - conditional compile</h2>
+    <pre>.if <var>condition<br>    your code</var><br><var>    </var>...<br>.elseif <var>condition<br>    another code</var><br><var>    </var>...<br>.else<br>    <var>alternate code</var><br><var>    </var>...<br>.endif</pre>
+    <dl>
+      <dt><tt><var>condition</var></tt></dt>
+      <dd>Expression to check. The expression must be constant and of type
+        integer or float and is checked to be non-zero.</dd>
+    </dl>
+    <h2><a id=".ifset" name=".ifset"></a><tt>.ifset</tt> - check whether a
+      constant is defined</h2>
+    <pre>.ifset <var>identifier<br>    your code</var><br><var>    </var>...<br>.else<br>    <var>alternate code</var><br><var>    </var>...<br>.endif</pre>
+    <dl>
+      <dt><tt><var>identifier</var></tt></dt>
+      <dd>Check whether an identifier is defined within the current context.
+        This will also check for macro arguments.</dd>
+    </dl>
+    <dl>
+    </dl>
+    <h2><a id=".assert" name=".assert"></a><tt>.assert</tt> - check for static
+      condition</h2>
+    <pre>.assert <var>condition</var></pre>
+    <dl>
+      <dt><tt><var>condition</var></tt></dt>
+      <dd>Expression to check. The expression must be constant and of type
+        integer or float and is checked to be non-zero.</dd>
+    </dl>
+    <h2><a id=".include" name=".include"></a><tt>.include</tt> - include another
+      file</h2>
+    <pre>.include "<var>filename</var>"<br>.include &lt;<var>filename</var>&gt;</pre>
+    <dl>
+      <dt><tt><var>filename</var></tt></dt>
+      <dd>Name of another assembler file to include. The path may be relative or
+        absolute.<br>
+        If <var><tt>filename</tt></var> is enclosed in angle brackets <tt>&lt;...&gt;</tt>
+        the list of include paths is searched first for the file. See <a href="index.html#vc4asm">option
+          <tt>-I</tt></a>.</dd>
+    </dl>
+    <p>An included file denotes a local context. Definitions that are local like
+      <tt>.lset</tt> are only valid within the included file and sub includes.</p>
+    <h2><tt><a name=".byte"></a><a name=".short"></a><a name=".int"></a><a name=".long"></a><a
+name=".float"></a><a name=".bit"></a><a name=".double"></a><a name=".half"></a>.byte
+        .short .int .long .bit .float .half .double</tt> - emit constants inside
+      code blocks</h2>
+    <pre>.byte <var>constant, constant</var> ...   # 8 bit integers<br>.short <var><var>constant, constant</var></var> ...<var></var>  # 16 bit integers<br>.int <var><var>constant, constant</var></var> ...    # 32 bit integers<br>.long <var>constant, constant</var> ...   # 64 bit integers<br>.bit <var>constant, constant</var> ...    # 1 bit boolean<br>.float <var>constant, constant</var> ...  # 32 bit single precision float<br>.half <var>constant, constant</var> ...   # 16 bit half precision float<br>.double <var>constant, constant</var> ... # 64 bit double precision float (not directly supported by Videocore IV)</pre>
+    <dl>
+      <dt><tt><var>constant</var></tt></dt>
+      <dd>Expression that evaluates to an integer or floating point constant.</dd>
+    </dl>
+    <p>The above directive directly place constants in the code. This might be
+      used to load constants by using the return value of a branch instruction
+      as address. Or you may emit opcodes that are unsupported by vc4asm.</p><p>The result is <em>always</em> stored in <em>big endian</em> format.</p>
+    <p>You should ensure that the constants will not accidentally be executed
+      unless they contain valid Videocore IV instructions.</p>
+    <ul>
+    </ul>
+    <p>In general you should prefer uniforms over constants in the code because
+      they are easier to access. In most cases it is also more efficient to use
+      <tt>ldi</tt>. But as soon as you add some offsets to the address that
+      depends on the QPU element number or something like that the latter two
+      are no longer an option.</p>
+    <h3> Example</h3>
+    <p>Load two float constants into r1, r2...</p>
+    <pre>    brr r0, r:1f<br>    mov t0s, r0<br>    add r0, r0, 4; ldtmu0  # load first floating point value after :0
+    mov r1, r4;    mov t0s, r0<br>:0  .float 3.14159, 2.71828, ...<br>:1  add r0, r0, 4; ldtmu0  # load second floating point value after :0
+    mov r2, r4     mov t0s, r0</pre>
+    <h2><a id=".align" name=".align"></a><tt>.align</tt> - ensure memory
+      alignment</h2>
+    <pre>.align <var>bytes</var><br>.align <var>bytes, base</var></pre>
+    <p>Force the current instruction pointer to be aligned to a byte boundary
+      with a specified power of 2.</p>
+    <dl>
+      <dt><tt><var>bytes</var></tt></dt>
+      <dd>Expression that evaluates to an integer constant with the number of
+        bytes to align. The value must be a power of two and &le; 64. <tt>.align
+          0</tt> is a no-op.</dd>
+      <dt><tt><var>base</var></tt></dt>
+      <dd>Optional offset. If specified the alignment does not use 0 as base
+        offset - in fact the start of the current binary output - but the given
+        base instead.<br>
+        <tt><var>base</var></tt> could either be an <em>integer constant</em>.
+        In this case the location after <tt>.align</tt> will be aligned to <var>bytes</var>
+        with residual <var>base % bytes</var>.</dd>
+      <dd>Or base could be a <em>label</em>. In this case the alignment is
+        relative to the label location, i.e. <var>location </var><var>after <tt>.align</tt>
+          - label % byte</var>s == 0.</dd>
+      <dd>Note that the label <em>must neither be a forward reference nor
+          should</em> the integer constant <em>depend on a forward reference</em>,
+        because <tt>.align</tt> cannot do its job in this case.</dd>
+    </dl>
+    <p><tt>.align</tt> simply uses zeros for padding than <tt>nop</tt>
+      instructions. So <em>do not use it inside executable code</em>. It is
+      intended for data or sub function alignment only.</p>
+    <dl>
+    </dl>
+    <h2><a id=".global" name=".global"></a><tt>.global</tt> - export symbol</h2>
+    <pre>::<var>label</var><br>.global :<var>label</var><br>.global <var>symbol, value</var></pre>
+    <p>Export a label or some other constant as global linker symbol in ELF
+      format. <tt>.global</tt> has no effect on other output formats.<br>
+      It is an error to assign different values to the same global symbol.</p>
+    <dl>
+      <dt><tt><var>label</var></tt></dt>
+      <dd>Name of a label to export. This will create a global symbol which
+        address points to the code at <tt><var>label</var></tt> after linkage.<br><tt>.global :</tt><var><tt>label</tt> </var>is the short form of <tt>.global <var>label</var>, :<var>label</var></tt>, and <tt>::<var>label</var></tt> is the short form of <tt>.global :</tt><var><tt>label</tt></var> including the label definition.</dd>
+      <dt><tt><var>symbol</var></tt></dt>
+      <dd>Name of the global symbol to define. The symbol receives the following
+        value.</dd>
+      <dt><tt><var>value</var></tt></dt>
+      <dd>Value of the symbol. This can be any expression that evaluates to a
+        label or a 32 bit integer constant.<br>
+        If it is a label the exported symbol will point to the code at the label
+        after linkage.<br>
+        If it is an integer constant the symbol receives the value of the
+        expression as absolute value, i.e. <tt>SHN_ABS</tt>.</dd>
+    </dl>
+    <h3>Example</h3>
+    <pre>.global code_start<br>.global code_size, :end - :start<br>:start<br># some code<br>:end</pre>
+    <p>Use the ELF output to create a object file (.o).<br>
+      And in the C language write:</p>
+    <pre>extern char code_start[];<br>extern char code_size[];<br>#define code_length ((size_t)&amp;code_size)<br><br>memcpy(qpu_memory_buffer, code_start, code_length);</pre>
+    <p>Note that this is just an example. The start, the size and the end of the
+      generated code block are automatically exported as symbols as mentioned <a
+href="index.html#vc4asm">here</a>.</p>
+    <h2><a id=".code" name=".code"></a><a id=".text" name=".text"></a><a id=".rodata"
+name=".rodata"></a><tt>.code</tt>, <tt>.rodata</tt> - segment
+      definitions</h2>
+    <pre>.code<br>.text<br><br>.rodata</pre>
+    <p>Declares the following instructions or <a href="#.byte">data directives</a>
+      as <em>executable code (<tt>.code</tt> and <tt>.text</tt>)</em> or <em>data
+        section (<tt>.data</tt>)</em> respectively. While this has no effect to
+      the generated output it tells&nbsp; the validator not to validate
+      immediate data embedded in the code.</p>
+    <p>If you specify neither of this directives vc4asm will <em>automatically
+        detect code or data</em>. I.e. everything emitted by any GPU instruction
+      will be marked as code and everything emitted by a data directive like <tt>.int</tt>
+      will be treated as data. Normally this should hit the nail on the head and
+      you need not to worry about this.</p>
+</body></html>

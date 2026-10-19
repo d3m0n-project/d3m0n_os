@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta content="text/html; charset=iso-8859-15" http-equiv="content-type">
+    <title>VC4ASM Assembler instructions</title>
+    <meta content="Marcel M&uuml;ller" name="author">
+    <link rel="stylesheet" href="infstyle.css" type="text/css">
+  </head>
+  <body>
+    <h1>VC4ASM - Assembler instructions</h1>
+    <p><a href="index.html">&uarr; Top</a>, <a href="#ALU">ALU</a>, <tt><a href="#mov">mov</a></tt>,
+      <tt><a href="#ldi">ldi</a></tt>, <tt><a href="#nop">nop</a></tt>, <tt><a
+          href="#read">read</a></tt>, <a href="#sema">Semaphore</a>, <a href="#bra">Branch</a>,
+      <a href="#sig">Signal</a>, <a href="extensions.html#ifcc">Conditional
+        assignment</a>, <a href="extensions.html#pack">Pack/unpack</a></p>
+    <h2>General rules</h2>
+    <ul>
+      <li>Each line of code with QPU assembler instructions generates exactly
+        one 64 bit opcode for the QPU.</li>
+      <li>Multiple logical instructions can be placed in one line as long as
+        their combination still fits into one opcode. The delimiter is <tt>;</tt>
+        (semicolon). Example:<br>
+        <tt>mov ra11, rb11;&nbsp; mov rb11, ra11;&nbsp; ldtmu0</tt></li>
+      <li>The sequence of the instructions in one line is normally not
+        significant. Only if an instruction can be realized by the ADD and the
+        MUL ALU then the ADD ALU is preferred as long as it has not already been
+        used in the current line. You might use <tt>nop</tt> to explicitly mark
+        the ADD ALU as used and place the second ALU instruction to the MUL ALU.</li>
+      <li>Operands are delimited by <tt>,</tt> (comma), destination operands
+        first.</li>
+      <li><a href="extensions.html">Instruction extensions</a> can be applied to
+        the opcode delimited by a <tt>.</tt> (dot). Some of the extensions can
+        also be applied to the source or destination operands.</li>
+    </ul>
+    <h3>Instruction joining</h3>
+    <p>A trailing <tt>;</tt> indicates that the assembler my try to merge the
+      current instruction with the next one if next instruction is preceded with
+      <tt>;</tt> and the two instructions fit into a single opcode. E.g.</p>
+    <pre>add r0, r0, 1;<br>;mov r2, 64</pre>
+    <p>generates the same code as</p>
+    <pre>add r0, r0, 1;  mov r2, 64</pre>
+    <p>This might cross macro boundaries. But be aware that dependencies might
+      break your code. E.g. a read to a register file might move immediately
+      after a write to the same register. Take special care of branch targets.
+      They should not be joined with the previous instruction. Placing a bare
+      colon in front of a line defines an anonymous label and prevents
+      instruction joining over this point. Ordinary labels will do the same.</p>
+    <ul>
+    </ul>
+    <h2><a name="ALU"></a>ALU instruction</h2>
+    <pre><var>binaryopcode destination, source1, source2</var><br><var>unaryopcode destination, source1<br>opcode</var>.<a
+href="extensions.html#setf">setf</a> ...<br><var>opcode</var>.<a href="extensions.html#ifcc">if<var>cc</var></a> ...</pre>
+    <dl>
+      <dt><var><tt>binaryopcode, unaryopcode</tt></var></dt>
+      <dd>ALU opcode, see below.</dd>
+      <dt><var><tt>destination</tt></var></dt>
+      <dd>Target <a href="expressions.html#register">register</a>.</dd>
+      <dt><var><tt>source1, source2</tt></var></dt>
+      <dd>Source <a href="expressions.html#register">register</a> or <a href="smallimmediate.html">small
+          immediate value</a>.</dd>
+    </dl>
+    <h3><a name="opcodes"></a>Opcodes</h3>
+    <dl>
+    </dl>
+    <dl>
+      <table border="1" cellpadding="2" cellspacing="0">
+        <thead>
+          <tr>
+            <th rowspan="2">op<wbr>code</th>
+            <th>source1</th>
+            <th>source2</th>
+            <th colspan="2">destination</th>
+            <th colspan="3">flags (if <tt>.setf</tt> is used)</th>
+          </tr>
+          <tr>
+            <th>type</th>
+            <th>type</th>
+            <th>type</th>
+            <th>value</th>
+            <th>Z</th>
+            <th>N</th>
+            <th>C</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="th"><tt>add</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>source1 + source2</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>source1 + source2 &gt; 0xffffffff</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>sub</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>source1 - source2</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>source1 &lt; source2</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>min</tt></td>
+            <td><tt>int32</tt></td>
+            <td><tt>int32</tt></td>
+            <td><tt>int32</tt></td>
+            <td><tt>source1 &gt; source2 ? source2 : source1</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>source1 &gt; source2</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>max</tt></td>
+            <td><tt>int32</tt></td>
+            <td><tt>int32</tt></td>
+            <td><tt>int32</tt></td>
+            <td><tt>source1 &gt; source2 ? source1 : source2</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>source1 &gt; source2</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>and</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>source1 &amp; source2</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>or</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>source1 | source2</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>xor</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>source1 ^ source2</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>shl</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>source1 &lt;&lt;&lt; (source2 &amp; 32)</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>source1 &gt;&gt;&gt; 32-source2 &amp; 1</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>shr</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>source1 &gt;&gt;&gt; (source2 &amp; 31)</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>source1 &gt;&gt;&gt; (source2 &amp; 31)-1 &amp; 1</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>asr</tt></td>
+            <td><tt>int32</tt></td>
+            <td><tt>int32</tt></td>
+            <td><tt>int32</tt></td>
+            <td><tt>source1 &gt;&gt; (source2 &amp; 31)</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>source1 &gt;&gt;&gt; (source2 &amp; 31)-1 &amp; 1</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>ror</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>source1 &gt;&gt;&lt; (source2 &amp; 31)</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>not </tt></td>
+            <td><tt>uint32</tt></td>
+            <td><br>
+            </td>
+            <td><tt>uint32</tt> </td>
+            <td><tt>~source1</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>clz </tt></td>
+            <td><tt>uint32</tt></td>
+            <td><br>
+            </td>
+            <td><tt>uint32</tt> </td>
+            <td><tt>32 - floor(log&#8322;(source1))</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>0</tt><br>
+            </td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>mul24</tt></td>
+            <td><tt>uint24</tt></td>
+            <td><tt>uint24</tt></td>
+            <td><tt>uint32</tt></td>
+            <td><tt>source1 * source2</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>source1 * source2 &gt; 0xffffff</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>fadd</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>source1 + source2</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>destination &gt; 0</tt> (incl. <tt>+NaN</tt>)</td>
+          </tr>
+          <tr>
+            <td class="th"><tt>fsub</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>source1 - source2</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>destination &gt; 0</tt> (incl. <tt>+NaN</tt>)</td>
+          </tr>
+          <tr>
+            <td class="th"><tt>fmin</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>source1 &gt; source2 ? source2 : source1</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>source1 &gt; source2</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>fmax</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>source1 &gt; source2 ? source1 : source2</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>source1 &gt; source2</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>fminabs</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32 </tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>abs(source1) &gt; abs(source2) ? abs(source2) : abs(source1)</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>abs(source1) &gt; abs(source2)</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>fmaxabs </tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>abs(source1) &gt; abs(source2) ? abs(source1) : abs(source2)</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>abs(source1) &gt; abs(source2)</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>fmul</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>float32</tt></td>
+            <td><tt>source1 * source2</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>itof</tt></td>
+            <td><tt>int32 </tt></td>
+            <td><br>
+            </td>
+            <td><tt><tt>float32</tt></tt></td>
+            <td><tt>source1</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>ftoi</tt></td>
+            <td><tt>float32</tt></td>
+            <td><br>
+            </td>
+            <td><tt><tt>int32</tt></tt></td>
+            <td><tt>source1</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>v8adds</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>min(source1[] + source2[], 255)</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>v8subs</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt><tt>uint8[4]</tt></tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>max(min(source1[] - source2[], 255), 0)</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>v8min</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>min(source1[], source2[])</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>v8max</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>max(source1[], source2[])</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+          <tr>
+            <td class="th"><tt>v8muld</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>uint8[4]</tt></td>
+            <td><tt>(source1 * source2 + 127) / 255</tt></td>
+            <td><tt>destination == 0</tt></td>
+            <td><tt>destination &gt;&gt;&gt; 31</tt></td>
+            <td><tt>0</tt></td>
+          </tr>
+        </tbody>
+      </table>
+    </dl>
+    <h3> Example</h3>
+    <pre>add.setf r3, ra0, unif<br>mul24 r0, r1, r2<var></var></pre>
+    <dl>
+    </dl>
+    <h2><a name="mov"></a>Move instruction</h2>
+    <pre>mov <var>destination, source</var><br>mov <var>destination, register</var> &lt;&lt; <var>rotate</var><br>mov <var>destination, register</var> &gt;&gt; <var>rotate</var><br>mov <var>destination, register</var> &gt;&gt; r5<br>mov <var>destination1, destination2, source</var><br>mov.<a
+href="extensions.html#setf">setf</a> ...<br>mov.<a href="extensions.html#ifcc">if<var>cc</var></a> ...</pre>
+    <dl>
+      <dt><var><tt>destination</tt></var></dt>
+      <dd>Target <a href="expressions.html#register">register(s)</a>.</dd>
+      <dt><var><tt>source</tt></var></dt>
+      <dd>Source <a href="expressions.html#register">register</a> or <a href="expressions.html#constant">immediate
+          value</a>.</dd>
+      <dt><var><tt>register</tt></var></dt>
+      <dd>Source <a href="expressions.html#register">register</a> for small
+        rotate instructions.</dd>
+      <dt><tt><var>rotate</var></tt></dt>
+      <dd>Optional rotation of the value.</dd>
+    </dl>
+    <p>Strictly speaking <tt>mov</tt> is no QPU instruction. It is simply a
+      convenient way to create a identity ALU instruction like <tt>or</tt> with
+      two identical source arguments or an <a href="#ldi"><tt>ldi</tt>
+        instruction</a>, whatever fits best.</p>
+    <p>If <b><var><tt>source</tt></var> is a register</b>, the assembler
+      preferably uses the ADD ALU to realize the movement. If either the ADD ALU
+      is already used by the current instruction or a rotate operation is
+      requested it uses the MUL ALU. The op-code <tt>or</tt> is used in case of
+      the ADD ALU and <tt>v8min</tt> for the MUL ALU. Except when 16 bit
+      floating point unpack is requested, in this case the instruction <tt>fmin</tt>
+      is used.</p>
+    <p>If <b><var><tt>source</tt></var> fits into a small immediate value</b>
+      then the assembler prefers this over load immediate. The assembler is
+      quite smart when using small immediate. E.g. the immediate value 64 which
+      has no direct equivalent can be achieved by passing 8 to both inputs of
+      the MUL ALU with instruction <tt>mul24</tt>. Again the ADD ALU is
+      preferred when available. But some hacks like the example before require
+      the MUL ALU, but the same value could be constructed by the ADD ALU from
+      the value 4 with the <tt>shl</tt> instruction. Even some pack modes are
+      considered to achieve the desired constant. See the <a href="smallimmediate.html">small
+        immediate table</a> for a list of supported values. The value <tt>0</tt>
+      can be assigned without the use of a small immediate value by any ALU
+      using <tt>xor</tt> or <tt>v8subs</tt> with an identical source.<br>
+      Be aware that the carry flag is not well defined in case <tt>.setf</tt>
+      is used because of the free choice of the opcode.</p>
+    <p>If neither the second ALU nor signalling flags are used at the end then
+      the instruction is converted back to <tt>ldi</tt> to save ALU power.</p>
+    <p>If <b><var><tt>source</tt></var> does not fit into a small immediate</b>
+      than a <a href="#ldi"><tt>ldi</tt></a> instruction is generated.</p>
+    <p>With some restrictions you can handle <b>two move instructions in a
+        single cycle</b>. E.g. if both sources are registers or if one source is
+      from register file A and the other source fits into a small immediate
+      value of if both sources can be created from the same small immediate
+      value.</p>
+    <h3>Examples</h3>
+    <pre>mov ra29, 16<br>mov r3, rb4 &lt;&lt; 2;  mov r2, ra11 # Uses the MUL ALU for the first move (because of the vector rotation) and the ADD ALU for the second one.<br>mov r0, 0x8000000; mov tmurs, 1 # Uses small immediate value 1 with ror r0, 1, 1 to create the 0x80000000.</pre>
+    <h2><a name="ldi"></a>Load immediate</h2>
+    <pre>ldi <var>destination, constant</var><br>ldi <var>destination1, destination2, constant</var><br>ldi.<a
+href="extensions.html#setf">setf</a> ...<br>ldi.<a href="extensions.html#ifcc">if<var>cc</var></a> ...
+<var></var></pre>
+    <dl>
+      <dt><var><tt>destination</tt></var></dt>
+      <dd>Target <a href="expressions.html#register">register</a>.</dd>
+      <dt><var><tt>constant</tt></var></dt>
+      <dd><a href="expressions.html#constant">Immediate value</a>.</dd>
+    </dl>
+    In contrast to <tt>mov ldi</tt> always generates a load immediate
+    instruction even if the constant fits into a small immediate value. The same
+    value can be assigned to two targets at once by using the ADD and the MUL
+    ALU output.<br>
+    <h3>Example</h3>
+    <pre>ldi ra7, 0xffff0000</pre>
+    <h2><a name="nop"></a>No operation</h2>
+    <pre>nop<br>anop<br>mnop<br>mnop <var>destination</var><var></var></pre>
+    <dl>
+      <dt><var><tt>destination</tt></var></dt>
+      <dd>Target <a href="expressions.html#register">register</a>.</dd>
+    </dl>
+    <p>
+      <tt>nop</tt> does nothing, well not really. At least it reserves an
+      instruction word that causes a delay. This could be required to meet some
+      instruction constraints.<br>
+      The variants <tt>anop</tt> and <tt>mnop</tt> explicitly schedule to the
+      ADD ALU or MUL ALU respectively. Otherwise vc4asm would take whatever ALU
+      is available.</p>
+    <p>vc4asm allows the <tt>nop</tt> instructions to have a target. This can
+      be used to access <a href="VideoCoreIV-addendum.html#mnop">previous ALU
+        results again</a>.</p>
+    <h2><a name="read"></a>Read pseudo instruction</h2>
+    <pre><tt>read <var>source</var></tt></pre>
+    <dl>
+      <dt><var><tt>source</tt></var></dt>
+      <dd>Source register. This must be from register file A or B including
+        peripherals or a small immediate value. </dd>
+    </dl>
+    <p><tt>read</tt> is also no instruction of the QPU. It is just an extension
+      of vc4asm to create a register file A or B access <i>without</i> allocation of an
+      ALU instruction. Semantically it is identical to <tt>mov -, <var>source</var></tt>,
+      but it will <i>not</i> create any opcode to one of the ALUs. Instead only
+      the <tt>raddr_a</tt> or <tt>raddr_b</tt> field is assigned. You can
+      combine up to two <tt>read</tt> with up to two ALU instructions into a
+      single instruction word as long as they do not require the particular
+      register file source.</p>
+    <h3>Use cases</h3>
+    <dl>
+      <dt>
+        <h4>Wait for peripheral register</h4>
+      </dt>
+      <dd>
+        <p><tt>read vw_wait</tt></p>
+        <p>When you read a register only for the purpose to create a QPU stall
+          then there is no need to involve an ALU. In most cases it is a good
+          advise to prefer <tt>read ...</tt> over <tt>mov -, ...</tt>.</p>
+      </dd>
+      <dt>
+        <h4>Discard uniform or VPM value</h4>
+      </dt>
+      <dd>
+        <p><tt>read unif</tt></p>
+      </dd>
+      <dt>
+        <h4>Prefetch small immediate value</h4>
+      </dt>
+      <dd>
+        <p><tt>read 8;&nbsp; ...<br>
+            and.setf -, elem_num, rb39;&nbsp; ldtmu0</tt></p>
+        <p>Small immediate values cannot be combined with signals. But if you
+          can prefetch the value in the previous instruction, you are able to
+          use the value together with a signal without the need for a temporary
+          accumulator or even one of the ALUs of the previous instruction.</p>
+      </dd>
+    </dl>
+    <h2><a name="sema"></a>Semaphore instruction</h2>
+    <pre>sacq <var>destination, number</var><br>srel <var>destination, number</var><br>mov <var>destination</var>, sacq<var>number</var><br>mov <var>destination</var>, srel<var>number</var></pre>
+    <dl>
+      <dt><var><tt>destination</tt></var></dt>
+      <dd>Target <a href="expressions.html#register">register</a>, usually <tt>-</tt>,
+        since the output of a semaphore instruction is not generally useful. But
+        if it happens to be useful you may assign the value like with an <tt><a
+href="#ldi">ldi</a></tt> instruction.</dd>
+      <dt><var><tt>number</tt></var></dt>
+      <dd>Semaphore number to acquire or release. Only the low order 4 bits of
+        the value are used to identify the semaphore number. Bit 4 is controlled
+        by the acquire/release flag and any further bits are placed unchanged
+        into the immediate value field of the instruction and may be chosen
+        arbitrary to if you want to assign a destination.</dd>
+    </dl>
+    <h3>Example</h3>
+    <pre>sacq -, 7<br>mov -, sacq7</pre>
+    <p><var></var>The two instructions above are equivalent. The following
+      function below provides Broadcom compatible syntax.</p>
+    <pre>.set sacq(i) sacq0 + i<br>mov -, sacq(7)</pre>
+    <h2><a name="bra"></a>Branch instruction</h2>
+    <pre>bra.<var>cond destination, </var><var>target</var><br>brr.<var>cond destination, target</var><br>bra.<var>cond destination, target1, target2</var><br>brr.<var>cond destination, target1, target2</var><br>bra.<var>cond destination1, destination2, target1, target2</var><br>brr.<var>cond destination1, destination2, target1, target2</var></pre>
+    <dl>
+      <dt><var><tt>.cond</tt></var></dt>
+      <dd>Branch condition, optional. One of:<br>
+        <table border="1" cellpadding="2" cellspacing="0">
+          <thead>
+            <tr>
+              <th>condition</th>
+              <th>zero flag</th>
+              <th>negative flag</th>
+              <th>carry flag</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>set on all SIMD elements</td>
+              <td><tt>.allz</tt></td>
+              <td><tt>.alln</tt></td>
+              <td><tt>.allc</tt></td>
+            </tr>
+            <tr>
+              <td>not set on all SIMD elements</td>
+              <td><tt>.allnz</tt></td>
+              <td><tt>.allnn</tt></td>
+              <td><tt>.allnc</tt></td>
+            </tr>
+            <tr>
+              <td>set on at least one SIMD element</td>
+              <td><tt>.anyz</tt></td>
+              <td><tt>.anyn</tt></td>
+              <td><tt>.anyc</tt></td>
+            </tr>
+            <tr>
+              <td>not set on at least one SIMD element</td>
+              <td><tt>.anynz</tt></td>
+              <td><tt>.anynn</tt></td>
+              <td><tt>.anync</tt></td>
+            </tr>
+          </tbody>
+        </table>
+      </dd>
+      <dt><var><tt>destination, destination1, destination2</tt></var></dt>
+      <dd>Target <a href="expressions.html#register">register</a> or <tt>-</tt>.
+        The destination(s) receive the PC position where the branch takes place,
+        i.e. PC + 4, but the assignment only takes place if the branch is
+        actually taken.<br>
+        The option to have two destination registers require to specify two
+        branch targets also. In doubt use <tt>0</tt> or <tt>-</tt>, e.g: <tt>brr
+          ra_link, r0, -, r:target</tt></dd>
+      <dt><var><tt>target, target1, target2</tt></var></dt>
+      <dd>Register from register file A, constant or label. Branch instructions
+        can add two targets if one of them is a register and the other one is a
+        constant or label.<br>
+        Note that the use of odd register numbers implies <tt>.setf</tt> which
+        is generally not intended.</dd>
+    </dl>
+    <p><b><tt>bra</tt></b> creates an <b>absolute</b> branch, i.e. target must
+      be a physical memory address.<br>
+      <b><tt>brr</tt></b> creates a <b>relative</b> branch, i.e. it adds PC + 4
+      to the target.</p>
+    <p>Remember that branch instructions are executed 3 instructions delayed,
+      i.e. three further instructions are always executed before any branch is
+      taken.</p>
+    <h2><a name="sig"></a>Signaling instruction</h2>
+    <pre>bkpt<br>thrsw<br>thrend<br>sbwait<br>sbdone<br>lthrsw<br>loadcv<br>loadc<br>ldcend<br>ldtmu0<br>ldtmu1<br>loadam</pre>
+    The above signals can be combined with any normal ALU instructions in one
+    line, i.e. no load immediate, no small immediate, no semaphore and no
+    branch. See Broadcom reference guide for details.
+  
+
+</body></html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <title>VC4ASM Changelog</title>
+    <meta content="Marcel M&uuml;ller" name="author">
+    <link rel="stylesheet" href="infstyle.css" type="text/css">
+  </head>
+  <body>
+    <h1>VC4ASM - History of changes</h1>
+    <p><a href="index.html">&uarr; Top</a></p>
+    <h2>V 0.3</h2>
+    <h3>Breaking changes</h3>
+    <ul>
+      <li><em>The <tt>-c</tt> command line option now generates entirely
+          different C output</em> intended to be used with a header file.</li>
+      <li>The option to generate C hex output with a trailing '<tt>,</tt>' at
+        the last line (formerly <tt>-c</tt>) has gone.</li>
+      <li>The <tt>-i</tt> option of V0.2.3 now only applies to the file
+        immediately after the <tt>-i</tt> option rather than the entire command
+        line.</li>
+      <li>The <tt>-E</tt> option has gone. Use <tt>-s -e</tt> instead.</li>
+      <li>The <tt>vc4.qinc</tt> file now resides in the directory <tt>share/vc4inc/</tt>
+        rather than just <tt>share/</tt>. No big deal if you used the <tt>-i</tt>
+        option. Otherwise you need to adjust your command line, preferably by
+        using <a href="index.html#-i"><tt>-i</tt></a>.</li>
+      <li>The entire message handling has been rewritten. This causes
+        incompatibilities in the library API as well as different screen output.
+        The library version can avoid to print to <tt>stderr</tt>.</li>
+    </ul>
+    <h3>Features</h3>
+    <ul>
+      <li>Switched build environment to <a href="https://cmake.org/">CMake</a>.</li>
+      <li>Added <em>full C compatible output</em> using <a href="index.html#-c">-c</a>
+        including header file with global symbols (rather than only hex
+        fragments).</li>
+      <li>Test cases for disassembler.</li>
+      <li>Try harder when combining small immediate values with vector rotation.</li>
+    </ul>
+    <h3>Fixes</h3>
+    <ul>
+      <li><tt>bkpt</tt> instruction fixed.</li>
+      <li>Do not override mux fields at <tt>read</tt>.</li>
+      <li>Accept instruction extensions at <tt>nop</tt> and <tt>read</tt>.</li>
+      <li>vc4dis: disassemble invalid instructions as raw data (<tt>.long</tt>).</li>
+      <li>vc4dis: fixed disassembly of regfile A source in case of modulo 4 MUL
+        ALU vector rotation.</li>
+      <li>vc4dis: generate <tt>.setf</tt> extension at branch also.</li>
+      <li>vc4dis: disassembly of branch instruction with two destination
+        registers and only a regfile A target.</li>
+    </ul>
+    <h3>Extras</h3>
+    <ul>
+      <li>Added language description file for GtkSourceView based editors like
+        gedit or pluma.</li>
+    </ul>
+    <ul>
+    </ul>
+    <ul>
+    </ul>
+    <h2>V 0.2.3</h2>
+    <h3>Features</h3>
+    <ul>
+      <li>Support of <tt>::label</tt> syntax to define global (exported)
+        symbols.</li>
+      <li>Added building as library (shared and static) [doe300].</li>
+      <li>CLI option <tt>-i</tt> to assemble files from include path. (Allows
+        to refer to <tt>vc4.qinc</tt> without path.)</li>
+      <li>Added <tt>amov</tt>/<tt>mmov</tt> to explicitly place move
+        instruction to one of the ALUs (if vc4asm can't guess correctly).</li>
+    </ul>
+    <h3>Fixes</h3>
+    <ul>
+      <li>Make parser smarter with respect to operators that are not separated
+        by spaces.</li>
+      <li>Do not unnecessarily swap ALUs when loading <tt>mov</tt> constants
+        with small immediate values.</li>
+      <li><tt>vc4.qinc</tt>: compatibility to Broadcom VPM macros.</li>
+    </ul>
+    <h2>V 0.2.2</h2>
+    <ul>
+    </ul>
+    <h3>Features</h3>
+    <ul>
+      <li>Complete redesign of pack/unpack handling. Support for packed register
+        expressions, including in macros.</li>
+      <li>Support for instructions that are tied to an ALU, e.g. <tt>mv8adds</tt>.</li>
+      <li>Support <tt>nop</tt> instruction with target register (to use easter
+        egg).</li>
+      <li>Validator: warn about concurrent VPM access.</li>
+      <li>Added binary rotate operators to expression syntax.</li>
+    </ul>
+    <h3>Fixes</h3>
+    <ul>
+      <li>Fixed instruction swap of <tt>sub</tt> &amp; <tt>xor</tt> resulting
+        in bad code.</li>
+      <li>Reworked <tt>Inf</tt>/<tt>NaN</tt> handling; fixes <tt>mov ...,
+          0x7f800000</tt></li>
+      <li><tt></tt>Fixed parsing of floating point constants without a decimal
+        dot, e.g. <tt>1E6</tt>.</li>
+      <li>Disabled ELF support on OS X.</li>
+    </ul>
+    <h2>V 0.2.1</h2>
+    <h3>Features</h3>
+    <ul>
+      <li>Support to swap regfile A and regfile B read access if the I/O
+        register is invariant of that.</li>
+      <li>Added support for <tt>mov</tt> and <tt>ldi</tt> with two target
+        arguments.</li>
+      <li>Added <tt>read</tt> pseudo instruction.</li>
+      <li>Added support for code and data segments. (Validator does no longer
+        complain about data.)</li>
+      <li>Added support for half precision floating point constants.</li>
+    </ul>
+    <h3>Fixes</h3>
+    <ul>
+      <li>Fixed use of regfile A pack modes with MUL ALU.</li>
+      <li>Fixed disassemble signed values at <tt>ldipes</tt>.</li>
+      <li>Fixed <tt>.align</tt> with more than 8 bytes, support offset based <tt>.align</tt>.</li>
+      <li>Fixed local labels in <tt>.rep</tt>.</li>
+      <li>Fixed <tt>ws</tt> swap in case of vector rotation. (e.g <tt>mov r3,
+          r0&lt;&lt;8; mov ra0, 0</tt>)</li>
+      <li>Fixed disassemble of pack flags.</li>
+    </ul>
+    <h2>V 0.2</h2>
+    <ul>
+      <li>Changed internal expression evaluation to 64 bit or double precision
+        respectively.</li>
+      <li>Support for alphanumeric mathematical operators like trigonometric,
+        hyperbolic or exponential function.</li>
+      <li> Support for data directives without 64 bit alignment and <tt>.align</tt>.</li>
+      <li> Added identity (<tt>===</tt>, <tt>!==</tt>), Perl like full
+        comparison (<tt>&lt;=&gt;</tt>) and xnor (<tt>!^</tt>, <tt>!^^</tt>)
+        operators.</li>
+      <li> No longer accept floats as boolean expression, use explicit
+        comparison against 0.0 instead.</li>
+      <li> Fixed: cannot define global constants in another file invoked from
+        command line.</li>
+      <li> Validator: check for disjunctive conditional access before warning
+        about back to back register access.</li>
+      <li> Automatically choose MUL ALU if <tt>mov</tt> instruction contains
+        vector rotation.</li>
+      <li> Warn about unexpected side effects in conjunction with MUL ALU vector
+        rotations.</li>
+      <li> Fixed <tt>.foreach</tt></li>
+      <li>Added support for direct ELF output.</li>
+      <li> Added <tt>.global</tt> directive to export symbols in ELF format.</li>
+      <li> Added support for C like include search paths.</li>
+      <li> Added <tt>.local</tt>/<tt>.endloc</tt>.</li>
+      <li> Do not accept blanks between : and label name to disambiguate branch
+        target markers before instruction names.</li>
+      <li> Disassembler: fixed wrong code for branch with two write registers
+        and no regfile A read.</li>
+      <li> Do not accept <tt>.if</tt> blocks to cross file boundaries.</li>
+      <li> Fixed <tt>mov ..., -1.0</tt></li>
+      <li> Allow to combine two <tt>ldi</tt> with the same value to assign two
+        targets.</li>
+      <li>Added support for the use of vector rotation values as small
+        immediate.</li>
+      <li> Fixed: disassemble rotation by r5.</li>
+      <li> Fixed constant -2 at load per element signed.</li>
+      <li>Fixed regfile A target check at <tt>mov</tt> constants created from
+        small immediate value with regfile A pack mode.</li>
+      <li> Fixed destination operand extensions at <tt>mov</tt> instruction.</li>
+      <li> <tt>.setf</tt> support at branch instruction.</li>
+    </ul>
+    <h2>V0.1.9</h2>
+    <ul>
+      <li>Fixed vc4dis: decoded not only the first 8 instructions in case of a
+        binary source file.</li>
+      <li> Work around for missing git feature to create empty folders.</li>
+      <li> Added support for use of pack modes when tying to load a constant by
+        the small immediate field.</li>
+      <li>Fixed bug in small immediate table that caused some values not to
+        work.</li>
+      <li> Fixed duplicate messages for the invocation call stack at some parser
+        errors.</li>
+      <li> Significantly improved source code documentation.</li>
+    </ul>
+    <h2>V0.1.8</h2>
+    <ul>
+      <li>Fixed unary ADD operators to use mux A rather than B.</li>
+      <li> Fixed memory leak on platforms where <tt>va_end</tt> is not a no-op.</li>
+      <li> Fixed disassemble of floating point numbers to be turn around stable.</li>
+    </ul>
+    <h2>V0.1.7</h2>
+    <ul>
+      <li>Fixed "The unpack option works for none of the source operands" error
+        when regfile A unpack is used as first operand of ALU instruction.</li>
+      <li> Fixed "The unpack option silently applies to source argument" error
+        when using instruction level unpack syntax.</li>
+      <li> Fixed MacOS issues. Thanks to Francisco Facioni.</li>
+    </ul>
+    <h2>V0.1.6</h2>
+    <ul>
+      <li>Fixed branch instructions broken by 0.1.5.</li>
+      <li>Fixed 64 bit compatibility for cross platform operation.</li>
+    </ul>
+    <h2>V0.1.5</h2>
+    <ul>
+      <li>Merge with hello_fft 3.0, 4 Mi FFT, should fix RPi 2 compatibility.</li>
+      <li>Use overlapping buffers for hello_fft, saves much memory.</li>
+      <li>Support for MUL ALU pack and <tt>r4</tt> unpack modes.</li>
+      <li> Support for <tt>.ifset</tt> directive.</li>
+      <li> Support for ALU swap when combining instructions. Can e.g. handle <tt>mov
+          ra16, r1; mov r1, 0x180</tt> (The constant 0x180 can only be loaded by
+        the ADD ALU.)</li>
+      <li> Fix: use of instruction extensions like <tt>.8a</tt> at ALU source
+        expressions.</li>
+      <li> Fix: do not auto combine TMU instructions.</li>
+      <li> Fix: do not erroneously convert signalling instructions to <tt>ldi</tt>.</li>
+      <li>Fix: honor <tt>.if</tt>/<tt>.macro</tt> at <tt>.int</tt>/<tt>.long</tt>...</li>
+      <li> Added <tt>.foreach</tt> directive.</li>
+    </ul>
+    <h2>V0.1.4</h2>
+    <ul>
+      <li>Support all shift values with small immediates.</li>
+      <li> Fixed <tt>.setf</tt> for MUL ALU.</li>
+      <li> Fixed operator <tt>&gt;&gt;&gt;</tt> and <tt>&lt;&lt;&lt;</tt>.</li>
+      <li> Support forward <tt>.clone</tt>.</li>
+      <li> Fixed validation of branch return targets.</li>
+      <li> Check for conditional TMU access.</li>
+      <li> Do not overwrite read address B with small immediate value.</li>
+      <li> Support equivalence of <tt>add</tt> ... <tt>16</tt> and <tt>sub</tt>
+        ... <tt>-16</tt> in conjunction with small immediates.</li>
+    </ul>
+    <h2>V0.1.3</h2>
+    <ul>
+      <li>Fixed pack/unpack instruction, still incomplete.</li>
+      <li> Added <tt>.clone</tt> directive (experimental).</li>
+      <li> Further optimizations to hello_fft example.</li>
+      <li> Several smaller bugfixes.</li>
+    </ul>
+    <h2>V0.1.2</h2>
+    <ul>
+      <li>Added type detection macros.</li>
+      <li> Optional automatic instruction packing.</li>
+      <li> Merged with gpu_fft V2.0 including 2 Mi FFT, a few further
+        optimizations.</li>
+    </ul>
+    <h2>V0.1.1</h2>
+    <ul>
+      <li>Added support for binary constants between the code.</li>
+    </ul>
+    <h2>V0.1</h2>
+    <ul>
+      <li>First public release.</li>
+    </ul>
+  </body>
+</html>
