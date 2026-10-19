@@ -90,7 +90,7 @@ void	init_proc(void)
 	log("Finished init_proc, polling mouse\n", LOG_INFO);
 	while (1)
 	{
-		usb_mouse_poll(click_dispatcher);
+		//usb_mouse_poll(click_dispatcher);
 		usleep(20000);
 	}
 	
