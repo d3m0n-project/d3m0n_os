@@ -62,8 +62,19 @@ void	app_and_icon_loader_thread(void)
 
 void	click_dispatcher(int mouse_x, int mouse_y, unsigned int mouse_btn)
 {
-	//t_process *proc = current_process;
-	log("clicked (%i, %i) with %i\n", LOG_INDENT | LOG_INFO, mouse_x, mouse_y, mouse_btn);
+	t_process *proc = current_process;
+	
+	if (mouse_btn == 0) // no click
+		return;
+
+	event_t	new_event = { .type=EVENT_MOUSE, .timestamp=time_s(), .x=mouse_x, .y=mouse_y }; // TODO: mouse btn
+	if (!fifo_push(&proc->events, &new_event))
+	{
+		log("Could not register a new event for process: event fifo is full\n", LOG_WARNING | LOG_INDENT);
+		return;
+	}
+	
+	//log("clicked (%i, %i) with %i\n", LOG_INDENT | LOG_INFO, mouse_x, mouse_y, mouse_btn);
 }
 
 void	init_proc(void)

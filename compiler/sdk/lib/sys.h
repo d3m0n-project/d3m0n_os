@@ -2,6 +2,7 @@
 #define SYS_H
 
 #include "types.h"
+#include "app/events.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,6 +62,7 @@ extern "C" {
 		SYS_EXEC,
 		SYS_KILL,
 		SYS_PSTATE,
+		SYS_EVTPOP,
 
 
 		TMP_TOTAL_SYSCALL_COUNT // do not remove me
@@ -151,9 +153,11 @@ extern "C" {
 		return (void *)syscall(SYS_SBRK, increment, (uint32_t)0, (uint32_t)0, (uint32_t)0);
 	}
 
-	static inline int	time(void *timezone, uint64_t *output)
+	static inline uint64_t	time(void *timezone)
 	{
-		return syscall(SYS_GET_TIME, (uint32_t)timezone, (uint32_t)output, (uint32_t)0, (uint32_t)0);
+		uint64_t output = 0;
+		syscall(SYS_GET_TIME, (uint32_t)timezone, (uint32_t)&output, (uint32_t)0, (uint32_t)0);
+		return output;
 	}
 
 	static inline uint32_t	clock(void)
@@ -181,6 +185,10 @@ extern "C" {
 		return syscall(SYS_PSTATE, (uint32_t)pid, (uint32_t)0, (uint32_t)0, (uint32_t)0);
 	}
 
+	static inline uint32_t	evtpop(event_t *out)
+	{
+		return syscall(SYS_EVTPOP, (uint32_t)out, (uint32_t)0, (uint32_t)0, (uint32_t)0);
+	}
 #ifdef __cplusplus
 }
 #endif

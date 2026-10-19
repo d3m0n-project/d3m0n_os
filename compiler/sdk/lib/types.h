@@ -99,7 +99,7 @@ extern "C" {
 	#define va_copy(dst,src)		__builtin_va_copy(dst,src)
 	#define va_end(ap)				__builtin_va_end(ap)
 
-	typedef long long				time_t;
+	typedef int32_t					time_t;
 
 	static inline void	assert_fail(const char *condition)
 	{

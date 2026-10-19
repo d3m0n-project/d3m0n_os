@@ -10,6 +10,7 @@
 #include "memory/mmu.h"
 #include "proc/interrupts.h"
 #include "filesystem/filesystem.h"
+#include "proc/fifo.h"
 
 #define kernel_user_stack_offset	OFFSETOF(t_process, user_stack)
 
@@ -26,16 +27,16 @@
 #define PROC_MAX_EVENTS				128
 
 typedef uint32_t e_process_state;
-#define PROC_READY			0
-#define PROC_RUNNING		1
-#define PROC_BLOCKED		2
-#define PROC_SLEEPING		3
-#define PROC_ZOMBIE			4
-#define PROC_CRASHED		5
+#define PROC_READY					0
+#define PROC_RUNNING				1
+#define PROC_BLOCKED				2
+#define PROC_SLEEPING				3
+#define PROC_ZOMBIE					4
+#define PROC_CRASHED				5
 
 typedef uint32_t e_process_mode;
-#define PROCESS_KERNEL		0
-#define PROCESS_USER		1
+#define PROCESS_KERNEL				0
+#define PROCESS_USER				1
 
 
 typedef struct s_process
@@ -69,7 +70,7 @@ typedef struct s_process
 	uint32_t		surface_width;
 	uint32_t		surface_height;
 
-	//t_fifo			events[PROC_MAX_EVENTS];
+	event_fifo_t	events;
 
 	fs_fd			fds[FS_MAX_FDS];
 

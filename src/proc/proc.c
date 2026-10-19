@@ -160,9 +160,7 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 	}
 
 	if (kernel_mode)
-	{
 		p->mode = PROCESS_KERNEL;
-	}
 	else
 	{
 		p->mode = PROCESS_USER;
@@ -179,11 +177,10 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 	for (int i = 0; i < FS_MAX_FDS; i++)
 		p->fds[i] = (fs_fd){0};
 
-	prepare_initial_stack(p, entry);
+	// prepare events fifo
+	fifo_init(&p->events);
 
-	// for kernel processes, user_sp is the SVC sp — initialize it
-	// to irq_sp so the validator sees a consistent in-bounds value
-	// before the first context save
+	prepare_initial_stack(p, entry);
 	if (kernel_mode)
 		p->user_sp = p->irq_sp;
 

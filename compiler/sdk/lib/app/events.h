@@ -5,18 +5,24 @@
 
 #define PROC_MAX_EVENTS	128
 
+typedef enum: uint32_t
+{
+	EVENT_UNKNOWN,
+	EVENT_MOUSE,
+}	e_event_type;
+
 typedef struct {
-	uint32_t		type;
+	e_event_type	type;
 	uint64_t		timestamp;
 	int32_t			x;
 	int32_t			y;
 }	event_t;
 
 typedef struct {
-	event_t		buffer[PROC_MAX_EVENTS];
-	size_t		head;
-	size_t		tail;
-	size_t		count;
+	event_t			buffer[PROC_MAX_EVENTS];
+	size_t			head;
+	size_t			tail;
+	size_t			count;
 }	event_fifo_t;
 
 #endif

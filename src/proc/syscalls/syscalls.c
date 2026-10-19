@@ -467,12 +467,12 @@ int	sys_kill(uint32_t pid, uint32_t code, uint32_t a2, uint32_t a3)
 				return 0;
 
 			t_process *exiting = proc;
-
 			if (exiting->surface_addr)
 			{
 				exiting->surface_addr = 0;
 				kfree((void *)(uintptr_t)exiting->surface_addr);
 			}
+
 			// cleanup opened files
 			for (int i = 0; i < FS_MAX_FDS; i++)
 			{
@@ -507,6 +507,17 @@ int	sys_pstate(uint32_t pid, uint32_t a1, uint32_t a2, uint32_t a3)
 	return PROC_ZOMBIE;
 }
 
+int	sys_evtpop(uint32_t event_ptr, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+	(void)a1;
+	(void)a2;
+	(void)a3;
+	event_t	*events = (event_t *)resolve_user_ptr(event_ptr, sizeof(event_t));
+	
+	*events = (event_t){0};
+	return fifo_pop(&current_process->events, events);
+}
+
 
 syscall_t	syscall_table[] = {
 	sys_exit,
@@ -528,7 +539,8 @@ syscall_t	syscall_table[] = {
 	sys_random,
 	sys_exec,
 	sys_kill,
-	sys_pstate
+	sys_pstate,
+	sys_evtpop
 };
 
 // TODO: kill, waitpid
