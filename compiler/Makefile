@@ -1,6 +1,7 @@
 OUT						= d3c
 CXX						= g++
-CPP_FILES				= d3c.cpp
+CPP_FILES				= d3c.cpp \
+						  vc4asm.cpp
 SRC_DIR					= src
 OBJ_DIR					= obj
 SDK_BUILD				= $(OBJ_DIR)/sdk.a
@@ -21,8 +22,7 @@ INSTALL_DIR				:= $(INSTALL_DIR_USER)
 endif
 
 SDK_HEADER_PATH			= $(INSTALL_DIR)/sdk
-CPP_FLAGS				= -Wall -Wextra -Werror \
- 							-DINCLUDE_SDK=$(INCLUDE_SDK) \
+CPP_FLAGS				= -Wall -Wextra -Werror -DINCLUDE_SDK=$(INCLUDE_SDK) \
 							-DLIB_PATH="\"$(INSTALL_DIR)\"" \
 							-MMD -MP
 CWD						= $(shell pwd)
@@ -30,9 +30,21 @@ OBJCOPY					= $(shell $(CXX) -print-prog-name=objcopy)
 TARGET_BFD				= $(shell $(OBJCOPY) --info | awk '/^elf/ {print $$1; exit}')
 
 
+vc4asm_SRC_DIR			= ./vc4asm/src
+vc4asm_OBJ_DIR			= $(OBJ_DIR)/vc4asm
+# Match the vc4asm library sources. Table files are included by their owning
+# .cpp files, vc4dis.cpp defines a second main(), and helpers.asm is an m4
+# include file rather than a C++ translation unit.
+vc4asm_CPP_FILES		= expr.cpp Inst.cpp Validator.cpp ReadBin.cpp WriteC.cpp \
+							ReadX.cpp Message.cpp WriteQasm.cpp utils.cpp WriteELF.cpp \
+							ReaderBase.cpp Disassembler.cpp AssembleInst.cpp Parser.cpp \
+							Eval.cpp WriterBase.cpp
+vc4asm_O_FILES			= $(addprefix $(vc4asm_OBJ_DIR)/,$(vc4asm_CPP_FILES:.cpp=.o))
+vc4asm_CXX_FLAGS		= -I$(vc4asm_SRC_DIR)
 
 
 all: $(SDK_BUILD) install
+
 
 $(SDK_BUILD):
 	@rm -rf "$(INSTALL_DIR)/" > /dev/null
@@ -56,20 +68,31 @@ $(SDK_BUILD):
 
 build: $(OUT)
 
-$(OUT): $(O_FILES)
+$(OUT): $(vc4asm_O_FILES) $(O_FILES)
 	@mkdir -p $(OBJ_DIR)
 ifneq ($(INCLUDE_SDK),0)
 	ld -r -b binary -o "$(OBJ_DIR)/linker.o" "linker.ld"
 	$(OBJCOPY) -I binary -O $(TARGET_BFD) "$(SDK_BUILD)" "$(OBJ_DIR)/sdk.o"
-	$(CXX) "$(OBJ_DIR)/sdk.o" "$(OBJ_DIR)/linker.o" $(O_FILES) -o $@ $(CPP_FLAGS)
+	$(CXX) "$(OBJ_DIR)/sdk.o" "$(OBJ_DIR)/linker.o" $(vc4asm_O_FILES) $(O_FILES) -o $@ $(CPP_FLAGS) $(vc4asm_CXX_FLAGS)
 else
-	$(CXX) $(O_FILES) -o $@ $(CPP_FLAGS)
+	$(CXX) $(vc4asm_O_FILES) $(O_FILES) -o $@ $(CPP_FLAGS) $(vc4asm_CXX_FLAGS)
 endif
 	@printf "\033[35mLinked $(OUT)!\033[0m\n"
 
+
+
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
-	$(CXX) -c $< -o $@ $(CPP_FLAGS)
+	$(CXX) -c $< -o $@ $(CPP_FLAGS) -I$(vc4asm_SRC_DIR)
+
+
+# ------------------------------------------------
+$(vc4asm_OBJ_DIR)/%.o: $(vc4asm_SRC_DIR)/%.cpp
+	@mkdir -p $(vc4asm_OBJ_DIR)
+	$(CXX) -c $< -o $@ $(vc4asm_CXX_FLAGS)
+
+# ------------------------------------------------
+
 
 install: build
 	@mkdir -p "$(INSTALL_DIR)"
@@ -125,6 +148,6 @@ fclean: clean
 re: fclean all
 
 
-.PHONY: all clean fclean re install remove build
+.PHONY: all clean fclean re install remove build vc4asm
 
 -include $(D_FILES)

@@ -88,6 +88,11 @@ void	kernel_main(void *dtb)
 	else						log("Config parsed successfully!\n", LOG_SUCCESS);
 
 
+	
+
+
+	panic("finished test\n");
+
 	timer_init();
 	enable_irq();
 	if (!process_create(init_proc, "init", 1))

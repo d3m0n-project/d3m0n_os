@@ -29,6 +29,10 @@ extern "C"
 	extern const unsigned char _binary_linker_ld_end[];
 }
 
+
+int	vc4asm_main(int argc, char **argv);
+
+
 static int	create_embedded_archive(const char *name, const unsigned char *begin, const unsigned char *end)
 {
 	const size_t size = static_cast<size_t>(end - begin);
@@ -65,8 +69,9 @@ int main(int argc, char **argv)
 {
 	if (argc == 1)
 	{
-		cerr << "\033[31mERROR\033[0m: Usage:         " << argv[0] << " [options] file..." << endl;
-		cerr << "       Project Init:  " << argv[0] << " init project_name" << endl;
+		cerr << "\033[31mERROR\033[0m: Usage:                    " << argv[0] << " [options] file..." << endl;
+		cerr << "       GPU code compilation:     " << argv[0] << " --gpu ..." << endl;
+		cerr << "       Project Init:             " << argv[0] << " init project_name" << endl;
 		return 1;
 	}
 
@@ -111,6 +116,15 @@ int main(int argc, char **argv)
 		{
 			compile_only = true;
 			break;
+		}
+		if (strcmp(argv[i], "--gpu") == 0) // compile using vc4asm, only args after --gpu are processed by vc4asm
+		{
+			#if INCLUDE_SDK == 1
+			cout << "\033[35md3c GPU\033[0m:" << "Compiling to VideoCore IV machine code..." << endl;
+			return vc4asm_main(argc - i, argv + i);
+			#else
+			cerr << "\033[31md3c GPU\033[0m:" << "SDK unavailable, could not compile GPU code using vc4asm" << endl;
+			#endif
 		}
 	}
 

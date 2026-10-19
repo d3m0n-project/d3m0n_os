@@ -4,6 +4,11 @@
 
 This folder provides the official platform `[SDK](./sdk/)` and compiler: `d3c`.
 
+## Features
+- Direct d3m0n SDK access
+- Source code to VideoCore IV machine code (GPU) using `--gpu`
+
+
 
 ## Installation
 To install `d3c` simply run these few commands.
