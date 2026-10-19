@@ -6,7 +6,7 @@
 //#include "display.h"
 #include "image/icons.h"
 #include "settings.h"
-//#include "usb.h"
+#include "peripheral/usb.h"
 
 //void	rsa_require_thread(void)
 //{
@@ -60,6 +60,12 @@ void	app_and_icon_loader_thread(void)
 	process_exit_current(success == 0);
 }
 
+void	click_dispatcher(int mouse_x, int mouse_y, unsigned int mouse_btn)
+{
+	t_process *proc = current_process;
+	log("clicked (%i, %i) with %i\n", LOG_INDENT | LOG_INFO, mouse_x, mouse_y, mouse_btn);
+}
+
 void	init_proc(void)
 {
 	t_conf		*config = get_config();
@@ -81,9 +87,12 @@ void	init_proc(void)
 		panic("Failed to start homepage desktop app: check config file\n");
 	
 	process_list();
-	log("Finished init_proc, entering standby mode...\n", LOG_INFO);
+	log("Finished init_proc, polling mouse\n", LOG_INFO);
 	while (1)
-		usleep(1000000);
+	{
+		usb_mouse_poll(click_dispatcher);
+		usleep(20000);
+	}
 	
 	// load desktop app manifest
 	//char	*manifest = get_app_path_from_package(config->launcher, PACKAGE_MANIFEST);
@@ -126,9 +135,5 @@ void	init_proc(void)
 
 	//exec_event(0, EVENT_ON_CREATE, &main_window); // Window.OnCreate
 
-	//while (1)
-	//{
-	//	usb_mouse_poll();
-	//	usleep(20000);
-	//}
+	
 }

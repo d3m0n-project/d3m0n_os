@@ -180,8 +180,7 @@ static int	hc_wait_complete(usb_hc_t *hc)
 		return -2;
 	if (status & (HCINT_NAK | HCINT_NYET))
 		return -3;
-	if (status & (HCINT_TXERR | HCINT_BBLERR | HCINT_FRMOVRUN
-			| HCINT_DATATGLERR))
+	if (status & (HCINT_TXERR | HCINT_BBLERR | HCINT_FRMOVRUN | HCINT_DATATGLERR))
 		return -4;
 	if (status & HCINT_CHHLTD)
 		return -5;
@@ -239,8 +238,7 @@ static int	usb_transfer_ex(uint8_t addr, uint8_t ep, uint8_t in, uint32_t ep_typ
 	packets = 1;
 	if (len)
 		packets = (len + mps - 1) / mps;
-	hcchar = HCCHAR_MPS(mps) | HCCHAR_EPNUM(ep) | ep_type
-		| HCCHAR_DEVADDR(addr);
+	hcchar = HCCHAR_MPS(mps) | HCCHAR_EPNUM(ep) | ep_type | HCCHAR_DEVADDR(addr);
 	if (in)
 		hcchar |= HCCHAR_EPDIR_IN;
 	if (g_root_device.speed_low)
@@ -486,21 +484,16 @@ static void	usb_parse_config(uint8_t *buf, uint16_t len)
 			&& ptr[0] >= sizeof(usb_interface_descriptor_t))
 		{
 			interface = (usb_interface_descriptor_t *)ptr;
-			if (interface->bInterfaceClass == USB_CLASS_HID
-				&& interface->bInterfaceSubClass == USB_HID_BOOT
-				&& interface->bInterfaceProtocol == USB_HID_MOUSE)
+			if (interface->bInterfaceClass == USB_CLASS_HID && interface->bInterfaceSubClass == USB_HID_BOOT && interface->bInterfaceProtocol == USB_HID_MOUSE)
 			{
 				mouse_interface = interface->bInterfaceNumber;
 				log("USB: HID boot mouse interface=%u endpoints=%u\n", LOG_SUCCESS, (unsigned int)interface->bInterfaceNumber, (unsigned int)interface->bNumEndpoints);
 			}
 		}
-		else if (ptr[1] == USB_DESC_ENDPOINT
-			&& ptr[0] >= sizeof(usb_endpoint_descriptor_t)
-			&& mouse_interface != 0xff)
+		else if (ptr[1] == USB_DESC_ENDPOINT && ptr[0] >= sizeof(usb_endpoint_descriptor_t) && mouse_interface != 0xff)
 		{
 			endpoint = (usb_endpoint_descriptor_t *)ptr;
-			if ((endpoint->bEndpointAddress & USB_ENDPOINT_IN)
-				&& ((endpoint->bmAttributes & USB_ENDPOINT_XFER_MASK) == USB_ENDPOINT_XFER_INTR))
+			if ((endpoint->bEndpointAddress & USB_ENDPOINT_IN) && ((endpoint->bmAttributes & USB_ENDPOINT_XFER_MASK) == USB_ENDPOINT_XFER_INTR))
 			{
 				g_mouse.present = 1;
 				g_mouse.interface = mouse_interface;
@@ -517,7 +510,7 @@ static void	usb_parse_config(uint8_t *buf, uint16_t len)
 	}
 }
 
-int	usb_mouse_poll(void)
+int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 {
 	int		ret;
 	int8_t	dx;
@@ -560,7 +553,7 @@ int	usb_mouse_poll(void)
 		g_mouse.y = SCREEN_HEIGHT;
 	
 	g_mouse.buttons = g_mouse_report[0];
-	//handle_click(g_mouse.x, g_mouse.y, (unsigned int)g_mouse.buttons, get_current_window());
+	click_handler(g_mouse.x, g_mouse.y, (unsigned int)g_mouse.buttons);
 	
 	//draw_topbar(get_current_window()); // TODO:
 	// save last pixels

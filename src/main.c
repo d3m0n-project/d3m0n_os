@@ -91,9 +91,6 @@ void	kernel_main(void *dtb)
 	// TODO: test gpu
 	//gpu_test();
 
-
-	panic("finished test\n");
-
 	timer_init();
 	enable_irq();
 	if (!process_create(init_proc, "init", 1))
