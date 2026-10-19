@@ -7,6 +7,3 @@
 [submodule "rootfs/programs/micropython"]
 	path = rootfs/programs/micropython
 	url = https://github.com/d3m0n-project/micropython
-[submodule "rootfs/lib/d3gl"]
-	path = rootfs/lib/d3gl
-	url = https://github.com/d3m0n-project/d3gl
