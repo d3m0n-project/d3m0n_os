@@ -27,6 +27,9 @@ extern "C" int	main(void)
 	//		printf("(%i, %i): %lu at %lu\n", e.x, e.y, e.type, e.timestamp);
 	//}
 
+	char temp[255];
+	sprintf(temp, "%f", 3.14159274f);
+	printf("'%s'\n", temp);
 
 	const char *argv2[] = {"/test.lua", 0};
 	uint32_t pid = exec("/programs/bin/lua", argv2);

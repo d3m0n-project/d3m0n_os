@@ -2,6 +2,125 @@
 #include "stdlib.h"
 #include "stdio.hpp"
 
+static int	put_float(double value, t_format f, t_buf *buffer, int trim_zeros)
+{
+	char				whole_digits[24];
+	char				fraction_digits[19];
+	int					precision;
+	int					negative;
+	int					whole_len;
+	int					pad;
+	int					i;
+	int					start_len;
+	int					dot_written;
+	unsigned long long	whole;
+	unsigned long long	scale;
+	unsigned long long	fraction_value;
+	double				fraction;
+
+	if (value != value)
+		return (buf_putstr(buffer, "nan") ? 3 : -1);
+	negative = value < 0;
+	if (negative)
+		value = -value;
+	precision = f.precision < 0 ? 6 : f.precision;
+	if (precision > 18)
+		precision = 18;
+	if (value >= 18446744073709551616.0)
+		return (-1);
+	whole = (unsigned long long)value;
+	fraction = value - (double)whole;
+	scale = 1;
+	i = 0;
+	while (i < precision)
+	{
+		scale *= 10;
+		i++;
+	}
+	fraction_value = 0;
+	if (precision > 0)
+	{
+		fraction_value = (unsigned long long)
+			(fraction * (double)scale + 0.5);
+		if (fraction_value >= scale)
+		{
+			whole++;
+			fraction_value = 0;
+		}
+		i = precision - 1;
+		while (i >= 0)
+		{
+			fraction_digits[i] = '0' + fraction_value % 10;
+			fraction_value /= 10;
+			i--;
+		}
+	}
+	whole_len = 0;
+	do
+	{
+		whole_digits[whole_len++] = '0' + whole % 10;
+		whole /= 10;
+	} while (whole);
+	pad = f.width - whole_len - (precision > 0 || f.flags[FLAG_HASHTAG])
+		- precision
+		- (negative || f.flags[FLAG_PLUS] || f.flags[FLAG_SPACE]);
+	if (pad < 0)
+		pad = 0;
+	if (!f.flags[FLAG_MINUS] && !f.flags[FLAG_ZERO])
+	{
+		i = pad;
+		while (i-- > 0)
+			if (!buf_putc(buffer, ' '))
+				return (-1);
+	}
+	if (negative)
+	{
+		if (!buf_putc(buffer, '-'))
+			return (-1);
+	}
+	else if (f.flags[FLAG_PLUS] || f.flags[FLAG_SPACE])
+	{
+		if (!buf_putc(buffer, f.flags[FLAG_PLUS] ? '+' : ' '))
+			return (-1);
+	}
+	if (!f.flags[FLAG_MINUS] && f.flags[FLAG_ZERO])
+	{
+		i = pad;
+		while (i-- > 0)
+			if (!buf_putc(buffer, '0'))
+				return (-1);
+	}
+	while (whole_len > 0)
+		if (!buf_putc(buffer, whole_digits[--whole_len]))
+			return (-1);
+	dot_written = precision > 0 || f.flags[FLAG_HASHTAG];
+	if (dot_written)
+		if (!buf_putc(buffer, '.'))
+			return (-1);
+	start_len = buffer->len;
+	i = 0;
+	while (i < precision)
+	{
+		if (!buf_putc(buffer, fraction_digits[i]))
+			return (-1);
+		i++;
+	}
+	if (trim_zeros && precision > 0)
+	{
+		while (buffer->len > (size_t)start_len && buffer->data[buffer->len - 1] == '0')
+			buffer->len--;
+		if (dot_written && buffer->len == (size_t)start_len && buffer->data[buffer->len - 1] == '.')
+			buffer->len--;
+	}
+	if (f.flags[FLAG_MINUS])
+	{
+		while (pad-- > 0)
+			if (!buf_putc(buffer, ' '))
+				return (-1);
+	}
+	return ((int)buffer->len);
+}
+
 static int	print_format(struct s_format f, va_list *args, t_buf *buffer)
 {
 	if (!f.type)
@@ -25,6 +144,26 @@ static int	print_format(struct s_format f, va_list *args, t_buf *buffer)
 		if (f.length == LEN_L)
 			return (ft_ul_putnbr_count(va_arg(*args, unsigned long), f, 0, 0, buffer));
 		return (ft_uint_putnbr_count(va_arg(*args, unsigned int), f, 0, 0, buffer));
+	}
+	else if (f.type == 'f' || f.type == 'F' || f.type == 'g' || f.type == 'G')
+	{
+		double value = va_arg(*args, double);
+		int is_general = f.type == 'g' || f.type == 'G';
+		if (is_general)
+		{
+			double magnitude = value < 0 ? -value : value;
+			int significant = f.precision < 0 ? 6 : f.precision;
+			int exponent = 0;
+			if (significant < 1)
+				significant = 1;
+			while (magnitude >= 10.0) { magnitude /= 10.0; exponent++; }
+			while (magnitude > 0.0 && magnitude < 1.0) { magnitude *= 10.0; exponent--; }
+			/* %g precision counts significant digits, including the first. */
+			f.precision = significant - exponent - 1;
+			if (f.precision < 0)
+				f.precision = 0;
+		}
+		return put_float(value, f, buffer, is_general);
 	}
 	else if (f.type == 'p')
 		return (ft_putptr_count((void *)va_arg(*args, void *), f, buffer));
