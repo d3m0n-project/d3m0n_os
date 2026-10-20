@@ -356,6 +356,7 @@ int	sys_surface_create(uint32_t width, uint32_t height, uint32_t surface_ptr, ui
 	return 0;
 }
 
+t_process	*last_updated_proc = 0;
 int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t a3)
 {
 	t_process	*proc = current_process;
@@ -380,13 +381,18 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 	#if DEBUG_OUTLINE == 1
 	draw_rect_outline(0, TOPBAR_HEIGHT, proc->surface_width, proc->surface_height, OUTLINE_COLOR);
 	#endif
+	last_updated_proc = proc;
 	return 0;
 }
 
 int	sys_get_time(uint32_t timezone_ptr, uint32_t output_ptr, uint32_t relative, uint32_t a3)
 {
-	uint64_t	*output = (uint64_t *)resolve_user_ptr(output_ptr, sizeof(uint64_t *));
 	(void)a3;
+	if (!output_ptr)
+		return -1;
+	
+	uint64_t	*output = (uint64_t *)resolve_user_ptr(output_ptr, sizeof(uint64_t *));
+	
 	 // TODO: timezone
 	if (relative == 1)
 		return (uint32_t)(time_from_boot() / CLOCKS_PER_SEC);
@@ -512,10 +518,13 @@ int	sys_evtpop(uint32_t event_ptr, uint32_t a1, uint32_t a2, uint32_t a3)
 	(void)a1;
 	(void)a2;
 	(void)a3;
+	if (!event_ptr)
+		return -1;
+
 	event_t	*event = (event_t *)resolve_user_ptr(event_ptr, sizeof(event_t));
 	
 	*event = (event_t){0};
-	return fifo_pop(&current_process->events, event);;
+	return fifo_pop(&current_process->events, event);
 }
 
 

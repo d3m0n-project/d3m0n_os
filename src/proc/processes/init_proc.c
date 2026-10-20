@@ -62,20 +62,14 @@ void	app_and_icon_loader_thread(void)
 
 void	click_dispatcher(int mouse_x, int mouse_y, unsigned int mouse_btn)
 {
-	t_process *proc = current_process;
-	
-	if (mouse_btn == 0) // no click
+	extern t_process	*last_updated_proc;
+	t_process *proc = last_updated_proc;
+	if (mouse_btn <= 0 || mouse_btn > 4 || !proc || proc->state == PROC_CRASHED || proc->state == PROC_ZOMBIE) // no click or no last refreshed process
 		return;
 
-	event_t	new_event = { .type=EVENT_MOUSE, .timestamp=time_s(), .x=mouse_x, .y=mouse_y }; // TODO: mouse btn
-	log("current_proc: %s\n", 0, proc->proc_name);
+	event_t	new_event = { .type=(uint32_t)(EVENT_MOUSECLICK1 + (mouse_btn - 1)), .timestamp=time_s(), .x=mouse_x, .y=mouse_y }; // TODO: mouse btn
 	if (!fifo_push(&proc->events, &new_event))
-	{
 		log("Could not register a new event for process: event fifo is full\n", LOG_WARNING | LOG_INDENT);
-		return;
-	}
-	
-	log("clicked (%i, %i) with %i\n", LOG_INDENT | LOG_INFO, mouse_x, mouse_y, mouse_btn);
 }
 
 void	init_proc(void)
@@ -102,7 +96,7 @@ void	init_proc(void)
 	log("Finished init_proc, polling mouse\n", LOG_INFO);
 	while (1)
 	{
-		//usb_mouse_poll(click_dispatcher);
+		usb_mouse_poll(click_dispatcher);
 		usleep(20000);
 	}
 	

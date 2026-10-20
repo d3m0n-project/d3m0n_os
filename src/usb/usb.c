@@ -532,13 +532,13 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 		return 0;
 
 	// replace last pixel
-	if (g_mouse.last_pixel_saved)
-	{
-		for (int i=0; i<CURSOR_SIZE * CURSOR_SIZE; i++)
-			put_pixel(g_mouse.x + (i % CURSOR_SIZE), g_mouse.y + (i / CURSOR_SIZE), g_mouse.last_pixel_color[i]);
-	}
-	else
-		g_mouse.last_pixel_saved = 1;
+	//if (g_mouse.last_pixel_saved)
+	//{
+	//	for (int i=0; i<CURSOR_SIZE * CURSOR_SIZE; i++)
+	//		put_pixel(g_mouse.x + (i % CURSOR_SIZE), g_mouse.y + (i / CURSOR_SIZE), g_mouse.last_pixel_color[i]);
+	//}
+	//else
+	//	g_mouse.last_pixel_saved = 1;
 	g_mouse.x += dx;
 	g_mouse.y += dy;
 
@@ -553,18 +553,19 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 		g_mouse.y = SCREEN_HEIGHT;
 	
 	g_mouse.buttons = g_mouse_report[0];
-	click_handler(g_mouse.x, g_mouse.y, (unsigned int)g_mouse.buttons);
-	
-	//draw_topbar(get_current_window()); // TODO:
+
 	// save last pixels
 	for (int i=0; i<CURSOR_SIZE; i++)
 	{
 		for (int j=0; j<CURSOR_SIZE; j++)
 		{
-			g_mouse.last_pixel_color[i * CURSOR_SIZE + j] = get_pixel(g_mouse.x + j, g_mouse.y + i);
+			//g_mouse.last_pixel_color[i * CURSOR_SIZE + j] = get_pixel(g_mouse.x + j, g_mouse.y + i);
 			put_pixel(g_mouse.x + j, g_mouse.y + i, DISPLAY_COLORS[RED]);
 		}
 	}
+
+	click_handler(g_mouse.x, g_mouse.y - TOPBAR_HEIGHT, (unsigned int)g_mouse.buttons); 
+	
 	return 1;
 }
 

@@ -7,9 +7,14 @@
 
 typedef enum: uint32_t
 {
-	EVENT_UNKNOWN,
-	EVENT_MOUSE,
+	EVENT_UNKNOWN=0,
+	EVENT_MOUSECLICK1=1,
+	EVENT_MOUSECLICK2=2,
+	EVENT_MOUSECLICK3=3,
+	EVENT_MOUSECLICK4=4,
 }	e_event_type;
+
+#define EVENT_IS_MOUSE(x)	(x >= EVENT_MOUSECLICK1 && x <= EVENT_MOUSECLICK4)
 
 typedef struct {
 	e_event_type	type;
