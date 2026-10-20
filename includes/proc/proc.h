@@ -67,6 +67,7 @@ typedef struct s_process
 	void			*image_backing;
 	uint32_t		surface_addr;
 	uint32_t		surface_size;
+	uint32_t		surface_snapshot;
 	uint32_t		surface_width;
 	uint32_t		surface_height;
 

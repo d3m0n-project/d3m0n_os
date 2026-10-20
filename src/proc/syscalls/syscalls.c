@@ -329,6 +329,7 @@ int	sys_surface_create(uint32_t width, uint32_t height, uint32_t surface_ptr, ui
 	int *pitch = (int *)resolve_user_ptr(pitch_ptr, sizeof(*pitch));
 	uint32_t size;
 	uint8_t *address;
+	uint8_t *snapshot;
 
 	// TODO: allow non fullscreen surfaces
 	if (!proc || !surface || !pitch || width != SCREEN_WIDTH || height != SCREEN_HEIGHT - TOPBAR_HEIGHT || proc->surface_addr != 0)
@@ -341,14 +342,22 @@ int	sys_surface_create(uint32_t width, uint32_t height, uint32_t surface_ptr, ui
 	address = (uint8_t *)kmalloc(size);
 	if (!address)
 		return -1;
+	snapshot = (uint8_t *)kmalloc(size);
+	if (!snapshot)
+	{
+		kfree(address);
+		return -1;
+	}
 	if (mmu_map_user_range(&proc->address_space, address, size, 1, 0))
 	{
+		kfree(snapshot);
 		kfree(address);
 		return -1;
 	}
 	ft_memset(address, 0, size);
 	proc->surface_addr = (uint32_t)address;
 	proc->surface_size = size;
+	proc->surface_snapshot = (uint32_t)snapshot;
 	proc->surface_width = width;
 	proc->surface_height = height;
 	*surface = address;
@@ -362,8 +371,11 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 	t_process	*proc = current_process;
 	uint8_t		*surface;
 	uint8_t		*framebuffer;
+	uint8_t		*snapshot;
 	int			pitch;
 	uint32_t	row;
+	uint32_t	start;
+	int			full_refresh;
 
 	(void)a1;
 	(void)a2;
@@ -371,13 +383,33 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 	if (!proc || surface_addr != proc->surface_addr || !proc->surface_size)
 		return -1;
 	surface = (uint8_t *)(uintptr_t)surface_addr;
+	snapshot = (uint8_t *)(uintptr_t)proc->surface_snapshot;
 	framebuffer = (uint8_t *)get_fb_addr(&pitch);
-	if (!framebuffer || pitch < (int)(proc->surface_width * sizeof(uint32_t)))
+	if (!framebuffer || !snapshot || pitch < (int)(proc->surface_width * sizeof(uint32_t)))
 		return -1;
 
 	draw_topbar();
+	full_refresh = (last_updated_proc != proc);
 	for (row = 0; row < proc->surface_height; row++)
-		ft_memcpy(framebuffer + (row + TOPBAR_HEIGHT) * pitch, surface + row * proc->surface_width * sizeof(uint32_t), proc->surface_width * sizeof(uint32_t));
+	{
+		uint32_t *src = (uint32_t *)surface + row * proc->surface_width;
+		uint32_t *old = (uint32_t *)snapshot + row * proc->surface_width;
+		uint32_t x = 0;
+		while (x < proc->surface_width)
+		{
+			while (x < proc->surface_width && !full_refresh && src[x] == old[x])
+				x++;
+			if (x == proc->surface_width)
+				break;
+			start = x;
+			while (x < proc->surface_width && (full_refresh || src[x] != old[x]))
+			{
+				old[x] = src[x];
+				x++;
+			}
+			ft_memcpy(framebuffer + (row + TOPBAR_HEIGHT) * pitch + start * sizeof(uint32_t), src + start, (x - start) * sizeof(uint32_t));
+		}
+	}
 	#if DEBUG_OUTLINE == 1
 	draw_rect_outline(0, TOPBAR_HEIGHT, proc->surface_width, proc->surface_height, OUTLINE_COLOR);
 	#endif
@@ -475,8 +507,11 @@ int	sys_kill(uint32_t pid, uint32_t code, uint32_t a2, uint32_t a3)
 			t_process *exiting = proc;
 			if (exiting->surface_addr)
 			{
+				kfree((void *)(uintptr_t)exiting->surface_snapshot);
+				exiting->surface_snapshot = 0;
+				uint32_t surface_addr = exiting->surface_addr;
 				exiting->surface_addr = 0;
-				kfree((void *)(uintptr_t)exiting->surface_addr);
+				kfree((void *)(uintptr_t)surface_addr);
 			}
 
 			// cleanup opened files

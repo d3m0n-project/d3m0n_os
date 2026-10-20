@@ -206,6 +206,9 @@ void 	process_exit_current(uint32_t status_code)
 	surface_addr = exiting->surface_addr;
 	if (surface_addr)
 	{
+		if (exiting->surface_snapshot)
+			kfree((void *)(uintptr_t)exiting->surface_snapshot);
+		exiting->surface_snapshot = 0;
 		exiting->surface_addr = 0;
 		kfree((void *)(uintptr_t)surface_addr);
 	}
