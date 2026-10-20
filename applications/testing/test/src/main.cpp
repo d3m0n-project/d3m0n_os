@@ -18,6 +18,16 @@ extern "C" int	main(void)
 	MainWindow	window;
 	window.draw();
 
+	//while (1)
+	//{
+	//	event_t e = (event_t){};
+	//	e.type=EVENT_UNKNOWN;
+	//	int ret = evtpop(&e);
+	//	if (ret || e.x)
+	//		printf("(%i, %i): %lu at %lu\n", e.x, e.y, e.type, e.timestamp);
+	//}
+
+
 	const char *argv2[] = {"/test.lua", 0};
 	uint32_t pid = exec("/programs/bin/lua", argv2);
 

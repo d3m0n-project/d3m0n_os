@@ -512,10 +512,10 @@ int	sys_evtpop(uint32_t event_ptr, uint32_t a1, uint32_t a2, uint32_t a3)
 	(void)a1;
 	(void)a2;
 	(void)a3;
-	event_t	*events = (event_t *)resolve_user_ptr(event_ptr, sizeof(event_t));
+	event_t	*event = (event_t *)resolve_user_ptr(event_ptr, sizeof(event_t));
 	
-	*events = (event_t){0};
-	return fifo_pop(&current_process->events, events);
+	*event = (event_t){0};
+	return fifo_pop(&current_process->events, event);;
 }
 
 

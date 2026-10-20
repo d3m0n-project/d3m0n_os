@@ -68,13 +68,14 @@ void	click_dispatcher(int mouse_x, int mouse_y, unsigned int mouse_btn)
 		return;
 
 	event_t	new_event = { .type=EVENT_MOUSE, .timestamp=time_s(), .x=mouse_x, .y=mouse_y }; // TODO: mouse btn
+	log("current_proc: %s\n", 0, proc->proc_name);
 	if (!fifo_push(&proc->events, &new_event))
 	{
 		log("Could not register a new event for process: event fifo is full\n", LOG_WARNING | LOG_INDENT);
 		return;
 	}
 	
-	//log("clicked (%i, %i) with %i\n", LOG_INDENT | LOG_INFO, mouse_x, mouse_y, mouse_btn);
+	log("clicked (%i, %i) with %i\n", LOG_INDENT | LOG_INFO, mouse_x, mouse_y, mouse_btn);
 }
 
 void	init_proc(void)
