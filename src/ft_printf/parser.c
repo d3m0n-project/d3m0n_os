@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "printf.h"
 
 static int	index_of(char c, char *str)
 {
@@ -28,10 +28,10 @@ static int	index_of(char c, char *str)
 
 static void	parse_number(char *str, size_t *i, int *output)
 {
-	while (ft_isdigit(str[*i]))
+	while (isdigit(str[*i]))
 	{
-		*output = ft_atoi(&str[*i]);
-		while (ft_isdigit(str[*i]))
+		*output = atoi(&str[*i]);
+		while (isdigit(str[*i]))
 			(*i)++;
 	}
 }
@@ -40,10 +40,10 @@ t_format	parse_format(char *str, size_t *i)
 {
 	t_format	f;
 
-	ft_bzero(&f, sizeof(f));
+	bzero(&f, sizeof(f));
 	f.width = WIDTH_UNRESTRICTED;
 	f.precision = WIDTH_UNRESTRICTED;
-	while (str[*i] && ft_strchr("-0# +", str[*i]))
+	while (str[*i] && strchr("-0# +", str[*i]))
 	{
 		f.flags[index_of(str[*i], "-0# +") % 5] = str[*i];
 		(*i)++;

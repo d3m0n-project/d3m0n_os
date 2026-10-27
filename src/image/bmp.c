@@ -1,7 +1,7 @@
 #include "filesystem/filesystem.h"
 #include "image/bmp.h"
 #include "memory/memory.h"
-#include "libft.h"
+#include "stdlib.h"
 #include "time.h"
 #include "random.h"
 
@@ -66,8 +66,8 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	if (header[0] != 'B' || header[1] != 'M')
 		goto error;
 
-	ft_memcpy(&out->width, header + 18, sizeof(int));
-	ft_memcpy(&height, header + 22, sizeof(int32_t));
+	memcpy(&out->width, header + 18, sizeof(int));
+	memcpy(&height, header + 22, sizeof(int32_t));
 
 	flip = (height > 0);
 	out->height = (height > 0) ? height : -height;
@@ -80,14 +80,14 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 	}
 
 
-	ft_memcpy(&compression, header + 30, sizeof(uint32_t));
+	memcpy(&compression, header + 30, sizeof(uint32_t));
 	if (compression != 0 && compression != 3 && compression != 6)
 	{
 		log("Unsupported BMP compression %u\n", LOG_ERROR | LOG_INDENT, compression);
 		goto error;
 	}
 
-	ft_memcpy(&starting_offset, header + 10, sizeof(uint32_t));
+	memcpy(&starting_offset, header + 10, sizeof(uint32_t));
 	if (compression == 3 || compression == 6)
 	{
 		if (read(fd, (char *)&red_mask, 4) != 4)
@@ -182,7 +182,7 @@ int	bmp_load_image(BmpTexture *out, const char *path)
 			}
 			else
 			{
-				ft_memcpy(&pixel, src, 4);
+				memcpy(&pixel, src, 4);
 
 				if (compression == 0)
 				{

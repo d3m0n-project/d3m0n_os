@@ -2,7 +2,7 @@
 #define ICO_H
 
 #include "types.h"
-#include "libft.h"
+#include "stdlib.h"
 #include "log.h"
 
 typedef struct ICO_icon

@@ -1,7 +1,7 @@
 #include "display/display.h"
 #include "filesystem/filesystem.h"
 #include "memory/memory.h"
-#include "libft.h"
+#include "stdlib.h"
 
 int	load_font(const char *path, t_font	*out)
 {
@@ -12,7 +12,7 @@ int	load_font(const char *path, t_font	*out)
 
 	if (!out)
 		return 1;
-	ft_memset(out, 0, sizeof(*out));
+	memset(out, 0, sizeof(*out));
 	if (fd < 0)
 	{
 		log("Could not open font: %s\n", LOG_ERROR, path);
@@ -42,7 +42,7 @@ int	load_font(const char *path, t_font	*out)
 				log("Could not allocate memory for font\n", LOG_ERROR);
 				return 1;
 			}
-			ft_memcpy(new_ptr, out->data, total_read);
+			memcpy(new_ptr, out->data, total_read);
 			kfree(out->data);
 			out->data = new_ptr;
 			capacity = new_capacity;

@@ -1,5 +1,5 @@
 #include "proc/fifo.h"
-#include "libft.h"
+#include "stdlib.h"
 
 void	fifo_init(event_fifo_t *q)
 {

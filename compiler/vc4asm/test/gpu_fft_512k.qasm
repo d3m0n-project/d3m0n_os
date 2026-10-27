@@ -27,7 +27,7 @@
 
 .set STAGES, 19
 
-.include "gpu_fft_ex.qinc"
+.include "gpu_fex.qinc"
 
 ##############################################################################
 # Twiddles
@@ -177,8 +177,8 @@ body_rx_sync_slave
 ##############################################################################
 # Subroutines
 
-:fft_16
-    body_fft_16
+:f16
+    body_f16
 
 :pass_1
     body_pass_32 LOAD_REVERSED

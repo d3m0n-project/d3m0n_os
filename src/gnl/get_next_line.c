@@ -5,8 +5,8 @@ static char		buffer[FS_MAX_FDS][BUFFER_SIZE] __attribute__((aligned(4)));
 
 static char	*move_buffer(char buffer[BUFFER_SIZE + 1], char **output, uint32_t i)
 {
-	*output = ft_strcat_realloc(*output, buffer, i + 1);
-	ft_memmove(buffer, buffer + i + 1, BUFFER_SIZE - i);
+	*output = strcat_realloc(*output, buffer, i + 1);
+	memmove(buffer, buffer + i + 1, BUFFER_SIZE - i);
 	if (i == BUFFER_SIZE - 1)
 		clear_buffer(buffer);
 	return (*output);
@@ -45,7 +45,7 @@ char	*get_next_line(int fd)
 	if (new_line_found && buffer[fd][i + 1] != '\0')
 		return (move_buffer(buffer[fd], &output, i));
 	else if (buffer[fd][0] != '\0')
-		output = ft_strcat_realloc(0, buffer[fd], i + 1);
+		output = strcat_realloc(0, buffer[fd], i + 1);
 	clear_buffer(buffer[fd]);
 	while (read(fd, buffer[fd], BUFFER_SIZE) > 0)
 	{

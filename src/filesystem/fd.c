@@ -105,8 +105,8 @@ char	*path_add(char *path, char *path2)
 	if (!path || !path2)
 		return 0;
 
-	l1 = ft_strlen(path);
-	l2 = ft_strlen(path2);
+	l1 = strlen(path);
+	l2 = strlen(path2);
 	add_slash = (l1 > 0 && path[l1 - 1] != '/' && l2 > 0 && path2[0] != '/');
 
 	output = kmalloc(l1 + l2 + add_slash + 1);

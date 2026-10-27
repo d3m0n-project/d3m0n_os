@@ -1,6 +1,6 @@
 #include "log.h"
 #include "proc/proc.h"
-#include "libft.h"
+#include "stdlib.h"
 
 typedef struct
 {

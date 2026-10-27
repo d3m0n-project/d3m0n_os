@@ -10,9 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "printf.h"
 
-int	ft_put_padding_rep(int count, char c)
+int	put_padding_rep(int count, char c)
 {
 	int	i;
 
@@ -25,12 +25,12 @@ int	ft_put_padding_rep(int count, char c)
 	return (i);
 }
 
-int	ft_put_precision_rep(int count)
+int	put_precision_rep(int count)
 {
-	return (ft_put_padding_rep(count, '0'));
+	return (put_padding_rep(count, '0'));
 }
 
-int	ft_putstr_count(char *str, t_format f)
+int	putstr_count(char *str, t_format f)
 {
 	int	len;
 	int	printed;
@@ -40,7 +40,7 @@ int	ft_putstr_count(char *str, t_format f)
 	is_null = (!str);
 	if (is_null)
 		str = "(null)";
-	len = ft_strlen(str);
+	len = strlen(str);
 	if (f.precision != -1 && len > f.precision && is_null)
 		len = 0;
 	else if (f.precision > -1 && f.precision < len)
@@ -50,11 +50,11 @@ int	ft_putstr_count(char *str, t_format f)
 		pad_len = 0;
 	printed = 0;
 	if (!f.flags[FLAG_MINUS])
-		printed += ft_put_padding_rep(pad_len, ' ');
+		printed += put_padding_rep(pad_len, ' ');
 	if (!is_null || f.precision >= 6 || f.precision == -1)
 		uart_print((char *)str);
 	printed += len;
 	if (f.flags[FLAG_MINUS])
-		printed += ft_put_padding_rep(pad_len, ' ');
+		printed += put_padding_rep(pad_len, ' ');
 	return (printed);
 }

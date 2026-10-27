@@ -3,7 +3,7 @@
 
 BigInt	*from_uint(uint32_t n)
 {
-	BigInt *out = ft_calloc(1, sizeof(BigInt));
+	BigInt *out = calloc(1, sizeof(BigInt));
 
 	if (!out)
 		return 0;
@@ -46,7 +46,7 @@ void	display(BigInt *n, int decimal)
 
 uint8_t	*to_fixed_bytes(BigInt *a, size_t len)
 {
-	uint8_t *out = ft_calloc(len, 1);
+	uint8_t *out = calloc(len, 1);
 	if (!out)
 		return 0;
 
@@ -69,7 +69,7 @@ uint8_t	*to_fixed_bytes(BigInt *a, size_t len)
 uint8_t	*get_bytes(BigInt *n, size_t *byte_len)
 {
 	size_t full_len = n->length * sizeof(uint32_t);
-	uint8_t *tmp = ft_calloc(full_len, sizeof(uint8_t));
+	uint8_t *tmp = calloc(full_len, sizeof(uint8_t));
 	if (!tmp)
 		return 0;
 
@@ -90,13 +90,13 @@ uint8_t	*get_bytes(BigInt *n, size_t *byte_len)
 		first++;
 
 	*byte_len = full_len - first;
-	uint8_t *out = ft_calloc(*byte_len, sizeof(uint8_t));
+	uint8_t *out = calloc(*byte_len, sizeof(uint8_t));
 	if (!out)
 	{
 		kfree(tmp);
 		return 0;
 	}
-	ft_memcpy(out, tmp + first, *byte_len);
+	memcpy(out, tmp + first, *byte_len);
 	kfree(tmp);
 
 	return out;
@@ -104,7 +104,7 @@ uint8_t	*get_bytes(BigInt *n, size_t *byte_len)
 
 BigInt	*copy(BigInt *src)
 {
-	BigInt *out = ft_calloc(1, sizeof(BigInt));
+	BigInt *out = calloc(1, sizeof(BigInt));
 	if (!out)
 		return 0;
 
@@ -120,7 +120,7 @@ BigInt *from_bytes(const uint8_t *bytes, size_t len)
 	if (!bytes || len == 0)
 		return from_uint(0);
 
-	BigInt *out = ft_calloc(1, sizeof(BigInt));
+	BigInt *out = calloc(1, sizeof(BigInt));
 	if (!out)
 		return 0;
 
@@ -179,7 +179,7 @@ BigInt *add(BigInt *n1, BigInt *n2)
 		return sub(n1, &tmp);
 	}
 
-	BigInt *out = ft_calloc(1, sizeof(BigInt));
+	BigInt *out = calloc(1, sizeof(BigInt));
 	if (!out)
 		return 0;
 
@@ -237,7 +237,7 @@ BigInt	*sub(BigInt *n1, BigInt *n2)
 		return out;
 	}
 
-	out = ft_calloc(1, sizeof(BigInt));
+	out = calloc(1, sizeof(BigInt));
 	if (!out)
 		return 0;
 
@@ -367,12 +367,12 @@ BigIntDiv	*div(BigInt *num, BigInt *den)
 	if (den->length == 1 && den->digits[0] == 0)
 		return 0;
 
-	BigIntDiv *out = ft_calloc(1, sizeof(BigIntDiv));
+	BigIntDiv *out = calloc(1, sizeof(BigIntDiv));
 	if (!out)
 		return 0;
 
-	out->quotient = ft_calloc(1, sizeof(BigInt));
-	out->remainder = ft_calloc(1, sizeof(BigInt));
+	out->quotient = calloc(1, sizeof(BigInt));
+	out->remainder = calloc(1, sizeof(BigInt));
 	if (!out->quotient || !out->remainder)
 	{
 		kfree(out->quotient);
@@ -425,7 +425,7 @@ BigIntDiv	*div(BigInt *num, BigInt *den)
 
 BigInt	*mul(BigInt *a, BigInt *b)
 {
-	BigInt *out = ft_calloc(1, sizeof(BigInt));
+	BigInt *out = calloc(1, sizeof(BigInt));
 	if (!out)
 		return 0;
 

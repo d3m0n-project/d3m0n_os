@@ -169,7 +169,7 @@ static uint32_t	*alloc_aligned_table(size_t entries, size_t alignment)
 	void	  **header;
 
 	total = sizeof(void *) + alignment + entries * sizeof(uint32_t);
-	raw   = (uintptr_t)ft_calloc(total, 1);
+	raw   = (uintptr_t)calloc(total, 1);
 	if (!raw)
 		return 0;
 

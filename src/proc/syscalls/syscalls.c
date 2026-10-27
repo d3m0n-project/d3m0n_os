@@ -181,16 +181,16 @@ int	sys_uname(uint32_t user_buf, uint32_t buf_len, uint32_t a2, uint32_t a3)
 
 	(void)a2;
 	(void)a3;
-	name = ft_strjoin("d3m0n os ", KERNEL_VERSION);
+	name = strjoin("d3m0n os ", KERNEL_VERSION);
 	if (!name)
 		name = "unknown";
-	len = (uint32_t)ft_strlen(name);
+	len = (uint32_t)strlen(name);
 	if (buf_len == 0 || len + 1 > buf_len)
 		return (-1);
 	dst = (char *)resolve_user_ptr(user_buf, buf_len);
 	if (!dst)
 		return (-1);
-	ft_memcpy(dst, name, len + 1);
+	memcpy(dst, name, len + 1);
 	return (0);
 }
 
@@ -217,10 +217,10 @@ int	sys_getdents(uint32_t user_path, uint32_t user_out_buf, uint32_t out_len, ui
 	i = 0;
 	while (entries[i])
 	{
-		name_len = (uint32_t)ft_strlen(entries[i]);
+		name_len = (uint32_t)strlen(entries[i]);
 		if (total + name_len + 1 >= out_len)
 			break;
-		ft_memcpy(out + total, entries[i], name_len);
+		memcpy(out + total, entries[i], name_len);
 		total += name_len;
 		out[total++] = '\n';
 		i++;
@@ -354,7 +354,7 @@ int	sys_surface_create(uint32_t width, uint32_t height, uint32_t surface_ptr, ui
 		kfree(address);
 		return -1;
 	}
-	ft_memset(address, 0, size);
+	memset(address, 0, size);
 	proc->surface_addr = (uint32_t)address;
 	proc->surface_size = size;
 	proc->surface_snapshot = (uint32_t)snapshot;
@@ -407,7 +407,7 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 				old[x] = src[x];
 				x++;
 			}
-			ft_memcpy(framebuffer + (row + TOPBAR_HEIGHT) * pitch + start * sizeof(uint32_t), src + start, (x - start) * sizeof(uint32_t));
+			memcpy(framebuffer + (row + TOPBAR_HEIGHT) * pitch + start * sizeof(uint32_t), src + start, (x - start) * sizeof(uint32_t));
 		}
 	}
 	#if DEBUG_OUTLINE == 1
@@ -467,7 +467,7 @@ int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 		argv_len++;
 
 	// allocate a copy of raw_argv but with resolved user ptr
-	const char **resolved_argv = ft_calloc(argv_len + 1, sizeof(char *));
+	const char **resolved_argv = calloc(argv_len + 1, sizeof(char *));
 	if (!resolved_argv)
 	{
 		log("SYS_EXEC: Could not allocate memory for resolved argv pointers\n", LOG_ERROR);

@@ -79,7 +79,7 @@ int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size, t_s
 		return 1;
 	}
 
-	*section_detail = ft_calloc(shnum + 1, sizeof(t_section_info));
+	*section_detail = calloc(shnum + 1, sizeof(t_section_info));
 	if (!section_detail)
 	{
 		log("ELF APP: Could not allocate sector list\n", LOG_ERROR);
@@ -105,14 +105,14 @@ int		parse_app_info(elf_header_32 *header, char *buffer, uint32_t file_size, t_s
 		(*section_detail)[detail_count].flags = u32(sh->FLAGS);
 		detail_count++;
 
-		if (ft_strcmp(name, ".appmeta") == 0)
+		if (strcmp(name, ".appmeta") == 0)
 		{
 			// get app metadata
 			unsigned char	*sh_bytes = (unsigned char *)buffer + u32(sh->OFFSET);
-			ft_memcpy(&metadata, sh_bytes, u32(sh->SIZE));
+			memcpy(&metadata, sh_bytes, u32(sh->SIZE));
 			appmeta_found = 1;
 		}
-		else if (ft_strcmp(name, ".rodata") == 0)
+		else if (strcmp(name, ".rodata") == 0)
 		{
 			// app metadata is stored inside read only data
 			rodata_addr = u32(sh->ADDR);

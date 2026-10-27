@@ -1,9 +1,11 @@
 #ifndef STDLIB_H
 #define STDLIB_H
 
-#include "types.h"
-#include "memory.h"
-#include "sys.h"
+#ifndef KERNEL_VERSION
+	#include "types.h"
+	#include "memory.h"
+	#include "sys.h"
+#endif
 
 
 #ifdef __cplusplus
@@ -16,8 +18,10 @@ extern "C" {
 		struct s_list	*next;
 	}	t_list;
 
-	#define max(a, b)		((a > b)?a:b)
-	#define min(a, b)		((a < b)?a:b)
+	#ifndef KERNEL_VERSION
+		#define max(a, b)		((a > b)?a:b)
+		#define min(a, b)		((a < b)?a:b)
+	#endif
 
 	
 	int				islower(int c);
@@ -88,12 +92,14 @@ extern "C" {
 
 
 	// system commands
+	#ifndef KERNEL_VERSION
 	static inline int	system(const char *command)
 	{
 		write(1, "TODO: system()\n", 16);
 		(void)command;
 		return 0;
 	}
+	#endif
 
 	#ifndef abs
 		#define abs(x)	((x < 0)?-x:x)

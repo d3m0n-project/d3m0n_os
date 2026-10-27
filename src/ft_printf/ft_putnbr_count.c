@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_putnbr_count.c                                  :+:      :+:    :+:   */
+/*   putnbr_count.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: julcleme <julcleme@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "printf.h"
 
 static int	number_len(int nb)
 {
@@ -56,7 +56,7 @@ static int	display_num(int num_len, long nb, int n)
 	return (0);
 }
 
-int	ft_putnbr_count(int nb, t_format f, int pad_len, int prec_len)
+int	putnbr_count(int nb, t_format f, int pad_len, int prec_len)
 {
 	long	n;
 	int		num_len;
@@ -76,11 +76,11 @@ int	ft_putnbr_count(int nb, t_format f, int pad_len, int prec_len)
 	p = 0;
 	if ((nb < 0) && pad_char == '0')
 		uart_putc('-');
-	p += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] == 0), pad_char);
+	p += put_padding_rep(pad_len * (f.flags[FLAG_MINUS] == 0), pad_char);
 	p += handle_plus_flag(f, (nb < 0));
 	if ((nb < 0) && pad_char == ' ')
 		uart_putc('-');
-	p += ft_put_precision_rep(prec_len) + display_num(num_len, nb, n);
-	p += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] != 0), pad_char);
+	p += put_precision_rep(prec_len) + display_num(num_len, nb, n);
+	p += put_padding_rep(pad_len * (f.flags[FLAG_MINUS] != 0), pad_char);
 	return (p);
 }

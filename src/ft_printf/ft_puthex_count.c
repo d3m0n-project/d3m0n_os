@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_puthex_count.c                                  :+:      :+:    :+:   */
+/*   puthex_count.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: julcleme <julcleme@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "printf.h"
 
 static int	hex_len(unsigned int nb)
 {
@@ -37,7 +37,7 @@ static int	display_padding_hex(unsigned int i, t_format f)
 		if (f.precision != 0)
 			uart_putc('0');
 		else
-			len += ft_put_padding_rep(f.precision, ' ') - 1;
+			len += put_padding_rep(f.precision, ' ') - 1;
 		len++;
 	}
 	else
@@ -45,7 +45,7 @@ static int	display_padding_hex(unsigned int i, t_format f)
 	return (len);
 }
 
-int	ft_puthex_count(unsigned int i, t_format f, int pad_len, int prec_len)
+int	puthex_count(unsigned int i, t_format f, int pad_len, int prec_len)
 {
 	int		len;
 	int		num_len;
@@ -67,9 +67,9 @@ int	ft_puthex_count(unsigned int i, t_format f, int pad_len, int prec_len)
 		pad_len = f.width - max(num_len, f.precision) + (f.precision == 0 && i == 0);
 	if (f.precision != WIDTH_UNRESTRICTED)
 		prec_len = f.precision - num_len;
-	len += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] == 0), pad_char);
-	len += ft_put_precision_rep(prec_len);
+	len += put_padding_rep(pad_len * (f.flags[FLAG_MINUS] == 0), pad_char);
+	len += put_precision_rep(prec_len);
 	len += display_padding_hex(i, f);
-	len += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] != 0), pad_char);
+	len += put_padding_rep(pad_len * (f.flags[FLAG_MINUS] != 0), pad_char);
 	return (len);
 }

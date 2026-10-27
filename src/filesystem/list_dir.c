@@ -1,7 +1,7 @@
 #include "filesystem/filesystem.h"
 #include "memory/memory.h"
 #include "filesystem/fat32.h"
-#include "libft.h"
+#include "stdlib.h"
 
 typedef struct s_file_list
 {
@@ -26,7 +26,7 @@ static void	collect_file(const char *name, uint32_t size)
 
 		if (g_file_list->files)
 		{
-			ft_memcpy(new_files, g_file_list->files, sizeof(char *) * g_file_list->count);
+			memcpy(new_files, g_file_list->files, sizeof(char *) * g_file_list->count);
 			kfree(g_file_list->files);
 		}
 
@@ -34,7 +34,7 @@ static void	collect_file(const char *name, uint32_t size)
 		g_file_list->capacity = new_capacity;
 	}
 
-	g_file_list->files[g_file_list->count] = ft_strdup(name);
+	g_file_list->files[g_file_list->count] = strdup(name);
 	if (!g_file_list->files[g_file_list->count])
 		return;
 

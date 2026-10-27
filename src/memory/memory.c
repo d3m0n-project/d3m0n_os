@@ -97,11 +97,37 @@ int kfree(void *ptr)
 	return 0;
 }
 
-void	*memcpy(void *dst, void *src, uint32_t size)
+void	*memcpy(void *dst, const void *src, uint32_t size)
 {
 	for (uint32_t i=0; i<size; i++)
 		((unsigned char *)dst)[i] = ((unsigned char *)src)[i];
 	return dst;
+}
+
+void	*calloc(uint32_t count, uint32_t size)
+{
+	uint32_t total;
+	void	*ptr;
+
+	if (size && count > UINT32_MAX / size)
+		return (0);
+	total = count * size;
+	ptr = kmalloc(total);
+	if (!ptr)
+		return (0);
+	memset(ptr, 0, total);
+	return (ptr);
+}
+
+void	*malloc(uint32_t size)
+{
+	return (kmalloc(size));
+}
+
+void	free(void *ptr)
+{
+	if (ptr)
+		kfree(ptr);
 }
 
 void	*memset(void *dst, int c, uint32_t size)

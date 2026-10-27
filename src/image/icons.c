@@ -1,7 +1,7 @@
 #include "image/icons.h"
 #include "filesystem/get_next_line.h"
 #include "settings.h"
-#include "libft.h"
+#include "stdlib.h"
 #include "../../compiler/sdk/lib/app/parsing/svg.h"
 #include "display/display.h"
 
@@ -24,17 +24,17 @@ static int	valid_icon_path(const char *path)
 	char	**parts;
 	int		ok = 0;
 
-	parts = ft_split(path, '/');
+	parts = split(path, '/');
 	if (!parts)
 		return (0);
 
 	if (parts[0] && parts[1] && !parts[2])
 	{
-		size_t len = ft_strlen(parts[1]);
+		size_t len = strlen(parts[1]);
 
-		if (len > 4 && (!ft_strcmp(parts[1] + len - 4, ".bmp") || !ft_strcmp(parts[1] + len - 4, ".BMP")))
+		if (len > 4 && (!strcmp(parts[1] + len - 4, ".bmp") || !strcmp(parts[1] + len - 4, ".BMP")))
 			ok = 1;
-		if (len > 4 && (!ft_strcmp(parts[1] + len - 4, ".svg") || !ft_strcmp(parts[1] + len - 4, ".SVG")))
+		if (len > 4 && (!strcmp(parts[1] + len - 4, ".svg") || !strcmp(parts[1] + len - 4, ".SVG")))
 			ok = 1;
 	}
 
@@ -69,7 +69,7 @@ int	load_icon_pack(char *path)
 	size_t	max_icons = 0;
 
 	free_library();
-	list_path = ft_strjoin(path, "/icons.lst");
+	list_path = strjoin(path, "/icons.lst");
 	if (!list_path)
 		return 1;
 
@@ -84,7 +84,7 @@ int	load_icon_pack(char *path)
 	// count valid icons
 	while ((line = get_next_line(fd)))
 	{
-		size_t i = ft_strlen(line);
+		size_t i = strlen(line);
 		while (i > 0 && (line[i - 1] == '\n' || line[i - 1] == '\r'))
 		{
 			line[i - 1] = '\0';
@@ -113,7 +113,7 @@ int	load_icon_pack(char *path)
 
 	// load default icon
 	library[library_count++] = (t_icon){0};
-	ft_strlcpy(library[0].name, "default", 32);
+	strlcpy(library[0].name, "default", 32);
 	bmp_load_image(&library[0].bmp_texture, DEFAULT_ICON_PATH); // TODO: make default dynamic
 
 
@@ -132,7 +132,7 @@ int	load_icon_pack(char *path)
 		char	*full_path;
 		size_t	len;
 
-		len = ft_strlen(line);
+		len = strlen(line);
 		if (len > 1 && line[len - 1] == '\n')
 		{
 			line[len - 1] = 0;
@@ -147,7 +147,7 @@ int	load_icon_pack(char *path)
 		}
 
 
-		parts = ft_split(line, '/');
+		parts = split(line, '/');
 		if (!parts)
 		{
 			kfree(line);
@@ -156,14 +156,14 @@ int	load_icon_pack(char *path)
 			log("ICONS: Could not allocate path folder parts\n", LOG_ERROR);
 			return 1;
 		}
-		len = ft_strlen(parts[1]);
+		len = strlen(parts[1]);
 		parts[1][len - 4] = 0;
 
 
 		// category.iconname
-		ft_strlcpy(library[library_count].name, parts[0], sizeof(library[library_count].name));
-		ft_strlcat(library[library_count].name, ".", sizeof(library[library_count].name));
-		ft_strlcat(library[library_count].name, parts[1], sizeof(library[library_count].name));
+		strlcpy(library[library_count].name, parts[0], sizeof(library[library_count].name));
+		strlcat(library[library_count].name, ".", sizeof(library[library_count].name));
+		strlcat(library[library_count].name, parts[1], sizeof(library[library_count].name));
 
 
 		full_path = path_add(path, line);
@@ -177,8 +177,8 @@ int	load_icon_pack(char *path)
 			return 1;
 		}
 
-		char *format = ft_strrchr(full_path, '.');
-		if (!ft_strcmp(format, ".svg") || !ft_strcmp(format, ".SVG"))
+		char *format = strrchr(full_path, '.');
+		if (!strcmp(format, ".svg") || !strcmp(format, ".SVG"))
 			library[library_count].format = ICON_FORMAT_SVG;
 		else
 			library[library_count].format = ICON_FORMAT_BMP;
@@ -214,7 +214,7 @@ void	*get_icon(char *name, t_conf *conf, e_icon_format *type)
 		// check if that is an alias in the config
 		for (setting_index = 0; setting_index < CONF_FIELD_COUNT; setting_index++)
 		{
-			if (conf_offsets[setting_index].type == TYPE_STRING && !ft_strcmp((char *)conf_offsets[setting_index].key, name))
+			if (conf_offsets[setting_index].type == TYPE_STRING && !strcmp((char *)conf_offsets[setting_index].key, name))
 			{
 				name = (char *)conf + conf_offsets[setting_index].offset;
 				break;
@@ -226,7 +226,7 @@ void	*get_icon(char *name, t_conf *conf, e_icon_format *type)
 	// search it
 	for (size_t i = 0; i < library_count; i++)
 	{
-		if (!ft_strcmp(library[i].name, name))
+		if (!strcmp(library[i].name, name))
 		{
 			*type = library[i].format;
 			if (library[i].format == ICON_FORMAT_BMP)

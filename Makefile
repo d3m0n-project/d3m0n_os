@@ -26,11 +26,17 @@ BOOT_DIR			= $(BUILD_DIR)/boot
 MOUNT_DIR			= $(BUILD_DIR)/mnt
 FIRMWARE_DIR		= firmware
 
-C_FILES				= $(shell find $(SRC_DIR) -name "*.c")
+
+STDLIB_PATH			= ./compiler/sdk/stdlib/
+STDLIB_C_FILES		= $(filter-out $(STDLIB_PATH)memcpy.c $(STDLIB_PATH)memset.c,$(shell find $(STDLIB_PATH) -name "*.c"))
+
+C_FILES				= $(shell find $(SRC_DIR) -name "*.c") $(STDLIB_C_FILES)
 S_FILES				= $(shell find $(SRC_DIR) -name "*.s" -o -name "*.S")
 
-O_FILES				= $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_FILES))
-O_FILES				+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/asm/%.o,$(S_FILES))
+O_FILES				= $(patsubst $(STDLIB_PATH)%.c,$(OBJ_DIR)/sdk/stdlib/%.o,$(filter $(STDLIB_PATH)%.c,$(C_FILES))) \
+				  $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(filter $(SRC_DIR)/%.c,$(C_FILES)))
+O_FILES				+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/asm/%.o,$(filter $(SRC_DIR)/%.s,$(S_FILES)))
+O_FILES				+= $(patsubst $(SRC_DIR)/%.S,$(OBJ_DIR)/asm/%.o,$(filter $(SRC_DIR)/%.S,$(S_FILES)))
 
 D_FILES				= $(O_FILES:.o=.d)
 
@@ -66,7 +72,7 @@ QEMU_OPTIONS		= -machine raspi1ap \
 					  -sd $(DISK) \
 					  -kernel $(OBJ_DIR)/kernel.elf \
 					  -usb -device usb-mouse \
-					  -display sdl
+				  	  -display gtk
 
 ifneq ($(DEBUG),0)
 C_FLAGS				+= -g3
@@ -156,6 +162,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
 	@printf "$(COLOR_INFO)[CC] $<$(R)\n"
 	@$(CC) $(C_FLAGS) -c $< -o $@
+
+$(OBJ_DIR)/sdk/stdlib/%.o: $(STDLIB_PATH)%.c
+	@mkdir -p $(dir $@)
+	@printf "$(COLOR_INFO)[CC] $<$(R)\n"
+	@$(CC) $(filter-out -Iincludes,$(C_FLAGS)) -U KERNEL_VERSION -Icompiler/sdk/lib -c $< -o $@
 
 
 $(OBJ_DIR)/asm/%.o: $(SRC_DIR)/%.s

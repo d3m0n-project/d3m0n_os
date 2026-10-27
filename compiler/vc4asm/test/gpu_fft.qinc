@@ -255,7 +255,7 @@
 
 ##############################################################################
 
-.macro fft_twiddles_32
+.macro ftwiddles_32
     nop;                  fmul ra_temp, r0, ra_tw_re+TW32_ACTIVE # rr
     nop;                  fmul r2,      r1, rb_tw_im+TW32_ACTIVE # ii
     nop;                  fmul r3,      r1, ra_tw_re+TW32_ACTIVE # ir
@@ -266,7 +266,7 @@
 ##############################################################################
 # FFT-16 codelet
 
-.macro body_fft_16
+.macro body_f16
 .rep i, 4
     and.setf -, elem_num, (1<<i)
     nop;                       fmul.ifnz ra_temp, ra_tw_re+TW16_ACTIVE+i, r0
@@ -424,9 +424,9 @@
 
 .macro loader_16, stride, mode
     .if mode==LOAD_REVERSED
-        load_rev stride, r:fft_16
+        load_rev stride, r:f16
     .else
-        load_lin stride, r:fft_16
+        load_lin stride, r:f16
     .endif
 .endm
 
@@ -442,7 +442,7 @@
     loader_16 rb_0xF0, mode
     mov ra_32_re, r0; mov rb_32_im, r1
     loader_16 rb_0x10, mode
-    fft_twiddles_32
+    ftwiddles_32
     bra -, ra_save_32
     mov ra_vpm_lo, rb_vpm_lo; mov rb_vpm_lo, ra_vpm_lo
     mov ra_vpm_hi, rb_vpm_hi; mov rb_vpm_hi, ra_vpm_hi
@@ -453,7 +453,7 @@
     loader_16 rb_0x10, mode
     mov ra_32_re, r0; mov rb_32_im, r1
     loader_16 rb_0x10, mode
-    fft_twiddles_32
+    ftwiddles_32
 
     fadd ra_64+0, ra_32_re, r0
     fadd ra_64+1, rb_32_im, r1
@@ -463,7 +463,7 @@
     loader_16 step, mode
     mov ra_32_re, r0; mov rb_32_im, r1
     loader_16 rb_0x10, mode
-    fft_twiddles_32
+    ftwiddles_32
 
     fsub r3, rb_32_im, r1
     fsub r2, ra_32_re, r0

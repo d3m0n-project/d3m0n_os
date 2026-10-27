@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-int	ft_put_padding_rep(int count, char c, t_buf *buffer)
+int	put_padding_rep(int count, char c, t_buf *buffer)
 {
 	int	i;
 
@@ -17,12 +17,12 @@ int	ft_put_padding_rep(int count, char c, t_buf *buffer)
 	return (i);
 }
 
-int	ft_put_precision_rep(int count, t_buf *buffer)
+int	put_precision_rep(int count, t_buf *buffer)
 {
-	return (ft_put_padding_rep(count, '0', buffer));
+	return (put_padding_rep(count, '0', buffer));
 }
 
-int	ft_putstr_count(char *str, t_format f, t_buf *buffer)
+int	putstr_count(char *str, t_format f, t_buf *buffer)
 {
 	int	len;
 	int	printed;
@@ -43,12 +43,12 @@ int	ft_putstr_count(char *str, t_format f, t_buf *buffer)
 		pad_len = 0;
 	printed = 0;
 	if (!f.flags[FLAG_MINUS])
-		printed += ft_put_padding_rep(pad_len, ' ', buffer);
+		printed += put_padding_rep(pad_len, ' ', buffer);
 	if (!is_null || f.precision >= 6 || f.precision == -1)
 		buf_write(buffer, (char *)str, strlen(str));
 	printed += len;
 	if (f.flags[FLAG_MINUS])
-		printed += ft_put_padding_rep(pad_len, ' ', buffer);
+		printed += put_padding_rep(pad_len, ' ', buffer);
 	return (printed);
 }
 

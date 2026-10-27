@@ -1,6 +1,6 @@
 #include "filesystem/filesystem.h"
 #include "filesystem/fat32.h"
-#include "libft.h"
+#include "stdlib.h"
 
 #define FAT_CACHE_ENTRIES			64
 #define CLUSTER_CACHE_ENTRIES		8
@@ -392,7 +392,7 @@ static int fat32_allocate_cluster_after(uint32_t prev_cluster, uint32_t *new_clu
 	if (new_cluster < 2 || new_cluster > fat32_max_clusters())
 		return -1;
 
-	ft_bzero(g_cluster_buf, cluster_bytes());
+	bzero(g_cluster_buf, cluster_bytes());
 	if (fat32_set_fat_entry(prev_cluster, new_cluster) != 0)
 		return -1;
 
@@ -436,7 +436,7 @@ int	fat32_read_cluster(uint32_t cluster, uint8_t *buffer)
 	{
 		if (cluster_cache[i].valid && cluster_cache[i].cluster == cluster)
 		{
-			ft_memcpy(buffer, cluster_cache[i].data, cbytes);
+			memcpy(buffer, cluster_cache[i].data, cbytes);
 			return 0;
 		}
 	}
@@ -476,7 +476,7 @@ int	fat32_read_cluster(uint32_t cluster, uint8_t *buffer)
 	cluster_cache[victim].dirty = 0;
 	cluster_cache[victim].age = ++cluster_cache_clock;
 
-	ft_memcpy(buffer, cluster_cache[victim].data, cbytes);
+	memcpy(buffer, cluster_cache[victim].data, cbytes);
 	return 0;
 }
 
@@ -551,8 +551,8 @@ static int	fat32_create_dir_entry(uint32_t dir_cluster, const uint8_t name83[11]
 
 			if (entry[DIR_NAME_OFF] == 0x00 || entry[DIR_NAME_OFF] == 0xE5)
 			{
-				ft_bzero(entry, FAT32_DIR_ENTRY_SIZE);
-				ft_memcpy(entry + DIR_NAME_OFF, name83, 11);
+				bzero(entry, FAT32_DIR_ENTRY_SIZE);
+				memcpy(entry + DIR_NAME_OFF, name83, 11);
 				entry[DIR_ATTR_OFF] = attrs;
 				mem_write16(entry + DIR_FSTCLUSHI_OFF, (uint16_t)(first_cluster >> 16));
 				mem_write16(entry + DIR_FSTCLUSLO_OFF, (uint16_t)(first_cluster & 0xFFFF));
@@ -594,7 +594,7 @@ static int lfn_match(const char *lfn_buf, const char *comp)
 
 	while (lfn_buf[i] && comp[i])
 	{
-		if (ft_toupper(lfn_buf[i]) != ft_toupper(comp[i]))
+		if (toupper(lfn_buf[i]) != toupper(comp[i]))
 			return 0;
 		i++;
 	}
@@ -627,7 +627,7 @@ static int	fat32_name_to_83(const char *name, uint8_t out[11])
 	{
 		if (base_len >= 8)
 			return -1;
-		out[base_len++] = (uint8_t)ft_toupper(name[pos]);
+		out[base_len++] = (uint8_t)toupper(name[pos]);
 		pos++;
 	}
 
@@ -641,7 +641,7 @@ static int	fat32_name_to_83(const char *name, uint8_t out[11])
 		{
 			if (ext_len >= 3)
 				return -1;
-			out[8 + ext_len] = (uint8_t)ft_toupper(name[pos]);
+			out[8 + ext_len] = (uint8_t)toupper(name[pos]);
 			ext_len++;
 			pos++;
 		}
@@ -683,7 +683,7 @@ static int fat32_search_dir(uint32_t start_cluster, const char *name, FAT32_File
 	if (!name || !out || !fat32_ready())
 		return 0;
 
-	ft_bzero((uint8_t *)lfn_buf, FAT32_LFN_MAX_LEN);
+	bzero((uint8_t *)lfn_buf, FAT32_LFN_MAX_LEN);
 	lfn_valid = 0;
 	cluster = start_cluster;
 	hops = 0;
@@ -716,7 +716,7 @@ static int fat32_search_dir(uint32_t start_cluster, const char *name, FAT32_File
 				seq = entry[0];
 				if (seq & FAT32_LFN_SEQ_LAST)
 				{
-					ft_bzero((uint8_t *)lfn_buf, FAT32_LFN_MAX_LEN);
+					bzero((uint8_t *)lfn_buf, FAT32_LFN_MAX_LEN);
 					lfn_valid = 1;
 				}
 				if (lfn_valid)
@@ -979,7 +979,7 @@ FAT32_File fat32_create(const char *path)
 	if (new_cluster < 2 || new_cluster >= fat32_max_clusters())
 		return file;
 
-	ft_bzero(g_cluster_buf, cluster_bytes());
+	bzero(g_cluster_buf, cluster_bytes());
 	if (fat32_write_cluster(new_cluster, g_cluster_buf) != 0)
 		return file;
 	if (fat32_set_fat_entry(new_cluster, FAT32_EOC) != 0)
@@ -1089,7 +1089,7 @@ FAT32_File	fat32_mkdir(const char *path)
 		return (dir);
 	if (new_cluster < 2 || new_cluster >= fat32_max_clusters())
 		return (dir);
-	ft_bzero(g_cluster_buf, cluster_bytes());
+	bzero(g_cluster_buf, cluster_bytes());
 	if (fat32_write_cluster(new_cluster, g_cluster_buf) != 0)
 		return (dir);
 	if (fat32_set_fat_entry(new_cluster, FAT32_EOC) != 0)
@@ -1176,7 +1176,7 @@ int	fat32_read(FAT32_File *file, uint8_t *buffer, uint32_t len)
 		if (copy_len > remaining)
 			copy_len = remaining;
 
-		ft_memcpy(buffer + read_total, g_cluster_buf + offset, copy_len);
+		memcpy(buffer + read_total, g_cluster_buf + offset, copy_len);
 
 		read_total += copy_len;
 		remaining -= copy_len;
@@ -1218,7 +1218,7 @@ int	fat32_truncate(FAT32_File *file)
 		}
 	}
 
-	ft_bzero(g_cluster_buf, cluster_bytes());
+	bzero(g_cluster_buf, cluster_bytes());
 	fat32_write_cluster(file->first_cluster, g_cluster_buf);
 
 	file->size = 0;
@@ -1285,7 +1285,7 @@ int	fat32_write(FAT32_File *file, const uint8_t *buffer, uint32_t len)
 		if (copy_len > remaining)
 			copy_len = remaining;
 
-		ft_memcpy(g_cluster_buf + offset, buffer + write_total, copy_len);
+		memcpy(g_cluster_buf + offset, buffer + write_total, copy_len);
 
 		lba = fat32_cluster_to_lba(cluster);
 		if (lba == 0)
@@ -1299,7 +1299,7 @@ int	fat32_write(FAT32_File *file, const uint8_t *buffer, uint32_t len)
 		{
 			if (cluster_cache[ci].valid && cluster_cache[ci].cluster == cluster)
 			{
-				ft_memcpy(cluster_cache[ci].data, g_cluster_buf, cbytes);
+				memcpy(cluster_cache[ci].data, g_cluster_buf, cbytes);
 				cluster_cache[ci].dirty = 1;
 				cluster_cache[ci].age = ++cluster_cache_clock;
 				break;
@@ -1373,8 +1373,8 @@ void	fat32_list_dir(const char *path, void (*print)(const char *name, uint32_t s
 	else
 	{
 		char new_path[1024];
-		ft_strlcpy(new_path, path, sizeof(new_path));
-		for (int i = ft_strlen(new_path) - 1; i > 0 && new_path[i] == '/'; i--)
+		strlcpy(new_path, path, sizeof(new_path));
+		for (int i = strlen(new_path) - 1; i > 0 && new_path[i] == '/'; i--)
 			new_path[i] = '\0';
 		dir = fat32_open(new_path);
 		if (!dir.is_dir || dir.first_cluster < 2)
@@ -1383,7 +1383,7 @@ void	fat32_list_dir(const char *path, void (*print)(const char *name, uint32_t s
 	}
 	hops = 0;
 	max_clusters = fat32_max_clusters();
-	ft_bzero((uint8_t *)lfn_buf, FAT32_LFN_MAX_LEN);
+	bzero((uint8_t *)lfn_buf, FAT32_LFN_MAX_LEN);
 	lfn_valid = 0;
 
 	while (cluster)
@@ -1411,7 +1411,7 @@ void	fat32_list_dir(const char *path, void (*print)(const char *name, uint32_t s
 				uint8_t seq = entry[0];
 				if (seq & FAT32_LFN_SEQ_LAST)
 				{
-					ft_bzero((uint8_t *)lfn_buf, FAT32_LFN_MAX_LEN);
+					bzero((uint8_t *)lfn_buf, FAT32_LFN_MAX_LEN);
 					lfn_valid = 1;
 				}
 				if (lfn_valid)

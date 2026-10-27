@@ -22,7 +22,7 @@ int	load_dib_from_buff(char *raw, size_t size, ICO_icon *out)
 	if (!raw || !out || size < sizeof(header))
 		return 1;
 
-	ft_memcpy(&header, raw, sizeof(header));
+	memcpy(&header, raw, sizeof(header));
 	if (header.size != 40 || header.planes != 1 || header.bit_count != 32 || header.compression != 0)
 		return 1;
 

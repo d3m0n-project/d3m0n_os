@@ -55,7 +55,7 @@ uint8_t		*base64_decode(char *data, size_t *out_len)
 	char	buffer[4];
 	int		p = 0;
 
-	*out_len = ft_strlen(data) * 3 / 4;
+	*out_len = strlen(data) * 3 / 4;
 	if (*out_len == 0)
 		return 0;
 	

@@ -5,11 +5,11 @@
 #include "stdlib.h"
 extern "C" {
 #else
-#include "libft.h"
-#define	memchr(a, b, c)		ft_memchr(a, b, c)
-#define	strlen(a)			ft_strlen(a)
-#define	memcmp(a, b, c)		ft_memcmp(a, b, c)
-#define	isspace(a)			ft_isspace(a)
+#include "stdlib.h"
+#define	memchr(a, b, c)		memchr(a, b, c)
+#define	strlen(a)			strlen(a)
+#define	memcmp(a, b, c)		memcmp(a, b, c)
+#define	isspace(a)			isspace(a)
 #endif
 
 typedef enum

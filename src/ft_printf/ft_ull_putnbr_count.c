@@ -1,4 +1,4 @@
-#include "ft_printf.h"
+#include "printf.h"
 
 static int	number_len_ull(unsigned long long nb)
 {
@@ -15,7 +15,7 @@ static int	number_len_ull(unsigned long long nb)
 	return (i);
 }
 
-int	ft_ull_putnbr_count(unsigned long long nb, t_format f, int pad_len, int prec_len)
+int	ull_putnbr_count(unsigned long long nb, t_format f, int pad_len, int prec_len)
 {
 	int		num_len;
 	int		printed;
@@ -30,14 +30,14 @@ int	ft_ull_putnbr_count(unsigned long long nb, t_format f, int pad_len, int prec
 		pad_len = f.width - (max(num_len, f.precision) * !(f.precision == 0 && nb == 0));
 	if (f.flags[FLAG_ZERO] && !f.flags[FLAG_MINUS] && f.precision < 0)
 		pad_char = '0';
-	printed += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] == 0), pad_char);
-	printed += ft_put_precision_rep(prec_len);
+	printed += put_padding_rep(pad_len * (f.flags[FLAG_MINUS] == 0), pad_char);
+	printed += put_precision_rep(prec_len);
 	if (!(f.precision == 0 && nb == 0))
 	{
 		if (nb == 0)
 			uart_putc('0');
 		printed += display_ull(nb);
 	}
-	printed += ft_put_padding_rep(pad_len * (f.flags[FLAG_MINUS] != 0), ' ');
+	printed += put_padding_rep(pad_len * (f.flags[FLAG_MINUS] != 0), ' ');
 	return (printed + ((nb == 0) * (f.precision != 0)));
 }

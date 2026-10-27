@@ -1,7 +1,7 @@
 #include "log.h"
 #include "time.h"
 #include "proc/proc.h"
-#include "libft.h"
+#include "stdlib.h"
 #include "stats.h"
 #include "image/icons.h"
 #include "display/display.h"

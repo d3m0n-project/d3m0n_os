@@ -18,13 +18,13 @@
 	#include "display/display.h"
 	#include "filesystem/filesystem.h"
 	#include "memory/memory.h"
-	#include "libft.h"
+	#include "stdlib.h"
 	#include "time.h"
-	#define strnstr(a, b, c)		ft_strnstr(a, b, c)
-	#define strlen(a)				ft_strlen(a)
-	#define strchr(a, b)			ft_strchr(a, b)
-	#define isspace(a)				ft_isspace(a)
-	#define strlcpy(a, b, c)		ft_strlcpy(a, b, c)
+	#define strnstr(a, b, c)		strnstr(a, b, c)
+	#define strlen(a)				strlen(a)
+	#define strchr(a, b)			strchr(a, b)
+	#define isspace(a)				isspace(a)
+	#define strlcpy(a, b, c)		strlcpy(a, b, c)
 	#define PRINT(fmt, data)		log(fmt, 0, data);//usleep(1000000);
 
 	#define DISPLAY_FUNC(name)		name

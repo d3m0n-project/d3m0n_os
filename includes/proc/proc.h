@@ -4,7 +4,7 @@
 #include "types.h"
 #include "log.h"
 #include "memory/memory.h"
-#include "libft.h"
+#include "stdlib.h"
 #include "proc/elf.h"
 #include "d3m0n.h"
 #include "memory/mmu.h"

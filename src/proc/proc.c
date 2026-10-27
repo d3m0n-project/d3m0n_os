@@ -12,7 +12,7 @@ void	*alloc_pages(size_t pages)
 	if (pages == 0 || pages > (((size_t)-1) - PAGE_SIZE - sizeof(void *)) / PAGE_SIZE)
 		return 0;
 	bytes = pages * PAGE_SIZE;
-	raw = ft_calloc(1, bytes + PAGE_SIZE + sizeof(void *));
+	raw = calloc(1, bytes + PAGE_SIZE + sizeof(void *));
 	if (!raw)
 		return 0;
 	aligned = ((uintptr_t)raw + PAGE_SIZE - 1) & ~((uintptr_t)PAGE_SIZE - 1);
@@ -136,7 +136,7 @@ void		process_list(void)
 
 t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 {
-	t_process *p = ft_calloc(sizeof(t_process), 1);
+	t_process *p = calloc(sizeof(t_process), 1);
 	if (!p)
 	{
 		log("PROC: Could not allocate new process\n", LOG_ERROR);
@@ -149,7 +149,7 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 		return 0;
 	}
 
-	ft_strlcpy(p->proc_name, name, 64);
+	strlcpy(p->proc_name, name, 64);
 	p->pid = allocate_pid();
 	p->state = PROC_READY;
 	p->kernel_stack = alloc_pages(KERNEL_STACK_PAGES);

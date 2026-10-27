@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_uint_putnbr_count.c                             :+:      :+:    :+:   */
+/*   uint_putnbr_count.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: julcleme <julcleme@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,16 +10,16 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "printf.h"
 
-int	ft_uint_putnbr_count(unsigned int nb, t_format f, int pad_len, int prec_len)
+int	uint_putnbr_count(unsigned int nb, t_format f, int pad_len, int prec_len)
 {
-	return ft_ull_putnbr_count((unsigned long long)nb, f, pad_len, prec_len);
+	return ull_putnbr_count((unsigned long long)nb, f, pad_len, prec_len);
 }
 
-int	ft_ul_putnbr_count(unsigned long nb, t_format f, int pad_len, int prec_len)
+int	ul_putnbr_count(unsigned long nb, t_format f, int pad_len, int prec_len)
 {
-	return ft_ull_putnbr_count((unsigned long long)nb, f, pad_len, prec_len);
+	return ull_putnbr_count((unsigned long long)nb, f, pad_len, prec_len);
 }
 
 

@@ -5,7 +5,7 @@
 
 const char *UART_COLORS[17] = {"\e[0;38;5;0;49m", "\e[0;38;5;0;49m", "\e[0;31m", "\e[1;31m", "\e[38;5;208m", "\e[1;33m", "\e[0;32m", "\e[1;32m", "\e[0;34m", "\e[1;34m", "\e[0;36m", "\e[1;36m", "\e[0;35m", "\e[1;35m", "\e[0;30m", "\e[1;30m", "\e[1;37m"};
 
-int		ft_vprintf(const char *format, va_list *args);
+int		vprintf(const char *format, va_list *args);
 
 static t_mutex	log_mutex = MUTEX_INITIALIZER;
 
@@ -50,7 +50,7 @@ void	log(const char *fmt, int type, ...)
 			uart_print("] ");
 	}
 	//uart_print(fmt);
-	ft_vprintf(fmt, &args);
+	vprintf(fmt, &args);
 	uart_print("\033[0m"); // reset color
 	va_end(args);
 

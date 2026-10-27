@@ -130,20 +130,20 @@ static int	print_format(struct s_format f, va_list *args, t_buf *buffer)
 		return buf_putc(buffer, '%');
 
 	else if (f.type == 'c')
-		return (ft_putchar_count((char)va_arg(*args, int), f, buffer));
+		return (putchar_count((char)va_arg(*args, int), f, buffer));
 
 	else if (f.type == 's')
-		return (ft_putstr_count(va_arg(*args, char *), f, buffer));
+		return (putstr_count(va_arg(*args, char *), f, buffer));
 
 	else if (f.type == 'd' || f.type == 'i')
-		return (ft_putnbr_count((int)va_arg(*args, int), f, 0, 0, buffer));
+		return (putnbr_count((int)va_arg(*args, int), f, 0, 0, buffer));
 	if (f.type == 'u')
 	{
 		if (f.length == LEN_LL)
-			return (ft_ull_putnbr_count(va_arg(*args, unsigned long long), f, 0, 0, buffer));
+			return (ull_putnbr_count(va_arg(*args, unsigned long long), f, 0, 0, buffer));
 		if (f.length == LEN_L)
-			return (ft_ul_putnbr_count(va_arg(*args, unsigned long), f, 0, 0, buffer));
-		return (ft_uint_putnbr_count(va_arg(*args, unsigned int), f, 0, 0, buffer));
+			return (ul_putnbr_count(va_arg(*args, unsigned long), f, 0, 0, buffer));
+		return (uint_putnbr_count(va_arg(*args, unsigned int), f, 0, 0, buffer));
 	}
 	else if (f.type == 'f' || f.type == 'F' || f.type == 'g' || f.type == 'G')
 	{
@@ -166,9 +166,9 @@ static int	print_format(struct s_format f, va_list *args, t_buf *buffer)
 		return put_float(value, f, buffer, is_general);
 	}
 	else if (f.type == 'p')
-		return (ft_putptr_count((void *)va_arg(*args, void *), f, buffer));
+		return (putptr_count((void *)va_arg(*args, void *), f, buffer));
 	else if (f.type == 'x' || f.type == 'X')
-		return (ft_puthex_count((uint32_t)va_arg(*args, uint32_t), f, 0, 0, buffer));
+		return (puthex_count((uint32_t)va_arg(*args, uint32_t), f, 0, 0, buffer));
 	return -1;
 }
 

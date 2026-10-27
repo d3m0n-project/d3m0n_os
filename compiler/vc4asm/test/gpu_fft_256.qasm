@@ -156,12 +156,12 @@ body_rx_sync_slave
 ##############################################################################
 # Subroutines
 
-:fft_16
-    body_fft_16
+:f16
+    body_f16
 
 :pass_1
 :pass_2
-    brr -, r:fft_16
+    brr -, r:f16
     nop;        ldtmu0
     mov r0, r4; ldtmu0
     mov r1, r4

@@ -258,7 +258,7 @@ static int load_image_bounds(char *file_buf, uint32_t file_size, elf_header_32 *
 	i = 0;
 	while (i < ph_count)
 	{
-		ft_memcpy(&ph, file_buf + ph_offset + i * ph_entry_size, sizeof(elf_program_header_32));
+		memcpy(&ph, file_buf + ph_offset + i * ph_entry_size, sizeof(elf_program_header_32));
 		if (is_msb)
 			parse_elf_to_lsb(0, &ph, 0);
 		if (u32(ph.TYPE) == PT_LOAD)
@@ -304,7 +304,7 @@ static void load_pt_segments(char *image, char *file_buf, elf_header_32 *header,
 	i = 0;
 	while (i < ph_count)
 	{
-		ft_memcpy(&ph, file_buf + ph_offset + i * ph_entry_size, sizeof(elf_program_header_32));
+		memcpy(&ph, file_buf + ph_offset + i * ph_entry_size, sizeof(elf_program_header_32));
 		if (is_msb)
 			parse_elf_to_lsb(0, &ph, 0);
 		if (u32(ph.TYPE) == PT_LOAD)
@@ -312,7 +312,7 @@ static void load_pt_segments(char *image, char *file_buf, elf_header_32 *header,
 			uint32_t vaddr = u32(ph.VIRT_ADDR);
 			uint32_t offset = u32(ph.OFFSET);
 			uint32_t filesz = u32(ph.FILESIZE);
-			ft_memcpy(image + (vaddr - min_vaddr), file_buf + offset, filesz);
+			memcpy(image + (vaddr - min_vaddr), file_buf + offset, filesz);
 		}
 		i++;
 	}
@@ -324,7 +324,7 @@ static char *proc_name_from_path(char *path)
 
 	if (!path)
 		return ((char *)"elf");
-	name = ft_strrchr(path, '/');
+	name = strrchr(path, '/');
 	if (name && *(name + 1))
 		return (name + 1);
 	if (*path)
@@ -350,12 +350,12 @@ static void	set_initial_user_args(t_process *proc, const char *path, const char 
 		return;
 
 	stack_top = (uintptr_t)proc->user_stack + USER_STACK_PAGES * PAGE_SIZE;
-	path_len = ft_strlen(path) + 1;
+	path_len = strlen(path) + 1;
 
 	argc = 1 + (size_t)original_argv_len;
 	args_size = path_len;
 	for (i = 0; i < (size_t)original_argv_len; i++)
-		args_size += ft_strlen(original_argv[i]) + 1;
+		args_size += strlen(original_argv[i]) + 1;
 
 	if (args_size + (argc + 2) * sizeof(uint32_t) > USER_STACK_PAGES * PAGE_SIZE)
 		return;
@@ -368,16 +368,16 @@ static void	set_initial_user_args(t_process *proc, const char *path, const char 
 
 	// program path
 	arg_addr = (argv_addr - path_len) & ~(uintptr_t)3;
-	ft_memcpy((void *)arg_addr, path, path_len);
+	memcpy((void *)arg_addr, path, path_len);
 	argv[0] = (uint32_t)arg_addr;
 
 	// other args
 	cursor = arg_addr;
 	for (i = 0; i < (size_t)original_argv_len; i++)
 	{
-		size_t len = ft_strlen(original_argv[i]) + 1;
+		size_t len = strlen(original_argv[i]) + 1;
 		cursor = (cursor - len) & ~(uintptr_t)3;
-		ft_memcpy((void *)cursor, original_argv[i], len);
+		memcpy((void *)cursor, original_argv[i], len);
 		argv[1 + i] = (uint32_t)cursor;
 	}
 
@@ -429,13 +429,13 @@ t_process	*elf_to_proc(char *elf_path, const char **argv, int argv_len)
 		log("ELF: File too small '%s'\n", LOG_ERROR, elf_path);
 		return (0);
 	}
-	if (ft_memcmp(file_buf, ELF_SIG, 4) != 0)
+	if (memcmp(file_buf, ELF_SIG, 4) != 0)
 	{
 		kfree(file_buf);
 		log("ELF: Invalid signature '%s'\n", LOG_ERROR, elf_path);
 		return (0);
 	}
-	ft_memcpy(&header, file_buf, sizeof(elf_header_32));
+	memcpy(&header, file_buf, sizeof(elf_header_32));
 	print_elf_file_report(&header);
 	if (header.IDENTIFICATION.BITS_ARCH != 1)
 	{
@@ -465,7 +465,7 @@ t_process	*elf_to_proc(char *elf_path, const char **argv, int argv_len)
 		return (0);
 	}
 	size_t	image_size = (size_t)(max_vaddr - min_vaddr) + USER_HEAP_RESERVED + 8;
-	image_allocation = ft_calloc(image_size + 0x1FFF, 1);
+	image_allocation = calloc(image_size + 0x1FFF, 1);
 	if (!image_allocation)
 	{
 		kfree(file_buf);

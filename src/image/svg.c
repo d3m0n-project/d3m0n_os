@@ -32,7 +32,7 @@ int	svg_read_file(t_svg *output, const char *path)
 
 	close(fd);
 
-	output->data = ft_calloc(total + 1, sizeof(char));
+	output->data = calloc(total + 1, sizeof(char));
 	if (!output->data)
 	{
 		log("ICONS: Could not allocate memory for svg icon: '%s'\n",

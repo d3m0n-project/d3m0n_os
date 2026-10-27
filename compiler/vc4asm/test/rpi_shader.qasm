@@ -75,11 +75,11 @@
 .set ra_u2v_ref_offset,            ra25
 .set ra_frame_base2,               ra25
 
-.set ra_xshift_next,               ra19
+.set ra_xshinext,               ra19
 .set rx_xshift2,                   rb0
 .set rx_xshift2_next,              ra23
 
-.set ra_x2shift_next,              ra27
+.set ra_x2shinext,              ra27
 .set ra_u2v_dst_offset,            ra27
 
 .set ra_y_next,                    ra28
@@ -137,7 +137,7 @@ mov ra15, 0
 mov r0, ra_x           # Load x
 max r0, r0, 0; mov r1, ra_y # Load y
 min r0, r0, rb_frame_width_minus_1 ; mov r3, ra_frame_base  # Load the frame base
-shl ra_xshift_next, r0, 3 ; mov r2, ra_u2v_ref_offset
+shl ra_xshinext, r0, 3 ; mov r2, ra_u2v_ref_offset
 add ra_y, r1, 1
 add r0, r0, r3
 and r0, r0, ~3
@@ -194,13 +194,13 @@ mov ra31, unif
 
 # per-channel shifts were calculated on the *previous* invocation
 
-mov ra_xshift, ra_xshift_next
+mov ra_xshift, ra_xshinext
 
 # get base addresses and per-channel shifts for *next* invocation
 add r0, unif, elem_num    # x
 max r0, r0, 0; mov r1, unif # y
 min r0, r0, rb_frame_width_minus_1 ; mov r3, unif # frame_base
-shl ra_xshift_next, r0, 3
+shl ra_xshinext, r0, 3
 sub r2, unif, r3 # compute offset from frame base u to frame base v
 add r0, r0, r3
 and rb_x_next, r0, ~3
@@ -337,13 +337,13 @@ mov ra31, unif
 
 # per-channel shifts were calculated on the *previous* invocation
 
-mov ra_xshift, ra_xshift_next
+mov ra_xshift, ra_xshinext
 
 # get base addresses and per-channel shifts for *next* invocation
 add r0, unif, elem_num    # x
 max r0, r0, 0; mov r1, unif # y
 min r0, r0, rb_frame_width_minus_1 ; mov r3, unif # frame_base
-shl ra_xshift_next, r0, 3
+shl ra_xshinext, r0, 3
 sub r2, unif, r3 # compute offset from frame base u to frame base v
 add r0, r0, r3
 and rb_x_next, r0, ~3
@@ -457,13 +457,13 @@ mov ra31, unif
 
 # per-channel shifts were calculated on the *previous* invocation
 
-mov ra_xshift, ra_xshift_next
+mov ra_xshift, ra_xshinext
 
 # get base addresses and per-channel shifts for *next* invocation
 add r0, unif, elem_num    # x
 max r0, r0, 0; mov r1, unif # y
 min r0, r0, rb_frame_width_minus_1 ; mov r3, unif # frame_base
-shl ra_xshift_next, r0, 3
+shl ra_xshinext, r0, 3
 sub r2, unif, r3 # compute offset from frame base u to frame base v
 add r0, r0, r3
 and rb_x_next, r0, ~3
@@ -675,7 +675,7 @@ nop        ; nop # delay slot 2
   add r0, r0, elem_num # Load x
   max r0, r0, 0
   min r0, r0, rb_frame_width_minus_1 ; mov r2, ra9  # Load the frame base
-  shl ra_xshift_next, r0, 3 # Compute shifts
+  shl ra_xshinext, r0, 3 # Compute shifts
   add ra_y, r1, 1
   and r0, r0, ~3  # r0 gives the clipped and aligned x coordinate
   add r2, r2, r0  # r2 is address for frame0 (not including y offset)
@@ -768,7 +768,7 @@ nop        ; nop # delay slot 2
   mov ra31, unif
 
 # per-channel shifts were calculated on the *previous* invocation
-  mov ra_xshift, ra_xshift_next
+  mov ra_xshift, ra_xshinext
   mov rx_xshift2, rx_xshift2_next
 
 # get base addresses and per-channel shifts for *next* invocation
@@ -780,7 +780,7 @@ nop        ; nop # delay slot 2
   add r0, r0, elem_num # Load x
   max r0, r0, 0
   min r0, r0, rb_frame_width_minus_1 ; mov r2, unif  # Load the frame base
-  shl ra_xshift_next, r0, 3 # Compute shifts
+  shl ra_xshinext, r0, 3 # Compute shifts
   mov ra_y_next, r1
   and r0, r0, ~3  # r0 gives the clipped and aligned x coordinate
   add ra_frame_base_next, r2, r0 ; mov r1, unif # y2_x2

@@ -1,6 +1,6 @@
 #include "memory/memory.h"
 #include "filesystem/get_next_line.h"
-#include "libft.h"
+#include "stdlib.h"
 #include "settings.h"
 
 #define	SCHEMA_STR(member, def)					{#member, config->member, TYPE_STRING, {0}, def},
@@ -33,7 +33,7 @@ int		parse_config(t_conf *config)
 		else if (not_found) // not found, use default
 		{
 			if (current->type == TYPE_STRING)
-				ft_strlcpy((char *)current->config_ptr, current->default_value, ft_strlen(current->default_value) + 1);
+				strlcpy((char *)current->config_ptr, current->default_value, strlen(current->default_value) + 1);
 			else if (current->type == TYPE_INT)
 				*(int *)current->config_ptr = *(int *)current->default_value;
 			i++;
@@ -41,18 +41,18 @@ int		parse_config(t_conf *config)
 		}
 		if (current->type == TYPE_STRING)
 		{
-			size_t	len = ft_strlen(value);
+			size_t	len = strlen(value);
 			if (len > STRING_SIZE - 1)
 			{
 				log("CONFIG: Invalid config entry, max string length: %i\n", LOG_ERROR, STRING_SIZE);
 				kfree(value);
 				return 1;
 			}
-			ft_strlcpy((char *)current->config_ptr, value, len + 1);
+			strlcpy((char *)current->config_ptr, value, len + 1);
 		}
 		else if (current->type == TYPE_INT)
 		{
-			int v = ft_atoi(value);
+			int v = atoi(value);
 			if (current->range.min <= v && v <= current->range.max)
 				*(int *)current->config_ptr = v;
 			else
@@ -100,7 +100,7 @@ char	*get_setting(const char *path, const char *key, int	*not_found)
 			return 0;
 		}
 
-		if (ft_strlen(key) == i && !ft_strncmp(line, key, i))
+		if (strlen(key) == i && !strncmp(line, key, i))
 		{
 			i++; // skip
 
@@ -129,7 +129,7 @@ char	*get_setting(const char *path, const char *key, int	*not_found)
 				return 0;
 			}
 
-			output = ft_calloc(value_len + 1, sizeof(char));
+			output = calloc(value_len + 1, sizeof(char));
 			if (!output)
 			{
 				kfree(line);
@@ -137,7 +137,7 @@ char	*get_setting(const char *path, const char *key, int	*not_found)
 				return 0;
 			}
 
-			ft_memcpy(output, line + i, value_len);
+			memcpy(output, line + i, value_len);
 			output[value_len] = '\0';
 
 			kfree(line);
@@ -176,7 +176,7 @@ int	set_setting(const char *path, const char *key, const char *value)
 	}
 	close(fd);
 
-	lines = (char **)ft_calloc(line_count + 2, sizeof(char *));
+	lines = (char **)calloc(line_count + 2, sizeof(char *));
 	if (!lines)
 	{
 		log("SET_SETTING: Failed to allocate lines of the config\n", LOG_ERROR, path);
@@ -198,19 +198,19 @@ int	set_setting(const char *path, const char *key, const char *value)
 		while (line[key_len] && line[key_len] != ':')
 			key_len++;
 
-		if (line[key_len] == ':' && ft_strlen(key) == key_len && !ft_strncmp(line, key, key_len))
+		if (line[key_len] == ':' && strlen(key) == key_len && !strncmp(line, key, key_len))
 		{
-			size_t new_len = ft_strlen(key) + 2 + ft_strlen(value);
-			char *new_line = (char *)ft_calloc(new_len + 1, sizeof(char));
+			size_t new_len = strlen(key) + 2 + strlen(value);
+			char *new_line = (char *)calloc(new_len + 1, sizeof(char));
 			if (!new_line)
 			{
 				log("SET_SETTING: Failed to allocate new line for config %s\n", LOG_ERROR, path);
 				kfree(line);
 				goto cleanup;
 			}
-			ft_strlcpy(new_line, key, new_len + 1);
-			ft_strlcat(new_line, ": ", new_len + 1);
-			ft_strlcat(new_line, value, new_len + 1);
+			strlcpy(new_line, key, new_len + 1);
+			strlcat(new_line, ": ", new_len + 1);
+			strlcat(new_line, value, new_len + 1);
 			lines[i] = new_line;
 			found = 1;
 			kfree(line);
@@ -235,7 +235,7 @@ int	set_setting(const char *path, const char *key, const char *value)
 	i = 0;
 	while (lines[i])
 	{
-		size_t len = ft_strlen(lines[i]);
+		size_t len = strlen(lines[i]);
 		if (write(fd, lines[i], len) != (int)len)
 		{
 			log("SET_SETTING: Failed to write %i bytes to %s\n", LOG_ERROR, (int)len, path);
@@ -260,13 +260,13 @@ int	set_setting(const char *path, const char *key, const char *value)
 	t_conf	*conf = get_config();
 	for (int i=0; i<CONF_FIELD_COUNT; i++)
 	{
-		if (!ft_strcmp((char *)conf_offsets[i].key, (char *)key))
+		if (!strcmp((char *)conf_offsets[i].key, (char *)key))
 		{
 			uintptr_t	offset = conf_offsets[i].offset + (uintptr_t)conf;
 			if (conf_offsets[i].type == TYPE_INT)
-				*(int *)(offset) = ft_atoi((char *)value);
+				*(int *)(offset) = atoi((char *)value);
 			else if (conf_offsets[i].type == TYPE_STRING)
-				ft_strlcpy((char *)(offset), value, STRING_SIZE);
+				strlcpy((char *)(offset), value, STRING_SIZE);
 			break;
 		}
 	}

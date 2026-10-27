@@ -16,10 +16,11 @@ extern uint8_t	__heap_end[];
 #define HEAP_SIZE		    ((uint32_t)HEAP_END - (uint32_t)HEAP_START)
 
 void	*kmalloc(uint32_t size);
+void	*calloc(uint32_t count, uint32_t size);
 int		kfree(void *ptr);
 int		heap_init(void);
 
-void	*memcpy(void *dst, void *src, uint32_t size);
+void	*memcpy(void *dst, const void *src, uint32_t size);
 void	*memset(void *dst, int c, uint32_t size);
 
 void	get_memory_usage(uint64_t *used, uint64_t *total);

@@ -19,14 +19,14 @@ foreach(filename ${files})
 		add_test(NAME asm_${name} WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 			COMMAND ${CMAKE_COMMAND} --build . --target test_asm_${name} --config $<CONFIGURATION> )
 	endif()
-	string(REGEX REPLACE ".*gpu_fft_(.*)\\.qasm$" "\\1" name ${filename})
+	string(REGEX REPLACE ".*gpu_f(.*)\\.qasm$" "\\1" name ${filename})
 	if(NOT ${name} STREQUAL ${filename})
-		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/gpu_fft_${name}.passed ${CMAKE_CURRENT_BINARY_DIR}/gpu_fft_${name}.diff ${CMAKE_CURRENT_BINARY_DIR}/gpu_fft_${name}.hex
-			COMMAND $<TARGET_FILE:vc4asm> -V -C ${CMAKE_CURRENT_BINARY_DIR}/gpu_fft_${name}.hex -i vc4.qinc ${filename}
-			COMMAND diff ${CMAKE_CURRENT_BINARY_DIR}/gpu_fft_${name}.hex ${CMAKE_CURRENT_BINARY_DIR}/shader_${name}.strip > ${CMAKE_CURRENT_BINARY_DIR}/gpu_fft_${name}.diff
-			COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/gpu_fft_${name}.passed # Work around for cmake bug #15474
+		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/gpu_f${name}.passed ${CMAKE_CURRENT_BINARY_DIR}/gpu_f${name}.diff ${CMAKE_CURRENT_BINARY_DIR}/gpu_f${name}.hex
+			COMMAND $<TARGET_FILE:vc4asm> -V -C ${CMAKE_CURRENT_BINARY_DIR}/gpu_f${name}.hex -i vc4.qinc ${filename}
+			COMMAND diff ${CMAKE_CURRENT_BINARY_DIR}/gpu_f${name}.hex ${CMAKE_CURRENT_BINARY_DIR}/shader_${name}.strip > ${CMAKE_CURRENT_BINARY_DIR}/gpu_f${name}.diff
+			COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/gpu_f${name}.passed # Work around for cmake bug #15474
 			DEPENDS vc4asm ${filename} ${CMAKE_CURRENT_BINARY_DIR}/shader_${name}.strip VERBATIM )
-		add_custom_target( test_asm_${name} DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/gpu_fft_${name}.passed )
+		add_custom_target( test_asm_${name} DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/gpu_f${name}.passed )
 		list(APPEND test_qasm test_asm_${name} )
 		add_test(NAME asm_${name} WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 			COMMAND ${CMAKE_COMMAND} --build . --target test_asm_${name} --config $<CONFIGURATION> )

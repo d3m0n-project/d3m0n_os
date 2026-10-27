@@ -2,7 +2,7 @@
 #define ICONS_H
 
 #include "bmp.h"
-#include "libft.h"
+#include "stdlib.h"
 #include "settings.h"
 
 typedef enum

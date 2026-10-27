@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_putptr_count.c                                  :+:      :+:    :+:   */
+/*   putptr_count.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: julcleme <julcleme@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
+#include "printf.h"
 
 static int	hex_ptr_len(unsigned long nb)
 {
@@ -27,7 +27,7 @@ static int	hex_ptr_len(unsigned long nb)
 	return (i);
 }
 
-int	ft_putptr_count(void *ptr, t_format f)
+int	putptr_count(void *ptr, t_format f)
 {
 	int		printed;
 	int		len;
@@ -39,17 +39,17 @@ int	ft_putptr_count(void *ptr, t_format f)
 	if (f.flags[FLAG_ZERO] && !(f.flags[FLAG_MINUS] || f.precision > -1))
 		pad_char = '0';
 	if (!ptr)
-		return (ft_putstr_count("(nil)", f));
+		return (putstr_count("(nil)", f));
 	len = 2 + hex_ptr_len((unsigned long)ptr);
 	pad_len = f.width - len;
 	if (pad_len < 0)
 		pad_len = 0;
 	if (!f.flags[FLAG_MINUS])
-		printed += ft_put_padding_rep(pad_len, pad_char);
+		printed += put_padding_rep(pad_len, pad_char);
 	uart_print("0x");
 	printed += 2;
 	printed += display_hex((unsigned long)ptr, 1);
 	if (f.flags[FLAG_MINUS])
-		printed += ft_put_padding_rep(pad_len, pad_char);
+		printed += put_padding_rep(pad_len, pad_char);
 	return (printed);
 }

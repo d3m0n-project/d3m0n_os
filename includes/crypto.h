@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "memory/memory.h"
-#include "libft.h"
+#include "stdlib.h"
 
 // rsa
 //typedef struct
