@@ -427,11 +427,11 @@ static sxmlerr_t parse_instruction(sxml_t* state, sxml_args_t* args)
 static sxmlerr_t parse_doctype(sxml_t* state, sxml_args_t* args)
 {
 	static const char STARTTAG[]= "<!DOCTYPE";
-	static const char ENDTAG[]= "]>";
-
-	const char* bracket;
+	const char* endtag;
 	const char* start= buffer_fromoffset(args, state->bufferpos);
 	const char* end= buffer_getend(args);
+	char quote = 0;
+	unsigned subset_depth = 0;
 	if (end - start < TAG_LEN(STARTTAG))
 		return SXML_ERROR_BUFFERDRY;
 
@@ -439,12 +439,28 @@ static sxmlerr_t parse_doctype(sxml_t* state, sxml_args_t* args)
 		return SXML_ERROR_BUFFERDRY;
 
 	start+= TAG_LEN(STARTTAG);
-	bracket= str_findstr(start, end, ENDTAG);
-	if (bracket == end)
+	for (endtag = start; endtag < end; endtag++)
+	{
+		if (quote)
+		{
+			if (*endtag == quote)
+				quote = 0;
+			continue;
+		}
+		if (*endtag == '\'' || *endtag == '"')
+			quote = *endtag;
+		else if (*endtag == '[')
+			subset_depth++;
+		else if (*endtag == ']' && subset_depth)
+			subset_depth--;
+		else if (*endtag == '>' && !subset_depth)
+			break;
+	}
+	if (endtag == end)
 		return SXML_ERROR_BUFFERDRY;
 
-	state_pushtoken(state, args, SXML_DOCTYPE, start, bracket);
-	return state_setpos(state, args, bracket + TAG_LEN (ENDTAG));
+	state_pushtoken(state, args, SXML_DOCTYPE, start, endtag);
+	return state_setpos(state, args, endtag + 1);
 }
 
 static sxmlerr_t parse_start(sxml_t* state, sxml_args_t* args)
@@ -585,7 +601,7 @@ static inline sxmlerr_t sxml_parse(sxml_t *state, const char *buffer, unsigned b
 		switch (lt[1])
 		{
 			case '?':	err= parse_instruction(&temp, &args);	break;
-			case '!':	err= parse_doctype(&temp, &args);	break;
+			case '!':	err= (lt[2] == '-') ? parse_comment(&temp, &args) : parse_doctype(&temp, &args);	break;
 			default:	err= parse_start(&temp, &args);	break;
 		}
 

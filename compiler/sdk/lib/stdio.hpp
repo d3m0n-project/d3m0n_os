@@ -2,7 +2,7 @@
 #define STDIO_HPP
 
 #include "types.h"
-#include "runtime.h"
+#include "runtime/runtime.h"
 #include "sys.h"
 #include "printf/printf.hpp"
 #include "stdlib.h"

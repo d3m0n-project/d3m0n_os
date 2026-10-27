@@ -121,8 +121,6 @@ void	draw_topbar(void)
 
 	draw_clock(conf, theme_color_fg);
 
-	return; // TODO: remove this line
-
 	// draw battery and connection status
 	draw_battery(conf, theme_color_fg);
 	draw_connections(conf, theme_color_fg);

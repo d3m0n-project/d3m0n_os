@@ -1,33 +1,23 @@
 #pragma once
 
 #include "app.hpp"
+#include "runtime/vector.hpp"
 
 class MainWindow : public Window
 {
 private:
-	Rect	rect1;
-	Text	text1;
+	Vector<Image>	app_slots;
+
 	Image	wallpaper;
 public:
-	MainWindow(void): Window("launcher", Size(320), Size(436)) {
+	MainWindow(void): Window("launcher", Size(320), Size(480 - 32))
+	{
 		wallpaper.location = Point(0, 0);
-		wallpaper.width = Size(this->width);
-		wallpaper.height = Size(this->height);
+		wallpaper.width = Size(320);
+		wallpaper.height = Size(320);
 		wallpaper.source = "/test.svg";
+		//wallpaper.bg_color = Color("#ff00ff");
 
-
-		rect1.location = Point(0, 0);
-		rect1.bg_color = Color(0xFFFF0000);
-		rect1.width = Size(200);
-		rect1.height = Size(50);
-
-		text1.location = Point(10, 10);
-		text1.color = Color(0xFFFFFFFF);
-		text1.content = "Hello World!";
-		text1.font_size = 16;
-
-		//this->add_control(&rect1);
-		//this->add_control(&text1);
 		this->add_control(&wallpaper);
 	};
 };

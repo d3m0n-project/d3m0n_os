@@ -2,7 +2,7 @@
 #define RUNTIME_H
 
 #include "sys.h"
-
+#include "runtime/vector.hpp"
 #include "errors.h"
 
 #ifdef __cplusplus

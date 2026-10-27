@@ -7,6 +7,7 @@
 #include "app/point.hpp"
 #include "app/size.hpp"
 #include "app/graphics.hpp"
+#include "runtime/runtime.h"
 
 
 #ifdef __cplusplus

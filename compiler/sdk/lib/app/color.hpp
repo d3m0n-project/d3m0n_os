@@ -9,7 +9,7 @@
 using namespace std;
 
 #define HEX_CHARSET			"0123456789ABCDEF"
-#define INDEX_OF(c, str)	(int)(str - (strchr(str, c) || (str + 1)))
+#define INDEX_OF(c, str)	(uint8_t)((const char *)(strchr(str, c)?strchr(str, c):str) - str)
 
 /** @brief Reports an invalid color value. */
 class ColorValueException : public exception
@@ -43,7 +43,7 @@ public:
 
 	Color(uint8_t r, uint8_t g, uint8_t b)
 	{
-		this->value = 0xFF | (r << 16) | (g << 8) | b;
+		this->value = 0xFF000000 | (r << 16) | (g << 8) | b;
 	}
 
 	Color(uint32_t c)
@@ -55,14 +55,14 @@ public:
 	{
 		if (html[0] != '#' || (html.length() - 1) != 6)
 			throw ColorValueException(html);
-		int c[3] = {0};
+		uint8_t c[3] = {0};
 		for (int part=0; part<3; part++)
 		{
-			char c1 = html[part];
-			char c2 = html[part + 1];
+			char c1 = toupper(html[1 + (part * 2)]);
+			char c2 = toupper(html[2 + (part * 2)]);
 			c[part] = INDEX_OF(c1, HEX_CHARSET) * 16 + INDEX_OF(c2, HEX_CHARSET);
 		}
-		Color(c[0], c[1], c[2]);
+		this->value = 0xFF000000 | (c[0] << 16) | (c[1] << 8) | c[2];
 	}
 
 	/** @brief Returns the color packed into a 32-bit RGBA value. */

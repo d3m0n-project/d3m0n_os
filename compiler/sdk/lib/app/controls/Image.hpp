@@ -25,15 +25,17 @@ public:
 				extension = path + 1;
 			++path;
 		}
+
+		display->draw_rect(this->computed_location.x, this->computed_location.y, this->computed_width, this->computed_height, this->bg_color);
 		if (strcmp((char *)extension, (char *)"svg") == 0 || 1)
 		{
-			int ret = display->draw_svg(computed_location.x, computed_location.y, computed_width, computed_height, source.c_str());
+			int ret = display->draw_svg(this->computed_location.x, this->computed_location.y, this->computed_width, this->computed_height, this->source.c_str());
 			if (ret == 1)
-				printf("Image: svg at '%s' does not exists!\n", source.c_str());
-			printf("DEBUG MSG: drawn image\n");
+				printf("Image: svg at '%s' does not exists!\n", this->source.c_str());
 			return;
 		}
-		display->draw_rect(computed_location.x, computed_location.y, computed_width, computed_height, bg_color);
+		else
+			printf("Unsupported media type in Image src: '%s'\n", extension);
 	}
 };
 #endif

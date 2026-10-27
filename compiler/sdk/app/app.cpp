@@ -41,7 +41,7 @@ void Window::draw(void)
 	int window_height = this->height.get();
 	while (current)
 	{
-		current->layout(0, this->top_bar ? 24 : 0, window_width, window_height - (this->top_bar ? 24 : 0));
+		current->layout(0, 0, window_width, window_height);
 		if (current->visible)
 		{
 			//printf("drawn %s\n", current->name.c_str());
