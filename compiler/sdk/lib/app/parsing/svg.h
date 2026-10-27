@@ -20,11 +20,6 @@
 	#include "memory/memory.h"
 	#include "stdlib.h"
 	#include "time.h"
-	#define strnstr(a, b, c)		strnstr(a, b, c)
-	#define strlen(a)				strlen(a)
-	#define strchr(a, b)			strchr(a, b)
-	#define isspace(a)				isspace(a)
-	#define strlcpy(a, b, c)		strlcpy(a, b, c)
 	#define PRINT(fmt, data)		log(fmt, 0, data);//usleep(1000000);
 
 	#define DISPLAY_FUNC(name)		name
@@ -36,7 +31,7 @@
 	#define FUNC_TYPE				inline static 
 #endif
 
-#define SVG_TOKEN_COUNT		1024
+#define SVG_TOKEN_COUNT		1024 
 
 /** @brief Writes a byte range to the requested output stream. */
 static void	print_range(const char *buffer, unsigned start, unsigned end)

@@ -4,7 +4,11 @@ CPP_FILES				= d3c.cpp \
 						  vc4asm.cpp
 SRC_DIR					= src
 OBJ_DIR					= obj
+TEMP_OBJ_DIR			= $(OBJ_DIR)/tmp
+TEMP_D3C				= $(TEMP_OBJ_DIR)/d3c
 SDK_BUILD				= $(OBJ_DIR)/sdk.a
+SDK_FILES				= $(shell find sdk -type f \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' -o -name '*.s' -o -name '*.S' \))
+TEMP_D3C_INPUTS		= $(shell find src vc4asm/src -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \)) linker.ld vc4asm/share/vc4inc/vc4.qinc
 O_FILES					= $(CPP_FILES:%.cpp=$(OBJ_DIR)/%.o)
 D_FILES					= $(CPP_FILES:%.cpp=$(OBJ_DIR)/%.d)
 INSTALL_DIR_ROOT		= /opt/com.ares
@@ -41,32 +45,33 @@ vc4asm_O_FILES			= $(addprefix $(vc4asm_OBJ_DIR)/,$(vc4asm_CPP_FILES:.cpp=.o))
 vc4asm_CXX_FLAGS		= -I$(vc4asm_SRC_DIR)
 
 
-all: $(SDK_BUILD) install
+all: install
 
 
-$(SDK_BUILD):
-	@rm -rf "$(INSTALL_DIR)/" > /dev/null
-	@mkdir -p $(SDK_HEADER_PATH)
-# compile a d3c without sdk
-	@$(MAKE) build \
-		OUT="$(OBJ_DIR)/tmp_d3c" \
-		INCLUDE_SDK=0
-	@printf "\033[35mFinished compiling temp d3c!\033[0m\n"
+$(TEMP_D3C): $(TEMP_D3C_INPUTS)
+	@$(MAKE) build OUT="$(TEMP_D3C)" OBJ_DIR="$(TEMP_OBJ_DIR)" INCLUDE_SDK=0
+	@printf "\033[35mFinished compiling temporary d3c!\033[0m\n"
 
-	@$(MAKE) -C sdk \
-		CXX="$(CWD)/$(OBJ_DIR)/tmp_d3c" \
-		OUT="$(CWD)/$(SDK_BUILD)"
-	@printf "\033[35mFinished compiling sdk!\033[0m\n"
+$(SDK_BUILD): $(TEMP_D3C) $(SDK_FILES)
+	@$(MAKE) -C sdk CXX="$(CWD)/$(TEMP_D3C)" OUT="$(CWD)/$(SDK_BUILD)"
+	@touch "$@"
+	@printf "\033[35mFinished compiling SDK!\033[0m\n"
 
-	@make -C sdk copy_headers COPY_DEST="$(SDK_HEADER_PATH)"
-	@printf "\033[35mCopied sdk headers!\033[0m\n"
+sdk_build: $(SDK_BUILD)
 
-	@rm -rf $(O_FILES)
-	@printf "\033[35mCleaned up temp d3c files!\033[0m\n"
+sdk_headers:
+	@rm -rf "$(SDK_HEADER_PATH)"
+	@mkdir -p "$(SDK_HEADER_PATH)"
+	@cp -r sdk/lib/. "$(SDK_HEADER_PATH)/"
+	@printf "\033[35mCopied SDK headers!\033[0m\n"
 
 build: $(OUT)
 
+ifeq ($(INCLUDE_SDK),0)
 $(OUT): $(vc4asm_O_FILES) $(O_FILES) $(VC4_QINC_OBJ)
+else
+$(OUT): $(vc4asm_O_FILES) $(O_FILES) $(VC4_QINC_OBJ) $(SDK_BUILD)
+endif
 	@mkdir -p $(OBJ_DIR)
 ifneq ($(INCLUDE_SDK),0)
 	ld -r -b binary -o "$(OBJ_DIR)/linker.o" "linker.ld"
@@ -96,19 +101,7 @@ $(vc4asm_OBJ_DIR)/%.o: $(vc4asm_SRC_DIR)/%.cpp
 # ------------------------------------------------
 
 
-install: build
-	@mkdir -p "$(INSTALL_DIR)"
-	@printf "Install $(OUT) to $(INSTALL_DIR)? [Y/n] "; \
-	read answer; \
-	case "$$answer" in \
-		[nN]|[nN][oO]) \
-			printf "\033[31mInstallation cancelled.\033[0m\n"; \
-			exit 1; \
-			;; \
-		*) \
-			;; \
-	esac
-
+install: build sdk_headers
 	@mkdir -p "$(INSTALL_DIR)"
 	@install -m 755 "$(OUT)" "$(INSTALL_DIR)/$(OUT)"
 
@@ -150,6 +143,6 @@ fclean: clean
 re: fclean all
 
 
-.PHONY: all clean fclean re install remove build vc4asm
+.PHONY: all clean fclean re install remove build vc4asm sdk_build sdk_headers
 
 -include $(D_FILES)

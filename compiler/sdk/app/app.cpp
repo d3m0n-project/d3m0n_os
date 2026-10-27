@@ -15,9 +15,7 @@ Window::Window(const char *title, const Size &width, const Size &height)
 	this->controls = nullptr;
 }
 
-Window::~Window()
-{
-}
+Window::~Window() {}
 
 void Window::add_control(Control *control)
 {

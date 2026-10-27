@@ -5,7 +5,7 @@
 
 APP_INFO(
 	"d3m0n default app launcher",
-	1.0,
+	1.1,
 	"4re5 group",
 	"Official default app launcher, homescreen application",
 	"icon.ico"
