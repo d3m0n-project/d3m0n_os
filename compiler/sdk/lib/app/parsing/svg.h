@@ -45,6 +45,7 @@ typedef struct s_svg_ctx
 	int x, y, w, h;
 	double vx, vy, vw, vh;
 	double a, b, cc, d, e, f;
+	int blend_overlay;
 	uint32_t override_color;
 } t_svg_ctx;
 
@@ -59,6 +60,18 @@ static inline void svg_put_pixel(t_svg_ctx *c, int x, int y, uint32_t color)
 	unsigned alpha = color >> 24;
 	if (!alpha)
 		return;
+	if (c->blend_overlay)
+	{
+		uint32_t background = c->display->get_pixel(x, y), blended = color & 0xff000000;
+		for (unsigned shift = 0; shift < 24; shift += 8)
+		{
+			unsigned source_channel = (color >> shift) & 0xff;
+			unsigned background_channel = (background >> shift) & 0xff;
+			unsigned channel = background_channel <= 127 ? (2 * background_channel * source_channel + 127) / 255 : 255 - (2 * (255 - background_channel) * (255 - source_channel) + 127) / 255;
+			blended |= channel << shift;
+		}
+		color = blended;
+	}
 	if (alpha < 255)
 	{
 		uint32_t background = c->display->get_pixel(x, y);
@@ -180,10 +193,47 @@ static inline void svg_attr_text(const t_svg_ctx *c, unsigned tag, const char *n
 	}
 }
 
+static inline int svg_style_text(const t_svg_ctx *c, unsigned tag, const char *property, char *out, unsigned cap)
+{
+	char style[256];
+	if (!cap) return 0;
+	svg_attr_text(c, tag, "style", style, sizeof(style));
+	unsigned property_length = (unsigned)strlen(property);
+	char *p = style;
+	while (*p)
+	{
+		while (*p == ' ' || *p == '\t' || *p == ';') p++;
+		char *name = p;
+		while (*p && *p != ':' && *p != ';') p++;
+		if (*p != ':') { if (*p) p++; continue; }
+		unsigned name_length = (unsigned)(p - name);
+		while (name_length && (name[name_length - 1] == ' ' || name[name_length - 1] == '\t')) name_length--;
+		p++;
+		while (*p == ' ' || *p == '\t') p++;
+		char *value = p;
+		while (*p && *p != ';') p++;
+		char *value_end = p;
+		while (value_end > value && (value_end[-1] == ' ' || value_end[-1] == '\t')) value_end--;
+		if (name_length == property_length && strncmp(name, property, property_length) == 0)
+		{
+			unsigned length = (unsigned)(value_end - value);
+			if (length >= cap) length = cap - 1;
+			for (unsigned i = 0; i < length; i++) out[i] = value[i];
+			out[length] = 0;
+			return 1;
+		}
+		if (*p) p++;
+	}
+	out[0] = 0;
+	return 0;
+}
+
 static inline uint32_t svg_color_attr(const t_svg_ctx *c, unsigned tag, const char *attribute)
 {
 	char s[64];
 	svg_attr_text(c, tag, attribute, s, sizeof(s));
+	if (!s[0])
+		svg_style_text(c, tag, attribute, s, sizeof(s));
 	if (!s[0])
 		return attribute[0] == 'f' ? (c->override_color ? c->override_color : 0xff000000) : 0;
 	if (svg_eq(s, (unsigned)strlen(s), "none"))
@@ -230,8 +280,18 @@ static inline uint32_t svg_fill_color(const t_svg_ctx *c, unsigned tag)
 		return 0;
 	if (svg_attr(c, tag, "opacity", &value))
 		opacity = value;
+	else
+	{
+		char text[32];
+		if (svg_style_text(c, tag, "opacity", text, sizeof(text))) opacity = svg_cnumber(text);
+	}
 	if (svg_attr(c, tag, "fill-opacity", &value))
 		opacity *= value;
+	else
+	{
+		char text[32];
+		if (svg_style_text(c, tag, "fill-opacity", text, sizeof(text))) opacity *= svg_cnumber(text);
+	}
 	if (opacity < 0)
 		opacity = 0;
 	if (opacity > 1)
@@ -247,8 +307,18 @@ static inline uint32_t svg_stroke_color(const t_svg_ctx *c, unsigned tag)
 		return 0;
 	if (svg_attr(c, tag, "opacity", &value))
 		opacity = value;
+	else
+	{
+		char text[32];
+		if (svg_style_text(c, tag, "opacity", text, sizeof(text))) opacity = svg_cnumber(text);
+	}
 	if (svg_attr(c, tag, "stroke-opacity", &value))
 		opacity *= value;
+	else
+	{
+		char text[32];
+		if (svg_style_text(c, tag, "stroke-opacity", text, sizeof(text))) opacity *= svg_cnumber(text);
+	}
 	if (opacity < 0)
 		opacity = 0;
 	if (opacity > 1)
@@ -445,7 +515,7 @@ static inline void svg_line_width(t_svg_ctx *c, int x0, int y0, int x1, int y1, 
 	(void)c;
 	if (!width)
 		return;
-	int radius = (int)(width / 2);
+	int before = (int)((width - 1) / 2), after = (int)(width / 2);
 	int dx = (x1 > x0)?(x1 - x0):(x0 - x1);
 	int sx = (x0 < x1)?1:-1;
 	int dy = -((y1 > y0)?(y1 - y0):(y0 - y1));
@@ -453,8 +523,8 @@ static inline void svg_line_width(t_svg_ctx *c, int x0, int y0, int x1, int y1, 
 	int e = dx + dy;
 	for (;;)
 	{
-		for (int oy = -radius; oy <= radius; oy++)
-			for (int ox = -radius; ox <= radius; ox++)
+		for (int oy = -before; oy <= after; oy++)
+			for (int ox = -before; ox <= after; ox++)
 				SVG_PIXEL(x0 + ox, y0 + oy, color);
 		if (x0 == x1 && y0 == y1)
 			break;
@@ -487,6 +557,196 @@ static inline unsigned svg_stroke_width(const t_svg_ctx *c, unsigned tag)
 	if (width > 32)
 		return 32;
 	return (unsigned)(width + 0.5);
+}
+
+static inline int svg_path_number(const char **source, const char *end, double *value)
+{
+	const char *p = *source;
+	while (p < end && (*p == ',' || *p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')) ++p;
+	int sign = 1, fraction = 0, seen = 0, fractional_digits = 0;
+	double number = 0;
+	if (p < end && (*p == '+' || *p == '-')) { if (*p == '-') sign = -1; ++p; }
+	while (p < end)
+	{
+		if (*p >= '0' && *p <= '9') { number = number * 10 + (*p - '0'); seen = 1; if (fraction) fractional_digits++; ++p; }
+		else if (*p == '.' && !fraction) { fraction = 1; ++p; }
+		else break;
+	}
+	if (!seen) return 0;
+	while (fractional_digits--) number *= 0.1;
+	number *= sign;
+	if (p < end && (*p == 'e' || *p == 'E'))
+	{
+		const char *exponent_start = p++;
+		int exponent_sign = 1, exponent = 0;
+		if (p < end && (*p == '+' || *p == '-')) { if (*p == '-') exponent_sign = -1; ++p; }
+		if (p == end || *p < '0' || *p > '9') p = exponent_start;
+		else
+		{
+			while (p < end && *p >= '0' && *p <= '9') { exponent = exponent * 10 + (*p - '0'); ++p; }
+			while (exponent-- > 0) { if (exponent_sign > 0) number *= 10; else number *= 0.1; }
+		}
+	}
+	*source = p;
+	*value = number;
+	return 1;
+}
+
+static inline void svg_draw_path_contour(t_svg_ctx *c, const int *xs, const int *ys, unsigned count, int closed, uint32_t fill, uint32_t stroke, unsigned stroke_width)
+{
+	if (count < 2)
+		return;
+	if (fill && count > 2)
+		svg_fill_polygon(c, xs, ys, count, fill);
+	if (stroke)
+	{
+		for (unsigned i = 1; i < count; i++)
+			svg_line_width(c, xs[i - 1], ys[i - 1], xs[i], ys[i], stroke, stroke_width);
+		if (closed)
+			svg_line_width(c, xs[count - 1], ys[count - 1], xs[0], ys[0], stroke, stroke_width);
+	}
+}
+
+typedef struct s_svg_intersection
+{
+	int x;
+	int direction;
+} t_svg_intersection;
+
+static inline void svg_fill_path_contours(t_svg_ctx *c, const int *xs, const int *ys, const unsigned *starts, const unsigned *counts, unsigned contours, uint32_t color, int even_odd)
+{
+	unsigned total = 0;
+	for (unsigned i = 0; i < contours; i++) total += counts[i];
+	t_svg_intersection *intersections = (t_svg_intersection *)malloc((size_t)total * sizeof(*intersections));
+	if (!intersections) return;
+	for (int y = c->y; y < c->y + c->h; y++)
+	{
+		unsigned n = 0;
+		for (unsigned contour = 0; contour < contours; contour++)
+		{
+			unsigned first = starts[contour], count = counts[contour];
+			if (count < 3) continue;
+			for (unsigned i = 0, j = count - 1; i < count; j = i++)
+			{
+				int y0 = ys[first + j], y1 = ys[first + i];
+				if ((y0 <= y && y1 > y) || (y1 <= y && y0 > y))
+				{
+					intersections[n].x = xs[first + j] + (int)((long long)(y - y0) * (xs[first + i] - xs[first + j]) / (y1 - y0));
+					intersections[n].direction = y1 > y0 ? 1 : -1;
+					n++;
+				}
+			}
+		}
+		for (unsigned gap = n / 2; gap; gap /= 2)
+			for (unsigned i = gap; i < n; i++)
+				for (unsigned j = i; j >= gap && intersections[j - gap].x > intersections[j].x; j -= gap)
+				{
+					t_svg_intersection temporary = intersections[j];
+					intersections[j] = intersections[j - gap];
+					intersections[j - gap] = temporary;
+				}
+		int winding = 0, inside = 0, left = 0;
+		for (unsigned i = 0; i < n;)
+		{
+			int crossing_x = intersections[i].x, before = even_odd ? inside : winding != 0, delta = 0;
+			unsigned crossings = 0;
+			while (i < n && intersections[i].x == crossing_x) { delta += intersections[i].direction; crossings++; i++; }
+			if (before)
+				for (int x = left < c->x ? c->x : left; x < crossing_x && x < c->x + c->w; x++) SVG_PIXEL(x, y, color);
+			if (even_odd) inside ^= crossings & 1;
+			else winding += delta;
+			left = crossing_x;
+		}
+	}
+	free(intersections);
+}
+
+static inline void svg_render_path(t_svg_ctx *c, unsigned tag, uint32_t fill, uint32_t stroke)
+{
+	unsigned start, end;
+	if (!svg_attr_span(c, tag, "d", &start, &end) || start == end)
+		return;
+	unsigned capacity = end - start + 1;
+	int *xs = (int *)malloc((size_t)capacity * sizeof(*xs));
+	int *ys = (int *)malloc((size_t)capacity * sizeof(*ys));
+	unsigned *contour_starts = (unsigned *)malloc((size_t)capacity * sizeof(*contour_starts));
+	unsigned *contour_counts = (unsigned *)malloc((size_t)capacity * sizeof(*contour_counts));
+	unsigned char *contour_closed = (unsigned char *)malloc(capacity);
+	if (!xs || !ys || !contour_starts || !contour_counts || !contour_closed) { free(xs); free(ys); free(contour_starts); free(contour_counts); free(contour_closed); return; }
+	const char *p = c->buffer + start, *limit = c->buffer + end;
+	char command = 0, previous_command = 0;
+	double x = 0, y = 0, start_x = 0, start_y = 0, previous_cx = 0, previous_cy = 0, previous_qx = 0, previous_qy = 0;
+	unsigned count = 0, contour_start = 0, contours = 0, stroke_width = svg_stroke_width(c, tag);
+	int closed = 0, first_move = 0;
+	while (p < limit)
+	{
+		while (p < limit && (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r' || *p == ',')) ++p;
+		if (p == limit) break;
+		if ((*p >= 'A' && *p <= 'Z') || (*p >= 'a' && *p <= 'z')) command = *p++;
+		else if (!command) break;
+		if (command == 'Z' || command == 'z')
+		{
+			x = start_x; y = start_y;
+			if (count > contour_start) { contour_starts[contours] = contour_start; contour_counts[contours] = count - contour_start; contour_closed[contours++] = 1; }
+			contour_start = count; closed = 0; previous_command = command; command = 0;
+			continue;
+		}
+		int relative = command >= 'a' && command <= 'z';
+		char upper = relative ? (char)(command - 'a' + 'A') : command;
+		double v[7];
+		unsigned needed = upper == 'M' || upper == 'L' ? 2 : upper == 'H' || upper == 'V' ? 1 : upper == 'C' ? 6 : upper == 'S' ? 4 : upper == 'Q' ? 4 : upper == 'T' ? 2 : upper == 'A' ? 7 : 0;
+		if (!needed) { command = 0; continue; }
+		const char *before = p;
+		for (unsigned i = 0; i < needed; i++)
+			if (!svg_path_number(&p, limit, &v[i])) { p = before; command = 0; break; }
+		if (!command) continue;
+		if (upper == 'M')
+		{
+			if (count > contour_start) { contour_starts[contours] = contour_start; contour_counts[contours] = count - contour_start; contour_closed[contours++] = (unsigned char)closed; }
+			contour_start = count; closed = 0;
+			x = relative ? x + v[0] : v[0]; y = relative ? y + v[1] : v[1];
+			start_x = x; start_y = y; first_move = 1;
+			int px, py; svg_transform_point(c, x, y, &px, &py); if (count < capacity) { xs[count] = px; ys[count++] = py; }
+			command = relative ? 'l' : 'L'; previous_command = 'M';
+			continue;
+		}
+		if (!first_move) { start_x = x; start_y = y; first_move = 1; }
+		if (upper == 'L') { x = relative ? x + v[0] : v[0]; y = relative ? y + v[1] : v[1]; }
+		else if (upper == 'H') x = relative ? x + v[0] : v[0];
+		else if (upper == 'V') y = relative ? y + v[0] : v[0];
+		else if (upper == 'C' || upper == 'S')
+		{
+			double x0 = x, y0 = y, x1 = upper == 'S' && (previous_command == 'C' || previous_command == 'S') ? 2 * x - previous_cx : upper == 'S' ? x : relative ? x + v[0] : v[0], y1 = upper == 'S' && (previous_command == 'C' || previous_command == 'S') ? 2 * y - previous_cy : upper == 'S' ? y : relative ? y + v[1] : v[1], x2 = relative ? x + v[upper == 'S' ? 0 : 2] : v[upper == 'S' ? 0 : 2], y2 = relative ? y + v[upper == 'S' ? 1 : 3] : v[upper == 'S' ? 1 : 3], x3 = relative ? x + v[upper == 'S' ? 2 : 4] : v[upper == 'S' ? 2 : 4], y3 = relative ? y + v[upper == 'S' ? 3 : 5] : v[upper == 'S' ? 3 : 5];
+			for (unsigned step = 1; step <= 8 && count < capacity; step++)
+			{
+				double t = step / 8.0, u = 1 - t, qx = u*u*u*x0 + 3*u*u*t*x1 + 3*u*t*t*x2 + t*t*t*x3, qy = u*u*u*y0 + 3*u*u*t*y1 + 3*u*t*t*y2 + t*t*t*y3;
+				int px, py; svg_transform_point(c, qx, qy, &px, &py); xs[count] = px; ys[count++] = py;
+			}
+			x = x3; y = y3; previous_cx = x2; previous_cy = y2;
+		}
+		else if (upper == 'Q' || upper == 'T')
+		{
+			double x0 = x, y0 = y, x1 = upper == 'T' && (previous_command == 'Q' || previous_command == 'T') ? 2 * x - previous_qx : upper == 'T' ? x : relative ? x + v[0] : v[0], y1 = upper == 'T' && (previous_command == 'Q' || previous_command == 'T') ? 2 * y - previous_qy : upper == 'T' ? y : relative ? y + v[1] : v[1], x2 = relative ? x + v[upper == 'T' ? 0 : 2] : v[upper == 'T' ? 0 : 2], y2 = relative ? y + v[upper == 'T' ? 1 : 3] : v[upper == 'T' ? 1 : 3];
+			for (unsigned step = 1; step <= 8 && count < capacity; step++)
+			{
+				double t = step / 8.0, u = 1 - t, qx = u*u*x0 + 2*u*t*x1 + t*t*x2, qy = u*u*y0 + 2*u*t*y1 + t*t*y2;
+				int px, py; svg_transform_point(c, qx, qy, &px, &py); xs[count] = px; ys[count++] = py;
+			}
+			x = x2; y = y2; previous_qx = x1; previous_qy = y1;
+		}
+		else if (upper == 'A') { x = relative ? x + v[5] : v[5]; y = relative ? y + v[6] : v[6]; }
+		if (upper == 'L' || upper == 'H' || upper == 'V' || upper == 'A')
+		{
+			int px, py; svg_transform_point(c, x, y, &px, &py); if (count < capacity) { xs[count] = px; ys[count++] = py; }
+		}
+		previous_command = upper;
+	}
+	if (count > contour_start) { contour_starts[contours] = contour_start; contour_counts[contours] = count - contour_start; contour_closed[contours++] = (unsigned char)closed; }
+	char fill_rule[32]; svg_attr_text(c, tag, "fill-rule", fill_rule, sizeof(fill_rule));
+	if (fill && contours) svg_fill_path_contours(c, xs, ys, contour_starts, contour_counts, contours, fill, svg_eq(fill_rule, (unsigned)strlen(fill_rule), "evenodd"));
+	if (stroke)
+		for (unsigned i = 0; i < contours; i++) svg_draw_path_contour(c, xs + contour_starts[i], ys + contour_starts[i], contour_counts[i], contour_closed[i], 0, stroke, stroke_width);
+	free(xs); free(ys); free(contour_starts); free(contour_counts); free(contour_closed);
 }
 
 static inline void svg_render_tag(t_svg_ctx *c, unsigned i)
@@ -615,11 +875,13 @@ static inline void svg_render_tag(t_svg_ctx *c, unsigned i)
 	}
 	else if (svg_eq(name, n, "image"))
 		svg_render_image(c, i);
+	else if (svg_eq(name, n, "path"))
+		svg_render_path(c, i, fill, stroke);
 }
 
 static inline int svg_is_supported_tag(const char *name, unsigned length)
 {
-	return svg_eq(name, length, "svg") || svg_eq(name, length, "g") || svg_eq(name, length, "rect") || svg_eq(name, length, "circle") || svg_eq(name, length, "ellipse") || svg_eq(name, length, "line") || svg_eq(name, length, "polygon") || svg_eq(name, length, "polyline") || svg_eq(name, length, "image");
+	return svg_eq(name, length, "svg") || svg_eq(name, length, "g") || svg_eq(name, length, "rect") || svg_eq(name, length, "circle") || svg_eq(name, length, "ellipse") || svg_eq(name, length, "line") || svg_eq(name, length, "polygon") || svg_eq(name, length, "polyline") || svg_eq(name, length, "image") || svg_eq(name, length, "path");
 }
 
 static inline unsigned svg_skip_element(const t_svg_ctx *c, unsigned start, unsigned end)
@@ -675,6 +937,7 @@ static inline void svg_parse_transform(t_svg_ctx *c, const char *transform)
 static inline void svg_draw_tree(t_svg_ctx *c, unsigned begin, unsigned end)
 {
 	double saved_a[64], saved_b[64], saved_c[64], saved_d[64], saved_e[64], saved_f[64];
+	int saved_blend[64];
 	unsigned group_depth = 0;
 	for (unsigned i = begin; i < end; i++)
 	{
@@ -696,10 +959,13 @@ static inline void svg_draw_tree(t_svg_ctx *c, unsigned begin, unsigned end)
 				saved_d[group_depth] = c->d;
 				saved_e[group_depth] = c->e;
 				saved_f[group_depth] = c->f;
+				saved_blend[group_depth] = c->blend_overlay;
 				group_depth++;
 				char transform[128];
 				svg_attr_text(c, i, "transform", transform, sizeof(transform));
 				svg_parse_transform(c, transform);
+				char blend[32];
+				if (svg_style_text(c, i, "mix-blend-mode", blend, sizeof(blend)) && svg_eq(blend, (unsigned)strlen(blend), "overlay")) c->blend_overlay = 1;
 			}
 			else
 			{
@@ -723,6 +989,7 @@ static inline void svg_draw_tree(t_svg_ctx *c, unsigned begin, unsigned end)
 				c->d = saved_d[group_depth];
 				c->e = saved_e[group_depth];
 				c->f = saved_f[group_depth];
+				c->blend_overlay = saved_blend[group_depth];
 			}
 		}
 	}
@@ -777,6 +1044,7 @@ SVG_FUNC void DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const char
 	c.d = 1;
 	c.e = 0;
 	c.f = 0;
+	c.blend_overlay = 0;
 	c.override_color = override_color;
 	for (unsigned i = 0; i < c.count; i++)
 		if (tokens[i].type == SXML_STARTTAG && svg_eq(buffer + tokens[i].startpos, tokens[i].endpos - tokens[i].startpos, "svg"))

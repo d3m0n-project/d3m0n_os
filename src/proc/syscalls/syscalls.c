@@ -197,41 +197,51 @@ int	sys_uname(uint32_t user_buf, uint32_t buf_len, uint32_t a2, uint32_t a3)
 int	sys_getdents(uint32_t user_path, uint32_t user_out_buf, uint32_t out_len, uint32_t a3)
 {
 	char		**entries;
-	char		*out;
+	uint32_t	*out_entries;
+	char		*out_strings;
 	const char	*path;
-	uint32_t	total;
+	uint64_t	string_bytes;
+	uint64_t	table_bytes;
 	uint32_t	i;
 	uint32_t	name_len;
 
 	(void)a3;
-	if (out_len == 0)
+	if (out_len < sizeof(uint32_t))
 		return (-1);
 	path = resolve_user_string_ptr(user_path);
-	out = (char *)resolve_user_ptr(user_out_buf, out_len);
-	if (!path || !out)
+	out_entries = (uint32_t *)resolve_user_ptr(user_out_buf, out_len);
+	if (!path || !out_entries)
 		return (-1);
 	entries = list_dir_files(path);
 	if (!entries)
 		return (-1);
-	total = 0;
+	string_bytes = 0;
 	i = 0;
 	while (entries[i])
 	{
 		name_len = (uint32_t)strlen(entries[i]);
-		if (total + name_len + 1 >= out_len)
+		table_bytes = (uint64_t)(i + 2) * sizeof(uint32_t);
+		if (table_bytes + string_bytes + name_len + 1 > out_len)
 			break;
-		memcpy(out + total, entries[i], name_len);
-		total += name_len;
-		out[total++] = '\n';
+		string_bytes += name_len + 1;
 		i++;
 	}
-	if (total < out_len)
-		out[total] = '\0';
+	table_bytes = (uint64_t)(i + 1) * sizeof(uint32_t);
+	out_strings = (char *)out_entries + table_bytes;
+	string_bytes = 0;
+	for (uint32_t entry = 0; entry < i; entry++)
+	{
+		name_len = (uint32_t)strlen(entries[entry]);
+		out_entries[entry] = user_out_buf + (uint32_t)table_bytes + (uint32_t)string_bytes;
+		memcpy(out_strings + string_bytes, entries[entry], name_len + 1);
+		string_bytes += name_len + 1;
+	}
+	out_entries[i] = 0;
 	i = 0;
 	while (entries[i])
 		kfree(entries[i++]);
 	kfree(entries);
-	return (int)total;
+	return (int)(table_bytes / sizeof(uint32_t) - 1);
 }
 
 int	sys_rename(uint32_t user_old_path, uint32_t user_new_path, uint32_t a2, uint32_t a3)

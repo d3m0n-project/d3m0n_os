@@ -1,5 +1,12 @@
 #include "display/display.h"
 #include "log.h"
+#include "filesystem/filesystem.h"
+#include "memory/memory.h"
+#define malloc kmalloc
+#define free kfree
+#include "../../compiler/sdk/lib/app/parsing/png.h"
+#undef malloc
+#undef free
 
 #if DEBUG == 1
 #include "protocol/mailbox.h"
@@ -11,6 +18,24 @@ static volatile uint32_t	g_framebuffer_mbox[35]  __attribute__((aligned(16)));
 //static t_font				main_font;
 
 uint32_t	DISPLAY_COLORS[17] = { 0x00000000, 0xff000000, 0xff0000bf, 0xff0000ff, 0xff007fff, 0xff00ffff, 0xff00bf00, 0xff00ff00, 0xffbf5f00, 0xffff0000, 0xffbfbf00, 0xffffff00, 0xffbf00bf, 0xffff00ff, 0xff191919, 0xff7f7f7f, 0xffffffff};
+
+static uint32_t	*g_draw_target;
+static int		g_draw_target_width;
+static int		g_draw_target_height;
+
+void	display_set_draw_target(uint32_t *pixels, int width, int height)
+{
+	g_draw_target = pixels;
+	g_draw_target_width = width;
+	g_draw_target_height = height;
+}
+
+void	display_clear_draw_target(void)
+{
+	g_draw_target = 0;
+	g_draw_target_width = 0;
+	g_draw_target_height = 0;
+}
 
 uintptr_t	get_fb_addr(int *pitch)
 {
@@ -34,6 +59,15 @@ uint16_t	rgb888_to_rgb565(uint32_t color)
 
 void	put_pixel(int x, int y, uint32_t color)
 {
+	if (g_draw_target)
+	{
+		if (x < 0 || x >= g_draw_target_width || y < 0 || y >= g_draw_target_height)
+			return;
+		if ((color & 0xFF000000) == 0x00000000)
+			return;
+		g_draw_target[y * g_draw_target_width + x] = color;
+		return;
+	}
 	if (x < 0 || (uint32_t)x >= SCREEN_WIDTH || y < 0 || (uint32_t)y >= SCREEN_HEIGHT)
 		return;
 	if ((color & 0xFF000000) == 0x00000000) // TODO: real transparency
@@ -48,6 +82,12 @@ void	put_pixel(int x, int y, uint32_t color)
 
 uint32_t	get_pixel(int x, int y)
 {
+	if (g_draw_target)
+	{
+		if (x < 0 || x >= g_draw_target_width || y < 0 || y >= g_draw_target_height)
+			return 0;
+		return g_draw_target[y * g_draw_target_width + x];
+	}
 	if (x < 0 || (uint32_t)x >= SCREEN_WIDTH || y < 0 || (uint32_t)y >= SCREEN_HEIGHT)
 		return 0;
 	#if DEBUG == 1
@@ -74,6 +114,12 @@ void	draw_hline(int x, int y, int w, uint32_t color)
 		w = -w;
 		x -= w;
 	}
+	if (g_draw_target)
+	{
+		for (int i = 0; i < w; i++)
+			put_pixel(x + i, y, color);
+		return;
+	}
 	#if DEBUG == 1
 	for (int i=0; i<w; i++)
 		put_pixel(x + i, y, color);
@@ -84,6 +130,12 @@ void	draw_hline(int x, int y, int w, uint32_t color)
 
 void	draw_vline(int x, int y, int h, uint32_t color)
 {
+	if (g_draw_target)
+	{
+		for (int i = 0; i < h; i++)
+			put_pixel(x, y + i, color);
+		return;
+	}
 	#if DEBUG == 1
 	for (int i=0; i<h; i++)
 		put_pixel(x, y + i, color);
@@ -94,6 +146,12 @@ void	draw_vline(int x, int y, int h, uint32_t color)
 
 void	draw_rect(int x, int y, int w, int h, uint32_t color)
 {
+	if (g_draw_target)
+	{
+		for (int j = 0; j < h; j++)
+			draw_hline(x, y + j, w, color);
+		return;
+	}
 	#if DEBUG == 1
 	for(int j=0; j<h; j++)
 		draw_hline(x, y + j, w, color);
@@ -361,6 +419,73 @@ void	draw_bmp(int x, int y, int w, int h, BmpTexture *texture, uint32_t override
 			}
 		}
 	}
+}
+
+int	draw_png(int x, int y, int w, int h, const char *path)
+{
+	if (!path || w <= 0 || h <= 0)
+		return 1;
+	int fd = open(path, O_READ);
+	if (fd < 0)
+		return 1;
+	uint32_t file_size = lseek(fd, 0, SEEK_END);
+	if (!file_size || file_size > 8388608 || lseek(fd, 0, SEEK_SET) == (uint32_t)-1)
+	{
+		close(fd);
+		return 1;
+	}
+	unsigned char *data = (unsigned char *)kmalloc(file_size);
+	if (!data)
+	{
+		close(fd);
+		return 1;
+	}
+	uint32_t offset = 0;
+	while (offset < file_size)
+	{
+		uint32_t amount = read(fd, (char *)data + offset, file_size - offset);
+		if (!amount || amount == (uint32_t)-1)
+		{
+			kfree(data);
+			close(fd);
+			return 1;
+		}
+		offset += amount;
+	}
+	close(fd);
+	uint32_t image_width, image_height, *pixels;
+	if (!png_decode(data, file_size, &image_width, &image_height, &pixels))
+	{
+		kfree(data);
+		return 1;
+	}
+	kfree(data);
+	for (int py = 0; py < h; py++)
+	{
+		uint32_t source_y = (uint32_t)((uint64_t)py * image_height / h);
+		for (int px = 0; px < w; px++)
+		{
+			uint32_t source_x = (uint32_t)((uint64_t)px * image_width / w);
+			uint32_t color = pixels[source_y * image_width + source_x];
+			uint32_t alpha = color >> 24;
+			if (!alpha)
+				continue;
+			if (alpha < 255)
+			{
+				uint32_t background = get_pixel(x + px, y + py), blended = 0xff000000;
+				for (uint32_t shift = 0; shift < 24; shift += 8)
+				{
+					uint32_t foreground_channel = (color >> shift) & 0xff;
+					uint32_t background_channel = (background >> shift) & 0xff;
+					blended |= ((foreground_channel * alpha + background_channel * (255 - alpha)) / 255) << shift;
+				}
+				color = blended;
+			}
+			put_pixel(x + px, y + py, color);
+		}
+	}
+	kfree(pixels);
+	return 0;
 }
 
 

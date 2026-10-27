@@ -35,12 +35,15 @@ extern uint32_t			DISPLAY_COLORS[17];
 int					display_init();
 uint32_t			get_pixel(int x, int y);
 void				put_pixel(int x, int y, uint32_t color);
+void				display_set_draw_target(uint32_t *pixels, int width, int height);
+void				display_clear_draw_target(void);
 void				draw_hline(int x, int y, int w, uint32_t color);
 void				draw_rect(int x, int y, int w, int h, uint32_t color);
 void				draw_rounded_rect(int x, int y, int w, int h, int radius, uint32_t color);
 void				draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int filled);
 void				draw_rect_outline(int x, int y, int w, int h, uint32_t color);
 void				draw_bmp(int x, int y, int w, int h, BmpTexture *texture, uint32_t override_color);
+int				draw_png(int x, int y, int w, int h, const char *path);
 uintptr_t			get_fb_addr(int *pitch);
 
 void				draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);

@@ -21,11 +21,15 @@ extern "C" int	main(void)
 	try
 	{
 		MainWindow	window;
-		window.draw();
+		//while (1)
+		//{
+			window.draw();
+		//}
 	}
-	catch(exception &e)
+	catch (exception &e)
 	{
-		printf("\033[31mERROR\033[0m: An error occured while running app: \n       >>> \033[31;1m%s\033[0m\n", e.what());
+		fprintf(stderr, "\033[31mERROR\033[0m: An error occured while running app: \n");
+		fprintf(stderr, "       >>> \033[31;1m%s\033[0m\n", e.what());
 	}
 
 	printf("Launcher Finished...\n");

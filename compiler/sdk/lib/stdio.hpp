@@ -23,8 +23,12 @@
 	#error "L_tmpnam must be greater than 5 to ensure valid tmp names"
 #endif
 
+
 #ifdef __cplusplus
+#define SYMBOLIC_FILE(fd)	([](int file_fd) { return new FILE{file_fd, 0, 0, 0, nullptr, 0, 0, 0, 0, 0}; }(fd))
 extern "C" {
+#else
+#define SYMBOLIC_FILE(fd)	(&(FILE){.fd=fd, .is_eof=0, .error=0, .ungot=0, .buf=0, .buf_size=0, .buf_pos=0, .buf_len=0, .buf_mode=0, .buf_owned=0})
 #endif
 	typedef struct {
 		int		fd;
@@ -40,9 +44,9 @@ extern "C" {
 	} FILE;
 
 	#define EOF		-1
-	#define stderr	(&(FILE){.fd = 2, .is_eof = 0, .error = 0, .ungot=0})
-	#define stdout	(&(FILE){.fd = 1, .is_eof = 0, .error = 0, .ungot=0})
-	#define stdin	(&(FILE){.fd = 0, .is_eof = 0, .error = 0, .ungot=0}) // TODO: stdin
+	#define stderr	SYMBOLIC_FILE(2)
+	#define stdout	SYMBOLIC_FILE(1)
+	#define stdin	SYMBOLIC_FILE(0) // TODO: stdin
 
 	int					sprintf(char *str, const char *format, ...);
 	int					snprintf(char *str, size_t size, const char *format, ...);

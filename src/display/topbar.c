@@ -8,6 +8,9 @@
 #include "../../compiler/sdk/lib/app/parsing/svg.h"
 
 static t_font	topbar_font = {0};
+static uint32_t	topbar_frame[SCREEN_WIDTH * TOPBAR_HEIGHT];
+static uint32_t	topbar_previous[SCREEN_WIDTH * TOPBAR_HEIGHT];
+static int		topbar_previous_valid;
 
 static void	draw_clock(t_conf *conf, uint32_t theme_color)
 {
@@ -116,6 +119,7 @@ void	draw_topbar(void)
 			return;
 		}
 	}
+	display_set_draw_target(topbar_frame, SCREEN_WIDTH, TOPBAR_HEIGHT);
 
 	draw_rect(0, 0, SCREEN_WIDTH, TOPBAR_HEIGHT, theme_color_bg);
 
@@ -124,4 +128,17 @@ void	draw_topbar(void)
 	// draw battery and connection status
 	draw_battery(conf, theme_color_fg);
 	draw_connections(conf, theme_color_fg);
+	display_clear_draw_target();
+
+	for (int y = 0; y < TOPBAR_HEIGHT; y++)
+	{
+		for (int x = 0; x < SCREEN_WIDTH; x++)
+		{
+			int index = y * SCREEN_WIDTH + x;
+			if (!topbar_previous_valid || topbar_frame[index] != topbar_previous[index])
+				put_pixel(x, y, topbar_frame[index]);
+			topbar_previous[index] = topbar_frame[index];
+		}
+	}
+	topbar_previous_valid = 1;
 }

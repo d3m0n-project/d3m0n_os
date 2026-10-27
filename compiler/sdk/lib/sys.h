@@ -113,9 +113,9 @@ extern "C" {
 		return (int)syscall(SYS_UNAME, (uint32_t)buffer, buffer_len, (uint32_t)0, (uint32_t)0);
 	}
 
-	static inline int	getdents(const char *path, char *buffer, uint32_t buffer_len)
+	static inline int	getdents(const char *path, char **entries, uint32_t buffer_len)
 	{
-		return (int)syscall(SYS_GETDENTS, (uint32_t)path, (uint32_t)buffer, buffer_len, (uint32_t)0);
+		return (int)syscall(SYS_GETDENTS, (uint32_t)path, (uint32_t)entries, buffer_len, (uint32_t)0);
 	}
 
 	static inline int	rename(const char *old_path, const char *new_path)

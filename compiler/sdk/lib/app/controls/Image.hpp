@@ -27,11 +27,18 @@ public:
 		}
 
 		display->draw_rect(this->computed_location.x, this->computed_location.y, this->computed_width, this->computed_height, this->bg_color);
-		if (strcmp((char *)extension, (char *)"svg") == 0 || 1)
+		if (strcmp((char *)extension, (char *)"svg") == 0)
 		{
 			int ret = display->draw_svg(this->computed_location.x, this->computed_location.y, this->computed_width, this->computed_height, this->source.c_str());
 			if (ret == 1)
 				printf("Image: svg at '%s' does not exists!\n", this->source.c_str());
+			return;
+		}
+		else if (strcmp((char *)extension, (char *)"png") == 0)
+		{
+			int ret = display->draw_png(this->computed_location.x, this->computed_location.y, this->computed_width, this->computed_height, this->source.c_str());
+			if (ret == 1)
+				printf("Image: png at '%s' could not be loaded!\n", this->source.c_str());
 			return;
 		}
 		else

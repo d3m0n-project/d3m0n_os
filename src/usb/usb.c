@@ -531,38 +531,36 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 	if (dx == 0 && dy == 0 && g_mouse.buttons == g_mouse_report[0])
 		return 0;
 
-	// replace last pixel
-	//if (g_mouse.last_pixel_saved)
-	//{
-	//	for (int i=0; i<CURSOR_SIZE * CURSOR_SIZE; i++)
-	//		put_pixel(g_mouse.x + (i % CURSOR_SIZE), g_mouse.y + (i / CURSOR_SIZE), g_mouse.last_pixel_color[i]);
-	//}
-	//else
-	//	g_mouse.last_pixel_saved = 1;
+	if (g_mouse.last_pixel_saved)
+	{
+		for (int i = 0; i < CURSOR_SIZE * CURSOR_SIZE; i++)
+			put_pixel(g_mouse.x + (i % CURSOR_SIZE), g_mouse.y + (i / CURSOR_SIZE), g_mouse.last_pixel_color[i]);
+	}
 	g_mouse.x += dx;
 	g_mouse.y += dy;
 
 	// clamp cursor
 	if (g_mouse.x < 0)
 		g_mouse.x = 0;
-	else if (g_mouse.x > SCREEN_WIDTH)
-		g_mouse.x = SCREEN_WIDTH;
+	else if (g_mouse.x > SCREEN_WIDTH - CURSOR_SIZE)
+		g_mouse.x = SCREEN_WIDTH - CURSOR_SIZE;
 	if (g_mouse.y < 0)
 		g_mouse.y = 0;
-	else if (g_mouse.y > SCREEN_HEIGHT)
-		g_mouse.y = SCREEN_HEIGHT;
+	else if (g_mouse.y > SCREEN_HEIGHT - CURSOR_SIZE)
+		g_mouse.y = SCREEN_HEIGHT - CURSOR_SIZE;
 	
 	g_mouse.buttons = g_mouse_report[0];
 
-	// save last pixels
+	// save pixels under the cursor before drawing it
 	for (int i=0; i<CURSOR_SIZE; i++)
 	{
 		for (int j=0; j<CURSOR_SIZE; j++)
 		{
-			//g_mouse.last_pixel_color[i * CURSOR_SIZE + j] = get_pixel(g_mouse.x + j, g_mouse.y + i);
+			g_mouse.last_pixel_color[i * CURSOR_SIZE + j] = get_pixel(g_mouse.x + j, g_mouse.y + i);
 			put_pixel(g_mouse.x + j, g_mouse.y + i, DISPLAY_COLORS[RED]);
 		}
 	}
+	g_mouse.last_pixel_saved = 1;
 
 	click_handler(g_mouse.x, g_mouse.y - TOPBAR_HEIGHT, (unsigned int)g_mouse.buttons); 
 	

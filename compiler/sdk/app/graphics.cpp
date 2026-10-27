@@ -2,6 +2,73 @@
 #include "app/font.hpp"
 #include "app/parsing/svg.h"
 
+int Display::draw_png(int x, int y, int w, int h, const char *path)
+{
+	if (!path || w <= 0 || h <= 0)
+		return 1;
+	int fd = open(path, O_READ);
+	if (fd < 0)
+		return 1;
+	int file_size = lseek(fd, 0, SEEK_END);
+	if (file_size <= 0 || file_size > 8388608 || lseek(fd, 0, SEEK_SET) < 0)
+	{
+		close(fd);
+		return 1;
+	}
+	unsigned char *data = (unsigned char *)malloc((size_t)file_size);
+	if (!data)
+	{
+		close(fd);
+		return 1;
+	}
+	int offset = 0;
+	while (offset < file_size)
+	{
+		int amount = read(fd, (char *)data + offset, file_size - offset);
+		if (amount <= 0)
+		{
+			free(data);
+			close(fd);
+			return 1;
+		}
+		offset += amount;
+	}
+	close(fd);
+	uint32_t image_width, image_height, *pixels;
+	if (!png_decode(data, (size_t)file_size, &image_width, &image_height, &pixels))
+	{
+		free(data);
+		return 1;
+	}
+	free(data);
+	for (int py = 0; py < h; py++)
+	{
+		unsigned source_y = (unsigned)((unsigned long long)py * image_height / h);
+		for (int px = 0; px < w; px++)
+		{
+			unsigned source_x = (unsigned)((unsigned long long)px * image_width / w);
+			uint32_t color = pixels[source_y * image_width + source_x];
+			unsigned alpha = color >> 24;
+			if (!alpha)
+				continue;
+			if (alpha < 255)
+			{
+				uint32_t background = this->get_pixel(x + px, y + py), blended = 0xff000000;
+				for (unsigned shift = 0; shift < 24; shift += 8)
+				{
+					unsigned foreground_channel = (color >> shift) & 0xff;
+					unsigned background_channel = (background >> shift) & 0xff;
+					blended |= ((foreground_channel * alpha + background_channel * (255 - alpha)) / 255) << shift;
+				}
+				color = blended;
+			}
+			this->put_pixel(x + px, y + py, color);
+		}
+	}
+	free(pixels);
+	return 0;
+}
+
 void	Display::put_pixel(int x, int y, uint32_t color)
 {
 	if (x < 0 || (uint32_t)x >= (uint32_t)this->w || y < 0 || (uint32_t)y >= (uint32_t)this->h)
