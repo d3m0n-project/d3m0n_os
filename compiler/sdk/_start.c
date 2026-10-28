@@ -5,5 +5,5 @@ extern int main(int argc, char **argv);
 void _start(int argc, char **argv)
 {
 	// TODO: fix system crash if no exit is called
-	main(argc, argv);
+	exit(main(argc, argv));
 }
