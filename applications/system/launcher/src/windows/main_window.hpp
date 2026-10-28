@@ -30,6 +30,36 @@ private:
 	Image				wallpaper;
 	FolderViewPopup		popup;
 public:
+	void	add_icon(int row, int col, const char *app_name)
+	{
+		Rect	*touch_area = &this->app_slots[col * ICONS_PER_ROW + row].touch_area;
+		Image	*tmp_image = &this->app_slots[col * ICONS_PER_ROW + row].icon;
+		Text	*tmp_text = &this->app_slots[col * ICONS_PER_ROW + row].name;
+
+		touch_area->width = Size(ICON_WIDTH);
+		touch_area->height = Size(ICON_IMAGE_SIZE + ICON_TEXT_SIZE * 2);
+		touch_area->location = Point(
+			ICONS_PADDING + row * (ICON_WIDTH + ICONS_PADDING),
+			ICONS_PADDING + col * (ICON_HEIGHT + ICONS_PADDING)
+		);
+		touch_area->on_click = [this](event_t *event, Control *target) { this->app_icon_on_click(event, target); };
+		touch_area->name = app_name;
+
+		tmp_image->width = Size(ICON_IMAGE_SIZE);
+		tmp_image->height = Size(ICON_IMAGE_SIZE);
+		tmp_image->source = "/themes/default_dark/icons/modules.png";
+
+		tmp_text->width = Size(ICON_IMAGE_SIZE);
+		tmp_text->location = Point(0, ICON_IMAGE_SIZE);
+		tmp_text->font_size = ICON_TEXT_SIZE;
+		tmp_text->text_align = ANCHOR_CENTER_X;
+		tmp_text->content = app_name;
+		touch_area->add_control(tmp_image);
+		touch_area->add_control(tmp_text);
+
+		this->add_control(touch_area);
+	}
+
 	MainWindow(void): Window("launcher", Size(320), Size(480 - 32))
 	{
 		this->settings_fd = open("/desktop.config", O_CREATE | O_WRITE | O_READ);
@@ -62,33 +92,8 @@ public:
 			if (col >= ICONS_PER_COL)
 				break;
 			
-			Rect	*touch_area = &this->app_slots[col * ICONS_PER_ROW + row].touch_area;
-			Image	*tmp_image = &this->app_slots[col * ICONS_PER_ROW + row].icon;
-			Text	*tmp_text = &this->app_slots[col * ICONS_PER_ROW + row].name;
-
-			touch_area->width = Size(ICON_WIDTH);
-			touch_area->height = Size(ICON_IMAGE_SIZE + ICON_TEXT_SIZE * 2);
-			touch_area->location = Point(
-				ICONS_PADDING + row * (ICON_WIDTH + ICONS_PADDING),
-				ICONS_PADDING + col * (ICON_HEIGHT + ICONS_PADDING)
-			);
-			touch_area->on_click = [this](event_t *event) { this->app_icon_on_click(event); };
-
-			tmp_image->width = Size(ICON_IMAGE_SIZE);
-			tmp_image->height = Size(ICON_IMAGE_SIZE);
-			tmp_image->source = "/themes/default_dark/icons/modules.png";
+			add_icon(row, col, entries[i]);
 			
-			tmp_text->width = Size(ICON_IMAGE_SIZE);
-			tmp_text->location = Point(0, ICON_IMAGE_SIZE);
-			tmp_text->font_size = ICON_TEXT_SIZE;
-			tmp_text->text_align = ANCHOR_CENTER_X;
-			tmp_text->content = entries[i];
-			tmp_text->color = Color("#ffffff");
-
-			touch_area->add_control(tmp_image);
-			touch_area->add_control(tmp_text);
-
-			this->add_control(touch_area);
 			row++;
 			if (row >= ICONS_PER_ROW)
 			{
@@ -98,8 +103,34 @@ public:
 		}
 	};
 
-	void	app_icon_on_click(event_t *e)
+	void	app_icon_on_click(event_t *e, Control *target)
 	{
-		printf("clicked (%i, %i) with %i\n", e->x, e->y, e->type);
+		(void)e;
+		this->popup.prepare_popup_content(target->name.c_str());
+		this->popup.visible = true;
+	}
+
+	void draw(void) override
+	{
+		draw_controls();
+		popup.draw();
+		present();
+	}
+
+	bool handle_event(event_t *event)
+	{
+		if (!event || !EVENT_IS_MOUSE(event->type))
+			return false;
+		if (popup.visible)
+		{
+			if (!popup.contains(event->x, event->y))
+			{
+				popup.visible = false;
+				return true;
+			}
+			popup.dispatch_event(event);
+			return true;
+		}
+		return this->dispatch_event(event);
 	}
 };

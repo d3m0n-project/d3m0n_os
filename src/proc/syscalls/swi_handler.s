@@ -4,6 +4,7 @@
 .extern syscall_handler
 .extern current_process
 .extern process_exit_current
+.extern thread_exit_current
 .extern process_context_valid
 .extern panic
 .extern mmu_switch_current
@@ -21,6 +22,8 @@ swi_handler:
 	mov r12, r0
 	cmp r12, #1
 	beq exit_user_mode
+	cmp r12, #2
+	beq exit_thread_mode
 
 	ldmfd sp!, {r0-r12, lr}
 	movs pc, lr
@@ -29,6 +32,10 @@ exit_user_mode:
 	add sp, sp, #(14*4)
 
 	bl process_exit_current
+
+exit_thread_mode:
+	add sp, sp, #(14*4)
+	bl thread_exit_current
 
 .Lexit_park:
 	wfe

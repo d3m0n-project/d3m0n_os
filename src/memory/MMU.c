@@ -351,6 +351,26 @@ int	mmu_map_kernel_range(t_address_space *space, void *address, size_t size)
 	return map_range(space->l1, addr, addr, size, L2_AP_PRIV_RW_USER_NONE, 1);
 }
 
+int	mmu_unmap_range(t_address_space *space, void *address, size_t size)
+{
+	uintptr_t start = (uintptr_t)address & ~((uintptr_t)MMU_PAGE_SIZE - 1);
+	uintptr_t end = (uintptr_t)address + size;
+	if (!space || !space->l1 || end < (uintptr_t)address)
+		return 1;
+	for (uintptr_t va = start; va < end; va += MMU_PAGE_SIZE)
+	{
+		uint32_t descriptor = space->l1[L1_INDEX((uint32_t)va)];
+		if ((descriptor & 3u) == COARSE_PAGE_TABLE)
+		{
+			uint32_t *l2 = (uint32_t *)(uintptr_t)(descriptor & 0xFFFFFC00u);
+			l2[L2_INDEX((uint32_t)va)] = 0;
+		}
+	}
+	mmu_invalidate_tlb();
+	mmu_barrier();
+	return 0;
+}
+
 uint32_t	*mmu_kernel_table(void)
 {
 	return mmu_table;

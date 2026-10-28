@@ -12,13 +12,26 @@
 
 #define SYS_PRINT_MAX_LEN	512
 #define SYSCALL_EXIT_INDEX	0
+#define SYSCALL_THREAD_KILL_INDEX	24
+#define SYSCALL_THREAD_EXIT_INDEX	25
 
 extern t_process	*current_process;
 extern void			draw_topbar(void);
 
+static t_process *thread_memory_owner(t_process *proc)
+{
+	if (!proc || !proc->is_thread)
+		return proc;
+	for (t_process *candidate = scheduled_processes; candidate; candidate = candidate->next)
+		if (candidate->pid == proc->thread_owner_pid && !candidate->is_thread)
+			return candidate;
+	return proc;
+}
+
 static void	*resolve_user_ptr(uint32_t user_ptr, uint32_t len)
 {
 	t_process *proc = current_process;
+	t_process *memory_owner = thread_memory_owner(proc);
 	if (!proc)
 		return (void *)user_ptr;
 
@@ -44,11 +57,11 @@ static void	*resolve_user_ptr(uint32_t user_ptr, uint32_t len)
 	}
 
 	// user heap
-	if (proc->heap_start && user_ptr >= proc->heap_start && user_ptr < proc->heap_end)
+	if (memory_owner->heap_start && user_ptr >= memory_owner->heap_start && user_ptr < memory_owner->heap_end)
 	{
-		if ((uint64_t)user_ptr + len > proc->heap_end)
+		if ((uint64_t)user_ptr + len > memory_owner->heap_end)
 			return 0;
-		return (uint8_t *)proc->image_backing + (user_ptr - proc->image_vaddr_base);
+		return (uint8_t *)memory_owner->image_backing + (user_ptr - memory_owner->image_vaddr_base);
 	}
 
 	log("resolve_user_ptr: ptr %p not in any valid region\n", LOG_WARNING, user_ptr);
@@ -299,7 +312,7 @@ int	sys_remove(uint32_t user_path, uint32_t a1, uint32_t a2, uint32_t a3)
 
 int	sys_sbrk(uint32_t increment, uint32_t a1, uint32_t a2, uint32_t a3)
 {
-	t_process *proc = current_process;
+	t_process *proc = thread_memory_owner(current_process);
 	uint32_t old_end;
 	uint32_t new_end;
 	int32_t signed_inc;
@@ -560,6 +573,7 @@ int	sys_pstate(uint32_t pid, uint32_t a1, uint32_t a2, uint32_t a3)
 
 int	sys_evtpop(uint32_t event_ptr, uint32_t a1, uint32_t a2, uint32_t a3)
 {
+	t_process *event_owner;
 	(void)a1;
 	(void)a2;
 	(void)a3;
@@ -567,9 +581,88 @@ int	sys_evtpop(uint32_t event_ptr, uint32_t a1, uint32_t a2, uint32_t a3)
 		return -1;
 
 	event_t	*event = (event_t *)resolve_user_ptr(event_ptr, sizeof(event_t));
-	
+	if (!event)
+		return -1;
 	*event = (event_t){0};
-	return fifo_pop(&current_process->events, event);
+	event_owner = thread_memory_owner(current_process);
+	return fifo_pop(&event_owner->events, event);
+}
+
+static int	thread_owned_by_current(t_process *thread)
+{
+	uint32_t owner_pid;
+	if (!thread || !current_process || !thread->is_thread)
+		return 0;
+	owner_pid = current_process->is_thread ? current_process->thread_owner_pid : current_process->pid;
+	return thread->thread_owner_pid == owner_pid;
+}
+
+static t_process	*find_thread(uint32_t pid)
+{
+	for (t_process *thread = scheduled_processes; thread; thread = thread->next)
+		if (thread->pid == pid && thread_owned_by_current(thread))
+			return thread;
+	return 0;
+}
+
+int sys_thread_create(uint32_t function, uint32_t trampoline, uint32_t a2, uint32_t a3)
+{
+	uint64_t image_end;
+	(void)a2;
+	(void)a3;
+	if (!current_process || current_process->mode != PROCESS_USER || !function || !trampoline)
+		return -1;
+
+	image_end = (uint64_t)current_process->image_vaddr_base + current_process->image_size;
+	if (function < current_process->image_vaddr_base || function >= image_end || trampoline < current_process->image_vaddr_base || trampoline >= image_end)
+		return -1;
+
+	t_process *thread = thread_create_current((void (*)(void))(uintptr_t)function, (void (*)(void))(uintptr_t)trampoline);
+	return thread ? (int)thread->pid : -1;
+}
+
+int sys_thread_join(uint32_t pid, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+	t_process *thread = find_thread(pid);
+	(void)a1;
+	(void)a2;
+	(void)a3;
+	if (!thread || thread->pid == current_process->pid)
+		return -1;
+
+	return thread->state == PROC_ZOMBIE || thread->state == PROC_CRASHED;
+}
+
+int sys_thread_destroy(uint32_t pid, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+	(void)a1;
+	(void)a2;
+	(void)a3;
+	return thread_destroy_current(pid);
+}
+
+int sys_thread_kill(uint32_t pid, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+	t_process *thread = find_thread(pid);
+	(void)a1;
+	(void)a2;
+	(void)a3;
+	if (!thread || thread->state == PROC_ZOMBIE || thread->state == PROC_CRASHED)
+		return -1;
+	thread->state = PROC_CRASHED;
+	return thread == current_process ? 2 : 0;
+}
+
+int sys_thread_exit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+	(void)a0;
+	(void)a1;
+	(void)a2;
+	(void)a3;
+	if (!current_process || !current_process->is_thread)
+		return -1;
+	current_process->state = PROC_ZOMBIE;
+	return 2;
 }
 
 
@@ -594,7 +687,12 @@ syscall_t	syscall_table[] = {
 	sys_exec,
 	sys_kill,
 	sys_pstate,
-	sys_evtpop
+	sys_evtpop,
+	sys_thread_create,
+	sys_thread_join,
+	sys_thread_destroy,
+	sys_thread_kill,
+	sys_thread_exit
 };
 
 // TODO: kill, waitpid
@@ -615,6 +713,12 @@ int	syscall_handler(syscall_frame_t *frame)
 	{
 		restore_interrupts(cpsr);
 		return 1;
+	}
+	if (frame->r7 == SYSCALL_THREAD_EXIT_INDEX ||
+		(frame->r7 == SYSCALL_THREAD_KILL_INDEX && ret == 2))
+	{
+		restore_interrupts(cpsr);
+		return 2;
 	}
 
 	frame->r0 = ret;

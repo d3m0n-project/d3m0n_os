@@ -77,7 +77,7 @@ public:
 	Control				*parent;
 
 	// events
-	std::function<void(event_t *)>	on_click;
+	std::function<void(event_t *, Control *)>	on_click;
 
 	/** @brief Draws the window’s visible controls. */
 	virtual void		draw(Display *drawing_function)
@@ -103,10 +103,13 @@ public:
 	void	add_control(Control *control);
 
 	/** @brief Draws the window’s visible controls. */
-	void	draw(void);
+	virtual void	draw(void);
+	void	draw_controls(void);
+	void	present(void);
 
-	/** @brief Handle app events like clicks... */
+	/** @brief Dispatch one queued event; call draw() once first to initialize hit-test bounds. */
 	bool	poll(void);
+	bool	dispatch_event(event_t *event);
 };
 #endif
 

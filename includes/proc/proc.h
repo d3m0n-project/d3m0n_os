@@ -75,6 +75,9 @@ typedef struct s_process
 
 	fs_fd			fds[FS_MAX_FDS];
 
+	uint32_t		thread_owner_pid;
+	uint8_t			is_thread;
+
 	struct s_process *next;
 }	t_process;
 
@@ -94,6 +97,9 @@ void					scheduler_start();
 void					schedule();
 void					timer_handler();
 t_process				*process_create(void (*entry)(void), char *name, int kernel_mode);
+t_process				*thread_create_current(void (*entry)(void), void (*trampoline)(void));
+int						thread_destroy_current(uint32_t thread_pid);
+void						thread_exit_current(void);
 
 void					scheduler_add(t_process *p);
 t_process				*scheduler_next();

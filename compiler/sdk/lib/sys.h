@@ -63,6 +63,11 @@ extern "C" {
 		SYS_KILL,
 		SYS_PSTATE,
 		SYS_EVTPOP,
+		SYS_THREAD_CREATE,
+		SYS_THREAD_JOIN,
+		SYS_THREAD_DESTROY,
+		SYS_THREAD_KILL,
+		SYS_THREAD_EXIT,
 
 
 		TMP_TOTAL_SYSCALL_COUNT // do not remove me
@@ -188,6 +193,51 @@ extern "C" {
 	static inline uint32_t	evtpop(event_t *out)
 	{
 		return syscall(SYS_EVTPOP, (uint32_t)out, (uint32_t)0, (uint32_t)0, (uint32_t)0);
+	}
+
+	typedef uint32_t thread_t;
+	typedef void (*thread_function_t)(void);
+
+	static __attribute__((noreturn, noinline, used)) void __sdk_thread_trampoline(thread_function_t function)
+	{
+		function();
+		syscall(SYS_THREAD_EXIT, 0, 0, 0, 0);
+		for (;;)
+			__asm__ volatile("wfe");
+	}
+
+	static inline thread_t thread_create(thread_function_t function)
+	{
+		thread_t thread;
+		if (!function)
+			return 0;
+		thread = syscall(SYS_THREAD_CREATE, (uint32_t)(uintptr_t)function,
+			(uint32_t)(uintptr_t)&__sdk_thread_trampoline, 0, 0);
+		return thread == (thread_t)-1 ? 0 : thread;
+	}
+
+	static inline int thread_join(thread_t thread)
+	{
+		int status;
+		if (!thread)
+			return -1;
+		do
+		{
+			status = (int)syscall(SYS_THREAD_JOIN, thread, 0, 0, 0);
+			if (status < 0)
+				return status;
+		} while (status == 0);
+		return 0;
+	}
+
+	static inline int thread_destroy(thread_t thread)
+	{
+		return thread?(int)syscall(SYS_THREAD_DESTROY, thread, 0, 0, 0):-1;
+	}
+
+	static inline int thread_kill(thread_t thread)
+	{
+		return thread?(int)syscall(SYS_THREAD_KILL, thread, 0, 0, 0):-1;
 	}
 #ifdef __cplusplus
 }

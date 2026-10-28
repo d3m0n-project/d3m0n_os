@@ -188,6 +188,105 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 	return p;
 }
 
+t_process	*thread_create_current(void (*entry)(void), void (*trampoline)(void))
+{
+	t_process *owner = current_process;
+	t_process *thread;
+	uint32_t *frame;
+	if (!owner || owner->mode != PROCESS_USER || !entry || !trampoline || current_pid == (uint32_t)-1)
+		return 0;
+
+	thread = calloc(sizeof(t_process), 1);
+	if (!thread)
+		return 0;
+
+	thread->kernel_stack = alloc_pages(KERNEL_STACK_PAGES);
+	thread->user_stack = alloc_pages(USER_STACK_PAGES);
+	if (!thread->kernel_stack || !thread->user_stack)
+		goto fail;
+
+	thread->pid = allocate_pid();
+	thread->state = PROC_READY;
+	thread->mode = PROCESS_USER;
+	thread->thread_owner_pid = owner->is_thread?owner->thread_owner_pid:owner->pid;
+	thread->is_thread = 1;
+	thread->address_space = owner->address_space;
+	thread->image_vaddr_base = owner->image_vaddr_base;
+	thread->image_size = owner->image_size;
+	thread->image_backing = owner->image_backing;
+	thread->heap_start = owner->heap_start;
+	thread->heap_end = owner->heap_end;
+	thread->user_sp = ((uint32_t)thread->user_stack + USER_STACK_PAGES * PAGE_SIZE) & ~7U;
+	strlcpy(thread->proc_name, "USER THREAD", sizeof(thread->proc_name));
+	for (int i = 0; i < FS_MAX_FDS; ++i)
+		thread->fds[i] = owner->fds[i];
+
+	fifo_init(&thread->events);
+	prepare_initial_stack(thread, (void (*)(void))(uintptr_t)trampoline);
+
+	frame = (uint32_t *)thread->irq_sp;
+	frame[1] = (uint32_t)(uintptr_t)entry;
+	if (mmu_map_user_range(&thread->address_space, thread->user_stack, USER_STACK_PAGES * PAGE_SIZE, 1, 0) ||
+		mmu_map_kernel_range(&thread->address_space, thread->kernel_stack, KERNEL_STACK_PAGES * PAGE_SIZE))
+	{
+		mmu_unmap_range(&thread->address_space, thread->user_stack, USER_STACK_PAGES * PAGE_SIZE);
+		mmu_unmap_range(&thread->address_space, thread->kernel_stack, KERNEL_STACK_PAGES * PAGE_SIZE);
+		goto fail;
+	}
+	scheduler_add(thread);
+	return thread;
+
+fail:
+	if (thread->user_stack)
+		free_pages(thread->user_stack, USER_STACK_PAGES);
+	if (thread->kernel_stack)
+		free_pages(thread->kernel_stack, KERNEL_STACK_PAGES);
+	kfree(thread);
+	return 0;
+}
+
+int thread_destroy_current(uint32_t thread_pid)
+{
+	t_process *thread = scheduled_processes;
+	uint32_t owner_pid;
+	if (!current_process)
+		return -1;
+	owner_pid = current_process->is_thread ? current_process->thread_owner_pid : current_process->pid;
+	while (thread && (thread->pid != thread_pid || !thread->is_thread || thread->thread_owner_pid != owner_pid))
+		thread = thread->next;
+	if (!thread || (thread->state != PROC_ZOMBIE && thread->state != PROC_CRASHED))
+		return -1;
+	scheduler_remove(thread);
+	mmu_unmap_range(&thread->address_space, thread->user_stack, USER_STACK_PAGES * PAGE_SIZE);
+	mmu_unmap_range(&thread->address_space, thread->kernel_stack, KERNEL_STACK_PAGES * PAGE_SIZE);
+	free_pages(thread->user_stack, USER_STACK_PAGES);
+	free_pages(thread->kernel_stack, KERNEL_STACK_PAGES);
+	kfree(thread);
+	return 0;
+}
+
+void thread_exit_current(void)
+{
+	t_process *exiting = current_process;
+	t_process *next;
+	if (!exiting || !exiting->is_thread)
+		process_exit_current((uint32_t)-1);
+	if (exiting->state == PROC_RUNNING)
+		exiting->state = PROC_ZOMBIE;
+	next = scheduler_next();
+	if (!next)
+	{
+		current_process = 0;
+		while (1)
+			__asm__ volatile("wfe");
+	}
+	next->state = PROC_RUNNING;
+	next->time_slice = TIME_SLICE_MS;
+	current_process = next;
+	mmu_switch_current();
+	start_first_process(next);
+}
+
 void 	process_exit_current(uint32_t status_code)
 {
 	uint32_t	cpsr;

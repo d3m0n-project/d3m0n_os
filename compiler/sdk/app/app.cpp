@@ -36,6 +36,12 @@ void Window::add_control(Control *control)
 
 void Window::draw(void)
 {
+	draw_controls();
+	present();
+}
+
+void	Window::draw_controls(void)
+{
 	Control *current = this->controls;
 	int window_width = this->width.get();
 	int window_height = this->height.get();
@@ -43,15 +49,12 @@ void Window::draw(void)
 	{
 		current->layout(0, 0, window_width, window_height);
 		if (current->visible)
-		{
-			uint64_t t = time(0);
 			current->draw(display);
-			printf("drawn control in %llu ms\n", (time(0) - t) / 1000);
-		}
 		current = current->next;
 	}
-	display->present();
 }
+
+void Window::present(void) { display->present(); }
 
 static Control	*find_clicked_control(Control *control, int x, int y)
 {
@@ -70,19 +73,23 @@ static Control	*find_clicked_control(Control *control, int x, int y)
 
 bool	Window::poll(void)
 {
-	int window_width = this->width.get();
-	int window_height = this->height.get();
-	for (Control *control = this->controls; control; control = control->next)
-		control->layout(0, 0, window_width, window_height);
-
 	event_t	evt = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0};
 	int ret = evtpop(&evt);
-	if (ret && EVENT_IS_MOUSE(evt.type))
+	return ret && dispatch_event(&evt);
+}
+
+bool Window::dispatch_event(event_t *event)
+{
+	if (event && EVENT_IS_MOUSE(event->type))
 	{
-		Control *clicked = find_clicked_control(this->controls, evt.x, evt.y);
+		int window_width = this->width.get();
+		int window_height = this->height.get();
+		for (Control *control = this->controls; control; control = control->next)
+			control->layout(0, 0, window_width, window_height);
+		Control *clicked = find_clicked_control(this->controls, event->x, event->y);
 		if (clicked)
 		{
-			clicked->on_click(&evt);
+			clicked->on_click(event, clicked);
 			return true;
 		}
 	}

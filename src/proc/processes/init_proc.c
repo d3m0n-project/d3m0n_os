@@ -68,7 +68,10 @@ void	click_dispatcher(int mouse_x, int mouse_y, unsigned int mouse_btn)
 		return;
 
 	event_t	new_event = { .type=(uint32_t)(EVENT_MOUSECLICK1 + (mouse_btn - 1)), .timestamp=time_s(), .x=mouse_x, .y=mouse_y };
-	if (!fifo_push(&proc->events, &new_event))
+	uint32_t irq_state = disable_interrupts();
+	bool queued = fifo_push(&proc->events, &new_event);
+	restore_interrupts(irq_state);
+	if (!queued)
 		log("Could not register a new event for process: event fifo is full\n", LOG_WARNING | LOG_INDENT);
 }
 
