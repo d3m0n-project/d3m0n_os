@@ -21,10 +21,12 @@ extern "C" int	main(void)
 	try
 	{
 		MainWindow	window;
-		//while (1)
-		//{
-			window.draw();
-		//}
+		window.draw();
+		while (1)
+		{
+			if (window.poll())
+				window.draw();
+		}
 	}
 	catch (exception &e)
 	{

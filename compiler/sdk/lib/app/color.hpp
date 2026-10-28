@@ -29,21 +29,21 @@ public:
 class Color
 {
 private:
-	uint32_t	value;
+	uint32_t	value = 0x00000000;
 public:
 	Color(void)
 	{
-		this->value = 0;
+		this->value = 0x00000000;
 	}
 
 	Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	{
-		this->value = (a << 24) | (r << 16) | (g << 8) | b;
+		this->value = (a << 24) | (b << 16) | (g << 8) | r;
 	}
 
 	Color(uint8_t r, uint8_t g, uint8_t b)
 	{
-		this->value = 0xFF000000 | (r << 16) | (g << 8) | b;
+		this->value = 0xFF000000 | (b << 16) | (g << 8) | r;
 	}
 
 	Color(uint32_t c)

@@ -350,6 +350,13 @@ static int	text_width_for_size(const char *text, int font_size, t_font *font)
 	return max_width;
 }
 
+int	Display::text_width(int font_size, const char *text, t_font *font)
+{
+	if (!font)
+		font = &main_font;
+	return text_width_for_size(text, font_size, font);
+}
+
 void	Display::draw_text_at(int x, int y, int font_size, const char *text, uint32_t color, t_font *font)
 {
 	int	width;

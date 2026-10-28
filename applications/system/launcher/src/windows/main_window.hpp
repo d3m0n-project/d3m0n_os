@@ -2,6 +2,7 @@
 
 #include "app.hpp"
 #include "runtime/vector.hpp"
+#include "folder_view_popup.hpp"
 
 // must be vertical (horizontal mode not handled yet)
 #define ICONS_PER_ROW		4
@@ -9,12 +10,14 @@
 
 #define ICONS_PADDING		20
 
+#define ICON_TEXT_SIZE		7
 #define ICON_WIDTH			((this->width.get() / ICONS_PER_ROW) - ICONS_PADDING) - (ICONS_PADDING / ICONS_PER_ROW)
 #define ICON_HEIGHT			((this->height.get() / ICONS_PER_COL) - ICONS_PADDING) - (ICONS_PADDING / ICONS_PER_COL)
 #define ICON_IMAGE_SIZE		(ICON_WIDTH)
 
 typedef struct
 {
+	Rect	touch_area;
 	Image	icon;
 	Text	name;
 }	t_app_controls;
@@ -22,9 +25,10 @@ typedef struct
 class MainWindow : public Window
 {
 private:
-	t_app_controls	app_slots[ICONS_PER_ROW * ICONS_PER_COL];
-	int				settings_fd;
-	Image			wallpaper;
+	t_app_controls		app_slots[ICONS_PER_ROW * ICONS_PER_COL];
+	int					settings_fd;
+	Image				wallpaper;
+	FolderViewPopup		popup;
 public:
 	MainWindow(void): Window("launcher", Size(320), Size(480 - 32))
 	{
@@ -57,26 +61,34 @@ public:
 				continue;
 			if (col >= ICONS_PER_COL)
 				break;
-						
+			
+			Rect	*touch_area = &this->app_slots[col * ICONS_PER_ROW + row].touch_area;
 			Image	*tmp_image = &this->app_slots[col * ICONS_PER_ROW + row].icon;
 			Text	*tmp_text = &this->app_slots[col * ICONS_PER_ROW + row].name;
+
+			touch_area->width = Size(ICON_WIDTH);
+			touch_area->height = Size(ICON_IMAGE_SIZE + ICON_TEXT_SIZE * 2);
+			touch_area->location = Point(
+				ICONS_PADDING + row * (ICON_WIDTH + ICONS_PADDING),
+				ICONS_PADDING + col * (ICON_HEIGHT + ICONS_PADDING)
+			);
+			touch_area->on_click = [this](event_t *event) { this->app_icon_on_click(event); };
 
 			tmp_image->width = Size(ICON_IMAGE_SIZE);
 			tmp_image->height = Size(ICON_IMAGE_SIZE);
 			tmp_image->source = "/themes/default_dark/icons/modules.png";
-			tmp_image->location = Point(
-				ICONS_PADDING + row * (ICON_WIDTH + ICONS_PADDING),
-				ICONS_PADDING + col * (ICON_HEIGHT + ICONS_PADDING)
-			);
+			
 			tmp_text->width = Size(ICON_IMAGE_SIZE);
-			tmp_text->location = Point(tmp_image->location.x, tmp_image->location.y + ICON_IMAGE_SIZE);
-			//tmp_text->text_align = 0;
+			tmp_text->location = Point(0, ICON_IMAGE_SIZE);
+			tmp_text->font_size = ICON_TEXT_SIZE;
+			tmp_text->text_align = ANCHOR_CENTER_X;
 			tmp_text->content = entries[i];
 			tmp_text->color = Color("#ffffff");
-			tmp_text->bg_color = Color(0, 0, 0, 0);
 
-			this->add_control(tmp_image);
-			this->add_control(tmp_text);
+			touch_area->add_control(tmp_image);
+			touch_area->add_control(tmp_text);
+
+			this->add_control(touch_area);
 			row++;
 			if (row >= ICONS_PER_ROW)
 			{
@@ -84,8 +96,10 @@ public:
 				col++;
 			}
 		}
-
-
-		
 	};
+
+	void	app_icon_on_click(event_t *e)
+	{
+		printf("clicked (%i, %i) with %i\n", e->x, e->y, e->type);
+	}
 };

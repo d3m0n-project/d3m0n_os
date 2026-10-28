@@ -51,27 +51,13 @@ inline void control_text(Display *display, const Control &control, const char *t
 	control_inner(control, x, y, w, h);
 	int size = control_font_size(requested_size, w, h, text);
 	int lines = 1;
-	int longest = 0;
-	int current = 0;
 	if (text)
 		for (int i = 0; text[i]; ++i)
-		{
 			if (text[i] == '\n')
-			{
-				if (current > longest)
-				{
-					longest = current;
-					current = 0;
-				}
 				++lines;
-			}
-			else
-				++current;
-		}
-	if (current > longest)
-		longest = current;
 	int tx, ty;
-	control_text_position(align, x, y, w, h, size * longest, size * 2 * lines, tx, ty);
+	int text_width = display->text_width(size * 2, text);
+	control_text_position(align, x, y, w, h, text_width, size * 2 * lines, tx, ty);
 	display->draw_text(tx, ty, size, size * 2, text, control.color, 0);
 }
 

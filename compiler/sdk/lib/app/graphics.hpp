@@ -59,6 +59,8 @@ public:
 	void		draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font	*font);
 	/** @brief Draws text at a position using the selected font size. */
 	void		draw_text_at(int x, int y, int font_size, const char *text, uint32_t color, t_font *font = 0);
+	/** @brief Returns the width of the widest line at the selected font size. */
+	int			text_width(int font_size, const char *text, t_font *font = 0);
 
 	/** @brief Loads an SVG from a path and draws it into the specified rectangle. */
 	int			draw_svg(int x, int y, int w, int h, const char *path, uint32_t override_color = 0);

@@ -67,7 +67,7 @@ void	click_dispatcher(int mouse_x, int mouse_y, unsigned int mouse_btn)
 	if (mouse_btn <= 0 || mouse_btn > 4 || !proc || proc->state == PROC_CRASHED || proc->state == PROC_ZOMBIE) // no click or no last refreshed process
 		return;
 
-	event_t	new_event = { .type=(uint32_t)(EVENT_MOUSECLICK1 + (mouse_btn - 1)), .timestamp=time_s(), .x=mouse_x, .y=mouse_y }; // TODO: mouse btn
+	event_t	new_event = { .type=(uint32_t)(EVENT_MOUSECLICK1 + (mouse_btn - 1)), .timestamp=time_s(), .x=mouse_x, .y=mouse_y };
 	if (!fifo_push(&proc->events, &new_event))
 		log("Could not register a new event for process: event fifo is full\n", LOG_WARNING | LOG_INDENT);
 }
@@ -97,7 +97,7 @@ void	init_proc(void)
 	while (1)
 	{
 		usb_mouse_poll(click_dispatcher);
-		usleep(20000);
+		usleep(1000);
 	}
 	
 	// load desktop app manifest

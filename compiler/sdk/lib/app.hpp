@@ -7,6 +7,8 @@
 #include "app/point.hpp"
 #include "app/size.hpp"
 #include "app/graphics.hpp"
+#include "app/events.h"
+#include "functional.hpp"
 #include "runtime/runtime.h"
 
 
@@ -48,11 +50,11 @@ class Control
 {
 public:
 	Control(void);
-	virtual ~Control(void) {}
+	virtual			~Control(void) {}
 	/** @brief Adds a control to this control’s child list. */
-	void	add_control(Control *control);
+	void			add_control(Control *control);
 	/** @brief Computes this control’s position and size relative to its parent. */
-	void	layout(int parent_x, int parent_y, int parent_width, int parent_height);
+	virtual void	layout(int parent_x, int parent_y, int parent_width, int parent_height);
 
 	Size				margin_top;
 	Size				margin_left;
@@ -73,6 +75,9 @@ public:
 	Control				*controls;
 	Control				*next;
 	Control				*parent;
+
+	// events
+	std::function<void(event_t *)>	on_click;
 
 	/** @brief Draws the window’s visible controls. */
 	virtual void		draw(Display *drawing_function)
@@ -99,6 +104,9 @@ public:
 
 	/** @brief Draws the window’s visible controls. */
 	void	draw(void);
+
+	/** @brief Handle app events like clicks... */
+	bool	poll(void);
 };
 #endif
 
