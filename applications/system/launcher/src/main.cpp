@@ -35,7 +35,6 @@ static void	launcher_event_thread(void)
 extern "C" int	main(void)
 {
 	printf("Launcher started\n");
-
 	try
 	{
 		MainWindow	window;

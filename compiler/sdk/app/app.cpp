@@ -49,7 +49,11 @@ void	Window::draw_controls(void)
 	{
 		current->layout(0, 0, window_width, window_height);
 		if (current->visible)
+		{
+			uint64_t t = time(0);
 			current->draw(display);
+			printf("   drawn %s in %llums\n", current->name.c_str(), (time(0) - t) / 1000);
+		}
 		current = current->next;
 	}
 }

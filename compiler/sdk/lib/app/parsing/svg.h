@@ -32,7 +32,6 @@
 #include "png.h"
 
 #define SVG_TOKEN_COUNT 1024
-#define SVG_BUFFER_LIMIT 262144
 
 typedef struct s_svg_ctx
 {
@@ -1084,34 +1083,6 @@ SVG_FUNC void DISPLAY_FUNC(draw_svg_buff)(int x, int y, int w, int h, const char
 		c.vh = 100;
 	svg_draw_tree(&c, 0, c.count);
 	free(tokens);
-}
-
-SVG_FUNC int DISPLAY_FUNC(draw_svg)(int x, int y, int w, int h, const char *path, uint32_t override_color)
-{
-	if (!path || w <= 0 || h <= 0)
-		return 1;
-	int fd = open(path, O_READ);
-	if (fd < 0)
-		return 1;
-	char *svg = (char *)malloc(SVG_BUFFER_LIMIT + 1);
-	if (!svg)
-	{
-		close(fd);
-		return 1;
-	}
-	int total = 0, amount;
-	while (total < SVG_BUFFER_LIMIT && (amount = read(fd, svg + total, SVG_BUFFER_LIMIT - total)) > 0)
-		total += amount;
-	close(fd);
-	if (!total)
-	{
-		free(svg);
-		return 1;
-	}
-	svg[total] = 0;
-	draw_svg_buff(x, y, w, h, svg, total, override_color);
-	free(svg);
-	return 0;
 }
 
 #endif

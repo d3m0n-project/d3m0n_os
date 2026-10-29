@@ -112,9 +112,17 @@ public:
 
 	void	draw(void) override
 	{
+		uint64_t t = time(0);
 		draw_controls();
+		printf("finished drawing controls in: %llu ms\n", (time(0) - t) / 1000);
+
+		t = time(0);
 		popup.draw();
+		printf("finished drawing popup in: %llu ms\n", (time(0) - t) / 1000);
+
+		t = time(0);
 		present();
+		printf("finished updating in: %llu ms\n", (time(0) - t) / 1000);
 	}
 
 	bool	handle_event(event_t *event)

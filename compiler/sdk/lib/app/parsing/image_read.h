@@ -2,32 +2,47 @@
 #define IMAGE_READ_H
 
 #include "sys.h"
+#include "memory.h"
 
+#define MAX_IMAGE_SIZE		262144
 
-static inline char	*image_read_to_buf(const char *path, size_t *buf_size)
+static inline unsigned char	*image_read_to_buf(const char *path, size_t *buf_size)
 {
+	*buf_size = 0;
+	if (!path)
+		return 0;
+	
 	int fd = open(path, O_READ);
 	if (fd < 0)
 		return 0;
-	char *svg = (char *)malloc(SVG_BUFFER_LIMIT + 1);
-	if (!svg)
+	
+	int file_size = lseek(fd, 0, SEEK_END);
+	if (file_size <= 0 || file_size > 8388608 || lseek(fd, 0, SEEK_SET) < 0)
 	{
 		close(fd);
-		return 1;
+		return 0;
 	}
-	int total = 0, amount;
-	while (total < SVG_BUFFER_LIMIT && (amount = read(fd, svg + total, SVG_BUFFER_LIMIT - total)) > 0)
-		total += amount;
-	close(fd);
-	if (!total)
+	unsigned char *data = (unsigned char *)malloc((size_t)file_size);
+	if (!data)
 	{
-		free(svg);
-		return 1;
+		close(fd);
+		return 0;
 	}
-	svg[total] = 0;
-	draw_svg_buff(x, y, w, h, svg, total, override_color);
-	free(svg);
-	return 0;
+	int offset = 0;
+	while (offset < file_size)
+	{
+		int amount = read(fd, (char *)data + offset, file_size - offset);
+		if (amount <= 0)
+		{
+			free(data);
+			close(fd);
+			return 0;
+		}
+		offset += amount;
+	}
+	close(fd);
+	*buf_size = file_size;
+	return data;
 }
 
 #endif

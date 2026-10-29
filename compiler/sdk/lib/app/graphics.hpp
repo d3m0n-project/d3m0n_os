@@ -8,6 +8,7 @@
 #include "string.hpp"
 #include "stdlib.h"
 #include <exception>
+#include "app/parsing/png.h"
 
 using namespace std;
 
@@ -65,7 +66,7 @@ public:
 	/** @brief Loads an SVG from a path and draws it into the specified rectangle. */
 	int			draw_svg(int x, int y, int w, int h, const char *path, uint32_t override_color = 0);
 	/** @brief Loads a PNG from a path and draws it into the specified rectangle. */
-	int			draw_png(int x, int y, int w, int h, const char *path);
+	int			draw_png(int x, int y, int w, int h, char *png_buf, size_t png_buf_size, t_png_cache *cache);
 	/** @brief Parses SVG data from a buffer and draws it into the specified rectangle. */
 	void		draw_svg_buff(int x, int y, int w, int h, const char *data, size_t size, uint32_t override_color = 0);
 };

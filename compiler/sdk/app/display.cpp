@@ -4,59 +4,39 @@
 
 #define IS_TRANSPARENT(c)			((c & 0xFF000000) == 0x00000000)
 
-int Display::draw_png(int x, int y, int w, int h, const char *path)
+int Display::draw_png(int x, int y, int w, int h, char *data, size_t data_size, t_png_cache *cache)
 {
-	if (!path || w <= 0 || h <= 0)
+	if (w <= 0 || h <= 0)
 		return 1;
-	int fd = open(path, O_READ);
-	if (fd < 0)
-		return 1;
-	int file_size = lseek(fd, 0, SEEK_END);
-	if (file_size <= 0 || file_size > 8388608 || lseek(fd, 0, SEEK_SET) < 0)
-	{
-		close(fd);
-		return 1;
-	}
-	unsigned char *data = (unsigned char *)malloc((size_t)file_size);
+	
 	if (!data)
-	{
-		close(fd);
 		return 1;
-	}
-	int offset = 0;
-	while (offset < file_size)
+	
+	if (!cache->pixels)
 	{
-		int amount = read(fd, (char *)data + offset, file_size - offset);
-		if (amount <= 0)
+		if (!png_decode((unsigned char *)data, data_size, &cache->image_width, &cache->image_height, &cache->pixels))
 		{
-			free(data);
-			close(fd);
+			fprintf(stderr, "draw_png: Failed to decode png, may be invalid or unsupported\n");
 			return 1;
 		}
-		offset += amount;
 	}
-	close(fd);
-	uint32_t image_width, image_height, *pixels;
-	if (!png_decode(data, (size_t)file_size, &image_width, &image_height, &pixels))
-	{
-		free(data);
-		return 1;
-	}
-	free(data);
+
+	volatile uint32_t *framebuffer = (volatile uint32_t *)this->fb;
+	int bpp = (this->pitch / 4);
 	for (int py = 0; py < h; py++)
 	{
-		unsigned source_y = (unsigned)((unsigned long long)py * image_height / h);
+		unsigned source_y = (unsigned)((unsigned long long)py * cache->image_height / h);
 		for (int px = 0; px < w; px++)
 		{
-			unsigned source_x = (unsigned)((unsigned long long)px * image_width / w);
-			uint32_t color = pixels[source_y * image_width + source_x];
+			unsigned source_x = (unsigned)((unsigned long long)px * cache->image_width / w);
+			uint32_t color = cache->pixels[source_y * cache->image_width + source_x];
 			unsigned alpha = color >> 24;
 			if (!alpha)
 				continue;
 
 			if (alpha < 255)
 			{
-				uint32_t background = this->get_pixel(x + px, y + py), blended = 0xff000000;
+				uint32_t background = framebuffer[(y + py) * bpp + (x + px)], blended = 0xff000000;
 				for (unsigned shift = 0; shift < 24; shift += 8)
 				{
 					unsigned foreground_channel = (color >> shift) & 0xff;
@@ -65,10 +45,9 @@ int Display::draw_png(int x, int y, int w, int h, const char *path)
 				}
 				color = blended;
 			}
-			this->put_pixel(x + px, y + py, color);
+			framebuffer[(y + py) * bpp + (x + px)] = color;
 		}
 	}
-	free(pixels);
 	return 0;
 }
 
@@ -100,8 +79,10 @@ void	Display::draw_hline(int x, int y, int w, uint32_t color)
 		w = -w;
 		x -= w;
 	}
+	int bpp = this->pitch / 4;
+	volatile uint32_t *framebuffer = (volatile uint32_t *)this->fb;
 	for (int i=0; i<w; i++)
-		put_pixel(x + i, y, color);
+		framebuffer[y * bpp + i] = color;
 }
 
 void	Display::draw_rect(int x, int y, int w, int h, uint32_t color)

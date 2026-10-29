@@ -8,6 +8,13 @@
 #include "../../stdlib.h"
 #endif
 
+typedef struct
+{
+	uint32_t		image_width;
+	uint32_t		image_height;
+	uint32_t		*pixels;
+}	t_png_cache;
+
 static inline int png_bytes_equal(const unsigned char *a, const unsigned char *b, size_t count)
 {
 	for (size_t i = 0; i < count; i++)
