@@ -13,7 +13,7 @@ public:
 	int		font_size;
 	int		text_align;
 
-	Text() : content(), font_size(0), text_align(0) {}
+	Text() : content(""), font_size(0), text_align(0) {}
 
 	/** @brief Computes an intrinsic size from the text when dimensions are unset. */
 	void	layout(int parent_x, int parent_y, int parent_width, int parent_height) override

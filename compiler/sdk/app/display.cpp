@@ -2,6 +2,8 @@
 #include "app/font.hpp"
 #include "app/parsing/svg.h"
 
+#define IS_TRANSPARENT(c)			((c & 0xFF000000) == 0x00000000)
+
 int Display::draw_png(int x, int y, int w, int h, const char *path)
 {
 	if (!path || w <= 0 || h <= 0)
@@ -51,6 +53,7 @@ int Display::draw_png(int x, int y, int w, int h, const char *path)
 			unsigned alpha = color >> 24;
 			if (!alpha)
 				continue;
+
 			if (alpha < 255)
 			{
 				uint32_t background = this->get_pixel(x + px, y + py), blended = 0xff000000;
@@ -73,7 +76,7 @@ void	Display::put_pixel(int x, int y, uint32_t color)
 {
 	if (x < 0 || (uint32_t)x >= (uint32_t)this->w || y < 0 || (uint32_t)y >= (uint32_t)this->h)
 		return;
-	if ((color & 0xFF000000) == 0x00000000) // TODO: real transparency
+	if (IS_TRANSPARENT(color)) // TODO: real transparency
 		return;
 	volatile uint32_t *framebuffer = (volatile uint32_t *)this->fb;
 	framebuffer[y * (this->pitch / 4) + x] = color;
@@ -89,6 +92,9 @@ uint32_t	Display::get_pixel(int x, int y)
 
 void	Display::draw_hline(int x, int y, int w, uint32_t color)
 {
+	if (IS_TRANSPARENT(color))
+		return;
+
 	if (w < 0)
 	{
 		w = -w;
@@ -100,13 +106,21 @@ void	Display::draw_hline(int x, int y, int w, uint32_t color)
 
 void	Display::draw_rect(int x, int y, int w, int h, uint32_t color)
 {
-	for(int j=0; j<h; j++)
-		this->draw_hline(x, y + j, w, color);
+	if (IS_TRANSPARENT(color))
+		return;
+	int bpp = this->pitch / 4;
+	volatile uint32_t *framebuffer = (volatile uint32_t *)this->fb;
+	for(int j=y; j<(y + h); j++)
+		for(int i=x; i<(x + w); i++)
+			framebuffer[j * bpp + i] = color;
 }
 
 void	Display::draw_rounded_rect(int x, int y, int w, int h, int radius, uint32_t color)
 {
 	if (w <= 0 || h <= 0)
+		return;
+
+	if (IS_TRANSPARENT(color))
 		return;
 
 	if (radius < 0)
@@ -175,6 +189,9 @@ void	Display::draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int f
 	long	dy;
 
 	if (rx <= 0 || ry <= 0)
+		return;
+
+	if (IS_TRANSPARENT(color))
 		return;
 
 	x = 0;
@@ -286,10 +303,15 @@ void	Display::draw_text(int x, int y, int w, int h, const char *text, uint32_t c
 	int				line_height;
 	int				baseline;
 
+	if (IS_TRANSPARENT(color))
+		return;
+
 	if (!text)
 		return;
+	
 	if (!font)
 		font = &main_font;
+	
 	if (!font || !font->data || !font->units_per_em || h <= 0)
 		return;
 
@@ -360,6 +382,9 @@ int	Display::text_width(int font_size, const char *text, t_font *font)
 void	Display::draw_text_at(int x, int y, int font_size, const char *text, uint32_t color, t_font *font)
 {
 	int	width;
+
+	if (IS_TRANSPARENT(color))
+		return;
 
 	if (!font)
 		font = &main_font;

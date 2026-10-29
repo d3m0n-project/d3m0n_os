@@ -9,8 +9,8 @@
 class Image : public Control
 {
 public:
-	string	source;
-	int		mode;
+	string		source;
+	int			mode;
 
 	Image() : source(), mode(0) {}
 

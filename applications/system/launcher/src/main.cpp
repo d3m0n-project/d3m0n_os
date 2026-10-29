@@ -13,10 +13,10 @@ APP_INFO(
 
 #include "windows/main_window.hpp"
 
-static event_t pending_event;
-static volatile uint32_t event_pending;
+static event_t				pending_event;
+static volatile uint32_t	event_pending;
 
-static void launcher_event_thread(void)
+static void	launcher_event_thread(void)
 {
 	while (1)
 	{
@@ -39,7 +39,7 @@ extern "C" int	main(void)
 	try
 	{
 		MainWindow	window;
-		window.draw();
+		window.draw(); 
 		thread_t events = thread_create(launcher_event_thread);
 		if (!events)
 		{

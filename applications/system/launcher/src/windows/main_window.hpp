@@ -110,17 +110,18 @@ public:
 		this->popup.visible = true;
 	}
 
-	void draw(void) override
+	void	draw(void) override
 	{
 		draw_controls();
 		popup.draw();
 		present();
 	}
 
-	bool handle_event(event_t *event)
+	bool	handle_event(event_t *event)
 	{
 		if (!event || !EVENT_IS_MOUSE(event->type))
 			return false;
+		
 		if (popup.visible)
 		{
 			if (!popup.contains(event->x, event->y))

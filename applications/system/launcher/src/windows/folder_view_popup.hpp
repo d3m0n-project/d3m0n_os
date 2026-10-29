@@ -78,6 +78,7 @@ public:
 		for (int i = 0; i < POPUP_MAX_APPS; ++i)
 		{
 			app_rows[i].visible = false;
+			//app_rows[i].content = "";
 			background.add_control(&app_rows[i]);
 		}
 		add_control(&background);
@@ -120,7 +121,7 @@ public:
 		}
 	}
 
-	void draw(void) override
+	void	draw(void) override
 	{
 		if (!visible)
 			return;
