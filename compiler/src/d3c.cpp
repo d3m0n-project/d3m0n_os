@@ -215,6 +215,7 @@ int main(int argc, char **argv)
 	arguments.emplace_back("-fpic");
 	arguments.emplace_back("-fpie");
 	arguments.emplace_back("-mcpu=arm1176jzf-s");
+	//arguments.emplace_back("-O2"); // TODO: handle optimizations
 	#if INCLUDE_SDK == 1
 	arguments.emplace_back("-I" + (string)LIB_PATH + "/sdk");
 	#endif

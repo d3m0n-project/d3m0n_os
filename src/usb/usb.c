@@ -130,6 +130,25 @@ static uint16_t	usb_min_u16(uint16_t a, uint16_t b)
 	return (b);
 }
 
+/* Re-draws the cursor on top of the framebuffer. Called after the app's
+   surface copy (present) so the cursor is never erased, no matter how fast
+   the app renders. */
+void	usb_mouse_redraw(void)
+{
+	if (!g_mouse.present || !g_mouse.last_pixel_saved)
+		return;
+	for (int i = 0; i < CURSOR_SIZE; i++)
+	{
+		for (int j = 0; j < CURSOR_SIZE; j++)
+		{
+			int px = g_mouse.x + j;
+			int py = g_mouse.y + i;
+			if (px >= 0 && px < SCREEN_WIDTH && py >= 0 && py < SCREEN_HEIGHT)
+				put_pixel(px, py, DISPLAY_COLORS[RED]);
+		}
+	}
+}
+
 static void	usb_wait_ahb_idle(void)
 {
 	uint32_t	timeout;
@@ -518,6 +537,7 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 
 	if (!g_mouse.present)
 		return 0;
+
 	ret = usb_transfer_ex(g_root_device.addr, g_mouse.endpoint, 1, HCCHAR_EPTYPE_INTR, g_mouse.mps, HCTSIZ_PID_DATA0, g_mouse_report, usb_min_u16(g_mouse.mps, sizeof(g_mouse_report)));
 	if (ret == -3)
 		return 0;
@@ -528,9 +548,12 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 	}
 	dx = (int8_t)g_mouse_report[1];
 	dy = (int8_t)g_mouse_report[2];
+
+	// mouse has not moved
 	if (dx == 0 && dy == 0 && g_mouse.buttons == g_mouse_report[0])
 		return 0;
 
+	// btn change
 	if (g_mouse.last_pixel_saved)
 	{
 		for (int i = 0; i < CURSOR_SIZE * CURSOR_SIZE; i++)
@@ -562,6 +585,7 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 	}
 	g_mouse.last_pixel_saved = 1;
 
+	
 	click_handler(g_mouse.x, g_mouse.y - TOPBAR_HEIGHT, (unsigned int)g_mouse.buttons); 
 	
 	return 1;

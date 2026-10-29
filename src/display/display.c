@@ -2,6 +2,7 @@
 #include "log.h"
 #include "filesystem/filesystem.h"
 #include "memory/memory.h"
+#include "memory/mmu.h"
 #define malloc kmalloc
 #define free kfree
 #include "../../compiler/sdk/lib/app/parsing/png.h"
@@ -641,6 +642,7 @@ int display_init()
 		// draw screen outline
 		draw_qemu_outline();
 		draw_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0x00000000);
+		mmu_clean_invalidate_dcache_range((uint32_t)fb_req.fb_addr, fb_req.fb_size);
 		return 0;
 	} else {
 		log("Framebuffer allocation failed!\n", LOG_ERROR);

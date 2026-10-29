@@ -23,6 +23,7 @@ static void	launcher_event_thread(void)
 		if (event_pending)
 			continue;
 		event_t event = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0};
+		
 		if (evtpop(&event))
 		{
 			pending_event = event;

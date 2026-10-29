@@ -3,15 +3,13 @@
 #include "app/parsing/svg.h"
 
 #define IS_TRANSPARENT(c)			((c & 0xFF000000) == 0x00000000)
+#define BLEND_CHANNEL(f, b, a)		(((((unsigned)(f) * (a) + (unsigned)(b) * (255 - (a))) * 257) + 257) >> 16)
 
 int Display::draw_png(int x, int y, int w, int h, char *data, size_t data_size, t_png_cache *cache)
 {
-	if (w <= 0 || h <= 0)
+	if (w <= 0 || h <= 0 || !data)
 		return 1;
-	
-	if (!data)
-		return 1;
-	
+
 	if (!cache->pixels)
 	{
 		if (!png_decode((unsigned char *)data, data_size, &cache->image_width, &cache->image_height, &cache->pixels))
@@ -21,31 +19,57 @@ int Display::draw_png(int x, int y, int w, int h, char *data, size_t data_size, 
 		}
 	}
 
-	volatile uint32_t *framebuffer = (volatile uint32_t *)this->fb;
-	int bpp = (this->pitch / 4);
+	uint32_t			*framebuffer = (uint32_t *)this->fb;
+	int					bpp = this->pitch / 4;
+	unsigned			iw = cache->image_width;
+	unsigned			ih = cache->image_height;
+	unsigned			uw = (unsigned)w;
+	unsigned			uh = (unsigned)h;
+
+	unsigned			y_acc = 0;
+	unsigned			y_base = ih / uh;
+	unsigned			y_rem = ih % uh;
+	const uint32_t		*src_row = cache->pixels;
 	for (int py = 0; py < h; py++)
 	{
-		unsigned source_y = (unsigned)((unsigned long long)py * cache->image_height / h);
+		uint32_t		*dst = framebuffer + (size_t)(y + py) * bpp + x;
+		unsigned		x_acc = 0;
+		unsigned		x_base = iw / uw;
+		unsigned		x_rem = iw % uw;
+		const uint32_t	*src = src_row;
+
 		for (int px = 0; px < w; px++)
 		{
-			unsigned source_x = (unsigned)((unsigned long long)px * cache->image_width / w);
-			uint32_t color = cache->pixels[source_y * cache->image_width + source_x];
+			uint32_t color = *src;
 			unsigned alpha = color >> 24;
-			if (!alpha)
-				continue;
-
-			if (alpha < 255)
+			if (alpha)
 			{
-				uint32_t background = framebuffer[(y + py) * bpp + (x + px)], blended = 0xff000000;
-				for (unsigned shift = 0; shift < 24; shift += 8)
+				if (alpha < 255)
 				{
-					unsigned foreground_channel = (color >> shift) & 0xff;
-					unsigned background_channel = (background >> shift) & 0xff;
-					blended |= ((foreground_channel * alpha + background_channel * (255 - alpha)) / 255) << shift;
+					uint32_t bg = *dst;
+					color = 0xff000000
+						| (BLEND_CHANNEL((color >> 16) & 0xff, (bg >> 16) & 0xff, alpha) << 16)
+						| (BLEND_CHANNEL((color >> 8) & 0xff, (bg >> 8) & 0xff, alpha) << 8)
+						| BLEND_CHANNEL(color & 0xff, bg & 0xff, alpha);
 				}
-				color = blended;
+				*dst = color;
 			}
-			framebuffer[(y + py) * bpp + (x + px)] = color;
+			dst++;
+			src += x_base;
+			x_acc += x_rem;
+			if (x_acc >= uw)
+			{
+				x_acc -= uw;
+				src++;
+			}
+		}
+
+		src_row += (size_t)y_base * iw;
+		y_acc += y_rem;
+		if (y_acc >= uh)
+		{
+			y_acc -= uh;
+			src_row += iw;
 		}
 	}
 	return 0;
@@ -55,7 +79,7 @@ void	Display::put_pixel(int x, int y, uint32_t color)
 {
 	if (x < 0 || (uint32_t)x >= (uint32_t)this->w || y < 0 || (uint32_t)y >= (uint32_t)this->h)
 		return;
-	if (IS_TRANSPARENT(color)) // TODO: real transparency
+	if (IS_TRANSPARENT(color))
 		return;
 	volatile uint32_t *framebuffer = (volatile uint32_t *)this->fb;
 	framebuffer[y * (this->pitch / 4) + x] = color;
@@ -80,9 +104,17 @@ void	Display::draw_hline(int x, int y, int w, uint32_t color)
 		x -= w;
 	}
 	int bpp = this->pitch / 4;
-	volatile uint32_t *framebuffer = (volatile uint32_t *)this->fb;
-	for (int i=0; i<w; i++)
-		framebuffer[y * bpp + i] = color;
+	uint32_t *framebuffer = (uint32_t *)this->fb;
+	uint32_t *p = framebuffer + y * bpp + x;
+	uint64_t pair = ((uint64_t)color << 32) | color;
+	uint32_t *end = p + w;
+	/* 64-bit stores need 8-byte alignment on ARMv6 (strd faults otherwise) */
+	while (p < end && ((uintptr_t)p & 7))
+		*p++ = color;
+	for (; p + 1 < end; p += 2)
+		*(volatile uint64_t *)(uintptr_t)p = pair;
+	while (p < end)
+		*p++ = color;
 }
 
 void	Display::draw_rect(int x, int y, int w, int h, uint32_t color)
@@ -90,10 +122,24 @@ void	Display::draw_rect(int x, int y, int w, int h, uint32_t color)
 	if (IS_TRANSPARENT(color))
 		return;
 	int bpp = this->pitch / 4;
-	volatile uint32_t *framebuffer = (volatile uint32_t *)this->fb;
-	for(int j=y; j<(y + h); j++)
-		for(int i=x; i<(x + w); i++)
-			framebuffer[j * bpp + i] = color;
+	uint32_t *framebuffer = (uint32_t *)this->fb;
+	uint32_t *row = framebuffer + y * bpp + x;
+	uint64_t pair = ((uint64_t)color << 32) | color;
+	int step = bpp - w;   /* remaining pixels to skip to reach next row */
+	for (int j = 0; j < h; j++)
+	{
+		uint32_t *p = row;
+		uint32_t *end = p + w;
+		/* 64-bit stores need 8-byte alignment on ARMv6 (strd faults otherwise) */
+		while (p < end && ((uintptr_t)p & 7))
+			*p++ = color;
+		/* write 2 pixels per 64-bit store */
+		for (; p + 1 < end; p += 2)
+			*(volatile uint64_t *)(uintptr_t)p = pair;
+		while (p < end)
+			*p++ = color;
+		row += w + step;
+	}
 }
 
 void	Display::draw_rounded_rect(int x, int y, int w, int h, int radius, uint32_t color)

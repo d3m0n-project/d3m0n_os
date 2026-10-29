@@ -75,6 +75,7 @@ typedef struct {
 void	usb_init(void);
 int		usb_enumerate(void);
 int		usb_mouse_poll(void (*click_handler)(int, int, unsigned int));
+void	usb_mouse_redraw(void);
 int		usb_control_transfer(uint8_t addr, usb_setup_t *setup, uint8_t *buf);
 int		usb_get_descriptor(uint8_t addr, uint8_t type, uint8_t *buf);
 int		usb_set_address(uint8_t new_addr);

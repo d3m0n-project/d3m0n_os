@@ -14,6 +14,10 @@ typedef struct	s_address_space
 void			mmu_write_ttbr0(uint32_t);
 void			mmu_invalidate_tlb();
 void			mmu_barrier();
+void			mmu_cache_enable(void);
+void			mmu_clean_dcache_addr(uint32_t addr);
+void			mmu_clean_invalidate_dcache_addr(uint32_t addr);
+void			mmu_clean_invalidate_dcache_range(uint32_t base, uint32_t size);
 uint32_t		*mmu_kernel_table(void);
 
 void			mmu_setup(void);

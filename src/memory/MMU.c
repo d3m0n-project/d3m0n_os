@@ -114,6 +114,79 @@ void	mmu_barrier(void)
 	);
 }
 
+void	mmu_cache_enable(void)
+{
+	uint32_t zero = 0;
+	// invalidate instruction cache (ICIALLU)
+	asm volatile(
+		"mcr p15, 0, %0, c7, c5, 0\n"
+		:
+		: "r"(zero)
+		: "memory"
+	);
+	// invalidate data cache (DCIALL, 2-way set-assoc)
+	asm volatile(
+		"mcr p15, 0, %0, c7, c6, 0\n"
+		:
+		: "r"(zero)
+		: "memory"
+	);
+	// invalidate BTB (BTIMALL)
+	asm volatile(
+		"mcr p15, 0, %0, c7, c5, 6\n"
+		:
+		: "r"(zero)
+		: "memory"
+	);
+	mmu_write_dacr(1);
+	mmu_invalidate_tlb();
+	mmu_barrier();
+
+	uint32_t sctlr = mmu_read_sctlr();
+	sctlr |= (1u << 0);    // MMU enabled
+	sctlr |= (1u << 23);   // extended page table format (APX/XN)
+	sctlr |= (1u << 2);    // data cache (C) enabled
+	sctlr |= (1u << 12);   // instruction cache (I) enabled
+	mmu_write_sctlr(sctlr);
+	mmu_barrier();
+}
+
+// clean (write back) the D-cache line containing addr (DCCMVAC)
+void	mmu_clean_dcache_addr(uint32_t addr)
+{
+	uint32_t zero = 0;
+	asm volatile(
+		"mcr p15, 0, %0, c7, c10, 1\n"
+		"mcr p15, 0, %1, c7, c10, 4\n"
+		:
+		: "r"(addr), "r"(zero)
+		: "memory"
+	);
+}
+
+// clean + invalidate the D-cache line containing addr (DCCIMVAC)
+void	mmu_clean_invalidate_dcache_addr(uint32_t addr)
+{
+	uint32_t zero = 0;
+	asm volatile(
+		"mcr p15, 0, %0, c7, c14, 1\n"
+		"mcr p15, 0, %1, c7, c10, 4\n"
+		:
+		: "r"(addr), "r"(zero)
+		: "memory"
+	);
+}
+
+// write back and invalidate every D-cache line covered by [base, base+size)
+void	mmu_clean_invalidate_dcache_range(uint32_t base, uint32_t size)
+{
+	uint32_t line;
+	uint32_t end = base + size;
+	for (line = base & ~(uint32_t)31u; line < end; line += 32)
+		mmu_clean_invalidate_dcache_addr(line);
+	mmu_barrier();
+}
+
 static inline uint32_t	coarse_descriptor(uint32_t l2_address)
 {
 	uint32_t descriptor;
@@ -131,7 +204,6 @@ static inline uint32_t	section_descriptor(uint32_t physical_address, uint32_t ap
 	descriptor |= SECTION;
 	descriptor |= ap;
 	descriptor |= DOMAIN0;
-
 	if (cacheable)
 		descriptor |= CACHEABLE;
 
@@ -308,15 +380,8 @@ void	mmu_setup(void)
 	mmu_invalidate_tlb(); // cleanup
 	mmu_barrier();
 
-	uint32_t sctlr = mmu_read_sctlr();
-	sctlr |= (1u << 0);	   // MMU enabled
-	sctlr |= (1u << 23);	  // extended page table format (APX/XN)
-
-	sctlr &= ~(1u << 2);   // data cache disabled
-	sctlr &= ~(1u << 12);  // instruction cache disabled
-
-	mmu_write_sctlr(sctlr);
-	mmu_barrier();
+	// enable MMU + data + instruction caches with proper Arm11 warm-up
+	mmu_cache_enable();
 }
 
 void	mmu_switch_table(uint32_t *table)

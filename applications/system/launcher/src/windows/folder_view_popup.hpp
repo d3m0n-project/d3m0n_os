@@ -78,7 +78,6 @@ public:
 		for (int i = 0; i < POPUP_MAX_APPS; ++i)
 		{
 			app_rows[i].visible = false;
-			//app_rows[i].content = "";
 			background.add_control(&app_rows[i]);
 		}
 		add_control(&background);
@@ -87,10 +86,8 @@ public:
 	bool contains(int x, int y)
 	{
 		background.layout(0, 0, width.get(), height.get());
-		return x >= background.computed_location.x &&
-			x < background.computed_location.x + background.computed_width &&
-			y >= background.computed_location.y &&
-			y < background.computed_location.y + background.computed_height;
+		return x >= background.computed_location.x && x < background.computed_location.x + background.computed_width &&
+			y >= background.computed_location.y && y < background.computed_location.y + background.computed_height;
 	}
 
 	void prepare_popup_content(const char *category)
