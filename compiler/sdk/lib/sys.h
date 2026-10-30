@@ -195,7 +195,7 @@ extern "C" {
 		return syscall(SYS_EVTPOP, (uint32_t)out, (uint32_t)0, (uint32_t)0, (uint32_t)0);
 	}
 
-	typedef uint32_t thread_t;
+	typedef uint32_t	thread_t;
 	typedef void (*thread_function_t)(void);
 
 	static __attribute__((noreturn, noinline, used)) void __sdk_thread_trampoline(thread_function_t function)

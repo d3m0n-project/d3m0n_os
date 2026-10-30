@@ -1,26 +1,25 @@
 #include "sys.h"
 #include "stdio.hpp"
 #include "app.hpp"
+#include "stdlib.h"
 
 APP_INFO(
 	"My Simple App",
 	1.0,
-	"My Company",
-	"A simple application",
+	"4re5 group",
+	"Official d3c application template",
 	"icon.ico"
 )
 
 #include "windows/main_window.hpp"
 
-
 extern "C" int	main(void)
 {
-	printf("MySimple app started\n");
-
+	printf("MySimpleApp started\n");
 	try
 	{
 		MainWindow	window;
-		window.draw();
+		Application::run(window);
 	}
 	catch (exception &e)
 	{
@@ -28,6 +27,6 @@ extern "C" int	main(void)
 		fprintf(stderr, "       >>> \033[31;1m%s\033[0m\n", e.what());
 	}
 
-	printf("MySimple app Finished...\n");
+	printf("MySimpleApp Finished...\n");
 	return 0;
 }

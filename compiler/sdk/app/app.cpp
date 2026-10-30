@@ -90,6 +90,7 @@ bool Window::dispatch_event(event_t *event)
 		int window_height = this->height.get();
 		for (Control *control = this->controls; control; control = control->next)
 			control->layout(0, 0, window_width, window_height);
+		
 		Control *clicked = find_clicked_control(this->controls, event->x, event->y);
 		if (clicked)
 		{
@@ -163,3 +164,13 @@ void	Control::layout(int parent_x, int parent_y, int parent_width, int parent_he
 		child = child->next;
 	}
 }
+
+// define application values
+event_t Application::pending_event = {
+	.type = EVENT_UNKNOWN,
+	.timestamp = 0,
+	.x = 0,
+	.y = 0
+};
+volatile uint32_t Application::event_pending = 0;
+thread_t Application::events = 0;

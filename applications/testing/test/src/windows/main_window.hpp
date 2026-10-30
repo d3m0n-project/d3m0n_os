@@ -19,7 +19,15 @@ public:
 		text1.content = "Hello World!";
 		text1.font_size = 16;
 
-		//this->add_control(&rect1);
-		//this->add_control(&text1);
+		rect1.on_click = [this](event_t *event, Control *target)
+        {
+			(void)event;
+			(void)target;
+            printf("clicked\n");
+			exit(42);
+        };
+
+		this->add_control(&rect1);
+		this->add_control(&text1);
 	};
 };

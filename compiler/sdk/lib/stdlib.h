@@ -52,8 +52,11 @@ extern "C" {
 	char			*strnstr(const char *into, const char *substring, size_t len);
 	char			*strstr(const char *haystack, const char *needle);
 	size_t			strspn(const char *s, const char *accept);
+
 	int				strncmp(const char *s1, const char *s2, size_t len);
 	int				strcmp(const char *s1, const char *s2);
+	int				strcasecmp(const char *s1, const char *s2);
+
 	void			*memchr(const void *str, int c, size_t len);
 	int				memcmp(const void *s1, const void *s2, size_t len);
 	int				atoi(char *str);

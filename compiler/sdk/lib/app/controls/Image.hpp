@@ -36,10 +36,7 @@ public:
 		
 		// load image into heap
 		if (!this->image_buf)
-		{
-			printf("loading image: %s...\n", this->source.c_str());
 			this->image_buf = image_read_to_buf(this->source.c_str(), &this->image_buf_size);
-		}
 
 		if (!this->image_buf)
 		{
@@ -61,6 +58,13 @@ public:
 		}
 		else
 			printf("Unsupported media type in Image src: '%s'\n", extension);
+	}
+
+	int	load_image_from_buf(char *buf, size_t buf_size)
+	{
+		(void)buf;
+		(void)buf_size;
+		return 0; // TODO: 
 	}
 
 	~Image()

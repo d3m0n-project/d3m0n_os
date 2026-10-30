@@ -100,16 +100,72 @@ public:
 	Window(const char *title, const Size &width, const Size &height);
 	~Window();
 	/** @brief Adds a control to this control’s child list. */
-	void	add_control(Control *control);
+	void			add_control(Control *control);
 
 	/** @brief Draws the window’s visible controls. */
 	virtual void	draw(void);
-	void	draw_controls(void);
-	void	present(void);
+	void			draw_controls(void);
+	void			present(void);
 
 	/** @brief Dispatch one queued event; call draw() once first to initialize hit-test bounds. */
-	bool	poll(void);
-	bool	dispatch_event(event_t *event);
+	bool			poll(void);
+	bool			dispatch_event(event_t *event);
+};
+
+class Application
+{
+private:
+	static event_t				pending_event;
+	static volatile uint32_t	event_pending;
+	static thread_t				events;
+
+	static void	event_thread(void)
+	{
+		while (1)
+		{
+			if (event_pending)
+				continue;
+			event_t event = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0};
+			if (evtpop(&event))
+			{
+				pending_event = event;
+				__asm__ volatile("" ::: "memory");
+				event_pending = 1;
+			}
+		}
+	}
+
+public:
+	Application() {}
+	~Application() {}
+
+	static void	run(Window &main_window)
+	{
+		main_window.draw(); 
+		events = thread_create(event_thread);
+		if (!events)
+		{
+			fprintf(stderr, "Could not start event thread\n");
+			while (1)
+			{
+				event_t event = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0};
+				if (evtpop(&event) && main_window.dispatch_event(&event))
+					main_window.draw();
+			}
+		}
+		while (1)
+		{
+			if (event_pending)
+			{
+				__asm__ volatile("" ::: "memory");
+				event_t event = pending_event;
+				event_pending = 0;
+				__asm__ volatile("" ::: "memory");
+				if (main_window.dispatch_event(&event))
+					main_window.draw();
+			}
+		}
+	}
 };
 #endif
 
