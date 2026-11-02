@@ -23,12 +23,10 @@
 	#error "L_tmpnam must be greater than 5 to ensure valid tmp names"
 #endif
 
+#define SYMBOLIC_FILE(fd)	(&symbolic_fds[fd % 3])
 
 #ifdef __cplusplus
-#define SYMBOLIC_FILE(fd)	([](int file_fd) { return new FILE{file_fd, 0, 0, 0, nullptr, 0, 0, 0, 0, 0}; }(fd))
 extern "C" {
-#else
-#define SYMBOLIC_FILE(fd)	(&(FILE){.fd=fd, .is_eof=0, .error=0, .ungot=0, .buf=0, .buf_size=0, .buf_pos=0, .buf_len=0, .buf_mode=0, .buf_owned=0})
 #endif
 	typedef struct {
 		int		fd;
@@ -43,17 +41,23 @@ extern "C" {
 		int		buf_owned;
 	} FILE;
 
-	#define EOF		-1
-	#define stderr	SYMBOLIC_FILE(2)
-	#define stdout	SYMBOLIC_FILE(1)
-	#define stdin	SYMBOLIC_FILE(0) // TODO: stdin
+	#define EOF			-1
+	#define stderr		SYMBOLIC_FILE(2)
+	#define stdout		SYMBOLIC_FILE(1)
+	#define stdin		SYMBOLIC_FILE(0) // TODO: stdin
+
+	static	FILE	symbolic_fds[3] = {
+		(FILE){.fd=0, .is_eof=0, .error=0, .ungot=0, .buf=0, .buf_size=0, .buf_pos=0, .buf_len=0, .buf_mode=0, .buf_owned=0},
+		(FILE){.fd=1, .is_eof=0, .error=0, .ungot=0, .buf=0, .buf_size=0, .buf_pos=0, .buf_len=0, .buf_mode=0, .buf_owned=0},
+		(FILE){.fd=2, .is_eof=0, .error=0, .ungot=0, .buf=0, .buf_size=0, .buf_pos=0, .buf_len=0, .buf_mode=0, .buf_owned=0}
+	};
 
 	int					sprintf(char *str, const char *format, ...);
 	int					snprintf(char *str, size_t size, const char *format, ...);
 	int					printf(const char *format, ...);
 	int					fprintf(FILE *f, const char *format, ...);
 
-	static inline int	feof(FILE *f) { return f->is_eof; }
+	static inline int	feof(FILE *f) { (void)symbolic_fds; return f->is_eof; }
 
 	size_t				fread(void *ptr, size_t size, size_t nmemb, FILE *f);
 	FILE				*fopen(const char *path, const char *mode);
