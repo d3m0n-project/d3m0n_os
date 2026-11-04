@@ -108,6 +108,8 @@ bss_loop:
 
 
 bss_done:
+	# pass device tree to main
+	mov	r0, r2
 	bl	kernel_main
 
 

@@ -12,4 +12,6 @@ void	uart_putnbr_u(unsigned int nb);
 void	uart_putnbr_llu(unsigned long long nb);
 void	uart_putnbr_llu_hex(unsigned long long nb);
 
+void	uart_clear(void);
+
 #endif

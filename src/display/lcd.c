@@ -235,6 +235,7 @@ int	lcd_init(void)
 {
 	gpio_pinMode(PIN_LCD_DC, GPIO_OUT);
 	gpio_pinMode(PIN_LCD_RST, GPIO_OUT);
+	gpio_pinMode(PIN_LCD_LIGHT, GPIO_OUT);
 
 
 	spi_init(50000000); // 50MHz
@@ -352,4 +353,12 @@ int	lcd_init(void)
 	spi_end();
 
 	return 0;
+}
+
+void	lcd_backlight(bool status)
+{
+	if (status == true)
+		gpio_digitalWrite(PIN_LCD_LIGHT, 1);
+	else
+		gpio_digitalWrite(PIN_LCD_LIGHT, 0);
 }

@@ -5,13 +5,9 @@
 #include "filesystem/filesystem.h"
 #include "memory/memory.h"
 #include "proc/interrupts.h"
-
-#include "time.h"
-#include "peripheral/peripheral.h"
-#include "proc/proc.h"
 #include "memory/mmu.h"
-
-#include "display/gpu.h"
+#include "proc/proc.h"
+#include "tests/tests.h"
 
 
 t_conf		config;
@@ -44,6 +40,7 @@ void	kernel_main(void *dtb)
 	//dtb_init(dtb); // DTB parsing removed since not used anymore
 
 	
+	
 	// init MMU
 	mmu_setup();
 	log("MMU initialized!\n", LOG_SUCCESS);
@@ -65,16 +62,21 @@ void	kernel_main(void *dtb)
 
 	list_dir("/");
 
+	// gpio test
+	//gpio_soldering_test();
+
 	
 	// init framebuffer
 	if (display_init())			panic("Could not initialize display\n");
 	else						log("Display initialized!\n", LOG_SUCCESS);
 
+	draw_rect(10, 10, 100, 100, 0xff0000ff);
+
 	// init usb driver
 
 	// disabled since it make crash qemu on arch
-	usb_init(); // TODO: maybe make usb driver optional and enabled for testing
-	if (usb_enumerate() < 0)	log("USB enumeration did not find a configured root device\n", LOG_WARNING);
+	//usb_init(); // TODO: maybe make usb driver optional and enabled for testing
+	//if (usb_enumerate() < 0)	log("USB enumeration did not find a configured root device\n", LOG_WARNING);
 
 	// load spash
 	BmpTexture	splash;
@@ -82,6 +84,8 @@ void	kernel_main(void *dtb)
 		log("Could not load splash screen\n", LOG_ERROR);
 	else
 		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &splash, DISPLAY_COLORS[TRANSPARENT]);
+
+	panic("ended\n");
 
 	// parse config file
 	if (parse_config(&config))	panic("Config parsing failed, please check config file\n");

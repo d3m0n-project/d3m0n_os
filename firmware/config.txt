@@ -1,5 +1,7 @@
 arm_64bit=0
 kernel=kernel.img
+kernel_address=0x8000
+hdmi_ignore_hotplug=1
 enable_uart=1
 uart_2ndstage=1
 device_tree=bcm2708-rpi-zero.dtb

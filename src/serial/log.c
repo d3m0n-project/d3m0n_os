@@ -13,7 +13,7 @@ void	log(const char *fmt, int type, ...)
 {
 	va_list args;
 	va_start(args, type);
-	const char *color = UART_COLORS[WHITE];
+	const char *color = ANSI_COLOR_WHITE;
 	const char *message = "      ";
 	int indent = 0;
 
@@ -28,10 +28,10 @@ void	log(const char *fmt, int type, ...)
 
 	switch (type)
 	{
-		case LOG_ERROR:   color = UART_COLORS[RED]; message = " FAIL "; break;
-		case LOG_WARNING: color = UART_COLORS[YELLOW]; message = " WARN "; break;
-		case LOG_SUCCESS: color = UART_COLORS[GREEN]; message = " GOOD "; break;
-		case LOG_INFO:    color = UART_COLORS[CYAN]; message = " INFO "; break;
+		case LOG_ERROR:   color = ANSI_COLOR_RED; message = " FAIL "; break;
+		case LOG_WARNING: color = ANSI_COLOR_YELLOW; message = " WARN "; break;
+		case LOG_SUCCESS: color = ANSI_COLOR_GREEN; message = " GOOD "; break;
+		case LOG_INFO:    color = ANSI_COLOR_CYAN; message = " INFO "; break;
 		default: break;
 	}
 	if (type != LOG_NONE)
@@ -40,12 +40,12 @@ void	log(const char *fmt, int type, ...)
 			uart_print("      =>");
 		else
 		{
-			uart_print(UART_COLORS[WHITE]);
+			uart_print(ANSI_COLOR_WHITE);
 			uart_print("[");
 		}
 		uart_print(color);
 		uart_print(message);
-		uart_print(UART_COLORS[WHITE]);
+		uart_print(ANSI_COLOR_WHITE);
 		if (indent == 0)
 			uart_print("] ");
 	}

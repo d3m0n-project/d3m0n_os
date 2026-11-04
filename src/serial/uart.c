@@ -32,6 +32,11 @@ int	uart_getc(void)
 	return (int)(UART0_DR & 0xFFu);
 }
 
+void	uart_clear(void)
+{
+	uart_print("\033[H\033[2J\033[3J");
+}
+
 void	uart_print_n(const char* str, size_t n)
 {
 	rng_add_entropy(time_us() / 3);

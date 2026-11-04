@@ -143,7 +143,7 @@ config:
 
 $(O_FILES): $(CONFIG_FILE)
 
-$(NAME): $(O_FILES)
+$(NAME): $(O_FILES) linker.ld
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(OBJ_DIR)
 

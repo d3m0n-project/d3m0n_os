@@ -2,9 +2,10 @@ ENTRY(_start)
 
 SECTIONS
 {
-    . = 0x00000000;
+	/* loads firmware at 0x8000 */
+    . = 0x00008000;
 
-    .vectors 0x0 : ALIGN(32)
+    .vectors : ALIGN(32)
     {
         KEEP(*(.vectors))
     }
@@ -61,7 +62,7 @@ SECTIONS
 
     . = ALIGN(16);
 
-    /* One page each for FIQ, IRQ, abort, undefined, and SVC stacks. */
+    /* one page each for FIQ IRQ abort undefined and SVC stacks */
     . += 0x5000;
 
     stack_top = .;
