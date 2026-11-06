@@ -67,7 +67,6 @@ void	put_pixel(int x, int y, uint32_t color)
 		if ((color & 0xFF000000) == 0x00000000)
 			return;
 		g_draw_target[y * g_draw_target_width + x] = color;
-		log("DEBUG: used draw target buf\n", LOG_WARNING);
 		return;
 	}
 	if (x < 0 || (uint32_t)x >= SCREEN_WIDTH || y < 0 || (uint32_t)y >= SCREEN_HEIGHT)

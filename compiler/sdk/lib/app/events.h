@@ -12,15 +12,20 @@ typedef enum: uint32_t
 	EVENT_MOUSECLICK2=2,
 	EVENT_MOUSECLICK3=3,
 	EVENT_MOUSECLICK4=4,
+	EVENT_KEYPRESS=5,
+	EVENT_KEYRELEASE=6,
 }	e_event_type;
 
 #define EVENT_IS_MOUSE(x)	(x >= EVENT_MOUSECLICK1 && x <= EVENT_MOUSECLICK4)
+#define EVENT_IS_KEYBOARD(x)	((x) == EVENT_KEYPRESS || (x) == EVENT_KEYRELEASE)
 
 typedef struct {
 	e_event_type	type;
 	uint64_t		timestamp;
 	int32_t			x;
 	int32_t			y;
+	int32_t			key;
+	uint32_t		modifiers;
 }	event_t;
 
 typedef struct {

@@ -2,6 +2,7 @@
 #include "time.h"
 #include "peripheral/usb.h"
 #include "display/display.h"
+#include "stdlib.h"
 
 #define USB_BASE			(PERIPHERAL_BASE + 0x00980000)
 
@@ -28,6 +29,7 @@
 #define USB_ADDR_FIRST		1
 #define USB_ADDR_HUB		1
 #define USB_ADDR_CHILD		2
+#define USB_HUB_MAX_PORTS	4
 
 #define GAHBCFG_GLBL_INTR	(1 << 0)
 #define GAHBCFG_DMA_EN		(1 << 5)
@@ -89,6 +91,7 @@
 #define USB_CLASS_HUB			0x09
 #define USB_CLASS_HID			0x03
 #define USB_HID_BOOT			0x01
+#define USB_HID_KEYBOARD		0x01
 #define USB_HID_MOUSE			0x02
 #define USB_ENDPOINT_IN			0x80
 #define USB_ENDPOINT_XFER_MASK	0x03
@@ -107,6 +110,8 @@ typedef struct {
 
 typedef struct {
 	uint8_t		present;
+	uint8_t		addr;
+	uint8_t		speed_low;
 	uint8_t		interface;
 	uint8_t		endpoint;
 	uint8_t		interval;
@@ -118,10 +123,24 @@ typedef struct {
 	uint8_t		buttons;
 }	usb_mouse_t;
 
-static usb_device_t	g_root_device = {0, 0, 8};
-static usb_mouse_t	g_mouse = {0};
-static uint8_t		g_usb_buf[256]    __attribute__((aligned(4)));
-static uint8_t		g_mouse_report[8] __attribute__((aligned(4)));
+typedef struct {
+	uint8_t		present;
+	uint8_t		addr;
+	uint8_t		speed_low;
+	uint8_t		interface;
+	uint8_t		endpoint;
+	uint8_t		interval;
+	uint16_t	mps;
+	uint8_t		last_report[8];
+	uint8_t		has_report;
+} 	usb_keyboard_t;
+
+static usb_device_t		g_root_device = {0, 0, 8};
+static usb_mouse_t		g_mouse = {0};
+static usb_keyboard_t	g_keyboard = {0};
+static uint8_t			g_usb_buf[256]    __attribute__((aligned(4)));
+static uint8_t			g_mouse_report[8] __attribute__((aligned(4)));
+static uint8_t			g_keyboard_report[8] __attribute__((aligned(4)));
 
 static uint16_t	usb_min_u16(uint16_t a, uint16_t b)
 {
@@ -130,9 +149,7 @@ static uint16_t	usb_min_u16(uint16_t a, uint16_t b)
 	return (b);
 }
 
-/* Re-draws the cursor on top of the framebuffer. Called after the app's
-   surface copy (present) so the cursor is never erased, no matter how fast
-   the app renders. */
+
 void	usb_mouse_redraw(void)
 {
 	if (!g_mouse.present || !g_mouse.last_pixel_saved)
@@ -245,7 +262,7 @@ void	usb_init(void)
 	GAHBCFG = GAHBCFG_DMA_EN | GAHBCFG_GLBL_INTR;
 }
 
-static int	usb_transfer_ex(uint8_t addr, uint8_t ep, uint8_t in, uint32_t ep_type, uint16_t mps, uint32_t pid, uint8_t *buf, uint16_t len)
+static int	usb_transfer_ex(uint8_t addr, uint8_t speed_low, uint8_t ep, uint8_t in, uint32_t ep_type, uint16_t mps, uint32_t pid, uint8_t *buf, uint16_t len)
 {
 	usb_hc_t	*hc;
 	uint32_t	hcchar;
@@ -260,7 +277,7 @@ static int	usb_transfer_ex(uint8_t addr, uint8_t ep, uint8_t in, uint32_t ep_typ
 	hcchar = HCCHAR_MPS(mps) | HCCHAR_EPNUM(ep) | ep_type | HCCHAR_DEVADDR(addr);
 	if (in)
 		hcchar |= HCCHAR_EPDIR_IN;
-	if (g_root_device.speed_low)
+	if (speed_low)
 		hcchar |= HCCHAR_LOW_SPEED;
 	if (ep_type == HCCHAR_EPTYPE_INTR && (HFNUM & 1))
 		hcchar |= HCCHAR_ODDFRM;
@@ -282,11 +299,6 @@ static int	usb_transfer_ex(uint8_t addr, uint8_t ep, uint8_t in, uint32_t ep_typ
 	return (-3);
 }
 
-static int	usb_transfer(uint8_t addr, uint8_t ep, uint8_t in, uint32_t pid, uint8_t *buf, uint16_t len)
-{
-	return usb_transfer_ex(addr, ep, in, HCCHAR_EPTYPE_CTRL, g_root_device.ep0_mps, pid, buf, len);
-}
-
 static int	usb_control_transfer_ex(usb_device_t *dev, usb_setup_t *setup, uint8_t *buf)
 {
 	int			ret;
@@ -295,22 +307,28 @@ static int	usb_control_transfer_ex(usb_device_t *dev, usb_setup_t *setup, uint8_
 
 	addr = dev->addr;
 	len = setup->wLength;
-	ret = usb_transfer(addr, USB_EP0, 0, HCTSIZ_PID_SETUP, (uint8_t *)setup, sizeof(usb_setup_t));
+	ret = usb_transfer_ex(addr, dev->speed_low, USB_EP0, 0,
+		HCCHAR_EPTYPE_CTRL, dev->ep0_mps, HCTSIZ_PID_SETUP,
+		(uint8_t *)setup, sizeof(usb_setup_t));
 	if (ret)
 		return ret;
 	if (len)
 	{
 		if (setup->bmRequestType & 0x80)
-			ret = usb_transfer(addr, USB_EP0, 1, HCTSIZ_PID_DATA1, buf, len);
+			ret = usb_transfer_ex(addr, dev->speed_low, USB_EP0, 1,
+				HCCHAR_EPTYPE_CTRL, dev->ep0_mps, HCTSIZ_PID_DATA1, buf, len);
 		else
-			ret = usb_transfer(addr, USB_EP0, 0, HCTSIZ_PID_DATA1, buf, len);
+			ret = usb_transfer_ex(addr, dev->speed_low, USB_EP0, 0,
+				HCCHAR_EPTYPE_CTRL, dev->ep0_mps, HCTSIZ_PID_DATA1, buf, len);
 		if (ret)
 			return ret;
 	}
 	if (setup->bmRequestType & 0x80)
-		ret = usb_transfer(addr, USB_EP0, 0, HCTSIZ_PID_DATA1, NULL, 0);
+		ret = usb_transfer_ex(addr, dev->speed_low, USB_EP0, 0,
+		HCCHAR_EPTYPE_CTRL, dev->ep0_mps, HCTSIZ_PID_DATA1, NULL, 0);
 	else
-		ret = usb_transfer(addr, USB_EP0, 1, HCTSIZ_PID_DATA1, NULL, 0);
+		ret = usb_transfer_ex(addr, dev->speed_low, USB_EP0, 1,
+		HCCHAR_EPTYPE_CTRL, dev->ep0_mps, HCTSIZ_PID_DATA1, NULL, 0);
 	return ret;
 }
 
@@ -464,33 +482,22 @@ static int	usb_hub_reset_port(usb_device_t *hub, uint8_t port, uint8_t *child_lo
 	return 0;
 }
 
-static int	usb_hub_reset_first_connected_port(usb_device_t *hub, uint8_t *child_low_speed)
-{
-	uint8_t	port;
-	int		ret;
 
-	port = 1;
-	while (port <= 4)
-	{
-		ret = usb_hub_reset_port(hub, port, child_low_speed);
-		if (ret == 0)
-			return 0;
-		port++;
-	}
-	log("USB: no connected device found on first 4 hub ports\n", LOG_WARNING);
-	return -1;
-}
-
-static void	usb_parse_config(uint8_t *buf, uint16_t len)
+static void	usb_parse_config(uint8_t *buf, uint16_t len, usb_device_t *dev)
 {
 	usb_interface_descriptor_t	*interface;
 	usb_endpoint_descriptor_t	*endpoint;
 	uint8_t						*ptr;
 	uint16_t					pos;
 	uint8_t						mouse_interface;
+	uint8_t					keyboard_interface;
+	uint8_t					current_interface;
+	uint8_t					current_protocol;
 
-	g_mouse.present = 0;
 	mouse_interface = 0xff;
+	keyboard_interface = 0xff;
+	current_interface = 0xff;
+	current_protocol = 0;
 	pos = 0;
 	while (pos + 2 <= len)
 	{
@@ -499,30 +506,54 @@ static void	usb_parse_config(uint8_t *buf, uint16_t len)
 			break ;
 		if (pos + ptr[0] > len)
 			break ;
-		if (ptr[1] == USB_DESC_INTERFACE
-			&& ptr[0] >= sizeof(usb_interface_descriptor_t))
+		if (ptr[1] == USB_DESC_INTERFACE && ptr[0] >= sizeof(usb_interface_descriptor_t))
 		{
 			interface = (usb_interface_descriptor_t *)ptr;
+			current_interface = interface->bInterfaceNumber;
+			current_protocol = interface->bInterfaceProtocol;
 			if (interface->bInterfaceClass == USB_CLASS_HID && interface->bInterfaceSubClass == USB_HID_BOOT && interface->bInterfaceProtocol == USB_HID_MOUSE)
 			{
 				mouse_interface = interface->bInterfaceNumber;
 				log("USB: HID boot mouse interface=%u endpoints=%u\n", LOG_SUCCESS, (unsigned int)interface->bInterfaceNumber, (unsigned int)interface->bNumEndpoints);
 			}
+			else if (interface->bInterfaceClass == USB_CLASS_HID && interface->bInterfaceSubClass == USB_HID_BOOT && interface->bInterfaceProtocol == USB_HID_KEYBOARD)
+			{
+				keyboard_interface = interface->bInterfaceNumber;
+				log("USB: HID boot keyboard interface=%u endpoints=%u\n", LOG_SUCCESS, (unsigned int)interface->bInterfaceNumber, (unsigned int)interface->bNumEndpoints);
+			}
 		}
-		else if (ptr[1] == USB_DESC_ENDPOINT && ptr[0] >= sizeof(usb_endpoint_descriptor_t) && mouse_interface != 0xff)
+		else if (ptr[1] == USB_DESC_ENDPOINT && ptr[0] >= sizeof(usb_endpoint_descriptor_t))
 		{
 			endpoint = (usb_endpoint_descriptor_t *)ptr;
 			if ((endpoint->bEndpointAddress & USB_ENDPOINT_IN) && ((endpoint->bmAttributes & USB_ENDPOINT_XFER_MASK) == USB_ENDPOINT_XFER_INTR))
 			{
-				g_mouse.present = 1;
-				g_mouse.interface = mouse_interface;
-				g_mouse.endpoint = endpoint->bEndpointAddress & 0x0f;
-				g_mouse.interval = endpoint->bInterval;
-				g_mouse.mps = endpoint->wMaxPacketSize & 0x7ff;
-				if (g_mouse.mps == 0)
-					g_mouse.mps = 4;
-				log("USB: mouse interrupt IN ep=%u mps=%u interval=%u\n", LOG_INFO | LOG_INDENT, (unsigned int)g_mouse.endpoint, (unsigned int)g_mouse.mps, (unsigned int)g_mouse.interval);
-				return;
+				if (!g_mouse.present && mouse_interface != 0xff && current_interface == mouse_interface && current_protocol == USB_HID_MOUSE)
+				{
+					g_mouse.present = 1;
+					g_mouse.addr = dev->addr;
+					g_mouse.speed_low = dev->speed_low;
+					g_mouse.interface = mouse_interface;
+					g_mouse.endpoint = endpoint->bEndpointAddress & 0x0f;
+					g_mouse.interval = endpoint->bInterval;
+					g_mouse.mps = endpoint->wMaxPacketSize & 0x7ff;
+					if (g_mouse.mps == 0)
+						g_mouse.mps = 4;
+					log("USB: mouse interrupt IN ep=%u mps=%u interval=%u\n", LOG_INFO | LOG_INDENT, (unsigned int)g_mouse.endpoint, (unsigned int)g_mouse.mps, (unsigned int)g_mouse.interval);
+				}
+				if (!g_keyboard.present && keyboard_interface != 0xff && current_interface == keyboard_interface && current_protocol == USB_HID_KEYBOARD)
+				{
+					g_keyboard.present = 1;
+					g_keyboard.addr = dev->addr;
+					g_keyboard.speed_low = dev->speed_low;
+					g_keyboard.interface = keyboard_interface;
+					g_keyboard.endpoint = endpoint->bEndpointAddress & 0x0f;
+					g_keyboard.interval = endpoint->bInterval;
+					g_keyboard.mps = endpoint->wMaxPacketSize & 0x7ff;
+					if (g_keyboard.mps == 0)
+						g_keyboard.mps = 8;
+					g_keyboard.has_report = 0;
+					log("USB: keyboard interrupt IN ep=%u mps=%u interval=%u\n", LOG_INFO | LOG_INDENT, (unsigned int)g_keyboard.endpoint, (unsigned int)g_keyboard.mps, (unsigned int)g_keyboard.interval);
+				}
 			}
 		}
 		pos += ptr[0];
@@ -538,7 +569,8 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 	if (!g_mouse.present)
 		return 0;
 
-	ret = usb_transfer_ex(g_root_device.addr, g_mouse.endpoint, 1, HCCHAR_EPTYPE_INTR, g_mouse.mps, HCTSIZ_PID_DATA0, g_mouse_report, usb_min_u16(g_mouse.mps, sizeof(g_mouse_report)));
+
+	ret = usb_transfer_ex(g_mouse.addr, g_mouse.speed_low, g_mouse.endpoint, 1, HCCHAR_EPTYPE_INTR, g_mouse.mps, HCTSIZ_PID_DATA0, g_mouse_report, usb_min_u16(g_mouse.mps, sizeof(g_mouse_report)));
 	if (ret == -3)
 		return 0;
 	if (ret)
@@ -591,6 +623,121 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 	return 1;
 }
 
+static int	usb_hid_key_to_ascii(uint8_t keycode, uint8_t modifiers)
+{
+	int shift = ((modifiers & (1u << 1)) || (modifiers & (1u << 5)));
+
+	if (keycode >= 0x04 && keycode <= 0x1d)
+		return (shift ? 'A' : 'a') + (keycode - 0x04);
+	if (keycode >= 0x1e && keycode <= 0x27)
+	{
+		static const char normal_digits[] = "1234567890";
+		static const char shift_digits[] = "!@#$%^&*()";
+		return shift ? shift_digits[keycode - 0x1e] : normal_digits[keycode - 0x1e];
+	}
+	if (keycode == 0x28)
+		return '\n';
+	if (keycode == 0x29)
+		return 27;
+	if (keycode == 0x2a)
+		return '\b';
+	if (keycode == 0x2b)
+		return '\t';
+	if (keycode == 0x2c)
+		return ' ';
+	if (keycode == 0x2d)
+		return shift ? '_' : '-';
+	if (keycode == 0x2e)
+		return shift ? '+' : '=';
+	if (keycode == 0x2f)
+		return shift ? '{' : '[';
+	if (keycode == 0x30)
+		return shift ? '}' : ']';
+	if (keycode == 0x31)
+		return shift ? '|' : '\\';
+	if (keycode == 0x33)
+		return shift ? ':' : ';';
+	if (keycode == 0x34)
+		return shift ? '"' : '\'';
+	if (keycode == 0x35)
+		return shift ? '~' : '`';
+	if (keycode == 0x36)
+		return shift ? '<' : ',';
+	if (keycode == 0x37)
+		return shift ? '>' : '.';
+	if (keycode == 0x38)
+		return shift ? '?' : '/';
+	return 0;
+}
+
+static int	usb_keyboard_report_has_key(const uint8_t *report, uint8_t keycode)
+{
+	for (int i = 2; i < 8; i++)
+		if (report[i] == keycode)
+			return 1;
+	return 0;
+}
+
+int	usb_keyboard_poll(void (*key_handler)(int, bool, uint32_t))
+{
+	int		ret;
+	int		events;
+	uint8_t	modifiers;
+	uint8_t	previous_modifiers;
+
+	if (!g_keyboard.present || !key_handler)
+		return 0;
+	ret = usb_transfer_ex(g_keyboard.addr, g_keyboard.speed_low, g_keyboard.endpoint, 1,
+		HCCHAR_EPTYPE_INTR, g_keyboard.mps, HCTSIZ_PID_DATA0,
+		g_keyboard_report, usb_min_u16(g_keyboard.mps, sizeof(g_keyboard_report)));
+	if (ret == -3)
+		return 0;
+	if (ret)
+	{
+		log("USB keyboard read failed (%i)\n", LOG_WARNING, ret);
+		return ret;
+	}
+	modifiers = g_keyboard_report[0];
+	if (!g_keyboard.has_report)
+	{
+		memcpy(g_keyboard.last_report, g_keyboard_report, sizeof(g_keyboard.last_report));
+		g_keyboard.has_report = 1;
+		return 0;
+	}
+	events = 0;
+	previous_modifiers = g_keyboard.last_report[0];
+	for (int i = 2; i < 8; i++)
+	{
+		uint8_t keycode = g_keyboard.last_report[i];
+		int key;
+
+		if (keycode == 0 || usb_keyboard_report_has_key(g_keyboard_report, keycode))
+			continue;
+		key = usb_hid_key_to_ascii(keycode, previous_modifiers);
+		if (key)
+		{
+			key_handler(key, false, previous_modifiers);
+			events++;
+		}
+	}
+	for (int i = 2; i < 8; i++)
+	{
+		uint8_t keycode = g_keyboard_report[i];
+		int key;
+
+		if (keycode == 0 || usb_keyboard_report_has_key(g_keyboard.last_report, keycode))
+			continue;
+		key = usb_hid_key_to_ascii(keycode, modifiers);
+		if (key)
+		{
+			key_handler(key, true, modifiers);
+			events++;
+		}
+	}
+	memcpy(g_keyboard.last_report, g_keyboard_report, sizeof(g_keyboard.last_report));
+	return events;
+}
+
 static int	usb_finish_device_configuration(usb_device_t *dev, uint8_t device_class)
 {
 	usb_config_descriptor_t	*config;
@@ -616,7 +763,7 @@ static int	usb_finish_device_configuration(usb_device_t *dev, uint8_t device_cla
 		LOG_INFO | LOG_INDENT, (unsigned int)config->bConfigurationValue,
 		(unsigned int)config->bNumInterfaces,
 		(unsigned int)config->wTotalLength);
-	usb_parse_config(g_usb_buf, total_len);
+	usb_parse_config(g_usb_buf, total_len, dev);
 	ret = usb_set_configuration(dev, config->bConfigurationValue);
 	if (ret)
 	{
@@ -625,7 +772,7 @@ static int	usb_finish_device_configuration(usb_device_t *dev, uint8_t device_cla
 	}
 	if (device_class == USB_CLASS_HUB)
 		return 0;
-	if (g_mouse.present)
+	if (g_mouse.present && g_mouse.addr == dev->addr)
 	{
 		ret = usb_hid_set_boot_protocol(dev, g_mouse.interface);
 		if (ret)
@@ -633,8 +780,16 @@ static int	usb_finish_device_configuration(usb_device_t *dev, uint8_t device_cla
 		else
 			log("USB: HID mouse ready for polling\n", LOG_SUCCESS);
 	}
-	else
-		log("USB: connected device is not a boot mouse\n", LOG_INFO);
+	if (g_keyboard.present && g_keyboard.addr == dev->addr)
+	{
+		ret = usb_hid_set_boot_protocol(dev, g_keyboard.interface);
+		if (ret)
+			log("USB: HID keyboard SET_PROTOCOL boot failed (%i)\n", LOG_WARNING, ret);
+		else
+			log("USB: HID keyboard ready for polling\n", LOG_SUCCESS);
+	}
+	if ((!g_mouse.present || g_mouse.addr != dev->addr) && (!g_keyboard.present || g_keyboard.addr != dev->addr))
+		log("USB: connected device is not a boot mouse/keyboard\n", LOG_INFO);
 	return 0;
 }
 
@@ -678,13 +833,64 @@ static int	usb_enumerate_address_zero(usb_device_t *dev, uint8_t new_addr, uint8
 	return usb_finish_device_configuration(dev, *device_class);
 }
 
+static int	usb_hub_enumerate_ports(usb_device_t *hub)
+{
+	usb_device_t	child;
+	uint8_t			port;
+	uint8_t			child_low_speed;
+	uint8_t			device_class;
+	uint8_t			next_addr;
+	int				ret;
+	int				enumerated;
+
+	next_addr = USB_ADDR_CHILD;
+	enumerated = 0;
+	for (port = 1; port <= USB_HUB_MAX_PORTS; port++)
+	{
+		ret = usb_hub_reset_port(hub, port, &child_low_speed);
+		if (ret == -1)
+			continue;
+		if (ret)
+		{
+			log("USB: hub port %u reset failed (%i)\n", LOG_WARNING,
+				(unsigned int)port, ret);
+			continue;
+		}
+		/* Reserve a unique address even if configuration later fails. */
+		/* Address zero is reused only after this port has been reset. */
+		ret = usb_enumerate_address_zero(&child, next_addr,
+			child_low_speed, &device_class);
+		next_addr++;
+		if (ret)
+		{
+			log("USB: enumeration failed on hub port %u (%i)\n",
+				LOG_WARNING, (unsigned int)port, ret);
+			continue;
+		}
+		if (device_class == USB_CLASS_HUB)
+			log("USB: nested hubs are not supported yet (port %u)\n",
+				LOG_WARNING, (unsigned int)port);
+		else
+			enumerated++;
+		if (next_addr > 127)
+			break;
+	}
+	if (!enumerated)
+		log("USB: no supported devices found on hub ports 1-%u\n",
+			LOG_WARNING, (unsigned int)USB_HUB_MAX_PORTS);
+	return enumerated;
+}
+
 int	usb_enumerate(void)
 {
-	usb_device_t			hub;
-	uint8_t					device_class;
-	uint8_t					child_low_speed;
-	int						ret;
+	uint8_t	device_class;
+	int		ret;
 
+	/* A fresh scan must not retain devices from a previous enumeration. */
+	memset(&g_mouse, 0, sizeof(g_mouse));
+	memset(&g_keyboard, 0, sizeof(g_keyboard));
+	memset(&g_root_device, 0, sizeof(g_root_device));
+	g_root_device.ep0_mps = 8;
 	log("USB: initializing host controller\n", LOG_INFO);
 	ret = usb_port_reset();
 	if (ret)
@@ -692,19 +898,16 @@ int	usb_enumerate(void)
 		log("USB: no enabled device on root port (%i)\n", LOG_WARNING, ret);
 		return ret;
 	}
-	log("USB: root port reset complete, speed=%s\n", LOG_INFO | LOG_INDENT, g_root_device.speed_low ? "low" : "full");
-	ret = usb_enumerate_address_zero(&g_root_device, USB_ADDR_FIRST, g_root_device.speed_low, &device_class);
+	log("USB: root port reset complete, speed=%s\n", LOG_INFO | LOG_INDENT,
+		g_root_device.speed_low ? "low" : "full");
+	ret = usb_enumerate_address_zero(&g_root_device, USB_ADDR_FIRST,
+		g_root_device.speed_low, &device_class);
 	if (ret)
 		return ret;
 	if (device_class == USB_CLASS_HUB)
 	{
-		hub = g_root_device;
-		ret = usb_hub_reset_first_connected_port(&hub, &child_low_speed);
-		if (ret)
-			return ret;
-		ret = usb_enumerate_address_zero(&g_root_device, USB_ADDR_CHILD,
-				child_low_speed, &device_class);
-		if (ret)
+		ret = usb_hub_enumerate_ports(&g_root_device);
+		if (ret < 0)
 			return ret;
 	}
 	log("USB: enumeration complete\n", LOG_SUCCESS);

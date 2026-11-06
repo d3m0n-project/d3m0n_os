@@ -34,7 +34,7 @@ C_FILES				= $(shell find $(SRC_DIR) -name "*.c") $(STDLIB_C_FILES)
 S_FILES				= $(shell find $(SRC_DIR) -name "*.s" -o -name "*.S")
 
 O_FILES				= $(patsubst $(STDLIB_PATH)%.c,$(OBJ_DIR)/sdk/stdlib/%.o,$(filter $(STDLIB_PATH)%.c,$(C_FILES))) \
-				  $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(filter $(SRC_DIR)/%.c,$(C_FILES)))
+				  		$(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(filter $(SRC_DIR)/%.c,$(C_FILES)))
 O_FILES				+= $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/asm/%.o,$(filter $(SRC_DIR)/%.s,$(S_FILES)))
 O_FILES				+= $(patsubst $(SRC_DIR)/%.S,$(OBJ_DIR)/asm/%.o,$(filter $(SRC_DIR)/%.S,$(S_FILES)))
 
@@ -42,7 +42,7 @@ D_FILES				= $(O_FILES:.o=.d)
 
 DISK				?= disk.img
 
-VERSION				= 2.0.9
+VERSION				= 2.0.91
 VERSION_NAME		= outset
 
 IMG_ROOT_NAME		= d3m0n_os_$(VERSION_NAME)_$(VERSION).img
@@ -71,7 +71,7 @@ QEMU_OPTIONS		= -machine raspi1ap \
 					  -m 512M \
 					  -sd $(DISK) \
 					  -kernel $(OBJ_DIR)/kernel.elf \
-					  -usb -device usb-mouse \
+					  -usb -device usb-kbd -device usb-mouse \
 				  	  -display gtk
 
 ifneq ($(DEBUG),0)

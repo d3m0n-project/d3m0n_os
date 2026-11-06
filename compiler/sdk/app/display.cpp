@@ -322,6 +322,7 @@ static void	font_pixel(void *context, int x, int y, uint8_t coverage)
 	font_context->display->put_pixel(x, y, dst_color);
 }
 
+static uint16_t glyph_cache[255] = {0};
 void	Display::draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font *font)
 {
 	t_font_context	font_context;
@@ -361,7 +362,11 @@ void	Display::draw_text(int x, int y, int w, int h, const char *text, uint32_t c
 		}
 
 		uint16_t glyph;
-		glyph = ttf_glyph_for_codepoint(font, (uint8_t)text[i]);
+		if (glyph_cache[(uint8_t)text[i]] == 0)
+			glyph_cache[(uint8_t)text[i]] = ttf_glyph_for_codepoint(font, (uint8_t)text[i]);
+		
+		glyph = glyph_cache[(uint8_t)text[i]];
+		
 		//printf("char='%c' cp=%u glyph=%u advance=%d\n",
 		//	text[i],
 		//	(uint8_t)text[i],

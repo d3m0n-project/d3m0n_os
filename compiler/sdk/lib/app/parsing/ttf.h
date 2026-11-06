@@ -303,27 +303,29 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 	{
 		uint32_t	component_at;
 		uint16_t	flags;
-		int		component_count;
+		int			component_count;
 
 		component_at = 10;
 		component_count = 0;
 		do
 		{
 			uint16_t	component_glyph;
-			int		arg_x;
-			int		arg_y;
-			int		component_sx;
-			int		component_sy;
+			int			arg_x;
+			int			arg_y;
+			int			component_sx;
+			int			component_sy;
 
 			if (++component_count > 32 || !ttf_glyph_range(component_at, 4, glyph_size))
-				return ;
+				return;
+			
 			flags = ttf_gu16(g, component_at);
 			component_glyph = ttf_gu16(g, component_at + 2);
 			component_at += 4;
 			if (flags & 1)
 			{
 				if (!ttf_glyph_range(component_at, 4, glyph_size))
-					return ;
+					return;
+				
 				arg_x = ttf_gi16(g, component_at);
 				arg_y = ttf_gi16(g, component_at + 2);
 				component_at += 4;
@@ -331,7 +333,8 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 			else
 			{
 				if (!ttf_glyph_range(component_at, 2, glyph_size))
-					return ;
+					return;
+				
 				arg_x = (int8_t)g[component_at];
 				arg_y = (int8_t)g[component_at + 1];
 				component_at += 2;
@@ -343,7 +346,8 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 			{
 				int scale;
 				if (!ttf_glyph_range(component_at, 2, glyph_size))
-					return ;
+					return;
+				
 				scale = ttf_gi16(g, component_at);
 				component_sx = (int)((int64_t)sx * scale / 16384);
 				component_sy = (int)((int64_t)sy * scale / 16384);
@@ -354,7 +358,8 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 				int scale_x;
 				int scale_y;
 				if (!ttf_glyph_range(component_at, 4, glyph_size))
-					return ;
+					return;
+				
 				scale_x = ttf_gi16(g, component_at);
 				scale_y = ttf_gi16(g, component_at + 2);
 				component_sx = (int)((int64_t)sx * scale_x / 16384);
@@ -366,7 +371,8 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 				int scale_x;
 				int scale_y;
 				if (!ttf_glyph_range(component_at, 8, glyph_size))
-					return ;
+					return;
+				
 				scale_x = ttf_gi16(g, component_at);
 				scale_y = ttf_gi16(g, component_at + 6);
 				component_sx = (int)((int64_t)sx * scale_x / 16384);
@@ -374,37 +380,38 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 				component_at += 8;
 			}
 			if (component_sx <= 0 || component_sy <= 0)
-				return ;
+				return;
+			
 			ttf_render_glyph_depth(f, component_glyph,
 				ox + (int)((int64_t)arg_x * sx / f->units_per_em),
 				base - (int)((int64_t)arg_y * sy / f->units_per_em),
 				component_sx, component_sy, pixel, ctx, depth + 1);
 		}
 		while (flags & 32);
-		return ;
+		return;
 	}
 
 	if (contours == 0 || contours > 64)
-		return ;
+		return;
 
 	if (!ttf_glyph_range(10, (uint32_t)contours * 2, glyph_size))
-		return ;
+		return;
 
 	for (uint16_t i = 0; i < contours; i++)
 		ends[i] = ttf_gu16(g, 10 + i * 2);
 
 	total = ends[contours - 1] + 1;
 	if (total == 0 || total > 256)
-		return ;
+		return;
 
 	at = 10 + contours * 2;
 	if (!ttf_glyph_range(at, 2, glyph_size))
-		return ;
+		return;
 
 	ins = ttf_gu16(g, at);
 	at += 2;
 	if (!ttf_glyph_range(at, ins, glyph_size))
-		return ;
+		return;
 
 	at += ins;
 	fi = 0;
@@ -413,17 +420,16 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 		uint8_t	flag;
 		uint8_t	repeat;
 		if (!ttf_glyph_range(at, 1, glyph_size))
-			return ;
+			return;
 
 		flag = g[at++];
 		flags[fi++] = flag;
 		if (flag & 8)
 		{
 			if (!ttf_glyph_range(at, 1, glyph_size))
-				return ;
+				return;
 
 			repeat = g[at++];
-
 			while (repeat > 0 && fi < total)
 			{
 				flags[fi++] = flag;
@@ -440,7 +446,7 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 		if (flags[i] & 2)
 		{
 			if (!ttf_glyph_range(at, 1, glyph_size))
-				return ;
+				return;
 			delta = g[at++];
 			if (!(flags[i] & 16))
 				delta = -delta;
@@ -448,7 +454,7 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 		else if (!(flags[i] & 16))
 		{
 			if (!ttf_glyph_range(at, 2, glyph_size))
-				return ;
+				return;
 			delta = ttf_gi16(g, at);
 			at += 2;
 		}
@@ -465,7 +471,7 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 		if (flags[i] & 4)
 		{
 			if (!ttf_glyph_range(at, 1, glyph_size))
-				return ;
+				return;
 			delta = g[at++];
 			if (!(flags[i] & 32))
 				delta = -delta;
@@ -473,7 +479,7 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 		else if (!(flags[i] & 32))
 		{
 			if (!ttf_glyph_range(at, 2, glyph_size))
-				return ;
+				return;
 			delta = ttf_gi16(g, at);
 			at += 2;
 		}
@@ -517,7 +523,6 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 			t_point	next;
 
 			p = pts[first + i];
-
 			if (p.on)
 			{
 				// straight line
@@ -534,7 +539,7 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 				}
 				cur = p;
 				i++;
-				continue ;
+				continue;
 			}
 
 
@@ -616,7 +621,7 @@ static inline void	ttf_render_glyph_depth(const t_font *f, uint16_t glyph, int o
 	}
 
 	if (!ne)
-		return ;
+		return;
 
 	{
 		int	minx;

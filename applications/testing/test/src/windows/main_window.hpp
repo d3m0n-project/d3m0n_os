@@ -1,33 +1,63 @@
 #pragma once
 
 #include "app.hpp"
+#include "stdio.hpp"
 
 class MainWindow : public Window
 {
 private:
-	Rect	rect1;
-	Text	text1;
+	Text	terminal;
+	string	command;
 public:
 	MainWindow(void): Window("Main Window", Size(320), Size(436)) {
-		rect1.location = Point(0, 0);
-		rect1.bg_color = Color(0xFFFF0000);
-		rect1.width = Size(200);
-		rect1.height = Size(50);
+		this->bg_color = Color(0, 0, 0);
 
-		text1.location = Point(10, 10);
-		text1.color = Color(0xFFFFFFFF);
-		text1.content = "Hello World!";
-		text1.font_size = 16;
+		terminal.location = Point(0, 0);
+		terminal.color = Color(0xFFFFFFFF);
+		terminal.bg_color = Color(0, 0, 0);
+		terminal.width = this->width;
+		terminal.height = this->height;
+		terminal.content = "~ $ ";
+		terminal.text_align = ANCHOR_LEFT | ANCHOR_TOP;
+		terminal.font_size = 8;
+		terminal.on_keypress = [this](event_t *event, Control *) {
+			if (!event)
+				return;
+			if (event->key == 8) // backspace
+			{
+				// TODO:
+				return;
+			}
+			if (event->key == 9) // tab
+			{
+				// TODO:
+				return;
+			}
+			if (event->key == 10) // enter
+			{
+				char **splitted = split(this->command.c_str(), ' ');
+				if (!splitted)
+					return; // skip if error
+				// TODO: execute command
+				int pid = exec(splitted[0], (const char **)(splitted+sizeof(char *)));
+				printf("pid: %i\n", pid);
 
-		rect1.on_click = [this](event_t *event, Control *target)
-        {
-			(void)event;
-			(void)target;
-            printf("clicked\n");
-			exit(42);
-        };
+				while (pstate(pid) != PROC_ZOMBIE)
+					continue;
 
-		this->add_control(&rect1);
-		this->add_control(&text1);
+				printf("finished %i\n", pid);
+
+				cleanup_splitted(splitted);
+				return;
+			}
+			printf("pressed %i\n", event->key);
+			terminal.content = terminal.content + string((const char *)&event->key);
+		};
+
+		// reset command
+
+		command = "";
+
+		this->add_control(&terminal);
 	};
 };

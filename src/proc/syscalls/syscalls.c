@@ -15,9 +15,61 @@
 #define SYSCALL_EXIT_INDEX	0
 #define SYSCALL_THREAD_KILL_INDEX	24
 #define SYSCALL_THREAD_EXIT_INDEX	25
+#define STDIN_QUEUE_SIZE	256
 
 extern t_process	*current_process;
 extern void			draw_topbar(void);
+
+static char		g_stdin_queue[STDIN_QUEUE_SIZE];
+static uint32_t	g_stdin_head = 0;
+static uint32_t	g_stdin_tail = 0;
+static uint32_t	g_stdin_count = 0;
+
+static void	stdin_queue_push(int c)
+{
+	if (c < 0)
+		return;
+	if (g_stdin_count == STDIN_QUEUE_SIZE)
+	{
+		g_stdin_head = (g_stdin_head + 1) % STDIN_QUEUE_SIZE;
+		g_stdin_count--;
+	}
+	g_stdin_queue[g_stdin_tail] = (char)c;
+	g_stdin_tail = (g_stdin_tail + 1) % STDIN_QUEUE_SIZE;
+	g_stdin_count++;
+}
+
+static int	stdin_queue_pop(int *c)
+{
+	if (!c || g_stdin_count == 0)
+		return 0;
+	*c = (unsigned char)g_stdin_queue[g_stdin_head];
+	g_stdin_head = (g_stdin_head + 1) % STDIN_QUEUE_SIZE;
+	g_stdin_count--;
+	return 1;
+}
+
+static void	stdin_usb_key_handler(int key, bool pressed, uint32_t modifiers)
+{
+	(void)modifiers;
+	if (!pressed)
+		return;
+	stdin_queue_push(key);
+}
+
+static void	stdin_poll_sources(void)
+{
+	int c;
+
+	c = uart_getc_nb();
+	if (c >= 0)
+	{
+		if (c == '\r')
+			c = '\n';
+		stdin_queue_push(c);
+	}
+	usb_keyboard_poll(stdin_usb_key_handler);
+}
 
 static t_process *thread_memory_owner(t_process *proc)
 {
@@ -99,7 +151,8 @@ int	sys_read(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 			return -1;
 		for (i = 0; i < count; ++i)
 		{
-			c = uart_getc();
+			while (!stdin_queue_pop(&c))
+				stdin_poll_sources();
 			if (c == '\r')
 				c = '\n';
 			buffer[i] = (char)c;
@@ -123,8 +176,8 @@ int sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 	(void)a3;
 	//log("\nwriting '%s' l=%lu to %lu\n", 0, resolve_user_ptr(user_buf, count), count, fd);
 
-	if (fd == 0) // TODO: stdin
-		return 0;
+	if (fd == 0)
+		return -1;
 
 	if (fd == 1 || fd == 2)
 	{
@@ -173,7 +226,7 @@ int	sys_close(uint32_t fd, uint32_t a1, uint32_t a2, uint32_t a3)
 	(void)a1;
 	(void)a2;
 	(void)a3;
-	if (fd < 3) // TODO: stdin, stdout and stderr
+	if (fd < 3)
 		return -1;
 
 	return pclose((int)fd - 3, current_process->fds);
@@ -182,7 +235,7 @@ int	sys_close(uint32_t fd, uint32_t a1, uint32_t a2, uint32_t a3)
 int	sys_lseek(uint32_t fd, uint32_t offset, uint32_t whence, uint32_t a3)
 {
 	(void)a3;
-	if (fd < 3) // TODO: stdin, stdout and stderr
+	if (fd < 3)
 		return -1;
 	return plseek((int)fd - 3, offset, (e_seek_directive)whence, current_process->fds);
 }

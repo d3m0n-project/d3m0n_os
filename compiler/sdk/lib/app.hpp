@@ -78,6 +78,8 @@ public:
 
 	// events
 	std::function<void(event_t *, Control *)>	on_click;
+	std::function<void(event_t *, Control *)>	on_keypress;
+	std::function<void(event_t *, Control *)>	on_keyrelease;
 
 	/** @brief Draws the window’s visible controls. */
 	virtual void		draw(Display *drawing_function)
@@ -96,6 +98,10 @@ public:
 	Color				bg_color;
 	bool				top_bar;
 	Control				*controls;
+	Control				*focused_control;
+
+	std::function<void(event_t *, Window *)>	on_keypress;
+	std::function<void(event_t *, Window *)>	on_keyrelease;
 
 	Window(const char *title, const Size &width, const Size &height);
 	~Window();
@@ -125,7 +131,7 @@ private:
 		{
 			if (event_pending)
 				continue;
-			event_t event = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0};
+			event_t event = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0, .key=0, .modifiers=0};
 			if (evtpop(&event))
 			{
 				pending_event = event;
@@ -148,7 +154,7 @@ public:
 			fprintf(stderr, "Could not start event thread\n");
 			while (1)
 			{
-				event_t event = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0};
+				event_t event = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0, .key=0, .modifiers=0};
 				if (evtpop(&event) && main_window.dispatch_event(&event))
 					main_window.draw();
 			}

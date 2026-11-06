@@ -13,6 +13,7 @@ Window::Window(const char *title, const Size &width, const Size &height)
 	this->height = height;
 	this->top_bar = true;
 	this->controls = nullptr;
+	this->focused_control = nullptr;
 }
 
 Window::~Window() {}
@@ -77,13 +78,73 @@ static Control	*find_clicked_control(Control *control, int x, int y)
 
 bool	Window::poll(void)
 {
-	event_t	evt = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0};
+	event_t	evt = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0, .key=0, .modifiers=0};
 	int ret = evtpop(&evt);
 	return ret && dispatch_event(&evt);
 }
 
+static Control	*find_key_control(Control *control, bool keypress)
+{
+	for (Control *current = control; current; current = current->next)
+	{
+		if (!current->visible || !current->enabled)
+			continue;
+		Control *child = find_key_control(current->controls, keypress);
+		if (child)
+			return child;
+		if (keypress)
+		{
+			if (!current->on_keypress.empty())
+				return current;
+		}
+		else if (!current->on_keyrelease.empty())
+			return current;
+	}
+	return nullptr;
+}
+
 bool Window::dispatch_event(event_t *event)
 {
+	if (event && EVENT_IS_KEYBOARD(event->type))
+	{
+		if (event->type == EVENT_KEYPRESS && !this->on_keypress.empty())
+		{
+			this->on_keypress(event, this);
+			return true;
+		}
+		if (event->type == EVENT_KEYRELEASE && !this->on_keyrelease.empty())
+		{
+			this->on_keyrelease(event, this);
+			return true;
+		}
+
+		Control *target = this->focused_control;
+		if (target && target->visible && target->enabled)
+		{
+			if (event->type == EVENT_KEYPRESS && !target->on_keypress.empty())
+			{
+				target->on_keypress(event, target);
+				return true;
+			}
+			if (event->type == EVENT_KEYRELEASE && !target->on_keyrelease.empty())
+			{
+				target->on_keyrelease(event, target);
+				return true;
+			}
+		}
+
+		target = find_key_control(this->controls, event->type == EVENT_KEYPRESS);
+		if (target)
+		{
+			if (event->type == EVENT_KEYPRESS)
+				target->on_keypress(event, target);
+			else
+				target->on_keyrelease(event, target);
+			return true;
+		}
+		return false;
+	}
+
 	if (event && EVENT_IS_MOUSE(event->type))
 	{
 		int window_width = this->width.get();
@@ -94,6 +155,7 @@ bool Window::dispatch_event(event_t *event)
 		Control *clicked = find_clicked_control(this->controls, event->x, event->y);
 		if (clicked)
 		{
+			this->focused_control = clicked;
 			clicked->on_click(event, clicked);
 			return true;
 		}
@@ -170,7 +232,9 @@ event_t Application::pending_event = {
 	.type = EVENT_UNKNOWN,
 	.timestamp = 0,
 	.x = 0,
-	.y = 0
+	.y = 0,
+	.key = 0,
+	.modifiers = 0
 };
 volatile uint32_t Application::event_pending = 0;
 thread_t Application::events = 0;

@@ -18,6 +18,7 @@ public:
 	/** @brief Computes an intrinsic size from the text when dimensions are unset. */
 	void	layout(int parent_x, int parent_y, int parent_width, int parent_height) override
 	{
+
 		Control::layout(parent_x, parent_y, parent_width, parent_height);
 		int available_width = width.get(parent_width);
 		int available_height = height.get(parent_height);

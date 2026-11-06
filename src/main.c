@@ -8,7 +8,7 @@
 #include "memory/mmu.h"
 #include "proc/proc.h"
 #include "tests/tests.h"
-
+#include "peripheral/usb.h"
 
 t_conf		config;
 t_conf	*get_config()
@@ -70,13 +70,11 @@ void	kernel_main(void *dtb)
 	if (display_init())			panic("Could not initialize display\n");
 	else						log("Display initialized!\n", LOG_SUCCESS);
 
-	draw_rect(10, 10, 100, 100, 0xff0000ff);
+	//draw_rect(10, 10, 100, 100, 0xff0000ff);
 
 	// init usb driver
-
-	// disabled since it make crash qemu on arch
-	//usb_init(); // TODO: maybe make usb driver optional and enabled for testing
-	//if (usb_enumerate() < 0)	log("USB enumeration did not find a configured root device\n", LOG_WARNING);
+	usb_init(); // TODO: maybe make usb driver optional and enabled for testing
+	if (usb_enumerate() < 0)	log("USB enumeration did not find a configured root device\n", LOG_WARNING);
 
 	// load spash
 	BmpTexture	splash;
@@ -85,7 +83,7 @@ void	kernel_main(void *dtb)
 	else
 		draw_bmp(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, &splash, DISPLAY_COLORS[TRANSPARENT]);
 
-	panic("ended\n");
+	//panic("ended\n");
 
 	// parse config file
 	if (parse_config(&config))	panic("Config parsing failed, please check config file\n");

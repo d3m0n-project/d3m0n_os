@@ -32,6 +32,13 @@ int	uart_getc(void)
 	return (int)(UART0_DR & 0xFFu);
 }
 
+int	uart_getc_nb(void)
+{
+	if (UART0_FR & UART0_FR_RXFE)
+		return -1;
+	return (int)(UART0_DR & 0xFFu);
+}
+
 void	uart_clear(void)
 {
 	uart_print("\033[H\033[2J\033[3J");

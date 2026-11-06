@@ -75,6 +75,31 @@ void	click_dispatcher(int mouse_x, int mouse_y, unsigned int mouse_btn)
 		log("Could not register a new event for process: event fifo is full\n", LOG_WARNING | LOG_INDENT);
 }
 
+void	key_dispatcher(int key, bool pressed, uint32_t modifiers)
+{
+	extern t_process	*last_updated_proc;
+	t_process			*proc;
+	e_event_type		event_type;
+
+	proc = last_updated_proc;
+	if (key < 0 || !proc || proc->state == PROC_CRASHED || proc->state == PROC_ZOMBIE)
+		return;
+	event_type = pressed ? EVENT_KEYPRESS : EVENT_KEYRELEASE;
+	event_t new_event = {
+		.type = event_type,
+		.timestamp = time_s(),
+		.x = 0,
+		.y = 0,
+		.key = key,
+		.modifiers = modifiers
+	};
+	uint32_t irq_state = disable_interrupts();
+	bool queued = fifo_push(&proc->events, &new_event);
+	restore_interrupts(irq_state);
+	if (!queued)
+		log("Could not register a new keyboard event for process: event fifo is full\n", LOG_WARNING | LOG_INDENT);
+}
+
 void	init_proc(void)
 {
 	t_conf		*config = get_config();
@@ -96,11 +121,12 @@ void	init_proc(void)
 		panic("Failed to start homepage desktop app: check config file\n");
 	
 	process_list();
-	log("Finished init_proc, polling mouse\n", LOG_INFO);
+	log("Finished init_proc, polling input devices\n", LOG_INFO);
 	while (1)
 	{
 		usb_mouse_poll(click_dispatcher);
-		usleep(1000);
+		usb_keyboard_poll(key_dispatcher);
+		//usleep(1000);
 	}
 	
 	// load desktop app manifest
