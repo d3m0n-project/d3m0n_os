@@ -151,6 +151,8 @@ t_process *process_create(void (*entry)(void), char *name, int kernel_mode)
 
 	strlcpy(p->proc_name, name, 64);
 	p->pid = allocate_pid();
+	if (current_process && current_process->terminal_exec)
+		p->parent_pid = current_process->pid;
 	p->state = PROC_READY;
 	p->kernel_stack = alloc_pages(KERNEL_STACK_PAGES);
 	if (!p->kernel_stack)
@@ -322,6 +324,21 @@ void 	process_exit_current(uint32_t status_code)
 		log("Exited '%s' with status code: %lu\n", LOG_WARNING, exiting->proc_name, status_code);
 		exiting->state = PROC_ZOMBIE;
 	}
+	if (exiting->parent_pid)
+	{
+		for (t_process *parent = scheduled_processes; parent; parent = parent->next)
+		{
+			if (parent->pid != exiting->parent_pid)
+				continue;
+			event_t event = {.type=EVENT_TERMINAL_EXIT, .timestamp=0, .x=0, .y=0,
+				.key=(int32_t)exiting->state, .modifiers=0};
+			fifo_push(&parent->events, &event);
+			break;
+		}
+	}
+	for (t_process *child = scheduled_processes; child; child = child->next)
+		if (child->parent_pid == exiting->pid)
+			child->parent_pid = 0;
 
 	for (int i = 0; i < FS_MAX_FDS; i++)
 	{

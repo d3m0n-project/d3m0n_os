@@ -17,8 +17,6 @@ using namespace std;
 class Display
 {
 private:
-	uint8_t	*fb;
-	int		pitch;
 	t_font	main_font;
 
 	void	draw_ellipse_points(int cx, int cy, int x, int y, uint32_t color)
@@ -29,6 +27,8 @@ private:
 		this->put_pixel(cx - x, cy - y, color);
 	}
 public:
+	uint8_t	*fb;
+	int		pitch;
 	int		w = 0;
 	int		h = 0;
 	Display()

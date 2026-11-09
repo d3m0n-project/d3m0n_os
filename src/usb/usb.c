@@ -3,6 +3,7 @@
 #include "peripheral/usb.h"
 #include "display/display.h"
 #include "stdlib.h"
+#include "../../compiler/sdk/lib/app/events.h"
 
 #define USB_BASE			(PERIPHERAL_BASE + 0x00980000)
 
@@ -626,6 +627,10 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 static int	usb_hid_key_to_ascii(uint8_t keycode, uint8_t modifiers)
 {
 	int shift = ((modifiers & (1u << 1)) || (modifiers & (1u << 5)));
+	if (keycode == 0x52)
+		return APP_KEY_ARROW_UP;
+	if (keycode == 0x51)
+		return APP_KEY_ARROW_DOWN;
 
 	if (keycode >= 0x04 && keycode <= 0x1d)
 		return (shift ? 'A' : 'a') + (keycode - 0x04);

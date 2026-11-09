@@ -16,6 +16,7 @@
 #define SYSCALL_THREAD_KILL_INDEX	24
 #define SYSCALL_THREAD_EXIT_INDEX	25
 #define STDIN_QUEUE_SIZE	256
+#define SYS_READ_RETRY		-2
 
 extern t_process	*current_process;
 extern void			draw_topbar(void);
@@ -52,7 +53,7 @@ static int	stdin_queue_pop(int *c)
 static void	stdin_usb_key_handler(int key, bool pressed, uint32_t modifiers)
 {
 	(void)modifiers;
-	if (!pressed)
+	if (!pressed || key > 127)
 		return;
 	stdin_queue_push(key);
 }
@@ -149,10 +150,37 @@ int	sys_read(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 		buffer = (char *)resolve_user_ptr(user_buf, count);
 		if (!buffer)
 			return -1;
+		if (current_process->stdio_redirected[0])
+		{
+			if (!(current_process->stdio_fds[0].mode & O_READ))
+				return -1;
+			return (int)fat32_read(&current_process->stdio_fds[0].file, (uint8_t *)buffer, count);
+		}
+		if (current_process->parent_pid)
+		{
+			for (i = 0; i < count; ++i)
+			{
+				uint32_t irq_state = disable_interrupts();
+				if (!current_process->terminal_input_count)
+				{
+					restore_interrupts(irq_state);
+					return i ? (int)i : SYS_READ_RETRY;
+				}
+				uint8_t c = current_process->terminal_input[current_process->terminal_input_head];
+				current_process->terminal_input_head = (current_process->terminal_input_head + 1) % sizeof(current_process->terminal_input);
+				current_process->terminal_input_count--;
+				restore_interrupts(irq_state);
+				buffer[i] = (char)c;
+				if (c == '\n')
+					return (int)(i + 1);
+			}
+			return (int)i;
+		}
+		stdin_poll_sources();
 		for (i = 0; i < count; ++i)
 		{
-			while (!stdin_queue_pop(&c))
-				stdin_poll_sources();
+			if (!stdin_queue_pop(&c))
+				return i ? (int)i : SYS_READ_RETRY;
 			if (c == '\r')
 				c = '\n';
 			buffer[i] = (char)c;
@@ -184,6 +212,42 @@ int sys_write(uint32_t fd, uint32_t user_buf, uint32_t count, uint32_t a3)
 		const char *buffer = (const char *)resolve_user_ptr(user_buf, count);
 		if (!buffer)
 			return -1;
+		if (current_process->stdio_redirected[fd])
+		{
+			if (!(current_process->stdio_fds[fd].mode & O_WRITE))
+				return -1;
+			return (int)fat32_write(&current_process->stdio_fds[fd].file, (const uint8_t *)buffer, count);
+		}
+		if (current_process->parent_pid)
+		{
+			t_process *parent = scheduled_processes;
+			while (parent && parent->pid != current_process->parent_pid)
+				parent = parent->next;
+			if (parent)
+			{
+				uint32_t written = 0;
+				while (written < count)
+				{
+					uint32_t chunk = count - written;
+					if (chunk > sizeof(uint64_t) + 3 * sizeof(int32_t))
+						chunk = sizeof(uint64_t) + 3 * sizeof(int32_t);
+					event_t event = {.type=EVENT_TERMINAL_OUTPUT, .timestamp=0, .x=0, .y=0,
+						.key=0, .modifiers=chunk};
+					memcpy(&event.timestamp, buffer + written, chunk);
+					uint32_t irq_state = disable_interrupts();
+					bool queued = parent->events.count < PROC_MAX_EVENTS - 1 && fifo_push(&parent->events, &event);
+					restore_interrupts(irq_state);
+					if (queued)
+						written += chunk;
+					else
+					{
+						uart_print_n(buffer + written, chunk);
+						written += chunk;
+					}
+				}
+				return (int)written;
+			}
+		}
 
 		uint32_t written = 0;
 		while (written < count)
@@ -534,7 +598,6 @@ int	sys_random(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 
 int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 {
-	(void)a2;
 	(void)a3;
 
 	if (!path_ptr)
@@ -560,12 +623,46 @@ int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 	}
 	for (int i=0; i<argv_len; i++)
 		resolved_argv[i] = (const char *)resolve_user_ptr((uint32_t)(raw_argv[i]), sizeof(const char *));
+	int *source_fds = 0;
+	if (a2)
+	{
+		source_fds = (int *)resolve_user_ptr(a2, sizeof(int) * 3);
+		if (!source_fds)
+		{
+			kfree(resolved_argv);
+			return 0;
+		}
+		for (int stream = 0; stream < 3; ++stream)
+		{
+			int source = source_fds[stream];
+			if (source >= 0 && (source < 3 || source - 3 >= FS_MAX_FDS || current_process->fds[source - 3].mode == FILE_NOT_CREATED))
+			{
+				kfree(resolved_argv);
+				return 0;
+			}
+		}
+	}
 
+	if (a2)
+		current_process->terminal_exec = 1;
 	t_process *proc = elf_to_proc((char *)elf_path, resolved_argv, argv_len);
+	if (a2)
+		current_process->terminal_exec = 0;
 	if (!proc)
 	{
 		log("\033[31mSYS_EXEC\033[0m: Could not start process  '%s'...\n", LOG_WARNING | LOG_INDENT, elf_path);
 		return 0;
+	}
+	if (a2)
+	{
+		for (int stream = 0; stream < 3; ++stream)
+		{
+			int source = source_fds[stream];
+			if (source < 0)
+				continue;
+			proc->stdio_fds[stream] = current_process->fds[source - 3];
+			proc->stdio_redirected[stream] = 1;
+		}
 	}
 	kfree(resolved_argv);
 	return proc->pid;
@@ -727,6 +824,31 @@ int sys_thread_exit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 	return 2;
 }
 
+int sys_terminal_input(uint32_t pid, uint32_t key, uint32_t a2, uint32_t a3)
+{
+	(void)a2;
+	(void)a3;
+	if (!current_process)
+		return -1;
+	for (t_process *proc = scheduled_processes; proc; proc = proc->next)
+	{
+		if (proc->pid != pid || proc->parent_pid != current_process->pid || proc->state == PROC_ZOMBIE || proc->state == PROC_CRASHED)
+			continue;
+		uint32_t irq_state = disable_interrupts();
+		if (proc->terminal_input_count >= sizeof(proc->terminal_input))
+		{
+			restore_interrupts(irq_state);
+			return -1;
+		}
+		proc->terminal_input[proc->terminal_input_tail] = (uint8_t)key;
+		proc->terminal_input_tail = (proc->terminal_input_tail + 1) % sizeof(proc->terminal_input);
+		proc->terminal_input_count++;
+		restore_interrupts(irq_state);
+		return 0;
+	}
+	return -1;
+}
+
 
 syscall_t	syscall_table[] = {
 	sys_exit,
@@ -754,7 +876,8 @@ syscall_t	syscall_table[] = {
 	sys_thread_join,
 	sys_thread_destroy,
 	sys_thread_kill,
-	sys_thread_exit
+	sys_thread_exit,
+	sys_terminal_input
 };
 
 // TODO: kill, waitpid
@@ -776,8 +899,7 @@ int	syscall_handler(syscall_frame_t *frame)
 		restore_interrupts(cpsr);
 		return 1;
 	}
-	if (frame->r7 == SYSCALL_THREAD_EXIT_INDEX ||
-		(frame->r7 == SYSCALL_THREAD_KILL_INDEX && ret == 2))
+	if (frame->r7 == SYSCALL_THREAD_EXIT_INDEX || (frame->r7 == SYSCALL_THREAD_KILL_INDEX && ret == 2))
 	{
 		restore_interrupts(cpsr);
 		return 2;

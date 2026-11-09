@@ -51,9 +51,9 @@ void	Window::draw_controls(void)
 		current->layout(0, 0, window_width, window_height);
 		if (current->visible)
 		{
-			uint64_t t = time(0);
+			//uint64_t t = time(0);
 			current->draw(display);
-			printf("   drawn %s in %llums\n", current->name.c_str(), (time(0) - t) / 1000);
+			//printf("   drawn %s in %llums\n", current->name.c_str(), (time(0) - t) / 1000);
 		}
 		current = current->next;
 	}
@@ -105,6 +105,29 @@ static Control	*find_key_control(Control *control, bool keypress)
 
 bool Window::dispatch_event(event_t *event)
 {
+	if (event && !EVENT_IS_KEYBOARD(event->type) && !EVENT_IS_MOUSE(event->type) && !on_event.empty())
+	{
+		on_event(event, this);
+		if (event->type == EVENT_TERMINAL_OUTPUT)
+		{
+			static uint32_t pending_output_bytes = 0;
+			uint32_t len = event->modifiers;
+			if (len > sizeof(uint64_t) + 3 * sizeof(int32_t))
+				len = sizeof(uint64_t) + 3 * sizeof(int32_t);
+			const char *output = (const char *)&event->timestamp;
+			bool flush = false;
+			for (uint32_t i = 0; i < len; ++i)
+				if (output[i] == '\n' || output[i] == '\r' || output[i] == ' ')
+					flush = true;
+			pending_output_bytes += len;
+			if (pending_output_bytes >= 80)
+				flush = true;
+			if (flush)
+				pending_output_bytes = 0;
+			return flush;
+		}
+		return true;
+	}
 	if (event && EVENT_IS_KEYBOARD(event->type))
 	{
 		if (event->type == EVENT_KEYPRESS && !this->on_keypress.empty())

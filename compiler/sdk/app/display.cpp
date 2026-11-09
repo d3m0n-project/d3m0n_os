@@ -108,7 +108,6 @@ void	Display::draw_hline(int x, int y, int w, uint32_t color)
 	uint32_t *p = framebuffer + y * bpp + x;
 	uint64_t pair = ((uint64_t)color << 32) | color;
 	uint32_t *end = p + w;
-	/* 64-bit stores need 8-byte alignment on ARMv6 (strd faults otherwise) */
 	while (p < end && ((uintptr_t)p & 7))
 		*p++ = color;
 	for (; p + 1 < end; p += 2)
@@ -125,15 +124,13 @@ void	Display::draw_rect(int x, int y, int w, int h, uint32_t color)
 	uint32_t *framebuffer = (uint32_t *)this->fb;
 	uint32_t *row = framebuffer + y * bpp + x;
 	uint64_t pair = ((uint64_t)color << 32) | color;
-	int step = bpp - w;   /* remaining pixels to skip to reach next row */
+	int step = bpp - w;
 	for (int j = 0; j < h; j++)
 	{
 		uint32_t *p = row;
 		uint32_t *end = p + w;
-		/* 64-bit stores need 8-byte alignment on ARMv6 (strd faults otherwise) */
 		while (p < end && ((uintptr_t)p & 7))
 			*p++ = color;
-		/* write 2 pixels per 64-bit store */
 		for (; p + 1 < end; p += 2)
 			*(volatile uint64_t *)(uintptr_t)p = pair;
 		while (p < end)
@@ -299,54 +296,209 @@ void	Display::draw_ellipse(int cx, int cy, int rx, int ry, uint32_t color, int f
 	}
 }
 
+
 typedef struct s_font_context
 {
-	Display		*display;
+	Display	 *display;
 	uint32_t	color;
 } t_font_context;
 
-static void	font_pixel(void *context, int x, int y, uint8_t coverage)
+
+#define GLYPH_CACHE_SIZE 128
+
+typedef struct s_glyph_pixel
 {
-	t_font_context *font_context = (t_font_context *)context;
-	uint32_t	bg = font_context->display->get_pixel(x, y);
-	uint32_t	fg = font_context->color;
+	int32_t	 		x;
+	int32_t	 		y;
+	uint8_t	 		coverage;
+} t_glyph_pixel;
+
+typedef struct s_glyph_entry
+{
+	const t_font	 *font;
+	uint16_t		 glyph;
+	int			  	size;
+	t_glyph_pixel	*pixels;
+	uint32_t		 count;
+	uint32_t		 capacity;
+	uint8_t		 	 valid;
+} t_glyph_entry;
+
+typedef struct s_glyph_capture
+{
+	t_glyph_entry   *entry;
+	int				 origin_x;
+	int				 origin_y;
+	int				 failed;
+} t_glyph_capture;
+
+static t_glyph_entry g_glyph_cache[GLYPH_CACHE_SIZE] = {};
+static uint32_t g_glyph_cache_next = 0;
 
 
-	uint32_t r = (((fg >> 16) & 0xff) * coverage + ((bg >> 16) & 0xff) * (255 - coverage)) / 255;
-	uint32_t g = (((fg >> 8) & 0xff) * coverage + ((bg >> 8) & 0xff) * (255 - coverage)) / 255;
-	uint32_t b = ((fg & 0xff) * coverage + (bg & 0xff) * (255 - coverage)) / 255;
-
-	uint32_t dst_color = 0xFF000000 | (r << 16) | (g << 8) | b;
-
-	
-	font_context->display->put_pixel(x, y, dst_color);
+static inline uint32_t blend_channel(uint32_t fg, uint32_t bg, uint32_t a, uint32_t ia)
+{
+	uint32_t v = fg * a + bg * ia;
+	return (v + 1 + (v >> 8)) >> 8;
 }
 
-static uint16_t glyph_cache[255] = {0};
-void	Display::draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font *font)
+
+static inline void blend_font_pixel(Display *display, uint32_t fg, int x, int y, uint8_t coverage)
 {
-	t_font_context	font_context;
-	int				cursor_x;
-	int				cursor_y;
-	int				line_height;
-	int				baseline;
-
-	if (IS_TRANSPARENT(color))
+	if (!coverage)
 		return;
 
-	if (!text)
+	if (x < 0 || y < 0 || x >= display->w || y >= display->h)
 		return;
-	
+
+	volatile uint32_t *fb = (volatile uint32_t *)display->fb;
+
+	uint32_t index = (uint32_t)y * (display->pitch / 4) + (uint32_t)x;
+	uint32_t bg = fb[index];
+
+	uint32_t a = coverage;
+	uint32_t ia = 255 - a;
+
+	uint32_t r = blend_channel((fg >> 16) & 255, (bg >> 16) & 255, a, ia);
+	uint32_t g = blend_channel((fg >> 8) & 255, (bg >> 8) & 255, a, ia);
+	uint32_t b = blend_channel(fg & 255, bg & 255, a, ia);
+	fb[index] = 0xFF000000 | (r << 16) | (g << 8) | b;
+}
+
+
+static void font_pixel(void *context, int x, int y, uint8_t coverage)
+{
+	t_font_context *fc = (t_font_context *)context;
+	blend_font_pixel(fc->display, fc->color, x, y, coverage);
+}
+
+
+static t_glyph_entry *find_cached_glyph(const t_font *font, uint16_t glyph, int size)
+{
+	for (uint32_t i = 0; i < GLYPH_CACHE_SIZE; i++)
+	{
+		t_glyph_entry *e = &g_glyph_cache[i];
+
+		if (e->valid && e->font == font && e->glyph == glyph && e->size == size)
+			return e;
+	}
+	return NULL;
+}
+
+static void capture_glyph_pixel(void *context, int x, int y, uint8_t coverage)
+{
+	t_glyph_capture *capture = (t_glyph_capture *)context;
+	if (!coverage || capture->failed)
+		return;
+
+	t_glyph_entry *e = capture->entry;
+	if (e->count >= e->capacity)
+	{
+		uint32_t new_capacity = e->capacity ? e->capacity * 2 : 128;
+		if (new_capacity < e->capacity || new_capacity > SIZE_MAX / sizeof(t_glyph_pixel))
+		{
+			capture->failed = 1;
+			return;
+		}
+
+		t_glyph_pixel *new_pixels = (t_glyph_pixel *)realloc(e->pixels, (size_t)new_capacity * sizeof(t_glyph_pixel));
+		if (!new_pixels)
+		{
+			capture->failed = 1;
+			return;
+		}
+
+		e->pixels = new_pixels;
+		e->capacity = new_capacity;
+	}
+
+	t_glyph_pixel *p = &e->pixels[e->count++];
+	p->x = x - capture->origin_x;
+	p->y = y - capture->origin_y;
+	p->coverage = coverage;
+}
+
+void clear_glyph_cache(void)
+{
+	for (uint32_t i = 0; i < GLYPH_CACHE_SIZE; i++)
+	{
+		free(g_glyph_cache[i].pixels);
+		memset(&g_glyph_cache[i], 0, sizeof(g_glyph_cache[i]));
+	}
+	g_glyph_cache_next = 0;
+}
+
+static t_glyph_entry *allocate_glyph_entry(void)
+{
+	t_glyph_entry *e = &g_glyph_cache[g_glyph_cache_next];
+	g_glyph_cache_next++;
+
+	if (g_glyph_cache_next >= GLYPH_CACHE_SIZE)
+		g_glyph_cache_next = 0;
+
+	free(e->pixels);
+	memset(e, 0, sizeof(*e));
+	return e;
+}
+
+
+static void draw_cached_glyph(t_font_context *fc, const t_font *font, uint16_t glyph, int x, int baseline, int size)
+{
+	t_glyph_entry *e = find_cached_glyph(font, glyph, size);
+	if (!e)
+	{
+		e = allocate_glyph_entry();
+
+		e->font = font;
+		e->glyph = glyph;
+		e->size = size;
+
+		t_glyph_capture capture;
+
+		capture.entry = e;
+		capture.origin_x = x;
+		capture.origin_y = baseline;
+		capture.failed = 0;
+
+		ttf_render_glyph(font, glyph, x, baseline, size, size, capture_glyph_pixel, &capture);
+		if (capture.failed)
+		{
+			free(e->pixels);
+			memset(e, 0, sizeof(*e));
+			ttf_render_glyph(font, glyph, x, baseline, size, size, font_pixel, fc);
+			return;
+		}
+
+		e->valid = 1;
+	}
+
+
+	uint32_t fg = fc->color;
+	for (uint32_t i = 0; i < e->count; i++)
+	{
+		const t_glyph_pixel *p = &e->pixels[i];
+		blend_font_pixel(fc->display, fg, x + p->x, baseline + p->y, p->coverage);
+	}
+}
+
+void Display::draw_text(int x, int y, int w, int h, const char *text, uint32_t color, t_font *font)
+{
+	t_font_context font_context;
+
+	if (IS_TRANSPARENT(color) || !text)
+		return;
+
 	if (!font)
 		font = &main_font;
-	
+
 	if (!font || !font->data || !font->units_per_em || h <= 0)
 		return;
 
-	cursor_x = x;
-	cursor_y = y;
-	line_height = h;
-	baseline = y + ((int)font->ascender * h) / (font->ascender - font->descender);
+	int cursor_x = x;
+	int cursor_y = y;
+	int line_height = h;
+
+	int baseline = y + ((int)font->ascender * h) / (font->ascender - font->descender);
 	(void)w;
 
 	font_context.display = this;
@@ -358,70 +510,67 @@ void	Display::draw_text(int x, int y, int w, int h, const char *text, uint32_t c
 			cursor_x = x;
 			cursor_y += line_height;
 			baseline = cursor_y + ((int)font->ascender * h) / (font->ascender - font->descender);
-			continue ;
+
+			continue;
 		}
 
-		uint16_t glyph;
-		if (glyph_cache[(uint8_t)text[i]] == 0)
-			glyph_cache[(uint8_t)text[i]] = ttf_glyph_for_codepoint(font, (uint8_t)text[i]);
-		
-		glyph = glyph_cache[(uint8_t)text[i]];
-		
-		//printf("char='%c' cp=%u glyph=%u advance=%d\n",
-		//	text[i],
-		//	(uint8_t)text[i],
-		//	glyph,
-		//	ttf_glyph_advance(font, glyph));
-		ttf_render_glyph(font, glyph, cursor_x, baseline, h, h, font_pixel, &font_context);
+		uint8_t codepoint = (uint8_t)text[i];
+		uint16_t glyph = ttf_glyph_for_codepoint(font, codepoint);
+		draw_cached_glyph(&font_context, font, glyph, cursor_x, baseline, h);
 		cursor_x += (ttf_glyph_advance(font, glyph) * h) / font->units_per_em;
 	}
 }
 
-static int	text_width_for_size(const char *text, int font_size, t_font *font)
-{
-	int			line_width;
-	int			max_width;
-	uint16_t	glyph;
 
+static int text_width_for_size(const char *text, int font_size, t_font *font)
+{
 	if (!text || !font || !font->data || !font->units_per_em || font_size <= 0)
 		return 0;
-	line_width = 0;
-	max_width = 0;
+
+	int line_width = 0;
+	int max_width = 0;
+
 	for (uint32_t i = 0; text[i]; i++)
 	{
 		if (text[i] == '\n')
 		{
 			if (line_width > max_width)
 				max_width = line_width;
+
 			line_width = 0;
 			continue;
 		}
-		glyph = ttf_glyph_for_codepoint(font, (uint8_t)text[i]);
+
+		uint16_t glyph = ttf_glyph_for_codepoint(font, (uint8_t)text[i]);
 		line_width += (ttf_glyph_advance(font, glyph) * font_size) / font->units_per_em;
 	}
+
 	if (line_width > max_width)
 		max_width = line_width;
+
 	return max_width;
 }
 
-int	Display::text_width(int font_size, const char *text, t_font *font)
+int Display::text_width(int font_size, const char *text, t_font *font)
 {
 	if (!font)
 		font = &main_font;
+
 	return text_width_for_size(text, font_size, font);
 }
 
+
 void	Display::draw_text_at(int x, int y, int font_size, const char *text, uint32_t color, t_font *font)
 {
-	int	width;
-
 	if (IS_TRANSPARENT(color))
 		return;
 
 	if (!font)
 		font = &main_font;
-	width = text_width_for_size(text, font_size, font);
+
+	int width = text_width_for_size(text, font_size, font);
 	if (width <= 0)
 		return;
+
 	draw_text(x, y, width, font_size, text, color, font);
 }

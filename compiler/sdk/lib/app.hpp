@@ -102,6 +102,8 @@ public:
 
 	std::function<void(event_t *, Window *)>	on_keypress;
 	std::function<void(event_t *, Window *)>	on_keyrelease;
+	std::function<void(event_t *, Window *)>	on_event;
+	std::function<void(Window *)>	on_idle;
 
 	Window(const char *title, const Size &width, const Size &height);
 	~Window();
@@ -154,6 +156,8 @@ public:
 			fprintf(stderr, "Could not start event thread\n");
 			while (1)
 			{
+				if (!main_window.on_idle.empty())
+					main_window.on_idle(&main_window);
 				event_t event = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0, .key=0, .modifiers=0};
 				if (evtpop(&event) && main_window.dispatch_event(&event))
 					main_window.draw();
@@ -161,6 +165,8 @@ public:
 		}
 		while (1)
 		{
+			if (!main_window.on_idle.empty())
+				main_window.on_idle(&main_window);
 			if (event_pending)
 			{
 				__asm__ volatile("" ::: "memory");

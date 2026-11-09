@@ -4,10 +4,10 @@
 #include "stdlib.h"
 
 APP_INFO(
-	"d3m0n test app",
+	"d3m0n terminal",
 	1.0,
 	"4re5 group",
-	"simple test app",
+	"Basic terminal",
 	"icon.ico"
 )
 
@@ -15,7 +15,7 @@ APP_INFO(
 
 extern "C" int	main(void)
 {
-	printf("Test app started\n");
+	printf("Terminal started\n");
 	try
 	{
 		MainWindow	window;
@@ -27,6 +27,6 @@ extern "C" int	main(void)
 		fprintf(stderr, "       >>> \033[31;1m%s\033[0m\n", e.what());
 	}
 
-	printf("Test App Finished...\n");
+	printf("Terminal Finished...\n");
 	return 0;
 }

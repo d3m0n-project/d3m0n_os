@@ -16,6 +16,8 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *f)
 	while (done < total)
 	{
 		ret = read(f->fd, (char *)ptr + done, total - done);
+		if (f->fd == 0 && ret == -2)
+			continue;
 		if (ret < 0)
 		{
 			f->error = 1;

@@ -74,6 +74,14 @@ typedef struct s_process
 	event_fifo_t	events;
 
 	fs_fd			fds[FS_MAX_FDS];
+	fs_fd			stdio_fds[3];
+	uint8_t		stdio_redirected[3];
+	uint32_t	parent_pid;
+	uint8_t		terminal_exec;
+	uint8_t	terminal_input[256];
+	uint32_t	terminal_input_head;
+	uint32_t	terminal_input_tail;
+	volatile uint32_t terminal_input_count;
 
 	uint32_t		thread_owner_pid;
 	uint8_t			is_thread;

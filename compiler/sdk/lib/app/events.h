@@ -4,6 +4,8 @@
 #include "types.h"
 
 #define PROC_MAX_EVENTS	128
+#define APP_KEY_ARROW_UP	0x100
+#define APP_KEY_ARROW_DOWN	0x101
 
 typedef enum: uint32_t
 {
@@ -14,9 +16,11 @@ typedef enum: uint32_t
 	EVENT_MOUSECLICK4=4,
 	EVENT_KEYPRESS=5,
 	EVENT_KEYRELEASE=6,
+	EVENT_TERMINAL_OUTPUT=7,
+	EVENT_TERMINAL_EXIT=8,
 }	e_event_type;
 
-#define EVENT_IS_MOUSE(x)	(x >= EVENT_MOUSECLICK1 && x <= EVENT_MOUSECLICK4)
+#define EVENT_IS_MOUSE(x)		(x >= EVENT_MOUSECLICK1 && x <= EVENT_MOUSECLICK4)
 #define EVENT_IS_KEYBOARD(x)	((x) == EVENT_KEYPRESS || (x) == EVENT_KEYRELEASE)
 
 typedef struct {

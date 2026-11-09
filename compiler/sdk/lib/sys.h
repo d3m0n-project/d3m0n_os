@@ -68,6 +68,7 @@ extern "C" {
 		SYS_THREAD_DESTROY,
 		SYS_THREAD_KILL,
 		SYS_THREAD_EXIT,
+		SYS_TERMINAL_INPUT,
 
 
 		TMP_TOTAL_SYSCALL_COUNT // do not remove me
@@ -90,7 +91,13 @@ extern "C" {
 
 	static inline int	read(int fd, char *buffer, uint32_t count)
 	{
-		return (int)syscall(SYS_READ, (uint32_t)fd, (uint32_t)buffer, count, (uint32_t)0);
+		int ret;
+		if (count == 0)
+			return 0;
+		do
+			ret = (int)syscall(SYS_READ, (uint32_t)fd, (uint32_t)buffer, count, (uint32_t)0);
+		while (fd == 0 && ret == -2);
+		return ret;
 	}
 
 	static inline int	write(int fd, const char *buffer, uint32_t count)
@@ -178,6 +185,16 @@ extern "C" {
 	static inline uint32_t	exec(const char *path, const char **argv)
 	{
 		return syscall(SYS_EXEC, (uint32_t)path, (uint32_t)argv, (uint32_t)0, (uint32_t)0);
+	}
+
+	static inline uint32_t	exec_stdio(const char *path, const char **argv, const int stdio_fds[3])
+	{
+		return syscall(SYS_EXEC, (uint32_t)path, (uint32_t)argv, (uint32_t)stdio_fds, (uint32_t)0);
+	}
+
+	static inline int terminal_input(uint32_t pid, int key)
+	{
+		return (int)syscall(SYS_TERMINAL_INPUT, pid, (uint32_t)key, 0, 0);
 	}
 
 	static inline uint32_t	kill(uint32_t pid, int code)
