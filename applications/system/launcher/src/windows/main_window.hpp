@@ -2,7 +2,7 @@
 
 #include "app.hpp"
 #include "runtime/vector.hpp"
-#include "../app_icon.hpp"
+
 
 #define ICONS_PER_ROW		4
 #define ICONS_PADDING		12
@@ -13,6 +13,14 @@
 #define ICON_IMAGE_SIZE		48
 
 #define MAX_DESKTOP_APPS	128
+
+#define MAX_APP_NAME_WIDTH	(int)((ICON_WIDTH + ICONS_PADDING) / ICON_TEXT_SIZE)	
+
+
+
+#include "../app_icon.hpp"
+
+
 
 class MainWindow : public Window
 {
@@ -106,6 +114,7 @@ private:
 		text->font_size = ICON_TEXT_SIZE;
 		text->text_align = ANCHOR_CENTER_X;
 		text->content = display_name[0] ? display_name : app_name;
+		printf("%s vs %s\n", display_name, app_name);
 
 		touch_area->add_control(icon);
 		touch_area->add_control(text);

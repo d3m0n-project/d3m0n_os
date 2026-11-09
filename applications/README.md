@@ -2,6 +2,7 @@
 
 ## TODO: Apps
 - [x] launcher
+- [x] terminal
 - [ ] calculator
 - [ ] gallery
 - [ ] camera
@@ -42,6 +43,7 @@
     - <img width="15" src="/rootfs/themes/default_dark/icons/wifi.png"> [wifi](./modules/wifi)
     - <img width="15" src="/rootfs/themes/default_dark/icons/radio.png"> [radio](./modules/radio)
   - testing (for debug purposes)
+    -  <img width="15" src=""> [Color test](./testing/terminal)
     -  <img width="15" src=""> [Color test](./testing/color)
     -  <img width="15" src=""> [HelloWorld](./testing/hello_world)
 - keyboard

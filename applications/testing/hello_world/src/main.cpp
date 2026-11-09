@@ -4,7 +4,7 @@
 #include "stdlib.h"
 
 APP_INFO(
-	"Hello World",
+	"HelloWorld",
 	1.0,
 	"4re5 group",
 	"d3m0n test app",

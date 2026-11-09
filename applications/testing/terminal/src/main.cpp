@@ -4,7 +4,7 @@
 #include "stdlib.h"
 
 APP_INFO(
-	"d3m0n terminal",
+	"Terminal",
 	1.0,
 	"4re5 group",
 	"Basic terminal",

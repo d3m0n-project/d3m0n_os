@@ -13,14 +13,11 @@ static uint16_t app_icon_read_u16(const unsigned char *data)
 	return (uint16_t)data[0] | ((uint16_t)data[1] << 8);
 }
 
-static bool app_icon_section(const unsigned char *elf, size_t file_size, uint32_t section_offset,
-	uint16_t section_size, uint16_t section_count, uint32_t string_offset, uint32_t string_size,
-	const char *wanted, uint32_t *out_offset, uint32_t *out_size, uint32_t *out_addr)
+static bool	app_icon_section(const unsigned char *elf, size_t file_size, uint32_t section_offset, uint16_t section_size, uint16_t section_count, uint32_t string_offset, uint32_t string_size, const char *wanted, uint32_t *out_offset, uint32_t *out_size, uint32_t *out_addr)
 {
-	if (!section_size || section_size < 40 || section_offset > file_size ||
-		(uint64_t)section_size * section_count > file_size - section_offset ||
-		string_offset > file_size || string_size > file_size - string_offset)
+	if (!section_size || section_size < 40 || section_offset > file_size || (uint64_t)section_size * section_count > file_size - section_offset || string_offset > file_size || string_size > file_size - string_offset)
 		return false;
+	
 	const char *strings = (const char *)elf + string_offset;
 	for (uint16_t i = 0; i < section_count; ++i)
 	{
@@ -30,10 +27,12 @@ static bool app_icon_section(const unsigned char *elf, size_t file_size, uint32_
 		uint32_t size = app_icon_read_u32(section + 20);
 		if (name_offset >= string_size || offset > file_size || size > file_size - offset)
 			continue;
+		
 		const char *name = strings + name_offset;
 		size_t remaining = string_size - name_offset;
 		if (!memchr(name, '\0', remaining) || strcmp(name, wanted))
 			continue;
+		
 		*out_offset = offset;
 		*out_size = size;
 		*out_addr = app_icon_read_u32(section + 12);
@@ -42,7 +41,7 @@ static bool app_icon_section(const unsigned char *elf, size_t file_size, uint32_
 	return false;
 }
 
-static bool load_app_icon(const char *path, Image *image, char *app_name, size_t app_name_size)
+static bool	load_app_icon(const char *path, Image *image, char *app_name, size_t app_name_size)
 {
 	int fd = open(path, O_READ);
 	if (fd < 0)
@@ -98,10 +97,11 @@ static bool load_app_icon(const char *path, Image *image, char *app_name, size_t
 					uint32_t size = app_icon_read_u32(section + 20);
 					if (name_address < address || name_address - address >= size || offset > (uint32_t)length || size > (uint32_t)length - offset)
 						continue;
+					
 					const char *name = (const char *)elf + offset + (name_address - address);
 					size_t available = size - (name_address - address);
 					if (memchr(name, '\0', available))
-						strlcpy(app_name, name, app_name_size);
+						strlcpy(app_name, name, min(MAX_APP_NAME_WIDTH + 1, app_name_size));
 					break;
 				}
 				uint32_t icon_address = (uint32_t)(uintptr_t)metadata.icon;

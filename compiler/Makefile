@@ -111,7 +111,8 @@ else
 	@ln -s "$(INSTALL_DIR)/$(OUT)" $(HOME)/.local/bin/d3c   2>/dev/null || true
 endif
 
-	@cp -r template/ $(INSTALL_DIR)/template
+	@rm -rf "$(INSTALL_DIR)/template"
+	@cp -r ./template/ "$(INSTALL_DIR)/template"
 
 	@printf "\n"
 	@printf "=============================================================\n"

@@ -1,3 +1,3 @@
-# d3m0n color test app
+# d3m0n simple app
 
-simple app to test script `log()` and layout colors.
+simple d3m0n app template
