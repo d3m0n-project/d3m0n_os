@@ -92,6 +92,7 @@ extern "C" {
 	t_list			*lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *));
 
 	void			cleanup_splitted(char **splitted);
+	int				path_join(char *out, size_t out_size, const char *base, const char *name);
 
 
 	// system commands

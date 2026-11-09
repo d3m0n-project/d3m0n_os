@@ -596,10 +596,9 @@ int	sys_random(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 	return random_u32();
 }
 
-int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
+int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t source_fds_ptr, uint32_t a3)
 {
 	(void)a3;
-
 	if (!path_ptr)
 		return 0;
 
@@ -623,10 +622,11 @@ int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 	}
 	for (int i=0; i<argv_len; i++)
 		resolved_argv[i] = (const char *)resolve_user_ptr((uint32_t)(raw_argv[i]), sizeof(const char *));
+	
 	int *source_fds = 0;
-	if (a2)
+	if (source_fds_ptr)
 	{
-		source_fds = (int *)resolve_user_ptr(a2, sizeof(int) * 3);
+		source_fds = (int *)resolve_user_ptr(source_fds_ptr, sizeof(int) * 3);
 		if (!source_fds)
 		{
 			kfree(resolved_argv);
@@ -643,23 +643,27 @@ int	sys_exec(uint32_t path_ptr, uint32_t argv_ptr, uint32_t a2, uint32_t a3)
 		}
 	}
 
-	if (a2)
+	if (source_fds_ptr)
 		current_process->terminal_exec = 1;
+	
 	t_process *proc = elf_to_proc((char *)elf_path, resolved_argv, argv_len);
-	if (a2)
+	if (source_fds_ptr)
 		current_process->terminal_exec = 0;
+	
 	if (!proc)
 	{
 		log("\033[31mSYS_EXEC\033[0m: Could not start process  '%s'...\n", LOG_WARNING | LOG_INDENT, elf_path);
 		return 0;
 	}
-	if (a2)
+
+	if (source_fds_ptr)
 	{
 		for (int stream = 0; stream < 3; ++stream)
 		{
 			int source = source_fds[stream];
 			if (source < 0)
 				continue;
+			
 			proc->stdio_fds[stream] = current_process->fds[source - 3];
 			proc->stdio_redirected[stream] = 1;
 		}
