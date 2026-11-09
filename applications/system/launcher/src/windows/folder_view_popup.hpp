@@ -77,6 +77,8 @@ private:
         app->icon.width = Size(ICON_SIZE);
         app->icon.height = Size(ICON_SIZE);
         app->icon.source = "/themes/default_dark/icons/modules.png";
+        char display_name[128] = {0};
+        load_app_icon(path, &app->icon, display_name, sizeof(display_name));
 
         // application name
         app->name.location = Point(0, ICON_SIZE + 2);
@@ -84,7 +86,7 @@ private:
         app->name.height = Size(18);
         app->name.font_size = 7;
         app->name.text_align = ANCHOR_CENTER_X;
-        app->name.content = app_name;
+        app->name.content = display_name[0] ? display_name : app_name;
 
         app->touch_area.on_click = [this](event_t *, Control *target)
         {
