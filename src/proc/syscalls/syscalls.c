@@ -11,6 +11,10 @@
 #include "time.h"
 #include "random.h"
 
+#include "../../../compiler/sdk/lib/icons.h"
+#include "image/icons.h"
+#include "../../../compiler/sdk/lib/config_query.h"
+
 #define SYS_PRINT_MAX_LEN	512
 #define SYSCALL_EXIT_INDEX	0
 #define SYSCALL_THREAD_KILL_INDEX	24
@@ -125,6 +129,26 @@ static void	*resolve_user_ptr(uint32_t user_ptr, uint32_t len)
 static const char *resolve_user_string_ptr(uint32_t user_ptr)
 {
 	return (const char *)resolve_user_ptr(user_ptr, 1);
+}
+
+static int copy_user_string(uint32_t user_ptr, char *output, uint32_t capacity)
+{
+	if (!user_ptr || !output || capacity < 2)
+		return -1;
+	for (uint32_t i = 0; i < capacity - 1; ++i)
+	{
+		uint64_t address = (uint64_t)user_ptr + i;
+		if (address > UINT32_MAX)
+			return -1;
+		const char *source = resolve_user_string_ptr((uint32_t)address);
+		if (!source)
+			return -1;
+		output[i] = *source;
+		if (!output[i])
+			return 0;
+	}
+	output[capacity - 1] = '\0';
+	return -1;
 }
 
 int	sys_exit(uint32_t mode, uint32_t a1, uint32_t a2, uint32_t a3)
@@ -760,6 +784,7 @@ int	sys_evtpop(uint32_t event_ptr, uint32_t a1, uint32_t a2, uint32_t a3)
 	event_t	*event = (event_t *)resolve_user_ptr(event_ptr, sizeof(event_t));
 	if (!event)
 		return -1;
+	
 	*event = (event_t){0};
 	event_owner = thread_memory_owner(current_process);
 	return fifo_pop(&event_owner->events, event);
@@ -770,6 +795,7 @@ static int	thread_owned_by_current(t_process *thread)
 	uint32_t owner_pid;
 	if (!thread || !current_process || !thread->is_thread)
 		return 0;
+	
 	owner_pid = current_process->is_thread ? current_process->thread_owner_pid : current_process->pid;
 	return thread->thread_owner_pid == owner_pid;
 }
@@ -867,6 +893,68 @@ int sys_terminal_input(uint32_t pid, uint32_t key, uint32_t a2, uint32_t a3)
 	return -1;
 }
 
+int	sys_query_icon(uint32_t icon_name_ptr, uint32_t output_ptr, uint32_t a2, uint32_t a3)
+{
+	(void)a2;
+	(void)a3;
+	char name[128];
+	
+	t_icon *out = (t_icon *)resolve_user_ptr(output_ptr, sizeof(t_icon));
+	if (!out || copy_user_string(icon_name_ptr, name, sizeof(name)))
+		return -1;
+	
+	e_icon_format format = ICON_FORMAT_UNKNOWN;
+	t_svg *icon = (t_svg *)get_icon(name, get_config(), &format);
+	if (!icon || format != ICON_FORMAT_SVG || !icon->data || !icon->size || icon->size > UINT32_MAX)
+		return -1;
+	
+	size_t capacity = out->size;
+	uint32_t data_ptr = (uint32_t)(uintptr_t)out->data;
+	out->size = icon->size;
+	if (!data_ptr || capacity < icon->size)
+		return -2;
+	
+	void *destination = resolve_user_ptr(data_ptr, (uint32_t)icon->size);
+	if (!destination)
+		return -1;
+	
+	memcpy(destination, icon->data, (uint32_t)icon->size);
+	return 0;
+}
+
+int sys_query_config(uint32_t key_ptr, uint32_t output_ptr, uint32_t a2, uint32_t a3)
+{
+	(void)a2;
+	(void)a3;
+	char key[CONFIG_QUERY_STRING_SIZE];
+
+	t_config_value *output = (t_config_value *)resolve_user_ptr(output_ptr, sizeof(t_config_value));
+	if (!output || copy_user_string(key_ptr, key, sizeof(key)))
+		return -1;
+	
+	t_conf *config = get_config();
+	for (int i = 0; i < CONF_FIELD_COUNT; ++i)
+	{
+		if (strcmp(key, conf_offsets[i].key))
+			continue;
+		
+		t_config_value value = {0};
+		if (conf_offsets[i].type == TYPE_STRING)
+		{
+			value.type = CONFIG_QUERY_STRING;
+			strlcpy(value.value.string, (char *)config + conf_offsets[i].offset, sizeof(value.value.string));
+		}
+		else
+		{
+			value.type = CONFIG_QUERY_INTEGER;
+			value.value.integer = *(int *)((char *)config + conf_offsets[i].offset);
+		}
+		memcpy(output, &value, sizeof(value));
+		return 0;
+	}
+	return -1;
+}
+
 
 syscall_t	syscall_table[] = {
 	sys_exit,
@@ -895,10 +983,10 @@ syscall_t	syscall_table[] = {
 	sys_thread_destroy,
 	sys_thread_kill,
 	sys_thread_exit,
-	sys_terminal_input
+	sys_terminal_input,
+	sys_query_icon,
+	sys_query_config
 };
-
-// TODO: kill, waitpid
 
 int	syscall_dispatch(uint32_t number, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {

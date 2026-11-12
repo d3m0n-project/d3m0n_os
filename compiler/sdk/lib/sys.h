@@ -3,6 +3,9 @@
 
 #include "types.h"
 #include "app/events.h"
+#include "icons.h"
+#include "config_query.h"
+#include "memory.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,6 +72,8 @@ extern "C" {
 		SYS_THREAD_KILL,
 		SYS_THREAD_EXIT,
 		SYS_TERMINAL_INPUT,
+		SYS_QUERY_ICON,
+		SYS_QUERY_CONFIG,
 
 
 		TMP_TOTAL_SYSCALL_COUNT // do not remove me
@@ -256,6 +261,46 @@ extern "C" {
 	{
 		return thread?(int)syscall(SYS_THREAD_KILL, thread, 0, 0, 0):-1;
 	}
+
+	static inline int query_icon(const char *name, t_icon *out)
+	{
+		if (!name || !out)
+			return -1;
+		// Initialize out to {0} for automatic allocation, or provide a writable
+		// buffer in out->data with its capacity in out->size. The allocated
+		// buffer belongs to the caller and must be freed with free().
+		
+		if (out->data && out->size)
+			return (int)syscall(SYS_QUERY_ICON, (uint32_t)(uintptr_t)name, (uint32_t)(uintptr_t)out, 0, 0);
+		
+		out->data = 0;
+		out->size = 0;
+		int result = (int)syscall(SYS_QUERY_ICON, (uint32_t)(uintptr_t)name, (uint32_t)(uintptr_t)out, 0, 0);
+		if (result != -2 || !out->size)
+			return result;
+		
+		void *data = malloc(out->size);
+		if (!data)
+			return -1;
+		
+		size_t capacity = out->size;
+		out->data = data;
+		out->size = capacity;
+		result = (int)syscall(SYS_QUERY_ICON, (uint32_t)(uintptr_t)name, (uint32_t)(uintptr_t)out, 0, 0);
+		if (result)
+		{
+			free(data);
+			out->data = 0;
+			out->size = 0;
+		}
+		return result;
+	}
+
+	static inline int query_config(const char *key, t_config_value *out)
+	{
+		return (int)syscall(SYS_QUERY_CONFIG, (uint32_t)key, (uint32_t)out, 0, 0);
+	}
+
 #ifdef __cplusplus
 }
 #endif

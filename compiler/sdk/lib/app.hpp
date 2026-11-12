@@ -198,5 +198,6 @@ public:
 #include "app/controls/CheckBox.hpp"
 #include "app/controls/Button.hpp"
 #include "app/controls/WebView.hpp"
+#include "app/controls/InlineSvgIcon.hpp"
 
 #endif
