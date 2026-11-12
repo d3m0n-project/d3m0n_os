@@ -13,6 +13,7 @@ public:
 		rect1.bg_color = Color(0xFFFF0000);
 		rect1.width = Size(200);
 		rect1.height = Size(50);
+		rect1.on_click = [this](event_t *e, Control *c) { (void)e, (void)c, exit(0); };
 
 		text1.location = Point(10, 10);
 		text1.color = Color(0xFFFFFFFF);

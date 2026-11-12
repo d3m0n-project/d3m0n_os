@@ -1,2 +1,3 @@
-# d3m0n default contacts app
-simple app store and list contacts
+# Contacts
+
+Displays the sample contacts from the legacy app in a dark, scroll-list style layout.

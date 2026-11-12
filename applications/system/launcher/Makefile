@@ -46,6 +46,8 @@ $(OUT): $(O_FILES)
 
 
 
+$(OBJ_DIR)/main.o: icon.ico
+
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p "$(OBJ_DIR)"
 	@printf "  $(CYAN)CXX$(RESET)   %s\n" "$<" >&2

@@ -102,9 +102,12 @@ private:
 		icon->width = Size(ICON_IMAGE_SIZE);
 		icon->height = Size(ICON_IMAGE_SIZE);
 
-		icon->source = "/themes/default_dark/icons/modules.png";
         char display_name[128] = {0};
-        load_app_icon(path, icon, display_name, sizeof(display_name));
+        if (!load_app_icon(path, icon, display_name, sizeof(display_name)))
+		{
+			icon->source = "/themes/default.png";
+			fprintf(stderr, "Failed to fetch app icon for %s\n", display_name);
+		}
 
 		// app name
 		text->location = Point(0, ICON_IMAGE_SIZE + 3);

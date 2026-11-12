@@ -1,2 +1,3 @@
-# d3m0n default message app
-simple app to send sms and mms
+# Messages
+
+Displays the sample conversation previews from the legacy app.

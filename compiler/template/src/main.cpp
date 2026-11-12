@@ -15,7 +15,6 @@ APP_INFO(
 
 extern "C" int	main(void)
 {
-	printf("MySimpleApp started\n");
 	try
 	{
 		MainWindow	window;
@@ -27,6 +26,5 @@ extern "C" int	main(void)
 		fprintf(stderr, "       >>> \033[31;1m%s\033[0m\n", e.what());
 	}
 
-	printf("MySimpleApp Finished...\n");
 	return 0;
 }
