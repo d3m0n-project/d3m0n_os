@@ -525,16 +525,20 @@ t_process	*elf_to_proc(char *elf_path, const char **argv, int argv_len)
 		kfree(section_detail);
 		kfree(file_buf);
 		kfree(image_allocation);
+		proc->image_allocation = 0;
+		process_retire(proc);
 		log("ELF: Could not create process address space '%s'\n", LOG_ERROR, elf_path);
 		return 0;
 	}
 	proc->image_vaddr_base = min_vaddr;
 	proc->image_size = max_vaddr - min_vaddr;
 	proc->image_backing = image;
+	proc->image_allocation = image_allocation;
 	proc->heap_start = (max_vaddr + 7) & ~7U;
 	proc->heap_end = proc->heap_start;
 	restore_interrupts(interrupt_state);
 	kfree(file_buf);
+	kfree(section_detail);
 	return proc;
 }
 

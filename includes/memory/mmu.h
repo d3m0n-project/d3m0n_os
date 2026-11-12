@@ -26,5 +26,6 @@ int				mmu_map_user_range(t_address_space *space, void *address, size_t size, in
 int				mmu_map_kernel_range(t_address_space *space, void *address, size_t size);
 int			mmu_unmap_range(t_address_space *space, void *address, size_t size);
 t_address_space	address_space_create(void *image_ptr, size_t size, uint32_t vaddr_base, t_section_info *);
+void			address_space_destroy(t_address_space *space);
 
 #endif

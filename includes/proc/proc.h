@@ -65,6 +65,7 @@ typedef struct s_process
 	uint32_t		image_vaddr_base;
 	uint32_t		image_size;
 	void			*image_backing;
+	void			*image_allocation;
 	uint32_t		surface_addr;
 	uint32_t		surface_size;
 	uint32_t		surface_snapshot;
@@ -113,6 +114,8 @@ void					scheduler_add(t_process *p);
 t_process				*scheduler_next();
 void					scheduler_remove(t_process *p);
 void					process_exit_current(uint32_t status_code);
+void					process_reap_retired(void);
+void					process_retire(t_process *p);
 void					mmu_switch_current(void);
 
 void					process_list(void);

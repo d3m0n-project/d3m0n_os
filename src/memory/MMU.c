@@ -477,13 +477,21 @@ t_address_space	address_space_create(void *image_ptr, size_t size, uint32_t vadd
 			//	s->name ? s->name : "(null)", vaddr_base + s->start_offset, (uint32_t)(image + s->start_offset), 
 			//	s->size, ap, xn);
 			if (map_range(proc_mmu_table, (uintptr_t)(vaddr_base + s->start_offset), image + s->start_offset, s->size, ap, xn))
+			{
+				t_address_space failed = {.l1 = proc_mmu_table};
+				address_space_destroy(&failed);
 				return (t_address_space){0};
+			}
 		}
 		if (size > USER_HEAP_RESERVED + 8)
 		{
 			size_t image_span = size - USER_HEAP_RESERVED - 8;
 			if (map_range(proc_mmu_table, (uintptr_t)(vaddr_base + image_span), image + image_span, size - image_span, L2_AP_PRIV_RW_USER_RW, 1))
+			{
+				t_address_space failed = {.l1 = proc_mmu_table};
+				address_space_destroy(&failed);
 				return (t_address_space){0};
+			}
 		}
 	}
 	else
@@ -491,8 +499,27 @@ t_address_space	address_space_create(void *image_ptr, size_t size, uint32_t vadd
 		// no allocated sections or no section info available, map the entire image with RW permissions
 		//log("MMU: mapping entire image vaddr=0x%x paddr=0x%x size=0x%x\n", 0, vaddr_base, (uint32_t)image, size);
 		if (map_range(proc_mmu_table, (uintptr_t)vaddr_base, image, size, L2_AP_PRIV_RW_USER_RW, 1))
+		{
+			t_address_space failed = {.l1 = proc_mmu_table};
+			address_space_destroy(&failed);
 			return (t_address_space){0};
+		}
 	}
 
 	return (t_address_space){.l1 = proc_mmu_table};
+}
+
+void address_space_destroy(t_address_space *space)
+{
+	uint32_t *kernel_table = mmu_kernel_table();
+	if (!space || !space->l1)
+		return;
+	for (unsigned i = 0; i < L1_ENTRIES; ++i)
+	{
+		uint32_t descriptor = space->l1[i];
+		if (descriptor != kernel_table[i] && (descriptor & 3u) == COARSE_PAGE_TABLE)
+			free_aligned_table((uint32_t *)(uintptr_t)(descriptor & 0xFFFFFC00u));
+	}
+	free_aligned_table(space->l1);
+	space->l1 = 0;
 }

@@ -132,6 +132,8 @@ int	sys_exit(uint32_t mode, uint32_t a1, uint32_t a2, uint32_t a3)
 	(void)a1;
 	(void)a2;
 	(void)a3;
+	if (current_process && current_process->is_thread)
+		thread_exit_current();
 	process_exit_current(mode);
 	return (int)mode;
 }
@@ -710,7 +712,19 @@ int	sys_kill(uint32_t pid, uint32_t code, uint32_t a2, uint32_t a3)
 			log("Killed '%s' with status code: %i\n", LOG_WARNING, exiting->proc_name, code);
 
 			exiting->state = PROC_ZOMBIE;
+			t_process *thread = scheduled_processes;
+			while (thread)
+			{
+				t_process *following = thread->next;
+				if (thread->is_thread && thread->thread_owner_pid == exiting->pid)
+				{
+					scheduler_remove(thread);
+					process_retire(thread);
+				}
+				thread = following;
+			}
 			scheduler_remove(exiting);
+			process_retire(exiting);
 			
 			return 1;
 		}

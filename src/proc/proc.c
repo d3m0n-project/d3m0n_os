@@ -2,6 +2,8 @@
 
 extern void		start_first_process(t_process *proc);
 uint32_t	current_pid = 0;
+static t_process *retired_processes = 0;
+static t_process *retired_processes_tail = 0;
 
 void	*alloc_pages(size_t pages)
 {
@@ -24,6 +26,41 @@ static void	free_pages(void *address, size_t pages)
 {
 	if (address && pages)
 		kfree(*(void **)((uintptr_t)address + pages * PAGE_SIZE));
+}
+
+void process_retire(t_process *p)
+{
+	if (!p) return;
+	p->next = 0;
+	if (retired_processes_tail)
+		retired_processes_tail->next = p;
+	else
+		retired_processes = p;
+	retired_processes_tail = p;
+}
+
+void process_reap_retired(void)
+{
+	t_process *p;
+	while ((p = retired_processes) != 0)
+	{
+		if (p == current_process) return;
+		retired_processes = p->next;
+		if (!retired_processes) retired_processes_tail = 0;
+		if (p->is_thread)
+		{
+			mmu_unmap_range(&p->address_space, p->user_stack, USER_STACK_PAGES * PAGE_SIZE);
+			mmu_unmap_range(&p->address_space, p->kernel_stack, KERNEL_STACK_PAGES * PAGE_SIZE);
+		}
+		else
+			address_space_destroy(&p->address_space);
+		if (p->surface_snapshot) kfree((void *)(uintptr_t)p->surface_snapshot);
+		if (p->surface_addr) kfree((void *)(uintptr_t)p->surface_addr);
+		if (p->image_allocation) kfree(p->image_allocation);
+		if (p->user_stack) free_pages(p->user_stack, USER_STACK_PAGES);
+		if (p->kernel_stack) free_pages(p->kernel_stack, KERNEL_STACK_PAGES);
+		kfree(p);
+	}
 }
 
 void	check_stack_canary(t_process *p)
@@ -293,7 +330,6 @@ void 	process_exit_current(uint32_t status_code)
 {
 	uint32_t	cpsr;
 	t_process   *exiting;
-	uint32_t	surface_addr;
 	t_process   *next;
 
 	cpsr = disable_interrupts();
@@ -302,16 +338,6 @@ void 	process_exit_current(uint32_t status_code)
 	{
 		restore_interrupts(cpsr);
 		return;
-	}
-
-	surface_addr = exiting->surface_addr;
-	if (surface_addr)
-	{
-		if (exiting->surface_snapshot)
-			kfree((void *)(uintptr_t)exiting->surface_snapshot);
-		exiting->surface_snapshot = 0;
-		exiting->surface_addr = 0;
-		kfree((void *)(uintptr_t)surface_addr);
 	}
 
 	if (status_code >= (uint32_t)-6)
@@ -330,8 +356,8 @@ void 	process_exit_current(uint32_t status_code)
 		{
 			if (parent->pid != exiting->parent_pid)
 				continue;
-			event_t event = {.type=EVENT_TERMINAL_EXIT, .timestamp=0, .x=0, .y=0,
-				.key=(int32_t)exiting->state, .modifiers=0};
+			
+			event_t event = {.type=EVENT_TERMINAL_EXIT, .timestamp=0, .x=0, .y=0, .key=(int32_t)exiting->state, .modifiers=0};
 			fifo_push(&parent->events, &event);
 			break;
 		}
@@ -339,6 +365,18 @@ void 	process_exit_current(uint32_t status_code)
 	for (t_process *child = scheduled_processes; child; child = child->next)
 		if (child->parent_pid == exiting->pid)
 			child->parent_pid = 0;
+	uint32_t owner_pid = exiting->is_thread ? exiting->thread_owner_pid : exiting->pid;
+	t_process *child = scheduled_processes;
+	while (child)
+	{
+		t_process *following = child->next;
+		if (child != exiting && child->is_thread && child->thread_owner_pid == owner_pid)
+		{
+			scheduler_remove(child);
+			process_retire(child);
+		}
+		child = following;
+	}
 
 	for (int i = 0; i < FS_MAX_FDS; i++)
 	{
@@ -347,6 +385,8 @@ void 	process_exit_current(uint32_t status_code)
 	}
 
 	scheduler_remove(exiting);
+	process_retire(exiting);
+
 	next = scheduler_next();
 	if (!next)
 	{

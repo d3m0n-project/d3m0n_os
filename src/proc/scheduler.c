@@ -130,6 +130,7 @@ void timer_handler(void)
 {
 	timer_ack();
 	watchdog_feed();
+	process_reap_retired();
 	if (!current_process)
 		return;
 

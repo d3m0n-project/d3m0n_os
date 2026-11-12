@@ -114,7 +114,6 @@ private:
 		text->font_size = ICON_TEXT_SIZE;
 		text->text_align = ANCHOR_CENTER_X;
 		text->content = display_name[0] ? display_name : app_name;
-		printf("%s vs %s\n", display_name, app_name);
 
 		touch_area->add_control(icon);
 		touch_area->add_control(text);
