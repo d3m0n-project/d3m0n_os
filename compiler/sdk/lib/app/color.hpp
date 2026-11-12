@@ -28,9 +28,9 @@ public:
 /** @brief Stores a color value and converts between packed and textual color forms. */
 class Color
 {
-private:
-	uint32_t	value = 0x00000000;
 public:
+	uint32_t	value = 0x00000000;
+
 	Color(void)
 	{
 		this->value = 0x00000000;

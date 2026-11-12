@@ -631,6 +631,10 @@ static int	usb_hid_key_to_ascii(uint8_t keycode, uint8_t modifiers)
 		return APP_KEY_ARROW_UP;
 	if (keycode == 0x51)
 		return APP_KEY_ARROW_DOWN;
+	if (keycode == 0x50)
+		return APP_KEY_ARROW_LEFT;
+	if (keycode == 0x4f)
+		return APP_KEY_ARROW_RIGHT;
 
 	if (keycode >= 0x04 && keycode <= 0x1d)
 		return (shift ? 'A' : 'a') + (keycode - 0x04);

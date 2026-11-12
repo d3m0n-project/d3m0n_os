@@ -3,9 +3,11 @@
 
 #include "types.h"
 
-#define PROC_MAX_EVENTS	128
-#define APP_KEY_ARROW_UP	0x100
-#define APP_KEY_ARROW_DOWN	0x101
+#define PROC_MAX_EVENTS			128
+#define APP_KEY_ARROW_UP		0x100
+#define APP_KEY_ARROW_DOWN		0x101
+#define APP_KEY_ARROW_LEFT		0x102
+#define APP_KEY_ARROW_RIGHT		0x103
 
 typedef enum: uint32_t
 {

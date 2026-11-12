@@ -93,6 +93,40 @@ uint32_t	Display::get_pixel(int x, int y)
 	return framebuffer[y * (this->pitch / 4) + x];
 }
 
+void	Display::draw_line(int x0, int y0, int x1, int y1, uint32_t color)
+{
+	volatile uint32_t *framebuffer = (volatile uint32_t *)this->fb;
+
+	int dx = abs(x1 - x0);
+	int dy = abs(y1 - y0);
+
+	int sx = (x0 < x1) ? 1 : -1;
+	int sy = (y0 < y1) ? 1 : -1;
+
+	int err = dx - dy;
+	while (true)
+	{
+		if (x0 >= 0 && x0 < this->w && y0 >= 0 && y0 < this->h)
+			framebuffer[y0 * (this->pitch / 4) + x0] = color;
+
+		if (x0 == x1 && y0 == y1)
+			break;
+
+		int e2 = 2 * err;
+		if (e2 > -dy)
+		{
+			err -= dy;
+			x0 += sx;
+		}
+
+		if (e2 < dx)
+		{
+			err += dx;
+			y0 += sy;
+		}
+	}
+}
+
 void	Display::draw_hline(int x, int y, int w, uint32_t color)
 {
 	if (IS_TRANSPARENT(color))

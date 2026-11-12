@@ -48,6 +48,8 @@ public:
 	void		put_pixel(int x, int y, uint32_t color);
 	/** @brief Reads the color of one framebuffer pixel. */
 	uint32_t	get_pixel(int x, int y);
+	/** @brief Draws a line between two screen points. */
+	void		draw_line(int x0, int y0, int x1, int y1, uint32_t color);
 	/** @brief Draws a horizontal line of the requested width. */
 	void		draw_hline(int x, int y, int w, uint32_t color);
 	/** @brief Fills a rectangle with the requested color. */
