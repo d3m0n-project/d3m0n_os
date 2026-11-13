@@ -175,7 +175,6 @@ $(OBJ_DIR)/asm/%.o: $(SRC_DIR)/%.s
 	@$(CC) $(C_FLAGS) -c $< -o $@
 
 applications:
-	@rm -rf ./rootfs/apps/ > /dev/null
 	@mkdir -p ./rootfs/apps/
 
 #	@find applications -mindepth 1 -type d -exec sh -c 'path="$$1"; mkdir -p "rootfs/apps/$${path#applications/}"' _ {} \;
@@ -192,7 +191,7 @@ endif
 disk: applications
 	@printf "$(COLOR_INFO)[IMG] Creating disk image...$(R)\n"
 	@rm -f "$(DISK)"
-	@dd if=/dev/zero of="$(DISK)" bs=1M count=$(IMG_SIZE) status=progress
+	@truncate -s $(IMG_SIZE)M "$(DISK)"
 	@$(SUDO_EXECUTABLE) parted "$(DISK)" --script mklabel msdos
 	@$(SUDO_EXECUTABLE) parted "$(DISK)" --script mkpart primary fat32 1MiB 65MiB
 	@$(SUDO_EXECUTABLE) parted "$(DISK)" --script mkpart primary fat32 65MiB 100%
@@ -212,18 +211,16 @@ export: all applications
 	@mkdir -p $(BOOT_DIR)
 	@mkdir -p $(MOUNT_DIR)
 
-	@dd if=/dev/zero of=$(EXPORT_IMG_NAME) bs=1M count=$(IMG_SIZE)
+	@truncate -s $(IMG_SIZE)M $(EXPORT_IMG_NAME)
 
 	@parted $(EXPORT_IMG_NAME) --script mklabel msdos
 	@parted $(EXPORT_IMG_NAME) --script mkpart primary fat32 1MiB 65MiB
 	@parted $(EXPORT_IMG_NAME) --script mkpart primary fat32 65MiB 100%
 	@parted $(EXPORT_IMG_NAME) --script set 1 boot on
 
-	@sync
-
 	@LOOP=$$($(SUDO_EXECUTABLE) losetup --find --show --partscan $(EXPORT_IMG_NAME)); \
 	$(SUDO_EXECUTABLE) partprobe $$LOOP || true; \
-	sleep 1; \
+	for i in 1 2 3 4 5; do [ -b "$${LOOP}p1" ] && [ -b "$${LOOP}p2" ] && break; sleep 0.1; done; \
 	$(SUDO_EXECUTABLE) mkfs.vfat -F 32 $${LOOP}p1; \
 	$(SUDO_EXECUTABLE) mkfs.vfat -F 32 $${LOOP}p2; \
 	mkdir -p $(MOUNT_DIR)/boot; \
@@ -233,7 +230,6 @@ export: all applications
 	$(SUDO_EXECUTABLE) cp $(BUILD_DIR)/kernel.img $(MOUNT_DIR)/boot/kernel.img; \
 	$(SUDO_EXECUTABLE) cp -r $(FIRMWARE_DIR)/* $(MOUNT_DIR)/boot/ 2>/dev/null || true; \
 	$(SUDO_EXECUTABLE) cp -r rootfs/* $(MOUNT_DIR)/root/; \
-	sync; \
 	$(SUDO_EXECUTABLE) umount $(MOUNT_DIR)/boot; \
 	$(SUDO_EXECUTABLE) umount $(MOUNT_DIR)/root; \
 	$(SUDO_EXECUTABLE) losetup -d $$LOOP
