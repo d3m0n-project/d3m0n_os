@@ -2,6 +2,7 @@
 #include "time.h"
 #include "peripheral/usb.h"
 #include "display/display.h"
+#include "proc/proc.h"
 #include "stdlib.h"
 #include "../../compiler/sdk/lib/app/events.h"
 
@@ -153,8 +154,9 @@ static uint16_t	usb_min_u16(uint16_t a, uint16_t b)
 
 void	usb_mouse_redraw(void)
 {
-	if (!g_mouse.present || !g_mouse.last_pixel_saved)
+	if (!g_mouse.present)
 		return;
+	
 	for (int i = 0; i < CURSOR_SIZE; i++)
 	{
 		for (int j = 0; j < CURSOR_SIZE; j++)
@@ -162,7 +164,11 @@ void	usb_mouse_redraw(void)
 			int px = g_mouse.x + j;
 			int py = g_mouse.y + i;
 			if (px >= 0 && px < SCREEN_WIDTH && py >= 0 && py < SCREEN_HEIGHT)
+			{
+				g_mouse.last_pixel_saved = 1;
+				g_mouse.last_pixel_color[j * CURSOR_SIZE + i] = get_pixel(px, py);
 				put_pixel(px, py, DISPLAY_COLORS[RED]);
+			}
 		}
 	}
 }
@@ -561,6 +567,11 @@ static void	usb_parse_config(uint8_t *buf, uint16_t len, usb_device_t *dev)
 	}
 }
 
+void	reset_saved_mouse_pixels(void)
+{
+	g_mouse.last_pixel_saved = 0;
+}
+
 int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 {
 	int		ret;
@@ -618,6 +629,12 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 	}
 	g_mouse.last_pixel_saved = 1;
 
+	if (current_process->pid > 2 && g_mouse.x >= icon_close_pos[0] && g_mouse.x <= icon_close_pos[2] \
+								 && g_mouse.y >= icon_close_pos[1] && g_mouse.y <= icon_close_pos[3])
+	{
+		process_exit_current(1); // exit current app
+		return 1;
+	}
 	
 	click_handler(g_mouse.x, g_mouse.y - TOPBAR_HEIGHT, (unsigned int)g_mouse.buttons); 
 	
@@ -865,28 +882,25 @@ static int	usb_hub_enumerate_ports(usb_device_t *hub)
 				(unsigned int)port, ret);
 			continue;
 		}
-		/* Reserve a unique address even if configuration later fails. */
-		/* Address zero is reused only after this port has been reset. */
-		ret = usb_enumerate_address_zero(&child, next_addr,
-			child_low_speed, &device_class);
+
+		ret = usb_enumerate_address_zero(&child, next_addr, child_low_speed, &device_class);
 		next_addr++;
 		if (ret)
 		{
-			log("USB: enumeration failed on hub port %u (%i)\n",
-				LOG_WARNING, (unsigned int)port, ret);
+			log("USB: enumeration failed on hub port %u (%i)\n", LOG_WARNING, (unsigned int)port, ret);
 			continue;
 		}
+
 		if (device_class == USB_CLASS_HUB)
-			log("USB: nested hubs are not supported yet (port %u)\n",
-				LOG_WARNING, (unsigned int)port);
+			log("USB: nested hubs are not supported yet (port %u)\n", LOG_WARNING, (unsigned int)port);
 		else
 			enumerated++;
 		if (next_addr > 127)
 			break;
 	}
 	if (!enumerated)
-		log("USB: no supported devices found on hub ports 1-%u\n",
-			LOG_WARNING, (unsigned int)USB_HUB_MAX_PORTS);
+		log("USB: no supported devices found on hub ports 1-%u\n", LOG_WARNING, (unsigned int)USB_HUB_MAX_PORTS);
+	
 	return enumerated;
 }
 
@@ -895,24 +909,24 @@ int	usb_enumerate(void)
 	uint8_t	device_class;
 	int		ret;
 
-	/* A fresh scan must not retain devices from a previous enumeration. */
 	memset(&g_mouse, 0, sizeof(g_mouse));
 	memset(&g_keyboard, 0, sizeof(g_keyboard));
 	memset(&g_root_device, 0, sizeof(g_root_device));
+
 	g_root_device.ep0_mps = 8;
 	log("USB: initializing host controller\n", LOG_INFO);
+
 	ret = usb_port_reset();
 	if (ret)
 	{
 		log("USB: no enabled device on root port (%i)\n", LOG_WARNING, ret);
 		return ret;
 	}
-	log("USB: root port reset complete, speed=%s\n", LOG_INFO | LOG_INDENT,
-		g_root_device.speed_low ? "low" : "full");
-	ret = usb_enumerate_address_zero(&g_root_device, USB_ADDR_FIRST,
-		g_root_device.speed_low, &device_class);
+	log("USB: root port reset complete, speed=%s\n", LOG_INFO | LOG_INDENT, g_root_device.speed_low ? "low" : "full");
+	ret = usb_enumerate_address_zero(&g_root_device, USB_ADDR_FIRST, g_root_device.speed_low, &device_class);
 	if (ret)
 		return ret;
+	
 	if (device_class == USB_CLASS_HUB)
 	{
 		ret = usb_hub_enumerate_ports(&g_root_device);

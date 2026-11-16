@@ -6,11 +6,14 @@
 #include "image/icons.h"
 #include "display/display.h"
 #include "../../compiler/sdk/lib/app/parsing/svg.h"
+#include "peripheral/usb.h"
 
 static t_font	topbar_font = {0};
 static uint32_t	topbar_frame[SCREEN_WIDTH * TOPBAR_HEIGHT];
 static uint32_t	topbar_previous[SCREEN_WIDTH * TOPBAR_HEIGHT];
 static int		topbar_previous_valid;
+
+int		icon_close_pos[4] = {0};
 
 static void	draw_clock(t_conf *conf, uint32_t theme_color)
 {
@@ -84,7 +87,7 @@ static void	draw_battery(t_conf *conf, uint32_t theme_color_fg)
 	int text_y = TOPBAR_PADDING + (16 - TOPBAR_FONT_SIZE) / 2;
 
 	draw_text_at(181 + 52, text_y, TOPBAR_FONT_SIZE, battery_percentage, theme_color_fg, &topbar_font);
-	draw_icon(181 + 95, TOPBAR_PADDING - 1, size, size, icon_name, theme_color_fg);
+	draw_icon(181 + 90, TOPBAR_PADDING - 1, size, size, icon_name, theme_color_fg);
 }
 
 void	draw_connections(t_conf *conf, uint32_t theme_color_fg)
@@ -104,6 +107,19 @@ void	draw_connections(t_conf *conf, uint32_t theme_color_fg)
 	
 	draw_icon(181, TOPBAR_PADDING - 1, size, size, "device.signal_cellular_4_bar", theme_color_fg);
 	draw_icon(181 + 26, TOPBAR_PADDING - 1, size, size, wifi_states[wifi_level], theme_color_fg);
+}
+
+void	draw_icon_app_close(t_conf *conf, uint32_t theme_color_fg)
+{
+	int size = TOPBAR_HEIGHT - (2 * TOPBAR_PADDING);
+	int x0 = 181 + 95 + size;
+	int y0 = TOPBAR_PADDING - 1;
+	draw_icon(x0, y0, size, size, conf->icon_close, theme_color_fg);
+
+	icon_close_pos[0] = x0;
+	icon_close_pos[1] = y0;
+	icon_close_pos[2] = x0+size;
+	icon_close_pos[3] = y0+size;
 }
 
 void	draw_topbar(void)
@@ -128,6 +144,10 @@ void	draw_topbar(void)
 	// draw battery and connection status
 	draw_battery(conf, theme_color_fg);
 	draw_connections(conf, theme_color_fg);
+
+	if (current_process->pid > 2) // skip init and launcher
+		draw_icon_app_close(conf, theme_color_fg);
+
 	display_clear_draw_target();
 
 	for (int y = 0; y < TOPBAR_HEIGHT; y++)

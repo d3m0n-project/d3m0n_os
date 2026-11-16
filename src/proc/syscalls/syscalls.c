@@ -549,6 +549,7 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 	(void)a3;
 	if (!proc || surface_addr != proc->surface_addr || !proc->surface_size)
 		return -1;
+	
 	surface = (uint8_t *)(uintptr_t)surface_addr;
 	snapshot = (uint8_t *)(uintptr_t)proc->surface_snapshot;
 	framebuffer = (uint8_t *)get_fb_addr(&pitch);
@@ -556,8 +557,7 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 		return -1;
 
 	draw_topbar();
-	/* The topbar writes straight into the framebuffer; write those dirty
-	   cache lines back so the GPU scanout sees them too. */
+
 	mmu_clean_invalidate_dcache_range((uint32_t)(uintptr_t)framebuffer, (uint32_t)TOPBAR_HEIGHT * pitch);
 	full_refresh = (last_updated_proc != proc);
 	for (row = 0; row < proc->surface_height; row++)
@@ -569,8 +569,10 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 		{
 			while (x < proc->surface_width && !full_refresh && src[x] == old[x])
 				x++;
+			
 			if (x == proc->surface_width)
 				break;
+			
 			start = x;
 			while (x < proc->surface_width && (full_refresh || src[x] != old[x]))
 			{
@@ -578,15 +580,13 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 				x++;
 			}
 			memcpy(framebuffer + (row + TOPBAR_HEIGHT) * pitch + start * sizeof(uint32_t), src + start, (x - start) * sizeof(uint32_t));
-			/* Clean the D-cache line so the GPU/display scanout (DMA) sees the pixels */
 			mmu_clean_invalidate_dcache_range((uint32_t)(uintptr_t)(framebuffer + (row + TOPBAR_HEIGHT) * pitch + start * sizeof(uint32_t)), (x - start) * sizeof(uint32_t));
 		}
 	}
 	#if DEBUG_OUTLINE == 1
 	draw_rect_outline(0, TOPBAR_HEIGHT, proc->surface_width, proc->surface_height, OUTLINE_COLOR);
 	#endif
-	/* The app's surface copy may have overwritten the kernel-drawn mouse
-	   cursor; repaint it on top so it is always visible. */
+
 	usb_mouse_redraw();
 	last_updated_proc = proc;
 	return 0;

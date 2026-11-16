@@ -71,6 +71,7 @@ typedef struct {
 	uint8_t		bInterval;
 }	__attribute__((packed)) usb_endpoint_descriptor_t;
 
+extern int		icon_close_pos[4]; // close icon position (from topbar)
 
 void	usb_init(void);
 int		usb_enumerate(void);
@@ -80,5 +81,6 @@ void	usb_mouse_redraw(void);
 int		usb_control_transfer(uint8_t addr, usb_setup_t *setup, uint8_t *buf);
 int		usb_get_descriptor(uint8_t addr, uint8_t type, uint8_t *buf);
 int		usb_set_address(uint8_t new_addr);
+void	reset_saved_mouse_pixels(void);
 
 #endif

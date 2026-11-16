@@ -164,7 +164,56 @@
 	X(STR, icon_toggle_on,					"toggle.toggle_on") \
 	X(STR, icon_toggle_off,					"toggle.toggle_off") \
 	X(STR, icon_brush,						"image.brush") \
-	X(STR, icon_backspace,					"content.backspace")
+	X(STR, icon_backspace,					"content.backspace") \
+	X(STR, icon_south,						"navigation.south") \
+	X(STR, icon_menu_open,					"navigation.menu_open") \
+	X(STR, icon_arrow_right,				"navigation.arrow_right") \
+	X(STR, icon_chevron_right,				"navigation.chevron_right") \
+	X(STR, icon_app_settings_alt,			"navigation.app_settings_alt") \
+	X(STR, icon_payments,					"navigation.payments") \
+	X(STR, icon_north,						"navigation.north") \
+	X(STR, icon_home_work,					"navigation.home_work") \
+	X(STR, icon_fullscreen_exit,			"navigation.fullscreen_exit") \
+	X(STR, icon_arrow_downward,				"navigation.arrow_downward") \
+	X(STR, icon_expand_more,				"navigation.expand_more") \
+	X(STR, icon_close,						"navigation.close") \
+	X(STR, icon_arrow_back,					"navigation.arrow_back") \
+	X(STR, icon_menu,						"navigation.menu") \
+	X(STR, icon_arrow_back_ios,				"navigation.arrow_back_ios") \
+	X(STR, icon_south_west,					"navigation.south_west") \
+	X(STR, icon_south_east,					"navigation.south_east") \
+	X(STR, icon_fullscreen,					"navigation.fullscreen") \
+	X(STR, icon_last_page,					"navigation.last_page") \
+	X(STR, icon_cancel,						"navigation.cancel") \
+	X(STR, icon_subdirectory_arrow_right,	"navigation.subdirectory_arrow_right") \
+	X(STR, icon_arrow_forward_ios,			"navigation.arrow_forward_ios") \
+	X(STR, icon_switch_left,				"navigation.switch_left") \
+	X(STR, icon_first_page,					"navigation.first_page") \
+	X(STR, icon_refresh,					"navigation.refresh") \
+	X(STR, icon_double_arrow,				"navigation.double_arrow") \
+	X(STR, icon_arrow_drop_down_circle,		"navigation.arrow_drop_down_circle") \
+	X(STR, icon_legend_toggle,				"navigation.legend_toggle") \
+	X(STR, icon_unfold_less,				"navigation.unfold_less") \
+	X(STR, icon_apps,						"navigation.apps") \
+	X(STR, icon_subdirectory_arrow_left,	"navigation.subdirectory_arrow_left") \
+	X(STR, icon_unfold_more,				"navigation.unfold_more") \
+	X(STR, icon_arrow_left,					"navigation.arrow_left") \
+	X(STR, icon_more_vert,					"navigation.more_vert") \
+	X(STR, icon_arrow_forward,				"navigation.arrow_forward") \
+	X(STR, icon_switch_right,				"navigation.switch_right") \
+	X(STR, icon_check,						"navigation.check") \
+	X(STR, icon_arrow_drop_down,			"navigation.arrow_drop_down") \
+	X(STR, icon_west,						"navigation.west") \
+	X(STR, icon_more_horiz,					"navigation.more_horiz") \
+	X(STR, icon_campaign,					"navigation.campaign") \
+	X(STR, icon_expand_less,				"navigation.expand_less") \
+	X(STR, icon_arrow_drop_up,				"navigation.arrow_drop_up") \
+	X(STR, icon_east,						"navigation.east") \
+	X(STR, icon_arrow_upward,				"navigation.arrow_upward") \
+	X(STR, icon_chevron_left,				"navigation.chevron_left") \
+	X(STR, icon_north_west,					"navigation.north_west") \
+	X(STR, icon_north_east,					"navigation.north_east")
+
 
 #define	DECL_STR(member, def)					char	member[STRING_SIZE];
 #define	DECL_INT(member, def, min, max)			int		member;
