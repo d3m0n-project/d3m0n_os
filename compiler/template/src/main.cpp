@@ -1,7 +1,6 @@
 #include "sys.h"
 #include "stdio.hpp"
 #include "app.hpp"
-#include "stdlib.h"
 
 APP_INFO(
 	"My Simple App",

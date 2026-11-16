@@ -78,8 +78,7 @@ static void draw_edge(Display &display, const ScreenPoint &start, const ScreenPo
 	}
 }
 
-static void draw_textured_face(Display &display, const Object &object, const Face &face,
-	const Camera &camera, const Texture &texture)
+static void draw_textured_face(Display &display, const Object &object, const Face &face, const Camera &camera, const Texture &texture)
 {
 	ScreenPoint p[3];
 	for (int i = 0; i < 3; ++i)
@@ -147,8 +146,7 @@ ScreenPoint	vertical_intersection_point(Display &display, ScreenPoint *p1, Scree
 }
 
 
-static void draw_object(Display &display, const Object &object, const Face *faces, size_t face_count,
-	const Camera &camera, const Texture &texture, uint32_t override_color = 0)
+static void draw_object(Display &display, const Object &object, const Face *faces, size_t face_count, const Camera &camera, const Texture &texture, uint32_t override_color = 0)
 {
 	if (!override_color)
 		for (size_t i = 0; i < face_count; ++i)
@@ -185,13 +183,12 @@ static void draw_object(Display &display, const Object &object, const Face *face
 	}
 }
 
-static void render_scene(Display &display, const Object &object, const Face *faces, size_t face_count,
-	const Camera &camera, const Texture &texture)
+static void render_scene(Display &display, const Object &object, const Face *faces, size_t face_count, const Camera &camera, const Texture &texture)
 {
-	display.draw_rect(0, 0, display.w, display.h, COLOR_BG);
-	draw_object(display, object, faces, face_count, camera, texture);
+	//display.draw_rect(0, 0, display.w, display.h, COLOR_BG);
+	draw_object(display, object, faces, face_count, camera, texture, COLOR_EDGE);
 	display.present();
-	//draw_object(display, object, faces, face_count, camera, texture, COLOR_BG);
+	draw_object(display, object, faces, face_count, camera, texture, COLOR_BG);
 }
 
 static void move_camera(Camera &camera, int key)
@@ -201,7 +198,6 @@ static void move_camera(Camera &camera, int key)
 	float forward_z = camera_cosine(camera);
 	float right_x = camera_cosine(camera);
 	float right_z = -camera_sine(camera);
-
 	switch (key)
 	{
 		case 27: // esc

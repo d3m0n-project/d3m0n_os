@@ -1,2 +1,0 @@
-$0.OnClick =>
-	window.open($0);

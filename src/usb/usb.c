@@ -152,11 +152,28 @@ static uint16_t	usb_min_u16(uint16_t a, uint16_t b)
 }
 
 
+void	usb_mouse_hide(void)
+{
+	if (!g_mouse.present || !g_mouse.last_pixel_saved)
+		return;
+	for (int i = 0; i < CURSOR_SIZE; i++)
+	{
+		for (int j = 0; j < CURSOR_SIZE; j++)
+		{
+			int px = g_mouse.x + j;
+			int py = g_mouse.y + i;
+			if (px >= 0 && px < SCREEN_WIDTH && py >= 0 && py < SCREEN_HEIGHT)
+				put_pixel(px, py, g_mouse.last_pixel_color[i * CURSOR_SIZE + j]);
+		}
+	}
+	g_mouse.last_pixel_saved = 0;
+}
+
 void	usb_mouse_redraw(void)
 {
 	if (!g_mouse.present)
 		return;
-	
+	usb_mouse_hide();
 	for (int i = 0; i < CURSOR_SIZE; i++)
 	{
 		for (int j = 0; j < CURSOR_SIZE; j++)
@@ -165,12 +182,12 @@ void	usb_mouse_redraw(void)
 			int py = g_mouse.y + i;
 			if (px >= 0 && px < SCREEN_WIDTH && py >= 0 && py < SCREEN_HEIGHT)
 			{
-				g_mouse.last_pixel_saved = 1;
-				g_mouse.last_pixel_color[j * CURSOR_SIZE + i] = get_pixel(px, py);
+				g_mouse.last_pixel_color[i * CURSOR_SIZE + j] = get_pixel(px, py);
 				put_pixel(px, py, DISPLAY_COLORS[RED]);
 			}
 		}
 	}
+	g_mouse.last_pixel_saved = 1;
 }
 
 static void	usb_wait_ahb_idle(void)
@@ -597,12 +614,8 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 	if (dx == 0 && dy == 0 && g_mouse.buttons == g_mouse_report[0])
 		return 0;
 
-	// btn change
-	if (g_mouse.last_pixel_saved)
-	{
-		for (int i = 0; i < CURSOR_SIZE * CURSOR_SIZE; i++)
-			put_pixel(g_mouse.x + (i % CURSOR_SIZE), g_mouse.y + (i / CURSOR_SIZE), g_mouse.last_pixel_color[i]);
-	}
+	// Restore the old cursor before moving it, then save the pixels at its new position.
+	usb_mouse_hide();
 	g_mouse.x += dx;
 	g_mouse.y += dy;
 
@@ -618,23 +631,7 @@ int	usb_mouse_poll(void (*click_handler)(int, int, unsigned int))
 	
 	g_mouse.buttons = g_mouse_report[0];
 
-	// save pixels under the cursor before drawing it
-	for (int i=0; i<CURSOR_SIZE; i++)
-	{
-		for (int j=0; j<CURSOR_SIZE; j++)
-		{
-			g_mouse.last_pixel_color[i * CURSOR_SIZE + j] = get_pixel(g_mouse.x + j, g_mouse.y + i);
-			put_pixel(g_mouse.x + j, g_mouse.y + i, DISPLAY_COLORS[RED]);
-		}
-	}
-	g_mouse.last_pixel_saved = 1;
-
-	if (current_process->pid > 2 && g_mouse.x >= icon_close_pos[0] && g_mouse.x <= icon_close_pos[2] \
-								 && g_mouse.y >= icon_close_pos[1] && g_mouse.y <= icon_close_pos[3])
-	{
-		process_exit_current(1); // exit current app
-		return 1;
-	}
+	usb_mouse_redraw();
 	
 	click_handler(g_mouse.x, g_mouse.y - TOPBAR_HEIGHT, (unsigned int)g_mouse.buttons); 
 	

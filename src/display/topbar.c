@@ -145,8 +145,10 @@ void	draw_topbar(void)
 	draw_battery(conf, theme_color_fg);
 	draw_connections(conf, theme_color_fg);
 
-	if (current_process->pid > 2) // skip init and launcher
+	if (current_process && current_process->pid > 2) // skip init and launcher
 		draw_icon_app_close(conf, theme_color_fg);
+	else
+		icon_close_pos[0] = icon_close_pos[1] = icon_close_pos[2] = icon_close_pos[3] = 0;
 
 	display_clear_draw_target();
 

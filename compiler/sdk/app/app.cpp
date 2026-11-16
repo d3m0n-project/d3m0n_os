@@ -37,6 +37,8 @@ void Window::add_control(Control *control)
 
 void Window::draw(void)
 {
+	if ((uint32_t)this->bg_color)
+		display->draw_rect(0, 0, this->width.get(), this->height.get(), this->bg_color);
 	draw_controls();
 	present();
 }

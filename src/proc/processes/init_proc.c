@@ -3,7 +3,7 @@
 //#include "crypto.h"
 //#include "d3m0n.h"
 //#include "bmp.h"
-//#include "display.h"
+#include "display/display.h"
 #include "image/icons.h"
 #include "settings.h"
 #include "peripheral/usb.h"
@@ -63,8 +63,36 @@ void	app_and_icon_loader_thread(void)
 void	click_dispatcher(int mouse_x, int mouse_y, unsigned int mouse_btn)
 {
 	extern t_process	*last_updated_proc;
-	t_process *proc = last_updated_proc;
-	if (mouse_btn <= 0 || mouse_btn > 4 || !proc || proc->state == PROC_CRASHED || proc->state == PROC_ZOMBIE) // no click or no last refreshed process
+	extern uint32_t	last_updated_pid;
+	extern int			icon_close_pos[4]; // close icon position (from topbar)
+	extern int			sys_kill(uint32_t pid, uint32_t code, uint32_t a2, uint32_t a3);
+
+
+	t_process *proc;
+	t_process *live_proc;
+	if (mouse_btn <= 0 || mouse_btn > 4) // no click
+		return;
+	proc = last_updated_proc;
+	if (!proc)
+		return;
+
+	live_proc = scheduled_processes;
+	while (live_proc && live_proc != proc)
+		live_proc = live_proc->next;
+	
+	if (!live_proc || live_proc->pid != last_updated_pid || live_proc->state == PROC_CRASHED || live_proc->state == PROC_ZOMBIE)
+		return;
+	proc = live_proc;
+
+	// handle close app clicks
+	if (proc->pid > 2 && mouse_x >= icon_close_pos[0] && mouse_x < icon_close_pos[2]
+		&& mouse_y + TOPBAR_HEIGHT >= icon_close_pos[1] && mouse_y + TOPBAR_HEIGHT < icon_close_pos[3])
+	{
+		log("killing %s\n", 0, proc->proc_name);
+		sys_kill(proc->pid, 2, 0, 0); // exit current app
+		return;
+	}
+	if (mouse_y < 0)
 		return;
 
 	event_t	new_event = { .type=(uint32_t)(EVENT_MOUSECLICK1 + (mouse_btn - 1)), .timestamp=time_s(), .x=mouse_x, .y=mouse_y };

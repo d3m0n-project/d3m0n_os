@@ -118,6 +118,8 @@ public:
 	/** @brief Dispatch one queued event; call draw() once first to initialize hit-test bounds. */
 	bool			poll(void);
 	bool			dispatch_event(event_t *event);
+	void			show_window(Window &child);
+	void			return_to_parent(void);
 };
 
 class Application
@@ -146,9 +148,25 @@ private:
 public:
 	Application() {}
 	~Application() {}
+	static Window *&active_window(void)
+	{
+		static Window *window = 0;
+		return window;
+	}
+	static Window **parent_stack(void)
+	{
+		static Window *stack[8] = {};
+		return stack;
+	}
+	static int &parent_depth(void)
+	{
+		static int depth = 0;
+		return depth;
+	}
 
 	static void	run(Window &main_window)
 	{
+		active_window() = &main_window;
 		main_window.draw(); 
 		events = thread_create(event_thread);
 		if (!events)
@@ -156,29 +174,60 @@ public:
 			fprintf(stderr, "Could not start event thread\n");
 			while (1)
 			{
-				if (!main_window.on_idle.empty())
-					main_window.on_idle(&main_window);
+				Window *window = active_window();
+				if (!window) window = &main_window;
+				if (!window->on_idle.empty())
+					window->on_idle(window);
 				event_t event = {.type=EVENT_UNKNOWN, .timestamp=0, .x=0, .y=0, .key=0, .modifiers=0};
-				if (evtpop(&event) && main_window.dispatch_event(&event))
-					main_window.draw();
+				if (evtpop(&event) && window->dispatch_event(&event))
+				{
+					Window *current = active_window();
+					if (current) current->draw();
+				}
 			}
 		}
 		while (1)
 		{
-			if (!main_window.on_idle.empty())
-				main_window.on_idle(&main_window);
+			Window *window = active_window();
+			if (!window) window = &main_window;
+			if (!window->on_idle.empty())
+				window->on_idle(window);
 			if (event_pending)
 			{
 				__asm__ volatile("" ::: "memory");
 				event_t event = pending_event;
 				event_pending = 0;
 				__asm__ volatile("" ::: "memory");
-				if (main_window.dispatch_event(&event))
-					main_window.draw();
+				if (window->dispatch_event(&event))
+				{
+					Window *current = active_window();
+					if (current) current->draw();
+				}
 			}
 		}
 	}
 };
+
+inline void Window::show_window(Window &child)
+{
+	int &depth = Application::parent_depth();
+	if (depth >= 8)
+		return;
+	Application::parent_stack()[depth++] = this;
+	Application::active_window() = &child;
+	child.draw();
+}
+
+inline void Window::return_to_parent(void)
+{
+	int &depth = Application::parent_depth();
+	if (depth > 0)
+	{
+		Window *parent = Application::parent_stack()[--depth];
+		Application::active_window() = parent;
+		parent->draw();
+	}
+}
 #endif
 
 

@@ -10,6 +10,8 @@
 #include "proc/proc.h"
 #include "time.h"
 #include "random.h"
+#include "stats.h"
+#include "settings.h"
 
 #include "../../../compiler/sdk/lib/icons.h"
 #include "image/icons.h"
@@ -533,6 +535,7 @@ int	sys_surface_create(uint32_t width, uint32_t height, uint32_t surface_ptr, ui
 }
 
 t_process	*last_updated_proc = 0;
+uint32_t	last_updated_pid = 0;
 int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t a3)
 {
 	t_process	*proc = current_process;
@@ -549,6 +552,7 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 	(void)a3;
 	if (!proc || surface_addr != proc->surface_addr || !proc->surface_size)
 		return -1;
+	usb_mouse_hide();
 	
 	surface = (uint8_t *)(uintptr_t)surface_addr;
 	snapshot = (uint8_t *)(uintptr_t)proc->surface_snapshot;
@@ -589,6 +593,7 @@ int	sys_surface_update(uint32_t surface_addr, uint32_t a1, uint32_t a2, uint32_t
 
 	usb_mouse_redraw();
 	last_updated_proc = proc;
+	last_updated_pid = proc->pid;
 	return 0;
 }
 
@@ -931,6 +936,17 @@ int sys_query_config(uint32_t key_ptr, uint32_t output_ptr, uint32_t a2, uint32_
 	t_config_value *output = (t_config_value *)resolve_user_ptr(output_ptr, sizeof(t_config_value));
 	if (!output || copy_user_string(key_ptr, key, sizeof(key)))
 		return -1;
+	static const char *stat_names[] = {"battery_charging", "battery_percentage", "read_speed"};
+	for (int i = 0; i < 3; ++i)
+	{
+		if (strcmp(key, stat_names[i]))
+			continue;
+		t_config_value value = {0};
+		value.type = CONFIG_QUERY_INTEGER;
+		value.value.integer = get_stat((e_stat_idx)i, 1);
+		memcpy(output, &value, sizeof(value));
+		return 0;
+	}
 	
 	t_conf *config = get_config();
 	for (int i = 0; i < CONF_FIELD_COUNT; ++i)
@@ -953,6 +969,21 @@ int sys_query_config(uint32_t key_ptr, uint32_t output_ptr, uint32_t a2, uint32_
 		return 0;
 	}
 	return -1;
+}
+
+int sys_set_config(uint32_t key_ptr, uint32_t value_ptr, uint32_t a2, uint32_t a3)
+{
+	(void)a2;
+	(void)a3;
+	char key[CONFIG_QUERY_STRING_SIZE];
+	char value[CONFIG_QUERY_STRING_SIZE];
+	if (copy_user_string(key_ptr, key, sizeof(key)) || copy_user_string(value_ptr, value, sizeof(value)))
+		return -1;
+	if (strcmp(key, "theme") && strcmp(key, "time_mode"))
+		return -1;
+	if (strcmp(value, "0") && strcmp(value, "1"))
+		return -1;
+	return set_setting("/config", key, value);
 }
 
 
@@ -985,7 +1016,8 @@ syscall_t	syscall_table[] = {
 	sys_thread_exit,
 	sys_terminal_input,
 	sys_query_icon,
-	sys_query_config
+	sys_query_config,
+	sys_set_config
 };
 
 int	syscall_dispatch(uint32_t number, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)

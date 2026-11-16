@@ -74,6 +74,7 @@ extern "C" {
 		SYS_TERMINAL_INPUT,
 		SYS_QUERY_ICON,
 		SYS_QUERY_CONFIG,
+		SYS_SET_CONFIG,
 
 
 		TMP_TOTAL_SYSCALL_COUNT // do not remove me
@@ -299,6 +300,11 @@ extern "C" {
 	static inline int query_config(const char *key, t_config_value *out)
 	{
 		return (int)syscall(SYS_QUERY_CONFIG, (uint32_t)key, (uint32_t)out, 0, 0);
+	}
+
+	static inline int set_config(const char *key, const char *value)
+	{
+		return (int)syscall(SYS_SET_CONFIG, (uint32_t)key, (uint32_t)value, 0, 0);
 	}
 
 #ifdef __cplusplus
