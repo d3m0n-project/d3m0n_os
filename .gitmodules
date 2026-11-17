@@ -10,3 +10,6 @@
 [submodule "rootfs/lib/d3gl"]
 	path = rootfs/lib/d3gl
 	url = git@github.com:d3m0n-project/d3gl.git
+[submodule "rootfs/programs/d3sh"]
+	path = rootfs/programs/d3sh
+	url = https://github.com/d3m0n-project/d3sh
