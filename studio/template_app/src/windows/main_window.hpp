@@ -8,7 +8,7 @@ private:
 	Rect	rect1;
 	Text	text1;
 public:
-	MainWindow(void): Window("Main Window", Size(320), Size(436)) {
+	MainWindow(void): Window("Main Window", Size(320), Size(480 - 32)) {
 		rect1.location = Point(0, 0);
 		rect1.bg_color = Color(0xFF000000);
 		rect1.width = Size(200);

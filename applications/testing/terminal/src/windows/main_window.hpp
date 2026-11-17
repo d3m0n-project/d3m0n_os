@@ -375,7 +375,7 @@ private:
 	}
 
 public:
-	MainWindow(void): Window("Terminal", Size(320), Size(436))
+	MainWindow(void): Window("Terminal", Size(320), Size(480 - 32))
 	{
 		this->bg_color = Color(0, 0, 0);
 		terminal.location = Point(0, 0);

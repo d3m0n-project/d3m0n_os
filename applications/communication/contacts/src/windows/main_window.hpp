@@ -15,12 +15,12 @@ private:
 	uint32_t avatar_colors[4] = {0xFFC5A267, 0xFFC1CE9B, 0xFFD3EBFF, 0xFFA6B6FF};
 
 public:
-	MainWindow() : Window("Contacts", Size(320), Size(436))
+	MainWindow() : Window("Contacts", Size(320), Size(480 - 32))
 	{
 		bg_color = Color(0xFFFFFFFF);
 		background.location = Point(0, 0);
 		background.width = Size(320);
-		background.height = Size(436);
+		background.height = this->height;
 		background.bg_color = Color(0xFF000000);
 		add_control(&background);
 

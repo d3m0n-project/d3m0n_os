@@ -26,7 +26,7 @@ private:
 	Text text_title;
 
 public:
-	MainWindow(void) : Window("Main Window", Size(320), Size(436))
+	MainWindow(void) : Window("Main Window", Size(320), Size(480 - 32))
 	{
 		int rect_step = this->height.get() * 0.05;
 		Size rect_height(rect_step);
