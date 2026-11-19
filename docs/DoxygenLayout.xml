@@ -1,0 +1,12 @@
+<doxygenlayout version="1.0">
+  <navindex>
+    <tab type="mainpage" visible="yes" title="Overview" />
+    <tab type="usergroup" title="Guides" url="[none]">
+      <tab type="user" url="@ref d3c-app-development" title="Build an app" />
+      <tab type="user" url="@ref sdk-programming-model" title="SDK programming model" />
+    </tab>
+    <tab type="classes" visible="yes" title="SDK classes" />
+    <tab type="files" visible="yes" title="SDK files" />
+    <tab type="pages" visible="yes" title="All pages" />
+  </navindex>
+</doxygenlayout>

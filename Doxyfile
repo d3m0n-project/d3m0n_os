@@ -1,25 +1,70 @@
-PROJECT_NAME			= "d3m0n os SDK"
-OUTPUT_DIRECTORY		= docs
-INPUT					= ./compiler/sdk
-FILE_PATTERNS			= *.cpp *.h *.hpp
-RECURSIVE				= YES
-EXTRACT_ALL				= YES
-GENERATE_HTML			= YES
-GENERATE_LATEX			= NO
-HAVE_DOT				= YES
+# Doxygen configuration for the public d3m0n OS SDK and d3c app development docs.
+PROJECT_NAME           = "d3m0n OS SDK"
+PROJECT_BRIEF          = "Build applications for d3m0n OS with d3c and the SDK"
+OUTPUT_DIRECTORY       = docs
 
-TAB_SIZE				= 4
-MARKDOWN_SUPPORT		= YES
-USE_MDFILE_AS_MAINPAGE	= docs/README.md
+# Public SDK headers and implementation files are the API source of truth.
+# Only the maintained guides below are included; older standalone Markdown in
+# docs/ describes a retired layout/script app system.
+INPUT                  = compiler/sdk \
+                         docs/README.md \
+                         docs/d3c-app-development.md \
+                         docs/sdk-programming-model.md
+FILE_PATTERNS          = *.h *.hpp *.c *.cpp *.md *.dox
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */obj/*
 
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_METHODS  = YES
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = NO
+INCLUDE_PATH           = compiler/sdk/lib
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = NO
 
-PROJECT_LOGO			= docs/images/logo.png
-GENERATE_TREEVIEW		= YES
-DISABLE_INDEX			= NO
-FULL_SIDEBAR			= YES
-HTML_EXTRA_STYLESHEET	= docs/doxygen-awesome-css/doxygen-awesome.css \
-						  docs/doxygen-awesome-css/doxygen-awesome-sidebar-only.css
-HTML_COLORSTYLE			= LIGHT  # required with Doxygen >= 1.9.5
-
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = YES
+FULL_SIDEBAR           = YES
+SHOW_FILES             = YES
+MARKDOWN_SUPPORT       = YES
+AUTOLINK_SUPPORT       = YES
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+REFERENCES_RELATION    = YES
+REFERENCED_BY_RELATION = YES
+ALPHABETICAL_INDEX     = YES
+COLS_IN_ALPHA_INDEX    = 3
+HTML_COLORSTYLE        = LIGHT
+HTML_EXTRA_STYLESHEET  = docs/doxygen-awesome-css/doxygen-awesome.css \
+                         docs/doxygen-awesome-css/doxygen-awesome-sidebar-only.css
 
 HAVE_DOT               = YES
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+CLASS_DIAGRAMS         = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+DIRECTORY_GRAPH        = YES
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = YES
+COLLABORATION_GRAPH    = YES
+UML_LOOK               = YES
+DOT_GRAPH_MAX_NODES    = 80
+
+PROJECT_LOGO           = docs/images/logo.png
+USE_MDFILE_AS_MAINPAGE = docs/README.md
+LAYOUT_FILE            = docs/DoxygenLayout.xml
+INPUT_ENCODING         = UTF-8
+TAB_SIZE               = 4
+QUIET                  = NO
+WARN_LOGFILE           = docs/doxygen-warnings.log
