@@ -27,32 +27,41 @@ class StyleWindow : public SettingsWindow
 public:
 	StyleWindow() : SettingsWindow("Wallpaper & Style")
 	{
-		bg_color = Color(0, 0, 0);
+		this->bg_color = Color(0, 0, 0);
+
 		SettingsLayout::place(title, 16, 2, 288, 32);
-		SettingsLayout::style_text(title, "Wallpaper & Style", 16);
+		SettingsLayout::style_text(title, "Wallpaper & Style", 14);
 		SettingsLayout::place(theme_row, 16, 48, 288, 48);
-		theme_row.bg_color = Color(40, 40, 40);
+
+		this->theme_row.bg_color = Color(40, 40, 40);
+		
 		SettingsLayout::place(theme_label, 28, 48, 210, 48);
 		SettingsLayout::style_text(theme_label, "Light Theme", 10);
 		SettingsLayout::place(theme_switch, 254, 60, 40, 24);
-		theme_switch.color = Color(255, 180, 0);
-		theme_switch.bg_color = Color(100, 100, 100);
-		theme_switch.checked = setting("theme") != 0;
-		theme_switch.on_click = [this](event_t *, Control *) { theme_switch.checked = !theme_switch.checked; save("theme", theme_switch.checked); };
+		
+		this->theme_switch.color = Color(255, 180, 0);
+		this->theme_switch.bg_color = Color(100, 100, 100);
+		this->theme_switch.checked = setting("theme") != 0;
+		this->theme_switch.on_click = [this](event_t *, Control *) { theme_switch.checked = !theme_switch.checked; save("theme", theme_switch.checked); };
+
 		SettingsLayout::place(clock_row, 16, 104, 288, 48);
-		clock_row.bg_color = Color(40, 40, 40);
+		this->clock_row.bg_color = Color(40, 40, 40);
 		SettingsLayout::place(clock_label, 28, 104, 210, 48);
 		SettingsLayout::style_text(clock_label, "Use 24h clock", 10);
 		SettingsLayout::place(clock_switch, 254, 116, 40, 24);
-		clock_switch.color = Color(255, 180, 0);
-		clock_switch.bg_color = Color(100, 100, 100);
-		clock_switch.checked = setting("time_mode") != 0;
-		clock_switch.on_click = [this](event_t *, Control *) { clock_switch.checked = !clock_switch.checked; save("time_mode", clock_switch.checked); };
-		SettingsLayout::place(back, 12, 0, 68, 36);
-		back.bg_color = Color(35, 35, 35);
-		back.on_click = [this](event_t *, Control *) { return_to_parent(); };
-		SettingsLayout::place(back_label, 16, 0, 60, 36);
-		SettingsLayout::style_text(back_label, "< Back", 9);
+
+		this->clock_switch.color = Color(255, 180, 0);
+		this->clock_switch.bg_color = Color(100, 100, 100);
+		this->clock_switch.checked = setting("time_mode") != 0;
+		this->clock_switch.on_click = [this](event_t *, Control *) { clock_switch.checked = !clock_switch.checked; save("time_mode", clock_switch.checked); };
+
+
+		SettingsLayout::place(back, 12, 0, 26, 36);
+		this->back.bg_color = Color(0, 0, 0, 0);
+		this->back.on_click = [this](event_t *, Control *) { return_to_parent(); };
+		SettingsLayout::place(back_label, 16, 0, 26, 36);
+		SettingsLayout::style_text(back_label, "<", 9);
+
 		add_control(&title);
 		add_control(&back);
 		add_control(&back_label);

@@ -17,12 +17,12 @@
 #include "image/icons.h"
 #include "../../../compiler/sdk/lib/config_query.h"
 
-#define SYS_PRINT_MAX_LEN	512
-#define SYSCALL_EXIT_INDEX	0
+#define SYS_PRINT_MAX_LEN			512
+#define SYSCALL_EXIT_INDEX			0
 #define SYSCALL_THREAD_KILL_INDEX	24
 #define SYSCALL_THREAD_EXIT_INDEX	25
-#define STDIN_QUEUE_SIZE	256
-#define SYS_READ_RETRY		-2
+#define STDIN_QUEUE_SIZE			256
+#define SYS_READ_RETRY				-2
 
 extern t_process	*current_process;
 extern void			draw_topbar(void);
@@ -936,11 +936,14 @@ int sys_query_config(uint32_t key_ptr, uint32_t output_ptr, uint32_t a2, uint32_
 	t_config_value *output = (t_config_value *)resolve_user_ptr(output_ptr, sizeof(t_config_value));
 	if (!output || copy_user_string(key_ptr, key, sizeof(key)))
 		return -1;
+	
+	// search stats
 	static const char *stat_names[] = {"battery_charging", "battery_percentage", "read_speed"};
 	for (int i = 0; i < 3; ++i)
 	{
 		if (strcmp(key, stat_names[i]))
 			continue;
+		
 		t_config_value value = {0};
 		value.type = CONFIG_QUERY_INTEGER;
 		value.value.integer = get_stat((e_stat_idx)i, 1);
@@ -948,6 +951,7 @@ int sys_query_config(uint32_t key_ptr, uint32_t output_ptr, uint32_t a2, uint32_
 		return 0;
 	}
 	
+	// search config
 	t_conf *config = get_config();
 	for (int i = 0; i < CONF_FIELD_COUNT; ++i)
 	{
@@ -975,12 +979,15 @@ int sys_set_config(uint32_t key_ptr, uint32_t value_ptr, uint32_t a2, uint32_t a
 {
 	(void)a2;
 	(void)a3;
-	char key[CONFIG_QUERY_STRING_SIZE];
-	char value[CONFIG_QUERY_STRING_SIZE];
+	char	key[CONFIG_QUERY_STRING_SIZE];
+	char	value[CONFIG_QUERY_STRING_SIZE];
+
 	if (copy_user_string(key_ptr, key, sizeof(key)) || copy_user_string(value_ptr, value, sizeof(value)))
 		return -1;
+	
 	if (strcmp(key, "theme") && strcmp(key, "time_mode"))
 		return -1;
+	
 	if (strcmp(value, "0") && strcmp(value, "1"))
 		return -1;
 	return set_setting("/config", key, value);

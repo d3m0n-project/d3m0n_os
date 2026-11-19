@@ -11,7 +11,7 @@ namespace SettingsLayout
 {
 	inline void place(Control &control, int x, int y, int width, int height)
 	{
-		control.location = Point(x, y + TOPBAR_HEIGHT);
+		control.location = Point(x, y);
 		control.width = Size(width);
 		control.height = Size(height);
 	}

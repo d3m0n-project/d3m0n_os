@@ -2,7 +2,7 @@
 #include "filesystem/filesystem.h"
 #include "time.h"
 
-#define BLOCK_COUNT	300
+#define BLOCK_COUNT	100
 
 int	get_read_speed(void)
 {
