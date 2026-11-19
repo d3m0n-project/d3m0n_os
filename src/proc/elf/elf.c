@@ -436,7 +436,7 @@ t_process	*elf_to_proc(char *elf_path, const char **argv, int argv_len)
 		return (0);
 	}
 	memcpy(&header, file_buf, sizeof(elf_header_32));
-	print_elf_file_report(&header);
+	//print_elf_file_report(&header);
 	if (header.IDENTIFICATION.BITS_ARCH != 1)
 	{
 		kfree(file_buf);
