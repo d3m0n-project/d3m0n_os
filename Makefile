@@ -57,7 +57,7 @@ IMG_SIZE			?= 256
 LD_FLAGS			= -T linker.ld -lgcc -Wl,-e,_start
 C_FLAGS				= -Wall -Wextra -Werror -ffreestanding -nostdlib -O2 \
 					  -Iincludes -mcpu=arm1176jzf-s -marm -fno-omit-frame-pointer -mno-apcs-frame \
-					  -MMD -MD \
+					  -MMD -MP \
 					  -D DEBUG=$(DEBUG) \
 					  -D DEBUG_OUTLINE=$(DEBUG_OUTLINE) \
 					  -D KERNEL_VERSION=\"$(VERSION)\" \
@@ -188,7 +188,16 @@ ifneq ($(BUILD_APPS),0)
 endif
 
 
-disk: applications
+STAGING_DIR			?= $(BUILD_DIR)/rootfs_staging
+ROOTFS_EXCLUDES		= --exclude='.git' --exclude='/programs/micropython/' --exclude='/programs/lua/'
+
+# Stage rootfs without source trees / git metadata (they don't fit on the data partition)
+staging:
+	@mkdir -p "$(STAGING_DIR)"
+	@rsync -a --delete --delete-excluded $(ROOTFS_EXCLUDES) rootfs/ "$(STAGING_DIR)/"
+	@printf "$(COLOR_INFO)[IMG] Staged rootfs: $$(du -sh $(STAGING_DIR) | cut -f1)$(R)\n"
+
+disk: applications staging
 	@printf "$(COLOR_INFO)[IMG] Creating disk image...$(R)\n"
 	@rm -f "$(DISK)"
 	@truncate -s $(IMG_SIZE)M "$(DISK)"
@@ -197,14 +206,14 @@ disk: applications
 	@$(SUDO_EXECUTABLE) parted "$(DISK)" --script mkpart primary fat32 65MiB 100%
 	@$(SUDO_EXECUTABLE) parted "$(DISK)" --script unit s print
 	@mkfs.vfat -F 32 -n D3M0NFS --offset=133120 -h 133120 "$(DISK)"
-	@mcopy -i "$(DISK)@@68157440" -s rootfs/* ::
+	@mcopy -i "$(DISK)@@68157440" -s "$(STAGING_DIR)"/* ::
 	@echo "Apps Structure:"
 	@tree rootfs/apps/
 	@printf "$(COLOR_SUCCESS)[OK] Disk ready: $(DISK)$(R)\n"
 
 
 
-export: all applications
+export: all applications staging
 	@printf "$(COLOR_INFO)[IMG] Creating SD image...$(R)\n"
 
 	@mkdir -p $(EXPORT_DIR)
@@ -229,7 +238,7 @@ export: all applications
 	$(SUDO_EXECUTABLE) mount $${LOOP}p2 $(MOUNT_DIR)/root; \
 	$(SUDO_EXECUTABLE) cp $(BUILD_DIR)/kernel.img $(MOUNT_DIR)/boot/kernel.img; \
 	$(SUDO_EXECUTABLE) cp -r $(FIRMWARE_DIR)/* $(MOUNT_DIR)/boot/ 2>/dev/null || true; \
-	$(SUDO_EXECUTABLE) cp -r rootfs/* $(MOUNT_DIR)/root/; \
+	$(SUDO_EXECUTABLE) cp -r $(STAGING_DIR)/* $(MOUNT_DIR)/root/; \
 	$(SUDO_EXECUTABLE) umount $(MOUNT_DIR)/boot; \
 	$(SUDO_EXECUTABLE) umount $(MOUNT_DIR)/root; \
 	$(SUDO_EXECUTABLE) losetup -d $$LOOP
@@ -262,4 +271,4 @@ submodules:
 
 -include $(D_FILES)
 
-.PHONY: all banner disk run clean fclean re export show-config applications config submodules
+.PHONY: all banner disk staging run clean fclean re export show-config applications config submodules
