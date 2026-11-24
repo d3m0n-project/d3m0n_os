@@ -91,7 +91,7 @@ It can be used to modify your system style and behaviour like icons, themes, des
 &nbsp; | Official Links
 ---------|-------
 Website | [d3m0n.4re5.com](https://d3m0n.4re5.com/)
-Discord | [discord.com](https://discord.com/invite/Rfb5ajz7cM)
+Discord | [discord.com](http://discord.com/invite/Rfb5ajz7cM)
 Subreddit | [r/d3m0nproject](https://www.reddit.com/r/d3m0nproject/)
 
 ## Made with ❤️ by 4RE5's devs
