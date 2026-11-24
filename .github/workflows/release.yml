@@ -1,0 +1,40 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt install make gcc-arm-none-eabi -y
+
+      - name: Install Compiler
+        run: make -C compiler
+
+      - name: Get program information
+        run: echo "PROG_VERSION=$(make -s print-version)" >> $GITHUB_ENV
+
+      - name: Build
+        run: make export
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.PROG_VERSION }} build-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: v${{ env.PROG_VERSION }} - Build ${{ github.run_number }} (${{ github.sha }})
+          generate_release_notes: false
+          files: export/*
+          draft: false
+          prerelease: true

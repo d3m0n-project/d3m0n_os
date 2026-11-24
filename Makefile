@@ -270,6 +270,9 @@ submodules:
 	git submodule update --remote rootfs/programs/lua
 	@printf "$(COLOR_SUCCESS)[SUBMODULES] Updated successfully!$(R)\n"
 
+print-version:
+	@echo "$(VERSION) $(VERSION_NAME)"
+
 -include $(D_FILES)
 
-.PHONY: all banner disk staging run clean fclean re export show-config applications config submodules
+.PHONY: all banner disk staging run clean fclean re export show-config applications config submodules print-version
