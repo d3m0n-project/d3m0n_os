@@ -2,19 +2,31 @@
 #define BIG_INT_HPP
 
 #include "types.h"
+#include "memory.h"
+#include "stdlib.h"
+#include "log.h"
+#include "random.h"
+
+#ifndef kfree
+#define kfree free
+#endif
+
+#ifndef MAX_BIGINT_LIMB
+#define MAX_BIGINT_LIMB 128
+#endif
+
+struct s_big_int_div;
+typedef struct s_big_int_div BigIntDiv;
 
 /** @brief Represents a signed arbitrary-precision integer. */
-class BigInt
+struct BigInt
 {
-private:
 	int			sign;
 	uint32_t	digits[MAX_BIGINT_LIMB];
 	size_t		length;
 public:
 	/** @brief Writes the integer in decimal form. */
 	void		display(int decimal);
-	BigInt(uint32 n);
-	BigInt(const uint8_t *bytes, size_t len);
 
 	/** @brief Returns the sum of this arbitrary-precision integer and the operand. */
 	BigInt		operator+(const BigInt& n2);
@@ -29,9 +41,6 @@ public:
 	/** @brief Returns whether this integer is less than the other integer. */
 	int			operator<(const BigInt& n2);
 	/** @brief Shifts the stored digits one place toward the more significant end. */
-	void		operator<<(void);
-	/** @brief Shifts the stored digits one place toward the less significant end. */
-	void		operator>>(void);
 
 	/** @brief Compares the magnitudes of two integers. */
 	long		cmp_abs(BigInt *a, BigInt *b);

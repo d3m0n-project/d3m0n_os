@@ -8,39 +8,6 @@
 #include "settings.h"
 #include "peripheral/usb.h"
 
-//void	rsa_require_thread(void)
-//{
-//	// rsa test
-//	t_RSA_private_key	prv;
-//	t_RSA_public_key	pub;
-//	if (!rsa_private_key_require("/security/private.key", &prv, &pub))
-//		panic("Failed to get your RSA keypair!\n");
-	
-//	size_t	em_len = 0;
-//	uint8_t	*em = pkcs1_v1_5_generate_em(&pub, (uint8_t *)"Hello World!", 12, &em_len);
-//	BigInt *c = rsa_encrypt(em, em_len, &pub);
-//	if (!c)
-//		log("Failed to encrypt RSA\n", LOG_ERROR);
-//	size_t	out_len = 0;
-//	uint8_t	*m = rsa_decrypt(c, &out_len, &prv);
-//	if (!m)
-//		log("Failed to decrypt RSA\n", LOG_ERROR);
-//	uint8_t	*msg = pkcs1_v1_5_decode_em(m, out_len, &out_len);
-//	if (!msg)
-//		log("Failed to decrypt pkcs#1 v1.5\n", LOG_ERROR);
-
-//	log("msg bytes: ", 0);
-//	for (size_t i=0; i<out_len; i++)
-//		log("%X ", 0, msg[i]);
-//	log("\n", 0);
-//	log("msg: '", 0);
-//	for (size_t i=0; i<out_len; i++)
-//		log("%c", 0, msg[i]);
-//	log("'\n", 0);
-
-//	process_exit_current(0);
-//}
-
 void	app_and_icon_loader_thread(void)
 {
 	t_conf		*config = get_config();

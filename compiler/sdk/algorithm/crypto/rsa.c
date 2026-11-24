@@ -328,8 +328,8 @@ retry_generation:
 			kfree(q_minus_1);
 		return 0;
 	}
-	BigInt	*gcd = big_int_gcd(&e, phi_n);
-	if (!gcd)
+	BigInt	*gcd_result = big_int_gcd(&e, phi_n);
+	if (!gcd_result)
 	{
 		kfree(n);
 		kfree(phi_n);
@@ -337,11 +337,11 @@ retry_generation:
 		kfree(q_minus_1);
 		return 0;
 	}
-	if (gcd->length != 1 || gcd->digits[0] != 1 || gcd->sign != 1)
+	if (gcd_result->length != 1 || gcd_result->digits[0] != 1 || gcd_result->sign != 1)
 	{
 		kfree(n);
 		kfree(phi_n);
-		kfree(gcd);
+		kfree(gcd_result);
 		kfree(p_minus_1);
 		kfree(q_minus_1);
 		tries++;
@@ -405,7 +405,7 @@ retry_generation:
 
 	kfree(n);
 	kfree(phi_n);
-	kfree(gcd);
+	kfree(gcd_result);
 	kfree(d);
 	kfree(p_minus_1);
 	kfree(q_minus_1);

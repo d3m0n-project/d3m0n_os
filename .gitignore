@@ -5,7 +5,8 @@ build/
 export/
 rootfs/test_app
 rootfs/apps/
-rootfs/security/*
+rootfs/security/*.key
+rootfs/security/*.pub
 firmware/kernel8.img
 firmware/kernel.img
 compiler/d3c

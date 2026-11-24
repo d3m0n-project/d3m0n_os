@@ -5,6 +5,13 @@
 
 #define USER_HEAP_RESERVED		0x03200000
 
+#ifndef kmalloc
+# define kmalloc malloc
+#endif
+#ifndef kfree
+# define kfree free
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

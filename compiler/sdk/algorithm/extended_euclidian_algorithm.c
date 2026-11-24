@@ -11,35 +11,35 @@ ExtendedGCD	*big_int_extended_gcd(BigInt *a, BigInt *b)
 	BigInt *t = big_int_from_uint(1);
 	while (r->sign != 0)
 	{
-		BigIntDiv *div = big_int_div(old_r, r);
+		BigIntDiv *division = big_int_div(old_r, r);
 
-		if (!div)
+		if (!division)
 			return 0;
 
-		BigInt *qr = big_int_mul(div->quotient, r);
+		BigInt *qr = big_int_mul(division->quotient, r);
 		BigInt *new_r = big_int_sub(old_r, qr);
 		kfree(qr);
 		kfree(old_r);
 		old_r = r;
 		r = new_r;
 
-		BigInt *qs = big_int_mul(div->quotient, s);
+		BigInt *qs = big_int_mul(division->quotient, s);
 		BigInt *new_s = big_int_sub(old_s, qs);
 		kfree(qs);
 		kfree(old_s);
 		old_s = s;
 		s = new_s;
 
-		BigInt *qt = big_int_mul(div->quotient, t);
+		BigInt *qt = big_int_mul(division->quotient, t);
 		BigInt *new_t = big_int_sub(old_t, qt);
 		kfree(qt);
 		kfree(old_t);
 		old_t = t;
 		t = new_t;
 
-		kfree(div->quotient);
-		kfree(div->remainder);
-		kfree(div);
+		kfree(division->quotient);
+		kfree(division->remainder);
+		kfree(division);
 	}
 
 	BigInt *y;
@@ -47,16 +47,16 @@ ExtendedGCD	*big_int_extended_gcd(BigInt *a, BigInt *b)
 	{
 		BigInt		*xa = big_int_mul(old_s, a);
 		BigInt		*tmp = big_int_sub(old_r, xa);
-		BigIntDiv	*div = big_int_div(tmp, b);
+		BigIntDiv	*division = big_int_div(tmp, b);
 
 		kfree(xa);
 		kfree(tmp);
-		if (!div)
+		if (!division)
 			return 0;
 
-		y = div->quotient;
-		kfree(div->remainder);
-		kfree(div);
+		y = division->quotient;
+		kfree(division->remainder);
+		kfree(division);
 	}
 	else
 		y = big_int_from_uint(0);

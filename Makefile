@@ -26,9 +26,13 @@ BOOT_DIR			= $(BUILD_DIR)/boot
 MOUNT_DIR			= $(BUILD_DIR)/mnt
 FIRMWARE_DIR		= firmware
 
+# staging
+STAGING_DIR			?= $(BUILD_DIR)/rootfs_staging
+ROOTFS_EXCLUDES		= --exclude='.git' --exclude='/programs/micropython/' --exclude='/programs/lua/'
+
 
 STDLIB_PATH			= ./compiler/sdk/stdlib/
-STDLIB_C_FILES		= $(filter-out $(STDLIB_PATH)memcpy.c $(STDLIB_PATH)memset.c,$(shell find $(STDLIB_PATH) -name "*.c"))
+STDLIB_C_FILES		= $(filter-out $(STDLIB_PATH)memcpy.c $(STDLIB_PATH)memset.c $(STDLIB_PATH)get_next_line.c,$(shell find $(STDLIB_PATH) -name "*.c"))
 
 C_FILES				= $(shell find $(SRC_DIR) -name "*.c") $(STDLIB_C_FILES)
 S_FILES				= $(shell find $(SRC_DIR) -name "*.s" -o -name "*.S")
@@ -42,7 +46,7 @@ D_FILES				= $(O_FILES:.o=.d)
 
 DISK				?= disk.img
 
-VERSION				= 2.0.91
+VERSION				= 2.0.92
 VERSION_NAME		= outset
 
 IMG_ROOT_NAME		= d3m0n_os_$(VERSION_NAME)_$(VERSION).img
@@ -188,10 +192,7 @@ ifneq ($(BUILD_APPS),0)
 endif
 
 
-STAGING_DIR			?= $(BUILD_DIR)/rootfs_staging
-ROOTFS_EXCLUDES		= --exclude='.git' --exclude='/programs/micropython/' --exclude='/programs/lua/'
 
-# Stage rootfs without source trees / git metadata (they don't fit on the data partition)
 staging:
 	@mkdir -p "$(STAGING_DIR)"
 	@rsync -a --delete --delete-excluded $(ROOTFS_EXCLUDES) rootfs/ "$(STAGING_DIR)/"

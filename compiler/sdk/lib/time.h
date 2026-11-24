@@ -1,6 +1,8 @@
 #ifndef TIME_H
 #define TIME_H
 
+#include "types.h"
+
 struct tm {
 	int		tm_sec;
 	int		tm_min;

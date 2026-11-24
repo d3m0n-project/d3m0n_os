@@ -1,9 +1,9 @@
-#include "big_int.hpp"
+#include "algorithm.h"
 
 
 BigInt	*from_uint(uint32_t n)
 {
-	BigInt *out = calloc(1, sizeof(BigInt));
+	BigInt *out = (BigInt *)calloc(1, sizeof(BigInt));
 
 	if (!out)
 		return 0;
@@ -28,7 +28,7 @@ int	is_zero(BigInt *n)
 	return n->length == 1 && n->digits[0] == 0;
 }
 
-void	display(BigInt *n, int decimal)
+void	big_int_display(BigInt *n, int decimal)
 {
 	if (n->sign == -1)
 		log("-", 0);
@@ -46,7 +46,7 @@ void	display(BigInt *n, int decimal)
 
 uint8_t	*to_fixed_bytes(BigInt *a, size_t len)
 {
-	uint8_t *out = calloc(len, 1);
+	uint8_t *out = (uint8_t *)calloc(len, 1);
 	if (!out)
 		return 0;
 
@@ -69,7 +69,7 @@ uint8_t	*to_fixed_bytes(BigInt *a, size_t len)
 uint8_t	*get_bytes(BigInt *n, size_t *byte_len)
 {
 	size_t full_len = n->length * sizeof(uint32_t);
-	uint8_t *tmp = calloc(full_len, sizeof(uint8_t));
+	uint8_t *tmp = (uint8_t *)calloc(full_len, sizeof(uint8_t));
 	if (!tmp)
 		return 0;
 
@@ -90,7 +90,7 @@ uint8_t	*get_bytes(BigInt *n, size_t *byte_len)
 		first++;
 
 	*byte_len = full_len - first;
-	uint8_t *out = calloc(*byte_len, sizeof(uint8_t));
+	uint8_t *out = (uint8_t *)calloc(*byte_len, sizeof(uint8_t));
 	if (!out)
 	{
 		kfree(tmp);
@@ -104,7 +104,7 @@ uint8_t	*get_bytes(BigInt *n, size_t *byte_len)
 
 BigInt	*copy(BigInt *src)
 {
-	BigInt *out = calloc(1, sizeof(BigInt));
+	BigInt *out = (BigInt *)calloc(1, sizeof(BigInt));
 	if (!out)
 		return 0;
 
@@ -120,7 +120,7 @@ BigInt *from_bytes(const uint8_t *bytes, size_t len)
 	if (!bytes || len == 0)
 		return from_uint(0);
 
-	BigInt *out = calloc(1, sizeof(BigInt));
+	BigInt *out = (BigInt *)calloc(1, sizeof(BigInt));
 	if (!out)
 		return 0;
 
@@ -179,7 +179,7 @@ BigInt *add(BigInt *n1, BigInt *n2)
 		return sub(n1, &tmp);
 	}
 
-	BigInt *out = calloc(1, sizeof(BigInt));
+	BigInt *out = (BigInt *)calloc(1, sizeof(BigInt));
 	if (!out)
 		return 0;
 
@@ -226,10 +226,10 @@ BigInt	*sub(BigInt *n1, BigInt *n2)
 	}
 
 	// both positive
-	long cmp = cmp(n1, n2);
+	long comparison = cmp(n1, n2);
 
 	// result is negative
-	if (cmp < 0)
+	if (comparison < 0)
 	{
 		out = sub(n2, n1);
 		if (out)
@@ -237,7 +237,7 @@ BigInt	*sub(BigInt *n1, BigInt *n2)
 		return out;
 	}
 
-	out = calloc(1, sizeof(BigInt));
+	out = (BigInt *)calloc(1, sizeof(BigInt));
 	if (!out)
 		return 0;
 
@@ -367,12 +367,12 @@ BigIntDiv	*div(BigInt *num, BigInt *den)
 	if (den->length == 1 && den->digits[0] == 0)
 		return 0;
 
-	BigIntDiv *out = calloc(1, sizeof(BigIntDiv));
+	BigIntDiv *out = (BigIntDiv *)calloc(1, sizeof(BigIntDiv));
 	if (!out)
 		return 0;
 
-	out->quotient = calloc(1, sizeof(BigInt));
-	out->remainder = calloc(1, sizeof(BigInt));
+	out->quotient = (BigInt *)calloc(1, sizeof(BigInt));
+	out->remainder = (BigInt *)calloc(1, sizeof(BigInt));
 	if (!out->quotient || !out->remainder)
 	{
 		kfree(out->quotient);
@@ -425,7 +425,7 @@ BigIntDiv	*div(BigInt *num, BigInt *den)
 
 BigInt	*mul(BigInt *a, BigInt *b)
 {
-	BigInt *out = calloc(1, sizeof(BigInt));
+	BigInt *out = (BigInt *)calloc(1, sizeof(BigInt));
 	if (!out)
 		return 0;
 
@@ -477,8 +477,8 @@ BigInt *gcd(BigInt *a, BigInt *b)
 	y->sign = 1;
 	while (!(y->length == 1 && y->digits[0] == 0))
 	{
-		BigIntDiv *div = div(x, y);
-		if (!div)
+		BigIntDiv *division = div(x, y);
+		if (!division)
 		{
 			kfree(x);
 			kfree(y);
@@ -487,9 +487,9 @@ BigInt *gcd(BigInt *a, BigInt *b)
 
 		kfree(x);
 		x = y;
-		y = div->remainder;
-		kfree(div->quotient);
-		kfree(div);
+		y = division->remainder;
+		kfree(division->quotient);
+		kfree(division);
 	}
 
 	kfree(y);
@@ -535,9 +535,9 @@ BigInt	*mod_inverse(BigInt *e, BigInt *phi)
 	return d;
 }
 
-BigInt	*mod(BigInt *div, BigInt *den)
+BigInt	*mod(BigInt *numerator, BigInt *den)
 {
-	BigIntDiv	*division_output = div(div, den);
+	BigIntDiv	*division_output = div(numerator, den);
 	if (!division_output)
 		return 0;
 	
@@ -551,6 +551,7 @@ BigInt	*mod(BigInt *div, BigInt *den)
 BigInt	*modular_pow(BigInt *base, BigInt *exp, BigInt *mod)
 {
 	t_mont_ctx	ctx;
+	BigInt *out = 0;
 
 	if (!montgomery_ctx_init(&ctx, mod))
 		return 0;
@@ -581,7 +582,7 @@ BigInt	*modular_pow(BigInt *base, BigInt *exp, BigInt *mod)
 		shr1(e);
 	}
 
-	BigInt *out = montgomery_from(result, &ctx);
+	out = montgomery_from(result, &ctx);
 	kfree(result);
 	kfree(b);
 	kfree(e);
@@ -618,7 +619,7 @@ BigInt	*random_bits(size_t bits)
 		return from_uint(0);
 
 	size_t byte_count = (bits + 7) / 8;
-	uint8_t *buf = kmalloc(byte_count);
+	uint8_t *buf = (uint8_t *)kmalloc(byte_count);
 	if (!buf)
 		return 0;
 
