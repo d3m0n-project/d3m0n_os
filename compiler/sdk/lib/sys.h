@@ -43,7 +43,7 @@ extern "C" {
 	}	e_seek_directive;
 
 
-	typedef enum: uint32_t
+	typedef enum
 	{
 		SYS_EXIT,
 		SYS_READ,
