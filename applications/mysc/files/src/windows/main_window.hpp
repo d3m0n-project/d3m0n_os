@@ -101,13 +101,13 @@ public:
 	{
 		bg_color = Color(20, 24, 30);
 		strlcpy(current_path, "/", sizeof(current_path));
-		title.location = Point(16, TOPBAR_HEIGHT + 4);
+		title.location = Point(16, 4);
 		title.width = Size(200);
 		title.height = Size(26);
 		title.content = "Files";
 		title.color = Color(255, 255, 255);
 		title.font_size = 15;
-		up_button.location = Point(240, TOPBAR_HEIGHT + 2);
+		up_button.location = Point(240, 2);
 		up_button.width = Size(64);
 		up_button.height = Size(30);
 		up_button.content = "Up";
@@ -115,7 +115,7 @@ public:
 		up_button.color = Color(255, 255, 255);
 		up_button.bg_color = Color(55, 65, 78);
 		up_button.on_click = [this](event_t *, Control *) { go_up(); };
-		path_text.location = Point(16, TOPBAR_HEIGHT + 35);
+		path_text.location = Point(16, 35);
 		path_text.width = Size(288);
 		path_text.height = Size(20);
 		path_text.color = Color(170, 190, 210);
@@ -127,7 +127,7 @@ public:
 		status.font_size = 8;
 		for (int i = 0; i < FILES_VISIBLE_ROWS; ++i)
 		{
-			rows[i].location = Point(16, TOPBAR_HEIGHT + 60 + i * 36);
+			rows[i].location = Point(16, 60 + i * 36);
 			rows[i].width = Size(288);
 			rows[i].height = Size(32);
 			rows[i].font_size = 9;

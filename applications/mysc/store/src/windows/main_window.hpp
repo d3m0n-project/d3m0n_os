@@ -36,24 +36,24 @@ public:
 		static const char *app_names[4] = {"Gallery", "Calculator", "Files", "Modules"};
 		static const char *app_details[4] = {"Browse your photo collection", "Everyday arithmetic", "Explore files on this device", "Manage device modules"};
 		bg_color = Color(18, 22, 29);
-		banner.location = Point(14, TOPBAR_HEIGHT + 8);
+		banner.location = Point(14, 8);
 		banner.width = Size(292);
 		banner.height = Size(66);
 		banner.radius = 8;
 		banner.bg_color = Color(44, 82, 135);
-		title.location = Point(26, TOPBAR_HEIGHT + 16);
+		title.location = Point(26, 16);
 		title.width = Size(270);
 		title.height = Size(26);
 		title.content = "d3m0n Store";
 		title.color = Color(255, 255, 255);
 		title.font_size = 16;
-		subtitle.location = Point(26, TOPBAR_HEIGHT + 43);
+		subtitle.location = Point(26, 43);
 		subtitle.width = Size(270);
 		subtitle.height = Size(18);
 		subtitle.content = "Discover apps for your device";
 		subtitle.color = Color(225, 235, 248);
 		subtitle.font_size = 8;
-		section.location = Point(16, TOPBAR_HEIGHT + 84);
+		section.location = Point(16, 84);
 		section.width = Size(288);
 		section.height = Size(22);
 		section.content = "Featured apps";
@@ -61,7 +61,7 @@ public:
 		section.font_size = 11;
 		for (int i = 0; i < 4; ++i)
 		{
-			int y = TOPBAR_HEIGHT + 112 + i * 62;
+			int y = 112 + i * 62;
 			cards[i].location = Point(16, y);
 			cards[i].width = Size(288);
 			cards[i].height = Size(54);
@@ -92,7 +92,7 @@ public:
 			add_control(&details[i]);
 			add_control(&open_buttons[i]);
 		}
-		footer.location = Point(16, TOPBAR_HEIGHT + 372);
+		footer.location = Point(16, 372);
 		footer.width = Size(288);
 		footer.height = Size(28);
 		footer.content = "Showing apps included with d3m0n OS";

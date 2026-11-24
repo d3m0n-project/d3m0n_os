@@ -16,25 +16,25 @@ public:
 	{
 		printf("[o] loaded gallery\n");
 		bg_color = Color(255, 255, 255);
-		title.location = Point(18, 18 + TOPBAR_HEIGHT);
+		title.location = Point(18, 18);
 		title.width = Size(284);
 		title.height = Size(30);
 		title.content = "Gallery";
 		title.color = Color(25, 25, 25);
 		title.font_size = 18;
 
-		divider.location = Point(16, 56 + TOPBAR_HEIGHT);
+		divider.location = Point(16, 56);
 		divider.width = Size(288);
 		divider.height = Size(1);
 		divider.bg_color = Color(220, 220, 220);
 
-		empty_card.location = Point(20, 108 + TOPBAR_HEIGHT);
+		empty_card.location = Point(20, 108);
 		empty_card.width = Size(280);
 		empty_card.height = Size(190);
 		empty_card.radius = 12;
 		empty_card.bg_color = Color(245, 245, 245);
 
-		empty_title.location = Point(32, 166 + TOPBAR_HEIGHT);
+		empty_title.location = Point(32, 166);
 		empty_title.width = Size(256);
 		empty_title.height = Size(30);
 		empty_title.content = "No photos yet";
@@ -42,7 +42,7 @@ public:
 		empty_title.font_size = 14;
 		empty_title.text_align = ANCHOR_CENTER_X;
 
-		empty_message.location = Point(32, 198 + TOPBAR_HEIGHT);
+		empty_message.location = Point(32, 198);
 		empty_message.width = Size(256);
 		empty_message.height = Size(42);
 		empty_message.content = "Photos you take will appear here.";

@@ -78,11 +78,11 @@ public:
 		current_value(0), stored_value(0), operation(0), replace_display(true)
 	{
 		bg_color = Color(22, 25, 32);
-		display_panel.location = Point(16, 16 + TOPBAR_HEIGHT);
+		display_panel.location = Point(16, 16);
 		display_panel.width = Size(288);
 		display_panel.height = Size(58);
 		display_panel.bg_color = Color(38, 43, 52);
-		display_text.location = Point(24, 16 + TOPBAR_HEIGHT);
+		display_text.location = Point(24, 16);
 		display_text.width = Size(272);
 		display_text.height = Size(58);
 		display_text.content = "0";
@@ -95,7 +95,7 @@ public:
 		{
 			int row = i / 4;
 			int column = i % 4;
-			keys[i].location = Point(16 + column * 74, 88 + TOPBAR_HEIGHT + row * 68);
+			keys[i].location = Point(16 + column * 74, 88 + row * 68);
 			keys[i].width = Size(64);
 			keys[i].height = Size(58);
 			char label[2] = {labels[i], '\0'};
