@@ -25,6 +25,9 @@ jobs:
       - name: Get program information
         run: echo "PROG_VERSION=$(make -s print-version)" >> $GITHUB_ENV
 
+      - name: Debug, prints PROG_VERSION
+        run: echo "v${{ env.PROG_VERSION }}"
+
       - name: Build
         run: PATH="$PATH:$HOME/com.ares" make export
 

@@ -271,7 +271,8 @@ submodules:
 	@printf "$(COLOR_SUCCESS)[SUBMODULES] Updated successfully!$(R)\n"
 
 print-version:
-	@echo "$(VERSION) $(VERSION_NAME)"
+# do not include spaces in here, could cause release.yml action to fail
+	@echo "$(VERSION)_$(VERSION_NAME)" 
 
 -include $(D_FILES)
 
