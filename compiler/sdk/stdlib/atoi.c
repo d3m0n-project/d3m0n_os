@@ -1,6 +1,6 @@
 #include "stdlib.h"
 
-int	atoi(char *str)
+int	atoi(const char *str)
 {
 	int	nb;
 	int	sign;

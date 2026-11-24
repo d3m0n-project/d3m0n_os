@@ -59,7 +59,7 @@ extern "C" {
 
 	void			*memchr(const void *str, int c, size_t len);
 	int				memcmp(const void *s1, const void *s2, size_t len);
-	int				atoi(char *str);
+	int				atoi(const char *str);
 	float			strtof(const char *str, char **endptr);
 	unsigned long	strtoul(const char *nptr, char **endptr, int base);
 	char			*strncat(char *dst, const char *src, size_t n);

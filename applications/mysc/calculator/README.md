@@ -1,2 +1,4 @@
-# d3m0n default calculator app
-simple app to process simple calculus
+# Calculator
+
+A four-function calculator with a keypad for addition, subtraction,
+multiplication, and integer division.
