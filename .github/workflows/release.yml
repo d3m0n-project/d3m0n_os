@@ -23,7 +23,7 @@ jobs:
         run: make -C compiler
 
       - name: Get program information
-        run: echo "PROG_VERSION=$(make -s print-version)" >> $GITHUB_ENV
+        run: echo "PROG_VERSION=$(make -s print-version | tr ' ' '_')" >> $GITHUB_ENV
 
       - name: Debug, prints PROG_VERSION
         run: echo "v${{ env.PROG_VERSION }}"
