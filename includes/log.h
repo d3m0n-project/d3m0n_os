@@ -5,7 +5,7 @@
 #include "protocol/uart.h"
 #include "display/color.h"
 
-typedef enum : int
+typedef enum
 {
 	LOG_NONE=0,
 	LOG_SUCCESS=1,
