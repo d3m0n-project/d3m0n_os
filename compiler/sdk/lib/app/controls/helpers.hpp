@@ -3,12 +3,12 @@
 
 #include "app.hpp"
 
-#define ANCHOR_LEFT 1
-#define ANCHOR_RIGHT 2
-#define ANCHOR_TOP 4
-#define ANCHOR_BOTTOM 8
-#define ANCHOR_CENTER_X 16
-#define ANCHOR_CENTER_Y 32
+#define ANCHOR_LEFT			1
+#define ANCHOR_RIGHT		2
+#define ANCHOR_TOP			4
+#define ANCHOR_BOTTOM		8
+#define ANCHOR_CENTER_X		16
+#define ANCHOR_CENTER_Y		32
 
 /** @brief Calculates the content rectangle after applying the control’s margins. */
 inline void control_inner(const Control &control, int &x, int &y, int &w, int &h)

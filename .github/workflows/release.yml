@@ -40,4 +40,4 @@ jobs:
           generate_release_notes: false
           files: export/*
           draft: false
-          prerelease: true
+          prerelease: false
